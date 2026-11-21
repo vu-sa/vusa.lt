@@ -1,11 +1,14 @@
 <?php
 
+use App\Enums\InstitutionScope;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
+use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
+use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
@@ -18,7 +21,10 @@ use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -52,6 +58,115 @@ describe('atstovavimas dashboard', function (): void {
                 ->missing('tenantInstitutions')
                 ->missing('representativeActivity')
             );
+    });
+
+    test('first paint sends compact institution rows and the initial meetings window', function (): void {
+        $this->travelTo('2026-11-21 12:00:00');
+        $institution = $this->user->current_or_upcoming_duties()->first()->institution;
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => '2024-01-01 12:00:00']);
+        $pastCheckIn = InstitutionCheckIn::factory()->for($institution)->for($this->user)->create([
+            'start_date' => '2025-01-01', 'end_date' => '2025-01-31',
+        ]);
+        $activeCheckIn = InstitutionCheckIn::factory()->for($institution)->for($this->user)->create([
+            'start_date' => '2026-11-01', 'end_date' => '2026-11-30', 'note' => 'No meetings in November.',
+        ]);
+
+        asUserWithInertia($this->user)->get(route('dashboard.atstovavimas'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('initialMeetingsWindow', ['from' => '2026-07-21', 'to' => '2027-01-21'])
+                ->missing('relatedInstitutions')
+                ->has('userInstitutions', 1, fn (Assert $row) => $row
+                    ->where('id', $institution->id)
+                    ->whereType('name', 'string')
+                    ->where('tenant.id', $institution->tenant_id)
+                    ->where('incomplete_meetings_count', 0)
+                    ->where('active_check_in.id', $activeCheckIn->id)
+                    ->where('active_check_in.note', 'No meetings in November.')
+                    ->where('check_ins', fn ($checkIns) => collect($checkIns)->pluck('id')->contains($pastCheckIn->id))
+                    ->has('membership_periods', 1)
+                    ->missing('meetings')
+                    ->missing('duties')
+                    ->etc()));
+    });
+
+    test('an active check-in remains on the dashboard at midday on its last day', function (): void {
+        $institution = $this->user->current_duties()->first()->institution;
+        $checkIn = InstitutionCheckIn::factory()->for($institution)->for($this->user)->create([
+            'start_date' => '2026-11-01',
+            'end_date' => '2026-11-30',
+        ]);
+
+        Carbon::setTestNow('2026-11-30 12:00:00');
+        try {
+            asUserWithInertia($this->user)->getJson(route('dashboard.atstovavimas'))
+                ->assertOk()
+                ->assertJsonPath('props.userInstitutions.0.active_check_in.id', $checkIn->id)
+                ->assertJsonPath('props.userInstitutions.0.active_check_in.end_date', '2026-11-30');
+        } finally {
+            Carbon::setTestNow();
+        }
+    });
+
+    test('first-paint query count stays constant as historical incomplete meetings are added', function (): void {
+        $institution = $this->admin->current_duties()->first()->institution;
+        $addMeeting = function () use ($institution): void {
+            $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->subYears(3)]);
+            AgendaItem::factory()->for($meeting)->voting()->create();
+        };
+        $fetch = fn () => asUserWithInertia($this->admin)->getJson(route('dashboard.atstovavimas'))->assertOk();
+        $measure = function () use ($fetch): array {
+            $fetch();
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            try {
+                $response = $fetch();
+
+                return [$response, count(DB::getQueryLog())];
+            } finally {
+                DB::disableQueryLog();
+                DB::flushQueryLog();
+            }
+        };
+
+        $addMeeting();
+        [$small, $smallCount] = $measure();
+        $addMeeting();
+        $addMeeting();
+        [$large, $largeCount] = $measure();
+
+        $small->assertJsonPath('props.userInstitutions.0.incomplete_meetings_count', 1);
+        $large->assertJsonPath('props.userInstitutions.0.incomplete_meetings_count', 3);
+        expect($largeCount)->toBe($smallCount);
+    });
+
+    test('the incomplete count excludes empty agendas and follows outcome votes and joint governance', function (): void {
+        $institution = $this->user->current_duties()->first()->institution;
+        $internalType = InstitutionType::factory()->create(['extra_attributes' => ['governance_scope' => InstitutionScope::Vusa->value]]);
+        $institution->types()->attach($internalType);
+        $external = Institution::factory()->for($this->tenant)->create();
+        $historicalMeeting = fn () => Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->subYear()]);
+
+        $historicalMeeting();
+        AgendaItem::factory()->for($historicalMeeting())->create();
+        AgendaItem::factory()->for($historicalMeeting())->deferred()->create();
+
+        $mainWins = AgendaItem::factory()->for($historicalMeeting())->voting()->create();
+        Vote::factory()->for($mainWins, 'agendaItem')->main()->create(['decision' => 'positive']);
+        Vote::factory()->for($mainWins, 'agendaItem')->additional()->create(['order' => 1]);
+
+        $noMain = AgendaItem::factory()->for($historicalMeeting())->voting()->create();
+        Vote::factory()->for($noMain, 'agendaItem')->additional()->create(['decision' => 'positive']);
+        Vote::factory()->for($noMain, 'agendaItem')->additional()->create(['order' => 1]);
+
+        $joint = $historicalMeeting();
+        $joint->institutions()->attach($external);
+        $jointAgendaItem = AgendaItem::factory()->for($joint)->voting()->create();
+        Vote::factory()->for($jointAgendaItem, 'agendaItem')->main()->create(['decision' => 'positive']);
+
+        asUserWithInertia($this->user)->getJson(route('dashboard.atstovavimas'))
+            ->assertOk()
+            ->assertJsonPath('props.userInstitutions.0.incomplete_meetings_count', 3);
     });
 
     test('followed institutions load with the secondary group, upcoming meetings on first paint', function (): void {
@@ -254,6 +369,29 @@ describe('atstovavimas dashboard authorization', function (): void {
                     ->contains(fn ($inst) => data_get($inst, 'id') === $secretariedInstitution->id && data_get($inst, 'is_secretary') === true)
                 )
             );
+    });
+
+    test('a secretary-only nomination does not add the outgoing linked institution to the dashboard', function (): void {
+        $secretary = User::factory()->create();
+        $source = Institution::factory()->for($this->tenant)->create();
+        $target = Institution::factory()->for($this->tenant)->create();
+        $cadence = Cadence::factory()->for($source)->create();
+        InstitutionSecretary::create([
+            'institution_id' => $source->id,
+            'cadence_id' => $cadence->id,
+            'user_id' => $secretary->id,
+        ]);
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $source->id,
+            'target_institution_id' => $target->id,
+        ]);
+
+        asUserWithInertia($secretary)->get(route('dashboard.atstovavimas'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('userInstitutions.0.id', $source->id)
+                ->where('userInstitutions.0.is_secretary', true)
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload->has('relatedInstitutions', 0)));
     });
 
     test('a rep who manages no padalinys opens the overview for its Gantt only', function (): void {
@@ -597,47 +735,31 @@ describe('atstovavimas related institutions', function (): void {
             );
     });
 
-    test('authorized related institutions include meetings with agenda items', function (): void {
-        // Create outgoing relationship (authorized)
-        InstitutionLink::factory()->create(['source_institution_id' => $this->userInstitution->id, 'target_institution_id' => $this->relatedInstitution->id]);
-
-        // Create meeting with agenda item
-        $meeting = Meeting::factory()->create(['start_time' => now()]);
-        $meeting->institutions()->attach($this->relatedInstitution->id);
-        $agendaItem = AgendaItem::factory()->create([
-            'meeting_id' => $meeting->id,
-            'title' => 'Test Agenda Item',
+    test('authorized related institutions return a compact summary on demand', function (): void {
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $this->userInstitution->id,
+            'target_institution_id' => $this->relatedInstitution->id,
         ]);
+        $meeting = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->subYear()]);
+        AgendaItem::factory()->for($meeting)->voting()->create();
+        $upcoming = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->addDay()]);
 
-        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
-        asUserWithInertia($this->user)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertStatus(200)
+        asUserWithInertia($this->user)->get(route('dashboard.atstovavimas'))
+            ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->missing('relatedInstitutions')
                 ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
-                    ->has('relatedInstitutions')
-                    ->where('relatedInstitutions', function ($institutions) {
-                        $collection = collect($institutions);
-                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
-                        if (! $found) {
-                            return false;
-                        }
-
-                        // Authorized institution should have meetings with agenda items
-                        $meetings = collect($found['meetings'] ?? []);
-                        if ($meetings->isEmpty()) {
-                            return false;
-                        }
-
-                        $firstMeeting = $meetings->first();
-                        $agendaItems = collect($firstMeeting['agenda_items'] ?? []);
-
-                        return $agendaItems->isNotEmpty();
-                    })
-                )
-            );
+                    ->missing('userInstitutions')
+                    ->has('relatedInstitutions', 1, fn (Assert $row) => $row
+                        ->where('id', $this->relatedInstitution->id)
+                        ->where('authorized', true)
+                        ->where('incomplete_meetings_count', 1)
+                        ->where('last_meeting_date', $meeting->start_time->toISOString())
+                        ->where('next_meeting_date', $upcoming->start_time->toISOString())
+                        ->where('activity_status.status', 'covered_by_upcoming_meeting')
+                        ->missing('meetings')
+                        ->missing('duties')
+                        ->etc())));
     });
 
     test('timeline member rows carry only who held the seat and when', function (): void {
@@ -650,73 +772,49 @@ describe('atstovavimas related institutions', function (): void {
             ]);
         }
 
-        $memberRows = fn (array $institutions): array => collect($institutions)
-            ->flatMap(fn (array $institution) => collect($institution['duties'] ?? [])->flatMap(fn (array $duty) => $duty['users'] ?? []))
-            ->all();
-        $onlyTimelineFields = fn (array $rows): bool => $rows !== [] && collect($rows)->every(fn (array $row): bool => array_diff(array_keys($row), ['id', 'name', 'profile_photo_path', 'activity_category', 'pivot']) === []
-            && array_keys($row['pivot']) === ['start_date', 'end_date']);
+        $hasFormerMember = fn ($institutions): bool => collect($institutions)
+            ->flatMap(fn (array $institution) => $institution['membership_periods'])
+            ->contains(fn (array $period): bool => array_keys($period) === ['user', 'duty_id', 'start_date', 'end_date']
+                && $period['user'] === ['id' => $former->id, 'name' => $former->name, 'profile_photo_path' => $former->profile_photo_path]
+                && $period['start_date'] === '2020-07-01'
+                && $period['end_date'] === '2021-06-30');
 
         asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('userInstitutions', fn ($institutions) => $onlyTimelineFields($memberRows(collect($institutions)->toArray())))
+                ->where('userInstitutions', $hasFormerMember)
                 ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
-                    ->where('relatedInstitutions', fn ($institutions) => $onlyTimelineFields($memberRows(collect($institutions)->toArray())))
+                    ->where('relatedInstitutions', $hasFormerMember)
                 )
             );
     });
 
-    test('unauthorized related institutions include meetings but no agenda items', function (): void {
-        // Create incoming relationship (NOT authorized because NOT bidirectional)
-        InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id]);
-
-        // Create meeting and attach to related institution
-        $meeting = Meeting::factory()->create(['start_time' => now()]);
-        $meeting->institutions()->attach($this->relatedInstitution->id);
-
-        // Create agenda item for this meeting (should NOT be loaded for unauthorized)
-        $agendaItem = AgendaItem::factory()->create([
-            'meeting_id' => $meeting->id,
-            'title' => 'Test Agenda Item',
+    test('restricted related institution summaries keep the dates and hide recording and activity status', function (): void {
+        $this->travelTo('2026-11-21 12:00:00');
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $this->relatedInstitution->id,
+            'target_institution_id' => $this->userInstitution->id,
+            'mutual' => false,
         ]);
+        $meeting = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->subYear()]);
+        AgendaItem::factory()->for($meeting)->voting()->create();
+        $upcoming = Meeting::factory()->hasAttached($this->relatedInstitution)->create(['start_time' => now()->addDay()]);
+        $checkIn = InstitutionCheckIn::factory()->for($this->relatedInstitution)->for($this->user)->create();
 
-        // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
-        asUserWithInertia($this->user)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertStatus(200)
+        asUserWithInertia($this->user)->get(route('dashboard.atstovavimas'))
+            ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->missing('relatedInstitutions')
                 ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload
-                    ->has('relatedInstitutions')
-                    ->where('relatedInstitutions', function ($institutions) {
-                        $collection = collect($institutions);
-                        $found = $collection->firstWhere('id', $this->relatedInstitution->id);
-
-                        if (! $found) {
-                            return false;
-                        }
-
-                        // Institution should be unauthorized
-                        if ($found['authorized'] !== false) {
-                            return false;
-                        }
-
-                        // Should have meetings
-                        $meetings = collect($found['meetings'] ?? []);
-                        if ($meetings->isEmpty()) {
-                            return false;
-                        }
-
-                        $firstMeeting = $meetings->first();
-
-                        // For unauthorized institutions, agenda_items should NOT be loaded
-                        // Since Laravel doesn't eager load them, the key should be missing or empty
-                        $hasAgendaItems = isset($firstMeeting['agenda_items']) && ! empty($firstMeeting['agenda_items']);
-
-                        return ! $hasAgendaItems;
-                    })
-                )
-            );
+                    ->has('relatedInstitutions', 1, fn (Assert $row) => $row
+                        ->where('id', $this->relatedInstitution->id)
+                        ->where('authorized', false)
+                        ->where('incomplete_meetings_count', null)
+                        ->where('last_meeting_date', $meeting->start_time->toISOString())
+                        ->where('next_meeting_date', $upcoming->start_time->toISOString())
+                        ->where('last_activity_at', $checkIn->created_at->toISOString())
+                        ->where('activity_status', null)
+                        ->missing('meetings')
+                        ->missing('duties')
+                        ->etc())));
     });
 });

@@ -12,6 +12,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Models\Vote;
+use App\Services\Institutions\AtstovavimasInstitutionPresenter;
 use App\Services\Institutions\InstitutionQueries;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
@@ -58,21 +59,14 @@ class AtstovavimasDashboardService
     public function tenantTimeline(User $actor, array $tenantIds): array
     {
         $institutions = InstitutionQueries::getTimelineInstitutionsForTenants($actor, $tenantIds, $this->authorizer);
-        $this->decorateInstitutions($institutions);
-        $counted = $this->countedInstitutions($institutions);
-        $countedIds = $counted->pluck('id')->map(fn ($id) => (string) $id)->flip();
+        $rows = $institutions->map(fn (Institution $institution): array => [
+            ...$this->mapInstitution($institution),
+            'in_summary' => RepStatisticsScope::counts($institution),
+        ])->values();
 
         return [
-            // Every row is drawn; the chart's own toggle decides which are shown. The tiles and the
-            // attention list stay on the set the settings call formal (`in_summary`), so the two agree.
-            'institutions' => $institutions
-                ->map(fn (Institution $institution) => [
-                    ...$this->mapInstitution($institution),
-                    'in_summary' => $countedIds->has((string) $institution->id),
-                ])
-                ->values()
-                ->all(),
-            'institution_summary' => $this->institutionSummary($counted),
+            'institutions' => $rows->all(),
+            'institution_summary' => $this->institutionSummary($rows->where('in_summary', true)),
             'representative_activity' => $this->representativeActivitySummary($tenantIds),
         ];
     }
@@ -218,28 +212,23 @@ class AtstovavimasDashboardService
             }
         };
 
-        $publicTypeIds = $this->meetingSettings->getPublicMeetingInstitutionTypeIds();
-        if ($publicTypeIds->isNotEmpty()) {
-            $grant($inSelection()
-                ->whereHas('types', fn (Builder $query) => $query->whereIn('institution_types.id', $publicTypeIds))
-                ->pluck('institutions.id'), self::PROJECTION_PUBLIC);
-        }
+        $grant($this->publicMeetingInstitutionIds($inSelection()), self::PROJECTION_PUBLIC);
 
         $managedTenantIds = $this->atstovavimasSettings->getVisibleTenantIds($user)->map(fn ($id) => (int) $id);
         if ($managedTenantIds->intersect($tenantIds)->isNotEmpty()) {
             $grant($inSelection()->whereIn('tenant_id', $managedTenantIds)->pluck('institutions.id'), self::PROJECTION_FULL);
         }
 
-        $ownInstitutions = Institution::query()->active()
-            ->whereIn('id', $user->current_or_upcoming_duties()->pluck('institution_id')
-                ->merge($user->secretariedInstitutions()->pluck('institutions.id'))
-                ->filter()
-                ->unique())
-            ->get();
+        $institutionAccess = app(InstitutionAccessService::class);
+        $dutyIds = $institutionAccess->getUserDutyInstitutionIds($user);
+        $ownIds = Institution::query()->active()
+            ->whereKey($dutyIds->merge($institutionAccess->getSecretariedInstitutionIds($user))->unique()->values())
+            ->pluck('id');
 
-        $candidates = $ownInstitutions->mapWithKeys(fn (Institution $institution) => [(string) $institution->id => self::PROJECTION_FULL])->all();
-        foreach ($ownInstitutions as $institution) {
-            foreach (app(InstitutionRelationService::class)->relatedTo($institution->id) as $related) {
+        $candidates = $ownIds->mapWithKeys(fn (string $id): array => [$id => self::PROJECTION_FULL])->all();
+        $relations = app(InstitutionRelationService::class);
+        foreach ($ownIds->intersect($dutyIds) as $institutionId) {
+            foreach ($relations->relatedTo($institutionId) as $related) {
                 $relatedId = $related['institution_id'];
 
                 if (($candidates[$relatedId] ?? null) !== self::PROJECTION_FULL) {
@@ -258,8 +247,60 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * The padaliniai Gantt rows. Rows outside full access keep meetings' anchors, members and
-     * check-ins, but not the health status or members' activity.
+     * @param  Builder<Institution>  $institutions
+     * @return SupportCollection<int, string>
+     */
+    private function publicMeetingInstitutionIds(Builder $institutions): SupportCollection
+    {
+        $publicTypeIds = $this->meetingSettings->getPublicMeetingInstitutionTypeIds();
+
+        return $publicTypeIds->isEmpty()
+            ? collect()
+            : $institutions->whereHas('types', fn (Builder $query) => $query->whereIn('institution_types.id', $publicTypeIds))
+                ->pluck('institutions.id');
+    }
+
+    /** @return SupportCollection<string, string> */
+    public function representativeInstitutionAccess(User $user): SupportCollection
+    {
+        $own = InstitutionQueries::representativeDashboardInstitutions($user, withSummary: false);
+        $related = InstitutionQueries::relatedRepresentativeDashboardInstitutions($own, withSummary: false);
+        $restrictedIds = $related->where('authorized', false)->modelKeys();
+        $public = $restrictedIds === []
+            ? collect()
+            : $this->publicMeetingInstitutionIds(Institution::query()->whereKey($restrictedIds))->flip();
+
+        return collect($own->modelKeys())
+            ->mapWithKeys(fn (string $id): array => [$id => self::PROJECTION_FULL])
+            ->union($related->mapWithKeys(fn (Institution $institution): array => [
+                $institution->id => match (true) {
+                    $institution->getAttribute('authorized') === true => self::PROJECTION_FULL,
+                    $public->has($institution->id) => self::PROJECTION_PUBLIC,
+                    default => self::PROJECTION_RESTRICTED,
+                },
+            ]));
+    }
+
+    /**
+     * @param  list<int>  $tenantIds
+     * @return SupportCollection<string, string>
+     */
+    public function cachedGanttInstitutionAccess(User $actor, array $tenantIds, bool $refresh = false): SupportCollection
+    {
+        $tenantIds = array_unique($tenantIds);
+        sort($tenantIds, SORT_NUMERIC);
+
+        return RepStatisticsCache::remember(
+            'gantt-access:v2:'.$actor->id.':'.InstitutionRelationService::version().':'.implode(',', $tenantIds),
+            fn () => $this->ganttInstitutionAccess($actor, $tenantIds),
+            refresh: $refresh,
+            tenantIds: $tenantIds,
+            ttl: 120,
+        );
+    }
+
+    /**
+     * Rows outside full access keep the meeting anchors and check-ins with a null activity status.
      *
      * @param  SupportCollection<string, string>  $access  from ganttInstitutionAccess()
      * @return list<array<string, mixed>>
@@ -267,43 +308,64 @@ class AtstovavimasDashboardService
     public function ganttInstitutions(SupportCollection $access): array
     {
         $institutions = InstitutionQueries::getTimelineInstitutions($access->keys());
-        $this->decorateInstitutions($institutions);
 
         return $institutions
-            ->map(function (Institution $institution) use ($access): array {
-                $row = $this->mapInstitution($institution);
-
-                if ($access[(string) $institution->id] === self::PROJECTION_FULL) {
-                    return $row;
-                }
-
-                return [
-                    ...$row,
-                    'authorized' => false,
-                    'activity_status' => null,
-                    'duties' => array_map(fn (array $duty) => [
-                        ...$duty,
-                        'users' => array_map(
-                            fn (array $representative) => Arr::except($representative, ['activity_category']),
-                            $duty['users'],
-                        ),
-                    ], $row['duties']),
-                ];
-            })
+            ->map(fn (Institution $institution): array => $this->mapInstitution(
+                $institution,
+                authorized: $access[$institution->id] === self::PROJECTION_FULL,
+            ))
             ->values()
             ->all();
     }
 
     /**
+     * @param  SupportCollection<string, string>  $access
+     * @return array{users: object, institutions: object}
+     */
+    public function ganttMembers(SupportCollection $access): array
+    {
+        $users = [];
+        $institutions = [];
+        foreach (InstitutionQueries::getGanttMemberInstitutions($access->keys()) as $institution) {
+            $fullAccess = $access[$institution->id] === self::PROJECTION_FULL;
+            $periods = [];
+            $activity = [];
+            foreach (AtstovavimasInstitutionPresenter::membershipTerms($institution) as ['term' => $term, 'user' => $user]) {
+                $users[$user->id] ??= ['name' => $user->name, 'profile_photo_path' => $user->profile_photo_path];
+                $periods[] = [
+                    'user_id' => $user->id,
+                    'duty_id' => $term->duty_id,
+                    'start_date' => $term->start_date->toDateString(),
+                    'end_date' => $term->end_date?->toDateString(),
+                ];
+                if ($fullAccess) {
+                    $activity[$user->id] ??= $this->activityCategory($user->last_action);
+                }
+            }
+
+            $institutions[$institution->id] = ['periods' => $periods];
+            if ($fullAccess) {
+                $institutions[$institution->id]['activity'] = (object) $activity;
+            }
+        }
+
+        return ['users' => (object) $users, 'institutions' => (object) $institutions];
+    }
+
+    /**
      * Meetings of the Gantt's institutions inside a date window, trimmed to exactly what the chart
-     * renders. Outside full access the recording state is left out; `restricted` rows also lose
-     * their agendas.
+     * renders. Only full rows calculate recording state, and restricted rows report zero items.
      *
-     * @param  SupportCollection<string, string>  $access  from ganttInstitutionAccess()
+     * @param  SupportCollection<string, string>  $access  institution id => projection
      * @return list<array<string, mixed>>
      */
-    public function ganttMeetings(SupportCollection $access, CarbonInterface $from, CarbonInterface $until): array
-    {
+    public function ganttMeetings(
+        User $actor,
+        SupportCollection $access,
+        CarbonInterface $from,
+        CarbonInterface $until,
+        bool $includeRestrictedFiles = false,
+    ): array {
         if ($access->isEmpty()) {
             return [];
         }
@@ -315,54 +377,79 @@ class AtstovavimasDashboardService
                 'meetings' => fn ($query) => $query
                     ->select('meetings.id', 'meetings.title', 'meetings.start_time', 'meetings.type')
                     ->whereBetween('meetings.start_time', [$from, $until])
+                    ->withCount('agendaItems')
                     ->with([
-                        'agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
-                        'tenants',
-                        'agendaItems.votes:id,agenda_item_id,decision,student_vote,student_benefit,is_main,is_consensus',
                         'fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
-                        // Eager: mapMeeting asks every meeting in the window whether it is announced.
                         'calendarEvent:id,meeting_id,is_draft',
-                        // completion_status asks requiresStudentPerspective(), which otherwise loads these per meeting.
-                        'institutions.types',
                     ]),
             ])
             ->get();
 
+        $fullMeetings = new Collection($institutions
+            ->filter(fn (Institution $institution): bool => $access[$institution->id] === self::PROJECTION_FULL)
+            ->flatMap(fn (Institution $institution) => $institution->meetings)->all());
+        $fullMeetings->load([
+            'agendaItems:id,meeting_id,type,is_private',
+            'agendaItems.votes:id,agenda_item_id,decision,student_vote,student_benefit,is_main,is_consensus',
+            'institutions.types',
+        ]);
+
+        if (! $actor->isSuperAdmin()) {
+            $privateMeetings = $fullMeetings->filter(fn (Meeting $meeting): bool => $meeting->agendaItems->contains('is_private', true));
+            $privateMeetings->load('tenants');
+            Meeting::preloadMembershipAtMeetingTime($actor, $privateMeetings);
+            foreach ($privateMeetings as $meeting) {
+                $this->setPrivateAgendaTenants($meeting, $meeting->agendaItems);
+            }
+        }
+
         return $institutions
             ->flatMap(fn (Institution $institution) => $institution->meetings
-                ->map(fn (Meeting $meeting) => $this->mapMeeting($meeting, $institution, $access[(string) $institution->id])))
+                ->map(fn (Meeting $meeting) => $this->mapMeeting($actor, $meeting, $institution, $access[(string) $institution->id], $includeRestrictedFiles)))
             ->values()
             ->all();
     }
 
-    /**
-     * @param  Collection<int, Institution>  $institutions
-     */
-    private function decorateInstitutions(Collection $institutions): void
+    /** @return array{agenda_items: list<array{id: string, title: string, type: string|null, votes: list<array{student_vote: string|null, decision: string|null, is_consensus: bool}>}|array{id: string, title: string, order: int, is_private: true, is_redacted: true}>, agenda_items_count: int} */
+    public function ganttMeetingAgenda(User $actor, string $institutionId, string $meetingId, string $projection): array
     {
-        $institutions->each(function (Institution $institution): void {
-            $institution->setAttribute(
-                'active_check_in',
-                $institution->checkIns
-                    ->where('end_date', '>=', now())
-                    ->where('start_date', '<=', now())
-                    ->first()
-            );
-            $institution->append(['has_public_meetings', 'meeting_periodicity_days']);
-            $institution->setAttribute(
-                'activity_status',
-                $this->activityStatusService->resolve($institution)->toArray()
-            );
+        $institution = Institution::query()->active()->findOrFail($institutionId, ['id']);
+        $meeting = $institution->meetings()
+            ->select('meetings.id', 'meetings.start_time')
+            ->whereKey($meetingId)
+            ->when($projection !== self::PROJECTION_RESTRICTED, fn ($query) => $query->withCount('agendaItems'))
+            ->firstOrFail();
 
-            $institution->duties->each(function ($duty): void {
-                $duty->users->each(function (User $representative): void {
-                    $representative->setAttribute(
-                        'activity_category',
-                        $this->activityCategory($representative->last_action)
-                    );
-                });
-            });
-        });
+        if ($projection === self::PROJECTION_RESTRICTED) {
+            return ['agenda_items' => [], 'agenda_items_count' => 0];
+        }
+
+        $items = $meeting->agendaItems()
+            ->with('votes:id,agenda_item_id,decision,student_vote,is_main,is_consensus')
+            ->orderBy('order')
+            ->limit(4)
+            ->get(['id', 'meeting_id', 'title', 'type', 'order', 'is_private', 'public_title']);
+
+        if ($items->contains('is_private', true) && ! $actor->isSuperAdmin()) {
+            $meeting->load(['institutions:id', 'tenants']);
+            $this->setPrivateAgendaTenants($meeting, $items);
+        }
+
+        return [
+            'agenda_items' => $items->map(fn (AgendaItem $item): array => $this->mapAgendaItem($actor, $item))->all(),
+            'agenda_items_count' => (int) $meeting->getAttribute('agenda_items_count'),
+        ];
+    }
+
+    /** @param  Collection<int, AgendaItem>  $items */
+    private function setPrivateAgendaTenants(Meeting $meeting, Collection $items): void
+    {
+        foreach ($items as $item) {
+            if ($item->is_private) {
+                $item->setRelation('meeting', $meeting);
+                $item->setRelation('tenants', $meeting->tenants);
+            }
+        }
     }
 
     /**
@@ -372,9 +459,10 @@ class AtstovavimasDashboardService
      *
      * @return array<string, mixed>
      */
-    private function mapInstitution(Institution $institution): array
+    private function mapInstitution(Institution $institution, bool $authorized = true): array
     {
-        $activeCheckIn = $institution->getAttribute('active_check_in');
+        $now = now();
+        $activeCheckIn = $institution->checkIns->where('end_date', '>=', $now)->where('start_date', '<=', $now)->first();
 
         return [
             'id' => (string) $institution->id,
@@ -396,11 +484,10 @@ class AtstovavimasDashboardService
             'is_internal' => $this->scopeResolver->forInstitution($institution)->isInternal(),
             'has_public_meetings' => $institution->has_public_meetings,
             'upcoming_meetings_count' => (int) ($institution->upcoming_meetings_count ?? 0),
-            // ISO strings from InstitutionQueries::withActivityDates(); the Gantt sorts and sections by them.
             'last_meeting_date' => $institution->getAttribute('last_meeting_date'),
             'next_meeting_date' => $institution->getAttribute('next_meeting_date'),
             'last_activity_at' => $institution->getAttribute('last_activity_at'),
-            'activity_status' => $institution->getAttribute('activity_status'),
+            'activity_status' => $authorized ? $this->activityStatusService->resolve($institution)->toArray() : null,
             'active_check_in' => $activeCheckIn ? [
                 'id' => (string) $activeCheckIn->id,
                 'institution_id' => (string) $activeCheckIn->institution_id,
@@ -418,43 +505,20 @@ class AtstovavimasDashboardService
                 ])
                 ->values()
                 ->all(),
-            'duties' => $institution->duties
-                ->map(fn ($duty) => [
-                    'id' => (string) $duty->id,
-                    'users' => $duty->users
-                        ->map(fn (User $representative) => [
-                            'id' => (string) $representative->id,
-                            'name' => $representative->name,
-                            'profile_photo_path' => $representative->profile_photo_path,
-                            'activity_category' => $representative->getAttribute('activity_category'),
-                            'pivot' => [
-                                'start_date' => $representative->pivot?->start_date,
-                                'end_date' => $representative->pivot?->end_date,
-                            ],
-                        ])
-                        ->values()
-                        ->all(),
-                ])
-                ->values()
-                ->all(),
+            ...($authorized ? [] : ['authorized' => false]),
         ];
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function mapMeeting(Meeting $meeting, Institution $institution, string $projection = self::PROJECTION_FULL): array
+    private function mapMeeting(User $actor, Meeting $meeting, Institution $institution, string $projection, bool $includeRestrictedFiles): array
     {
         $isFull = $projection === self::PROJECTION_FULL;
-        $agendaItems = $projection === self::PROJECTION_RESTRICTED ? new Collection : $meeting->agendaItems;
+        $isRestricted = $projection === self::PROJECTION_RESTRICTED;
+        $showFiles = $isFull || ($isRestricted && $includeRestrictedFiles);
         $calendarEvent = $meeting->calendarEvent;
-
-        if ($agendaItems->isNotEmpty()) {
-            $meetingTenants = $meeting->tenants;
-            $agendaItems->each(fn (AgendaItem $item) => $item->setRelation('tenants', $meetingTenants));
-        }
-
-        $outcome = $isFull ? $meeting->outcomeSummary(auth()->user()) : null;
+        $outcome = $isFull ? $meeting->outcomeSummary($actor) : null;
 
         return [
             'id' => (string) $meeting->id,
@@ -466,28 +530,23 @@ class AtstovavimasDashboardService
             'completion_status' => $outcome['completion_status'] ?? null,
             'vote_alignment_status' => $outcome['vote_alignment_status'] ?? null,
             'requires_student_perspective' => $isFull ? $meeting->requiresStudentPerspective() : null,
-            'has_report' => $isFull && $meeting->has_report,
-            'has_protocol' => $isFull && $meeting->has_protocol,
+            'has_report' => $showFiles && $meeting->has_report,
+            'has_protocol' => $showFiles && $meeting->has_protocol,
             // Announced in the public calendar, and whether that announcement is still a
             // draft — a drafted event is invisible to everyone but the admins.
             'has_calendar_event' => $isFull && $calendarEvent !== null,
             'calendar_event_is_draft' => $isFull && $calendarEvent !== null && $calendarEvent->is_draft,
-            ...($projection === self::PROJECTION_RESTRICTED ? ['authorized' => false] : []),
-            'agenda_items' => $agendaItems
-                ->take(4)
-                ->map(fn (AgendaItem $item) => $this->mapAgendaItem($item))
-                ->values()
-                ->all(),
-            'agenda_items_count' => $agendaItems->count(),
+            ...($isRestricted ? ['authorized' => false] : []),
+            'agenda_items_count' => $isRestricted ? 0 : (int) $meeting->getAttribute('agenda_items_count'),
         ];
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{id: string, title: string, type: string|null, votes: list<array{student_vote: string|null, decision: string|null, is_consensus: bool}>}|array{id: string, title: string, order: int, is_private: true, is_redacted: true}
      */
-    private function mapAgendaItem(AgendaItem $item): array
+    private function mapAgendaItem(User $actor, AgendaItem $item): array
     {
-        if ($item->is_private && ! AgendaItemPresenter::canRead($item, auth()->user())) {
+        if ($item->is_private && ! AgendaItemPresenter::canRead($item, $actor)) {
             return AgendaItemPresenter::redacted($item);
         }
 
@@ -495,24 +554,25 @@ class AtstovavimasDashboardService
             'id' => (string) $item->id,
             'title' => (string) ($item->title ?? ''),
             'type' => $item->type?->value,
-            // The tooltip derives the item's status from these, as getAgendaItemStatus() does.
             'votes' => $item->outcomeVotes()
-                ->map(fn (Vote $vote): array => $vote->only(['student_vote', 'decision', 'is_consensus']))
+                ->map(fn (Vote $vote): array => [
+                    'student_vote' => $vote->student_vote,
+                    'decision' => $vote->decision,
+                    'is_consensus' => $vote->is_consensus,
+                ])
                 ->values()
                 ->all(),
         ];
     }
 
     /**
-     * @param  Collection<int, Institution>  $institutions
+     * @param  SupportCollection<int, array<string, mixed>>  $institutions
      * @return array<string, int>
      */
-    private function institutionSummary(Collection $institutions): array
+    private function institutionSummary(SupportCollection $institutions): array
     {
         $statuses = $institutions->pluck('activity_status.status')->countBy();
-        $needsAttention = $institutions->filter(
-            fn (Institution $institution) => (bool) data_get($institution, 'activity_status.requires_action')
-        )->count();
+        $needsAttention = $institutions->where('activity_status.requires_action', true)->count();
 
         return [
             'all' => $institutions->count(),
@@ -587,14 +647,5 @@ class AtstovavimasDashboardService
         }
 
         return 'stale';
-    }
-
-    /**
-     * @param  Collection<int, Institution>  $institutions
-     * @return Collection<int, Institution>
-     */
-    private function countedInstitutions(Collection $institutions): Collection
-    {
-        return $institutions->filter(RepStatisticsScope::counts(...))->values();
     }
 }

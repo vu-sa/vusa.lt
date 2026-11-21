@@ -16,14 +16,10 @@ use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\InstitutionActivityStatusService;
-use App\Services\InstitutionRelationService;
+use App\Services\Institutions\AtstovavimasInstitutionPresenter;
 use App\Services\Institutions\InstitutionQueries;
-use App\Services\InstitutionScopeResolver;
-use App\Services\ModelAuthorizer as Authorizer;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\RepMetricSettings;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
@@ -34,11 +30,6 @@ use Inertia\Response;
 
 class AtstovavimasDashboardController extends AdminController
 {
-    public function __construct(
-        public Authorizer $authorizer,
-        private readonly InstitutionActivityStatusService $activityStatusService,
-    ) {}
-
     public function atstovavimas(ShowAtstovavimasDashboardRequest $request): Response|RedirectResponse
     {
         $requestedScope = $request->validated('scope') ?? $request->validated('tab');
@@ -55,36 +46,8 @@ class AtstovavimasDashboardController extends AdminController
             return $u;
         });
 
-        // Get only user's directly assigned institutions (lightweight, always loaded)
-        $userInstitutions = fn () => once(function () use ($request) {
-            $institutions = InstitutionQueries::getUserInstitutionsForDashboard($request->user(), activeOnly: true);
-
-            $institutions->each(function ($institution): void {
-                $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol', 'has_calendar_event']);
-                // VU SA's own bodies are drawn like any other and hidden behind the chart's
-                // own toggle; they used to be dropped here, which left the chart incomplete
-                // with no way to ask for the rest.
-                $institution->setAttribute(
-                    'is_internal',
-                    app(InstitutionScopeResolver::class)->forInstitution($institution)->isInternal()
-                );
-                // Add active_check_in from already-loaded checkIns
-                $institution->active_check_in = $institution->checkIns
-                    ?->where('end_date', '>=', now())
-                    ->where('start_date', '<=', now())
-                    ->first() ?? null;
-                // Append has_public_meetings for UI indicators (uses already-loaded types relation)
-                $institution->append('has_public_meetings');
-                // Append meeting_periodicity_days for overdue warnings (inherits from types, defaults to 30)
-                $institution->append('meeting_periodicity_days');
-                $institution->setAttribute(
-                    'activity_status',
-                    $this->activityStatusService->resolve($institution)->toArray()
-                );
-            });
-
-            return $institutions;
-        });
+        $userInstitutions = fn () => once(fn () => InstitutionQueries::representativeDashboardInstitutions($user()));
+        $today = today();
 
         return Inertia::render('Admin/Dashboard/ShowAtstovavimas', [
             'user' => fn () => [
@@ -94,39 +57,17 @@ class AtstovavimasDashboardController extends AdminController
                     'institution_id' => $duty->institution_id,
                 ])->values(),
             ],
-            'userInstitutions' => Inertia::always(fn () => $userInstitutions()->values()),
-            // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
+            'userInstitutions' => fn () => AtstovavimasInstitutionPresenter::rows($userInstitutions()),
             'mayHaveRelatedInstitutions' => fn () => $userInstitutions()->isNotEmpty(),
-            // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
-            'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions) {
-                /** @var Collection<int, Institution> $institutionCollection */
-                $institutionCollection = new Collection($userInstitutions()->values()->all());
-                $relatedInstitutions = app(InstitutionRelationService::class)->forMultiple($institutionCollection, activeOnly: true);
-
-                // Append computed attributes to related institution meetings
-                // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
-                $relatedInstitutions->each(function ($institution): void {
-                    /** @var Institution&object{authorized?: bool} $institution */
-                    $isAuthorized = ($institution->authorized ?? true) !== false;
-                    $institution->meetings->each(function ($meeting) use ($isAuthorized): void {
-                        // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
-                        if ($isAuthorized) {
-                            $meeting->append(['completion_status', 'has_report', 'has_protocol']);
-                        } else {
-                            $meeting->append(['has_report', 'has_protocol']);
-                        }
-                    });
-                    $institution->setAttribute('is_internal', $institution->governance_scope->isInternal());
-                    $institution->append('has_public_meetings');
-                    $institution->append('meeting_periodicity_days');
-                    $institution->setAttribute(
-                        'activity_status',
-                        $this->activityStatusService->resolve($institution)->toArray()
-                    );
-                });
-
-                return $relatedInstitutions->values();
-            })->once(),
+            'relatedInstitutions' => Inertia::optional(fn () => AtstovavimasInstitutionPresenter::rows(
+                InstitutionQueries::relatedRepresentativeDashboardInstitutions(
+                    InstitutionQueries::representativeDashboardInstitutions($user(), withSummary: false),
+                ),
+            ))->once(),
+            'initialMeetingsWindow' => [
+                'from' => $today->copy()->subMonthsNoOverflow(4)->toDateString(),
+                'to' => $today->copy()->addMonthsNoOverflow(2)->toDateString(),
+            ],
             'canViewTenantOverview' => fn () => Gate::allows('viewAny', Meeting::class),
             'openTasksCount' => fn () => Task::openTaskCountsFor($user())['tasks_count'],
             // Duty and followed institutions alike; the page narrows it by the tenant selector.

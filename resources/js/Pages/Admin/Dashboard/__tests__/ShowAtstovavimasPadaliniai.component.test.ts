@@ -82,7 +82,7 @@ const ganttRowsLoad = vi.fn();
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
   useTenantTimelineData: (routeName?: string) => routeName === 'api.v1.admin.visak.gantt'
-    ? { data: ref([]), isFetching: ref(false), loaded: ref(true), load: ganttRowsLoad }
+    ? { data: ref([]), isFetching: ref(false), loaded: ref(true), loadedResult: ref({ tenantKey: '', data: [] }), load: ganttRowsLoad }
     : ({
         data: ref({
           institutions: [
@@ -102,7 +102,9 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantMeetings', () => ({
   useTenantMeetings: () => ({
     meetings: ref([]),
-    pendingWindow: ref(null),
+    loadingSegments: ref([]),
+    lastError: ref(null),
+    retry: vi.fn(),
     isFetching: ref(false),
     ensureRange: vi.fn(),
     reset: vi.fn(),

@@ -8,8 +8,12 @@ use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\User;
+use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionRelationService;
+use App\Services\Meetings\IncompleteMeetingQueries;
 use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
+use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -88,10 +92,75 @@ class InstitutionQueries
             ->get();
     }
 
-    /** Marks secretaries separately so the dashboard does not present them as members. */
-    public static function getUserInstitutionsForDashboard(User $actor, bool $activeOnly = false, ?CarbonInterface $meetingsFrom = null)
+    /** @return EloquentCollection<int, Institution> */
+    public static function getUserInstitutionsForDashboard(User $actor, bool $activeOnly = false, ?CarbonInterface $meetingsFrom = null): EloquentCollection
     {
-        // Get user's directly assigned institution IDs
+        return self::assignedInstitutions($actor, self::buildInstitutionQuery($meetingsFrom)
+            ->when($activeOnly, fn ($query) => $query->active()));
+    }
+
+    /** @return EloquentCollection<int, Institution> */
+    public static function representativeDashboardInstitutions(User $actor, bool $withSummary = true): EloquentCollection
+    {
+        $query = $withSummary ? self::representativeDashboardQuery() : Institution::select('id');
+
+        return self::assignedInstitutions($actor, $query->active()
+            ->whereHas('tenant', fn ($tenant) => $tenant->whereIn('type', TenantType::representationalValues())));
+    }
+
+    /**
+     * @param  EloquentCollection<int, Institution>  $own
+     * @return EloquentCollection<int, Institution>
+     */
+    public static function relatedRepresentativeDashboardInstitutions(EloquentCollection $own, bool $withSummary = true): EloquentCollection
+    {
+        $relations = app(InstitutionRelationService::class);
+        $ownIds = $own->modelKeys();
+        $picked = [];
+
+        foreach ($own as $institution) {
+            // Only duty assignments can grant access through an institution link.
+            if ($institution->getAttribute('is_secretary') !== false) {
+                continue;
+            }
+
+            $sourceId = $institution->id;
+            foreach ($relations->relatedTo($sourceId) as $entry) {
+                $id = $entry['institution_id'];
+
+                if (in_array($id, $ownIds, true) || (! $entry['authorized'] && isset($picked[$id]))) {
+                    continue;
+                }
+
+                $picked[$id] = [...$entry, 'source_institution_id' => $sourceId];
+            }
+        }
+
+        if ($picked === []) {
+            return new EloquentCollection;
+        }
+
+        $query = $withSummary ? self::representativeDashboardQuery() : Institution::select('id');
+
+        return $query->active()->whereKey(array_keys($picked))->get()
+            ->sortByDesc(fn (Institution $institution) => $picked[$institution->id]['authorized'])
+            ->values()
+            ->each(function (Institution $institution) use ($picked): void {
+                $entry = $picked[$institution->id];
+                $institution->setAttribute('is_related', true);
+                $institution->setAttribute('authorized', $entry['authorized']);
+                $institution->setAttribute('relationship_direction', $entry['direction']);
+                $institution->setAttribute('relationship_type', $entry['via']);
+                $institution->setAttribute('source_institution_id', $entry['source_institution_id']);
+            });
+    }
+
+    /**
+     * @param  Builder<Institution>  $query
+     * @return EloquentCollection<int, Institution>
+     */
+    private static function assignedInstitutions(User $actor, Builder $query): EloquentCollection
+    {
         $dutyInstitutionIds = $actor->current_or_upcoming_duties()
             ->pluck('institution_id')
             ->filter()
@@ -104,13 +173,10 @@ class InstitutionQueries
         $userInstitutionIds = $dutyInstitutionIds->merge($secretariedInstitutionIds)->unique();
 
         if ($userInstitutionIds->isEmpty()) {
-            return collect();
+            return new EloquentCollection;
         }
 
-        $institutions = self::buildInstitutionQuery($meetingsFrom)
-            ->when($activeOnly, fn ($query) => $query->active())
-            ->whereIn('id', $userInstitutionIds)
-            ->get();
+        $institutions = $query->whereIn('id', $userInstitutionIds)->get();
 
         $institutions->each(function (Institution $institution) use ($dutyInstitutionIds, $secretariedInstitutionIds): void {
             $isSecretary = ! $dutyInstitutionIds->contains($institution->id)
@@ -121,6 +187,23 @@ class InstitutionQueries
         });
 
         return $institutions;
+    }
+
+    /** @return Builder<Institution> */
+    private static function representativeDashboardQuery(): Builder
+    {
+        $query = Institution::select('id', 'name', 'short_name', 'tenant_id', 'meeting_periodicity_days');
+
+        return self::withActivitySummary($query)
+            ->with([
+                'tenant:id,shortname',
+                'checkIns:id,institution_id,start_date,end_date,note',
+            ])
+            ->withCount([
+                'meetings as upcoming_meetings_count' => fn ($meetings) => $meetings->where('start_time', '>', now()),
+                'meetings as incomplete_meetings_count' => IncompleteMeetingQueries::constrain(...),
+            ])
+            ->tap(self::withMembershipPeriods(...));
     }
 
     /** @param  Collection|array  $tenantIds */
@@ -182,7 +265,7 @@ class InstitutionQueries
      * @param  Collection<int, string>  $institutionIds
      * @return EloquentCollection<int, Institution>
      */
-    public static function getTimelineInstitutions(Collection $institutionIds)
+    public static function getTimelineInstitutions(Collection $institutionIds): EloquentCollection
     {
         if ($institutionIds->isEmpty()) {
             return new EloquentCollection;
@@ -194,30 +277,74 @@ class InstitutionQueries
     }
 
     /**
+     * @param  Collection<int, string>  $institutionIds
+     * @return EloquentCollection<int, Institution>
+     */
+    public static function getGanttMemberInstitutions(Collection $institutionIds): EloquentCollection
+    {
+        if ($institutionIds->isEmpty()) {
+            return new EloquentCollection;
+        }
+
+        return Institution::select('id')->active()
+            ->whereKey($institutionIds)
+            ->whereHas('tenant', fn (Builder $query) => $query->whereIn('type', TenantType::representationalValues()))
+            ->tap(fn (Builder $query) => self::withMembershipPeriods($query, withActivity: true))
+            ->get();
+    }
+
+    /**
      * @return Builder<Institution>
      */
-    private static function timelineInstitutionsQuery()
+    private static function timelineInstitutionsQuery(): Builder
     {
-        return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active', 'meeting_periodicity_days')
+        $query = Institution::select('id', 'name', 'tenant_id', 'is_active', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query): void {
                 $query->whereIn('type', TenantType::representationalValues());
-            })
+            });
+
+        return self::withActivitySummary($query)
             ->with([
                 'tenant:id,shortname,type',
-                'types', // needed for has_public_meetings and meeting_periodicity_days
-                // Meetings only carry start_time: enough for activity-status resolution.
-                'meetings:id,start_time',
-                // Historical assignments are required for Gantt coverage periods.
-                'duties.users:id,name,profile_photo_path,last_action',
-                'checkIns',
+                'types:id,title,extra_attributes',
+                'checkIns:id,institution_id,start_date,end_date,note',
             ])
             ->withCount([
                 'meetings as upcoming_meetings_count' => function ($query): void {
                     $query->where('start_time', '>', now());
                 },
-            ])
-            ->tap(self::withActivityDates(...))
-            ->afterQuery(self::hideMemberDetails(...));
+            ]);
+    }
+
+    /**
+     * @param  Builder<Institution>  $query
+     * @return Builder<Institution>
+     */
+    private static function withActivitySummary(Builder $query): Builder
+    {
+        return app(InstitutionActivityStatusService::class)->withSummary($query)
+            ->tap(self::withLastActivityDate(...))
+            ->afterQuery(function (EloquentCollection $institutions): void {
+                foreach ($institutions as $institution) {
+                    $institution->setAttribute('last_meeting_date', self::activityDateToIso($institution->getAttribute('activity_last_meeting_at')));
+                    $institution->setAttribute('next_meeting_date', self::activityDateToIso($institution->getAttribute('activity_next_meeting_at')));
+                }
+            });
+    }
+
+    /** @param  Builder<Institution>  $query */
+    private static function withMembershipPeriods(Builder $query, bool $withActivity = false): void
+    {
+        $userColumns = 'id,name,profile_photo_path'.($withActivity ? ',last_action' : '');
+
+        $query->with([
+            'duties:id,institution_id',
+            'duties.dutiables' => fn ($terms) => $terms
+                ->select('duty_id', 'dutiable_id', 'start_date', 'end_date')
+                ->where('dutiable_type', MorphMap::alias(User::class))
+                ->whereNotNull('start_date')
+                ->with('user:'.$userColumns),
+        ]);
     }
 
     /** @return Builder<Institution> */
@@ -273,8 +400,6 @@ class InstitutionQueries
     }
 
     /**
-     * Uses logged changes and check-ins because migrations can bump meetings.updated_at.
-     *
      * @param  Builder<Institution>  $query
      */
     private static function withActivityDates(Builder $query): void
@@ -284,13 +409,29 @@ class InstitutionQueries
             ->whereColumn('institution_meeting.institution_id', 'institutions.id')
             ->limit(1);
 
-        $query->addSelect([
+        $query->tap(self::withLastActivityDate(...))->addSelect([
             'last_meeting_date' => $meetingsOfInstitution()->select('start_time')
                 ->where('start_time', '<=', now())
                 ->orderByDesc('start_time'),
             'next_meeting_date' => $meetingsOfInstitution()->select('start_time')
                 ->where('start_time', '>', now())
                 ->orderBy('start_time'),
+        ])->afterQuery(function (EloquentCollection $institutions): void {
+            foreach ($institutions as $institution) {
+                $institution->setAttribute('last_meeting_date', self::activityDateToIso($institution->getAttribute('last_meeting_date')));
+                $institution->setAttribute('next_meeting_date', self::activityDateToIso($institution->getAttribute('next_meeting_date')));
+            }
+        });
+    }
+
+    /**
+     * Uses logged changes and check-ins because migrations can bump meetings.updated_at.
+     *
+     * @param  Builder<Institution>  $query
+     */
+    private static function withLastActivityDate(Builder $query): void
+    {
+        $query->addSelect([
             'meeting_activity_at' => Activity::query()->select('activity_log.created_at')
                 ->join('institution_meeting', 'institution_meeting.meeting_id', '=', 'activity_log.root_subject_id')
                 ->where('activity_log.root_subject_type', 'meeting')
@@ -305,19 +446,20 @@ class InstitutionQueries
         ])->afterQuery(function (EloquentCollection $institutions): void {
             $parts = ['meeting_activity_at', 'check_in_activity_at'];
 
-            $toIso = fn (mixed $value): ?string => is_string($value) ? Carbon::parse($value)->toISOString() : null;
-
             /** @var EloquentCollection<int, Institution> $institutions */
-            $institutions->each(function (Institution $institution) use ($parts, $toIso): void {
+            $institutions->each(function (Institution $institution) use ($parts): void {
                 $latest = collect($parts)->map(fn (string $part) => $institution->getAttribute($part))->filter()->max();
-                $institution->setAttribute('last_activity_at', $toIso($latest));
-                $institution->setAttribute('last_meeting_date', $toIso($institution->getAttribute('last_meeting_date')));
-                $institution->setAttribute('next_meeting_date', $toIso($institution->getAttribute('next_meeting_date')));
+                $institution->setAttribute('last_activity_at', self::activityDateToIso($latest));
 
                 foreach ($parts as $part) {
                     $institution->offsetUnset($part);
                 }
             });
         });
+    }
+
+    private static function activityDateToIso(mixed $value): ?string
+    {
+        return is_string($value) ? Carbon::parse($value)->toISOString() : null;
     }
 }

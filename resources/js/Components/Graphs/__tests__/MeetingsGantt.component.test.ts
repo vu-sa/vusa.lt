@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 
+import { router } from '@inertiajs/vue3';
+
 import MeetingsGantt from '../MeetingsGantt.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -77,5 +79,82 @@ describe('MeetingsGantt', () => {
     expect(wrapper.findAll('.meeting-request-badge')).toHaveLength(0);
     expect(wrapper.findAll('.activity-request-chip')).toHaveLength(0);
     expect(wrapper.findAll('[data-slot="gantt-row-request"]')).toHaveLength(0);
+  });
+
+  it('fetches a meeting agenda on first hover and shows it in the tooltip', async () => {
+    let resolveAgenda: (items: Array<{ id: string; title: string }>) => void = () => {};
+    const agendaLoader = vi.fn(() => new Promise<Array<{ id: string; title: string }>>((resolve) => {
+      resolveAgenda = resolve;
+    }));
+    await mountGantt({
+      meetings: [{ id: 'm1', institution_id: 'kolegija', start_time: new Date(), agenda_items_count: 2 }],
+      agendaLoader,
+    });
+
+    wrapper.find('.meeting-icon').element.dispatchEvent(new MouseEvent('mouseenter'));
+    const tooltip = () => document.querySelector('.gantt-unified-tooltip')?.textContent ?? '';
+    expect(agendaLoader).toHaveBeenCalledWith(expect.objectContaining({ id: 'm1', institution_id: 'kolegija' }));
+    expect(tooltip()).toMatch(/agenda_loading|Kraunama darbotvarkė/);
+
+    resolveAgenda([{ id: 'a1', title: 'Studijų programos keitimas' }]);
+    await flushPromises();
+    expect(tooltip()).toContain('Studijų programos keitimas');
+  });
+
+  it('does not stripe a row as having no members while its member history is still loading', async () => {
+    await mountGantt({ showDutyMembers: true, dutyMembers: [], inactivePeriods: [], membersPending: ['kolegija'] });
+
+    const striped = wrapper.findAll('.inactive-period').length;
+    // Senatas (no members, history loaded) is striped; Studijų kolegija (pending) is not.
+    expect(striped).toBeGreaterThan(0);
+
+    await wrapper.setProps({ membersPending: ['kolegija', 'senatas'] });
+    await flushPromises();
+    await nextFrame();
+    expect(wrapper.findAll('.inactive-period')).toHaveLength(0);
+  });
+
+  it('makes a meeting a labelled link that opens on Space without scrolling and shows its tooltip on focus', async () => {
+    await mountGantt({ meetings: [{ id: 'm1', institution_id: 'kolegija', title: 'Kolegijos posėdis', start_time: new Date() }] });
+    const icon = wrapper.find('.meeting-icon').element as SVGGElement;
+
+    expect(icon.getAttribute('role')).toBe('link');
+    expect(icon.getAttribute('aria-label')).toContain('Kolegijos posėdis');
+
+    icon.dispatchEvent(new FocusEvent('focus'));
+    expect(document.querySelector('.gantt-unified-tooltip')?.textContent).toContain('Kolegijos posėdis');
+
+    vi.stubGlobal('route', (name: string, id?: string) => `/${name}/${id ?? ''}`);
+    const space = new KeyboardEvent('keydown', { key: ' ', cancelable: true, bubbles: true });
+    icon.dispatchEvent(space);
+    expect(space.defaultPrevented).toBe(true);
+    expect(router.visit).toHaveBeenCalledWith(expect.stringContaining('m1'));
+  });
+
+  it('leaves arrow keys on the zoom slider to the slider', async () => {
+    await mountGantt();
+    const scroller = wrapper.find('[data-slot="meetings-gantt"] .overflow-auto').element as HTMLElement;
+    const slider = document.createElement('span');
+    slider.setAttribute('role', 'slider');
+    slider.tabIndex = 0;
+    wrapper.element.appendChild(slider);
+    slider.focus();
+    const before = scroller.scrollLeft;
+
+    slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(scroller.scrollLeft).toBe(before);
+  });
+
+  it('moves the label column by scrolling it, so its group headers can stay pinned', async () => {
+    await mountGantt();
+    const scroller = wrapper.find('[data-slot="meetings-gantt"] .overflow-auto').element as HTMLElement;
+    const labels = wrapper.find('[data-slot="meetings-gantt"] > div').element as HTMLElement;
+    Object.defineProperty(labels, 'scrollTop', { value: 0, writable: true });
+
+    scroller.scrollTop = 120;
+    scroller.dispatchEvent(new Event('scroll'));
+
+    expect(labels.scrollTop).toBe(120);
+    expect((labels.querySelector('.grid') as HTMLElement).style.transform).toBe('');
   });
 });

@@ -14,47 +14,46 @@
       </DialogHeader>
 
       <div class="space-y-6 py-4">
-        <!-- Main Legend Grid - 2 columns on desktop -->
-        <div class="grid gap-6 lg:grid-cols-2">
+        <!-- Sections flow into balanced columns, so a long one does not leave a gap beside it. -->
+        <div class="gap-x-10 lg:columns-2" data-slot="gantt-legend-sections">
           <!-- Meetings Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="MeetingIconFilled" class="h-4 w-4" />
               {{ $t('Posėdžiai') }}
             </h4>
-            <div class="grid gap-2 pl-6">
-              <div class="flex items-center gap-3">
-                <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-foreground dark:text-white" />
+            <div class="grid gap-2 pl-6" data-slot="gantt-legend-meeting-statuses">
+              <div v-for="entry in meetingStatusEntries" :key="entry.key" class="flex items-center gap-3">
+                <svg viewBox="0 0 20 20" class="size-4 shrink-0" aria-hidden="true">
+                  <path :d="entry.path" :fill="entry.color" />
+                </svg>
                 <div>
-                  <span class="text-sm font-medium">{{ $t('Užpildytas posėdis') }}</span>
+                  <span class="text-sm font-medium">{{ entry.label }}</span>
                   <p class="text-xs text-muted-foreground">
-                    {{ $t('Su darbotvarkės klausimais') }}
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center gap-3">
-                <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-red-500" />
-                <div>
-                  <span class="text-sm font-medium">{{ $t('Neužpildytas posėdis') }}</span>
-                  <p class="text-xs text-muted-foreground">
-                    {{ $t('Trūksta informacijos') }}
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center gap-3">
-                <IFluentPeopleTeam20Regular class="w-4 h-4 shrink-0 text-red-500" />
-                <div>
-                  <span class="text-sm font-medium">{{ $t('Be darbotvarkės') }}</span>
-                  <p class="text-xs text-muted-foreground">
-                    {{ $t('Nėra darbotvarkės klausimų') }}
+                    {{ entry.hint }}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
+          <div class="mb-6 break-inside-avoid space-y-3">
+            <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <component :is="MeetingIconFilled" class="h-4 w-4" />
+              {{ $t('visak.gantt.legend.types') }}
+            </h4>
+            <div class="grid gap-2 pl-6">
+              <div v-for="entry in meetingTypeEntries" :key="entry.key" class="flex items-center gap-3">
+                <svg viewBox="0 0 20 20" class="size-4 shrink-0" aria-hidden="true">
+                  <path :d="entry.path" :fill="colors.meetingComplete" />
+                </svg>
+                <span class="text-sm">{{ entry.label }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Coverage Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="NotificationIconFilled" class="h-4 w-4" />
               {{ $t('Atstovavimo padengimas') }}
@@ -93,7 +92,7 @@
             </div>
           </div>
 
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <MailQuestion class="size-4" aria-hidden="true" />
               {{ $t('activity_requests.gantt.legend_title') }}
@@ -112,7 +111,9 @@
               </div>
               <div class="flex items-center gap-3">
                 <span class="relative shrink-0">
-                  <IFluentPeopleTeam20Filled class="size-4 text-status-info" />
+                  <svg viewBox="0 0 20 20" class="size-4" aria-hidden="true">
+                    <path :d="icons.filled" :fill="colors.activityRequest" />
+                  </svg>
                   <MailQuestion class="absolute -right-1.5 -top-1.5 size-2.5 bg-background text-status-info" aria-hidden="true" />
                 </span>
                 <div>
@@ -126,7 +127,7 @@
           </div>
 
           <!-- Institution Indicators Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="InstitutionIconFilled" class="h-4 w-4" />
               {{ $t('Institucijų indikatoriai') }}
@@ -154,7 +155,7 @@
           </div>
 
           <!-- Duty Members Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
@@ -195,7 +196,7 @@
           </div>
 
           <!-- Time Indicators Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
@@ -225,7 +226,7 @@
           </div>
 
           <!-- Vacation Periods Section -->
-          <div class="space-y-3">
+          <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
@@ -328,16 +329,51 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { useMutationObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Globe, Link2, CalendarOff, MailQuestion } from '@lucide/vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { InstitutionIconFilled, MeetingIconFilled, NotificationIconFilled } from '@/Components/icons';
+import { meetingAlignmentStatuses, meetingCompletionStatuses } from '@/Constants/statuses';
 
-defineProps<{
+import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors';
+import { MEETING_ICON_PATHS } from './renderers/renderMeetings';
+
+const props = defineProps<{
   isOpen: boolean;
 }>();
+
+// The swatches follow the theme the chart is drawn in, also when it changes while the legend is open.
+const colors = ref<GanttColors>(getGanttColors(isDarkModeActive()));
+const readTheme = () => {
+  colors.value = getGanttColors(isDarkModeActive());
+};
+watch(() => props.isOpen, (open) => {
+  if (open) readTheme();
+});
+useMutationObserver(() => (typeof document === 'undefined' ? null : document.documentElement), readTheme, { attributes: true, attributeFilter: ['class'] });
+
+const icons = MEETING_ICON_PATHS['in-person'];
+
+/** In the order the chart decides a meeting's colour (renderMeetings), with the tooltip's status words. */
+const meetingStatusEntries = computed(() => [
+  { key: 'aligned', path: icons.filled, color: colors.value.meetingAligned, label: $t(meetingAlignmentStatuses.all_match.label), hint: $t('visak.gantt.legend.aligned_hint') },
+  { key: 'mixed', path: icons.filled, color: colors.value.meetingMixed, label: $t(meetingAlignmentStatuses.mixed.label), hint: $t('visak.gantt.legend.mixed_hint') },
+  { key: 'misaligned', path: icons.filled, color: colors.value.meetingMisaligned, label: $t(meetingAlignmentStatuses.all_mismatch.label), hint: $t('visak.gantt.legend.misaligned_hint') },
+  { key: 'complete', path: icons.filled, color: colors.value.meetingComplete, label: $t(meetingCompletionStatuses.complete.label), hint: $t('visak.gantt.legend.complete_hint') },
+  { key: 'incomplete', path: icons.filled, color: colors.value.meetingIncomplete, label: $t(meetingCompletionStatuses.incomplete.label), hint: $t('visak.gantt.legend.incomplete_hint') },
+  { key: 'no-items', path: icons.regular, color: colors.value.meetingNoItems, label: $t(meetingCompletionStatuses.no_items.label), hint: $t('visak.gantt.legend.no_items_hint') },
+  { key: 'no-access', path: icons.filled, color: colors.value.meetingUnauthorized, label: $t('Nėra prieigos'), hint: $t('visak.gantt.legend.no_access_hint') },
+]);
+
+const meetingTypeEntries = [
+  { key: 'in-person', path: MEETING_ICON_PATHS['in-person'].filled, label: $t('visak.gantt.legend.in_person') },
+  { key: 'remote', path: MEETING_ICON_PATHS.remote.filled, label: $t('visak.gantt.legend.remote') },
+  { key: 'email', path: MEETING_ICON_PATHS.email.filled, label: $t('visak.gantt.legend.email') },
+];
 
 defineEmits<{
   'update:is-open': [value: boolean];

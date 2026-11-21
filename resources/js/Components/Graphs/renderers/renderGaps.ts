@@ -5,6 +5,7 @@
  * The visual design indicates "no planned meetings during this time" clearly.
  */
 import type * as d3 from 'd3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import type { GanttColors } from '../ganttColors';
 
@@ -82,7 +83,7 @@ export function renderGaps(ctx: GapRenderContext): void {
     .append('title')
     .text((d) => {
       const dateRange = `${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`;
-      return d.note ? `${d.note}\n${dateRange}` : `Check-in: ${dateRange}`;
+      return d.note ? `${d.note}\n${dateRange}` : `${$t('visak.gantt.check_in')}: ${dateRange}`;
     });
 
   // Create icon groups for start icons (CalendarOff at the beginning)

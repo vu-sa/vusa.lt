@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Padaliniai
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-21
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
@@ -146,9 +146,9 @@ reikia dėmesio, jų aktyvumą ir [atstovavimo rodiklius](/visak/atstovai#atstov
 
 ### Posėdžių laiko juosta
 
-Laiko juosta rodoma didesniame ekrane, o telefone siūloma nuoroda į posėdžių sąrašą. Posėdžiai
-kraunami dalimis: kai slenki ar atitolini vaizdą, įkeliami matomi mėnesiai, artimiausi ekrano viduriui
-pirmiausia.
+Laiko juosta rodoma didesniame ekrane, o telefone siūloma nuoroda į posėdžių sąrašą. Narių
+istorija įkeliama visoms pasirinktų padalinių institucijoms vienu kartu. Keičiant matomą datų
+intervalą įkeliami dar neparsiųsti posėdžiai, pirmiausia arčiausiai ekrano vidurio.
 
 Laiko juostos padaliniai pasirenkami mygtuku **Rodoma** šalia filtrų. Kai puslapio viršuje pakeičiamas
 rodiklių padalinių pasirinkimas, laiko juosta pradeda rodyti tuos pačius padalinius, taip pat ir kitą
@@ -219,7 +219,7 @@ pasirinkimu.
 - Skaičiuojamas institucijas parenka `RepStatisticsScope::institutions()` (tipų išimtys ir `RepMetricSettings::counted_institution_scopes`, SQL filtras `InstitutionScopeResolver::constrainToScopes()`); laiko juosta šio filtro netaiko, eilutės pažymimos `in_summary`.
 - Puslapis – `AtstovavimasDashboardController::padaliniai` (`statsTenants`, `ganttTenants`,
   `defaultGanttTenantIds`, `canViewTenantTasks`). Duomenys kraunami per
-  `/api/v1/admin/visak/{timeline,timeline/history,gantt,meetings,activity-requests}`
+  `/api/v1/admin/visak/{timeline,timeline/history,gantt,gantt/members,meetings,activity-requests}`
   (`AtstovavimasApiController`). Posėdžiai kraunami ne didesnėmis kaip 6 mėn. dalimis
   (`useTenantMeetings`); serveris priima iki 24 mėn.
 - Užklausos atstovams – `GetOpenActivityRequestSpans`: atviros (`InstitutionActivityRequest::open()`)
