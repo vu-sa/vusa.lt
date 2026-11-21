@@ -29,7 +29,7 @@
 
       <TimelineGanttSkeleton v-if="!isReady" />
       <TimelineGanttChart v-else :class="active && 'min-h-0 flex-1'" :height="active ? '100%' : undefined" :fullscreen-active="active"
-        :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
+        :institutions="formattedInstitutions" :meetings="allMeetings" :gaps="allGaps"
         :show-only-with-activity="filters.showOnlyWithActivityUser.value"
         :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
         :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
@@ -155,6 +155,7 @@ const baseInstitutionPeriodicityRef = computed(() => props.institutionPeriodicit
 const {
   mergedInstitutions: formattedInstitutions,
   mergedMeetings: allMeetings,
+  mergedGaps: allGaps,
   mergedDutyMembers,
   mergedInactivePeriods,
   mergedInstitutionNames: allInstitutionNames,
@@ -163,6 +164,7 @@ const {
 } = useUserTimelineData({
   institutions: institutionsRef,
   meetings: meetingsRef,
+  gaps: toRef(props, 'gaps'),
   relatedInstitutions: relatedInstitutionsRef,
   showRelatedInstitutions: filters.showRelatedInstitutionsUser,
   baseDutyMembers: baseDutyMembersRef,

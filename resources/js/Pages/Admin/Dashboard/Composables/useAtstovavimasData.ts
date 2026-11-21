@@ -5,6 +5,7 @@ import type {
   AtstovavimasInstitution,
   AtstovavimasGap,
 } from '../types';
+import { extractCheckInGaps } from '../utils/ganttHelpers';
 
 export function useAtstovavimasData(
   userGetter: MaybeRefOrGetter<AtstovavimasUser>,
@@ -27,18 +28,7 @@ export function useAtstovavimasData(
       );
   });
 
-  // User gaps derived from all check-ins for each institution
-  const userGaps = computed<AtstovavimasGap[]>(() => {
-    return institutions.value.flatMap((inst: AtstovavimasInstitution) => {
-      return (inst.check_ins ?? []).map(checkIn => ({
-        institution_id: inst.id,
-        from: new Date(`${checkIn.start_date}T00:00:00`),
-        until: new Date(`${checkIn.end_date}T00:00:00`),
-        mode: 'no_meetings', // All check-ins represent "no meetings"
-        note: checkIn.note || undefined,
-      }));
-    });
-  });
+  const userGaps = computed<AtstovavimasGap[]>(() => extractCheckInGaps(institutions.value));
 
   return {
     institutions,

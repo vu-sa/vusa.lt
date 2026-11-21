@@ -8,7 +8,7 @@
       @update:group-by="groupBy = $event" @update:sort-by="sortBy = $event" @fullscreen="emit('fullscreen', true)" />
 
     <div ref="chartArea" class="relative isolate flex w-full min-w-0 max-w-full border border-border" data-slot="meetings-gantt"
-      :style="containerHeight ? { height: containerHeight } : {}"
+      :style="containerHeight ? { height: containerHeight, maxHeight: VIEWPORT_MAX_HEIGHT } : {}"
       :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }">
       <!-- Left: sticky labels -->
       <div ref="leftLabels" class="relative isolate z-[35] shrink-0 overflow-hidden border-r border-border bg-card"
@@ -364,8 +364,10 @@ const dragSelection = useDragSelection(rightScroll, svgEl, curXRef, layoutRows, 
 
 const openRequests = computed(() => (props.showActivityRequests ? props.activityRequests ?? [] : []).map(request => ({
   ...request,
-  fromDate: d3.timeDay.floor(new Date(request.period_start)),
-  untilDate: d3.timeDay.offset(d3.timeDay.floor(new Date(request.period_end)), 1),
+  // Date-only at local midnight; the bar runs to the end of the inclusive last day.
+  fromDate: new Date(`${request.period_start.slice(0, 10)}T00:00:00`),
+  lastDate: new Date(`${request.period_end.slice(0, 10)}T00:00:00`),
+  untilDate: d3.timeDay.offset(new Date(`${request.period_end.slice(0, 10)}T00:00:00`), 1),
 })));
 
 /** Which open requests an institution has, named for its label's mark. */
@@ -380,6 +382,9 @@ const requestLabels = computed(() => {
 });
 
 /** Meetings whose records an open "Papildyk posėdžių įrašus" request asks for. */
+/** On a short screen the chart's own scrollbars must stay on screen with it; 12rem leaves room for the shell and toolbar. */
+const VIEWPORT_MAX_HEIGHT = 'max(16rem, calc(100dvh - 12rem))';
+
 const membersPendingSet = computed(() => new Set(props.membersPending ?? []));
 
 const lastPointer = { x: 0, y: 0 };
@@ -463,6 +468,7 @@ function render(): void {
     institution_id: request.institution_id,
     rowKey: request.rowKey,
     fromDate: request.fromDate,
+    lastDate: request.lastDate,
     untilDate: request.untilDate,
     sentAt: request.sent_at ? new Date(request.sent_at) : null,
     expiresAt: new Date(request.expires_at),

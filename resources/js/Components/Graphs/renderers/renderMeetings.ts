@@ -88,6 +88,14 @@ const ICON_EMAIL_REGULAR = 'M3.5 4A1.5 1.5 0 0 0 2 5.5v9A1.5 1.5 0 0 0 3.5 16h13
 const ICON_CALENDAR_FILLED = 'M7 11a1 1 0 1 0 0-2a1 1 0 0 0 0 2m1 2a1 1 0 1 1-2 0a1 1 0 0 1 2 0m2-2a1 1 0 1 0 0-2a1 1 0 0 0 0 2m4-1a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-1 4a1 1 0 1 0 0-2a1 1 0 0 0 0 2m-2-3a1 1 0 1 1-2 0a1 1 0 0 1 2 0M17 5.5A2.5 2.5 0 0 0 14.5 3h-9A2.5 2.5 0 0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h9a2.5 2.5 0 0 0 2.5-2.5zM4 7h12v7.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 14.5z';
 const ICON_CALENDAR_REGULAR = 'M17 5.5A2.5 2.5 0 0 0 14.5 3h-9A2.5 2.5 0 0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h9a2.5 2.5 0 0 0 2.5-2.5zM14.5 4a1.5 1.5 0 0 1 1.5 1.5V6H4v-.5A1.5 1.5 0 0 1 5.5 4zM4 14.5V7h12v7.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 14.5M7 11a1 1 0 1 0 0-2a1 1 0 0 0 0 2m1 2a1 1 0 1 1-2 0a1 1 0 0 1 2 0m2-2a1 1 0 1 0 0-2a1 1 0 0 0 0 2m4-1a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-1 4a1 1 0 1 0 0-2a1 1 0 0 0 0 2m-2-3a1 1 0 1 1-2 0a1 1 0 0 1 2 0';
 
+/** The meeting shapes, shared with the legend so it shows exactly what the chart draws. */
+export const MEETING_ICON_PATHS = {
+  'in-person': { filled: ICON_IN_PERSON_FILLED, regular: ICON_IN_PERSON_REGULAR },
+  'remote': { filled: ICON_REMOTE_FILLED, regular: ICON_REMOTE_REGULAR },
+  'email': { filled: ICON_EMAIL_FILLED, regular: ICON_EMAIL_REGULAR },
+  'other': { filled: ICON_CALENDAR_FILLED, regular: ICON_CALENDAR_REGULAR },
+} as const;
+
 // Lucide MailQuestion (24x24), the activity-request mark
 export const MAIL_QUESTION_PATH = 'M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5M22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7M18 15.28c.2-.4.5-.8.9-1a2.1 2.1 0 0 1 2.6.4c.3.4.5.8.5 1.3 0 1.3-2 2-2 2M20 22v.01';
 
@@ -194,6 +202,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     .attr('class', 'meeting-icon')
     .attr('transform', d => `translate(${x(d.date) - HIT_AREA_SIZE / 2}, ${rowCenter(d.rowKey) - HIT_AREA_SIZE / 2})`)
     .attr('tabindex', interactive ? 0 : -1)
+    .attr('role', interactive ? 'link' : null)
     .style('cursor', interactive ? 'pointer' : 'default')
     .on('click', (event: MouseEvent, d: ParsedMeeting) => {
       if (interactive) openMeeting(d, event.ctrlKey || event.metaKey);
@@ -205,6 +214,8 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     })
     .on('keydown', (event: KeyboardEvent, d: ParsedMeeting) => {
       if (interactive && (event.key === 'Enter' || event.key === ' ')) {
+        // Space would otherwise scroll the page as well.
+        event.preventDefault();
         openMeeting(d, false);
       }
     });
@@ -298,6 +309,13 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
   const fmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   const fmtDateOnly = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 
+  dots.attr('aria-label', (d: any) => {
+    const isEmail = d.type_slug === 'email';
+    const heading = isEmail ? labelFor(d.institution_id) : (d.title || labelFor(d.institution_id));
+    const status = ganttMeetingStatus(d)?.label;
+    return [heading, (isEmail ? fmtDateOnly : fmt).format(d.date), status].filter(Boolean).join(', ');
+  });
+
   // Use unified tooltip manager if provided
   if (tooltipManager) {
     const meetingContent = (d: any, agendaState?: 'ready' | 'loading' | 'failed') => {
@@ -311,30 +329,42 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     let hovered: any = null;
     let pointer = { x: 0, y: 0 };
 
+    const showFor = (node: Element, d: any) => {
+      hovered = d;
+      const needsAgenda = ctx.loadAgenda && d.authorized !== false && d.agenda_items === undefined && (d.agenda_items_count ?? 0) > 0;
+      tooltipManager.show(meetingContent(d, needsAgenda ? 'loading' : 'ready'), pointer.x, pointer.y);
+
+      if (!needsAgenda) return;
+      ctx.loadAgenda!(d).then((items) => {
+        // A redraw replaces the node without a mouseleave; a detached node's agenda is not shown.
+        if (hovered !== d || !node.isConnected) return;
+        tooltipManager.show(items === null ? meetingContent(d, 'failed') : meetingContent({ ...d, agenda_items: items }), pointer.x, pointer.y);
+      });
+    };
+    const hide = () => {
+      hovered = null;
+      tooltipManager.hide();
+    };
+
     dots
       .on('mouseenter', (event, d: any) => {
         const rect = container.getBoundingClientRect();
-        hovered = d;
         pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-        const needsAgenda = ctx.loadAgenda && d.authorized !== false && d.agenda_items === undefined && (d.agenda_items_count ?? 0) > 0;
-        tooltipManager.show(meetingContent(d, needsAgenda ? 'loading' : 'ready'), pointer.x, pointer.y);
-
-        if (!needsAgenda) return;
-        const node = event.currentTarget as Element;
-        ctx.loadAgenda!(d).then((items) => {
-          // A redraw replaces the node without a mouseleave; a detached node's agenda is not shown.
-          if (hovered !== d || !node.isConnected) return;
-          tooltipManager.show(items === null ? meetingContent(d, 'failed') : meetingContent({ ...d, agenda_items: items }), pointer.x, pointer.y);
-        });
+        showFor(event.currentTarget as Element, d);
       })
       .on('mousemove', (event) => {
         const rect = container.getBoundingClientRect();
         pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
         tooltipManager.updatePosition(pointer.x, pointer.y);
       })
-      .on('mouseleave', () => {
-        hovered = null;
-        tooltipManager.hide();
-      });
+      .on('mouseleave', hide)
+      // Keyboard users get the same tooltip, anchored to the icon.
+      .on('focus', (event, d: any) => {
+        const rect = container.getBoundingClientRect();
+        const icon = (event.currentTarget as Element).getBoundingClientRect();
+        pointer = { x: icon.left + icon.width / 2 - rect.left, y: icon.top + icon.height / 2 - rect.top };
+        showFor(event.currentTarget as Element, d);
+      })
+      .on('blur', hide);
   }
 }

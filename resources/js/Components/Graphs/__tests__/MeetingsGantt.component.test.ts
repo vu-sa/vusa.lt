@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 
+import { router } from '@inertiajs/vue3';
+
 import MeetingsGantt from '../MeetingsGantt.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -110,5 +112,49 @@ describe('MeetingsGantt', () => {
     await flushPromises();
     await nextFrame();
     expect(wrapper.findAll('.inactive-period')).toHaveLength(0);
+  });
+
+  it('makes a meeting a labelled link that opens on Space without scrolling and shows its tooltip on focus', async () => {
+    await mountGantt({ meetings: [{ id: 'm1', institution_id: 'kolegija', title: 'Kolegijos posėdis', start_time: new Date() }] });
+    const icon = wrapper.find('.meeting-icon').element as SVGGElement;
+
+    expect(icon.getAttribute('role')).toBe('link');
+    expect(icon.getAttribute('aria-label')).toContain('Kolegijos posėdis');
+
+    icon.dispatchEvent(new FocusEvent('focus'));
+    expect(document.querySelector('.gantt-unified-tooltip')?.textContent).toContain('Kolegijos posėdis');
+
+    vi.stubGlobal('route', (name: string, id?: string) => `/${name}/${id ?? ''}`);
+    const space = new KeyboardEvent('keydown', { key: ' ', cancelable: true, bubbles: true });
+    icon.dispatchEvent(space);
+    expect(space.defaultPrevented).toBe(true);
+    expect(router.visit).toHaveBeenCalledWith(expect.stringContaining('m1'));
+  });
+
+  it('leaves arrow keys on the zoom slider to the slider', async () => {
+    await mountGantt();
+    const scroller = wrapper.find('[data-slot="meetings-gantt"] .overflow-auto').element as HTMLElement;
+    const slider = document.createElement('span');
+    slider.setAttribute('role', 'slider');
+    slider.tabIndex = 0;
+    wrapper.element.appendChild(slider);
+    slider.focus();
+    const before = scroller.scrollLeft;
+
+    slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(scroller.scrollLeft).toBe(before);
+  });
+
+  it('moves the label column by scrolling it, so its group headers can stay pinned', async () => {
+    await mountGantt();
+    const scroller = wrapper.find('[data-slot="meetings-gantt"] .overflow-auto').element as HTMLElement;
+    const labels = wrapper.find('[data-slot="meetings-gantt"] > div').element as HTMLElement;
+    Object.defineProperty(labels, 'scrollTop', { value: 0, writable: true });
+
+    scroller.scrollTop = 120;
+    scroller.dispatchEvent(new Event('scroll'));
+
+    expect(labels.scrollTop).toBe(120);
+    expect((labels.querySelector('.grid') as HTMLElement).style.transform).toBe('');
   });
 });

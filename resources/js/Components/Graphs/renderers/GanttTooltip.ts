@@ -166,7 +166,7 @@ export function buildMeetingTooltipContent(
 
     agendaHtml = `
       <div class="mt-1.5 pt-1.5 border-t border-current/20">
-        <div class="text-[10px] uppercase tracking-wide opacity-60 mb-1">Darbotvarkė (${escapeHtml(String(totalCount))})</div>
+        <div class="text-[10px] uppercase tracking-wide opacity-60 mb-1">${escapeHtml($t('visak.gantt.agenda'))} (${escapeHtml(String(totalCount))})</div>
         <div class="space-y-0.5">
           ${itemsToShow.map((item) => {
             const statusIcon = getAgendaItemStatusIcon(getAgendaItemStatus(item, meeting.requires_student_perspective ?? true));
@@ -278,7 +278,7 @@ function buildFileStatusHtml(
 
   return `
     <div class="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-current/20">
-      <div class="flex items-center gap-1" title="${hasProtocol ? 'Protokolas įkeltas' : 'Nėra protokolo'}">
+      <div class="flex items-center gap-1" title="${escapeHtml($t(hasProtocol ? 'visak.gantt.protocol_uploaded' : 'visak.gantt.no_protocol'))}">
         ${protocolIcon}
       </div>
       ${calendarHtml}
@@ -294,7 +294,7 @@ export function buildMemberTooltipContent(
   activityLabel?: string,
 ): TooltipContent {
   const startStr = member.startDate.toLocaleDateString();
-  const endStr = member.endDate ? member.endDate.toLocaleDateString() : 'Present';
+  const endStr = member.endDate ? member.endDate.toLocaleDateString() : $t('visak.gantt.present');
 
   let html = `
     <div class="font-medium text-[12px]">${escapeHtml(member.user.name)}</div>
@@ -332,7 +332,7 @@ export function buildDateTooltipContent(
     const gapDateRange = `${fmtDate.format(gap.fromDate)} → ${fmtDate.format(gap.untilDate)}`;
     html += `
       <div class="mt-1.5 pt-1.5 border-t border-current/20">
-        <div class="text-[10px] uppercase tracking-wide opacity-60 mb-0.5">Check-in</div>
+        <div class="text-[10px] uppercase tracking-wide opacity-60 mb-0.5">${escapeHtml($t('visak.gantt.check_in'))}</div>
         ${gap.note ? `<div class="line-clamp-2 text-[11px]">${escapeHtml(gap.note)}</div>` : ''}
         <div class="opacity-70 text-[10px]">${escapeHtml(gapDateRange)}</div>
       </div>

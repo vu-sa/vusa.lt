@@ -22,33 +22,28 @@
               <component :is="MeetingIconFilled" class="h-4 w-4" />
               {{ $t('Posėdžiai') }}
             </h4>
+            <div class="grid gap-2 pl-6" data-slot="gantt-legend-meeting-statuses">
+              <div v-for="entry in meetingStatusEntries" :key="entry.key" class="flex items-center gap-3">
+                <svg viewBox="0 0 20 20" class="size-4 shrink-0" aria-hidden="true">
+                  <path :d="entry.path" :fill="entry.color" />
+                </svg>
+                <div>
+                  <span class="text-sm font-medium">{{ entry.label }}</span>
+                  <p class="text-xs text-muted-foreground">
+                    {{ entry.hint }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <h5 class="pl-6 pt-1 text-xs font-medium text-muted-foreground">
+              {{ $t('visak.gantt.legend.types') }}
+            </h5>
             <div class="grid gap-2 pl-6">
-              <div class="flex items-center gap-3">
-                <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-foreground dark:text-white" />
-                <div>
-                  <span class="text-sm font-medium">{{ $t('Užpildytas posėdis') }}</span>
-                  <p class="text-xs text-muted-foreground">
-                    {{ $t('Su darbotvarkės klausimais') }}
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center gap-3">
-                <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-red-500" />
-                <div>
-                  <span class="text-sm font-medium">{{ $t('Neužpildytas posėdis') }}</span>
-                  <p class="text-xs text-muted-foreground">
-                    {{ $t('Trūksta informacijos') }}
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center gap-3">
-                <IFluentPeopleTeam20Regular class="w-4 h-4 shrink-0 text-red-500" />
-                <div>
-                  <span class="text-sm font-medium">{{ $t('Be darbotvarkės') }}</span>
-                  <p class="text-xs text-muted-foreground">
-                    {{ $t('Nėra darbotvarkės klausimų') }}
-                  </p>
-                </div>
+              <div v-for="entry in meetingTypeEntries" :key="entry.key" class="flex items-center gap-3">
+                <svg viewBox="0 0 20 20" class="size-4 shrink-0" aria-hidden="true">
+                  <path :d="entry.path" :fill="colors.meetingComplete" />
+                </svg>
+                <span class="text-sm">{{ entry.label }}</span>
               </div>
             </div>
           </div>
@@ -112,7 +107,9 @@
               </div>
               <div class="flex items-center gap-3">
                 <span class="relative shrink-0">
-                  <IFluentPeopleTeam20Filled class="size-4 text-status-info" />
+                  <svg viewBox="0 0 20 20" class="size-4" aria-hidden="true">
+                    <path :d="icons.filled" :fill="colors.activityRequest" />
+                  </svg>
                   <MailQuestion class="absolute -right-1.5 -top-1.5 size-2.5 bg-background text-status-info" aria-hidden="true" />
                 </span>
                 <div>
@@ -328,16 +325,46 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Globe, Link2, CalendarOff, MailQuestion } from '@lucide/vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { InstitutionIconFilled, MeetingIconFilled, NotificationIconFilled } from '@/Components/icons';
+import { meetingAlignmentStatuses, meetingCompletionStatuses } from '@/Constants/statuses';
 
-defineProps<{
+import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors';
+import { MEETING_ICON_PATHS } from './renderers/renderMeetings';
+
+const props = defineProps<{
   isOpen: boolean;
 }>();
+
+// Read on open, so the swatches follow the theme the chart is drawn in.
+const colors = ref<GanttColors>(getGanttColors(isDarkModeActive()));
+watch(() => props.isOpen, (open) => {
+  if (open) colors.value = getGanttColors(isDarkModeActive());
+});
+
+const icons = MEETING_ICON_PATHS['in-person'];
+
+/** In the order the chart decides a meeting's colour (renderMeetings), with the tooltip's status words. */
+const meetingStatusEntries = computed(() => [
+  { key: 'aligned', path: icons.filled, color: colors.value.meetingAligned, label: $t(meetingAlignmentStatuses.all_match.label), hint: $t('visak.gantt.legend.aligned_hint') },
+  { key: 'mixed', path: icons.filled, color: colors.value.meetingMixed, label: $t(meetingAlignmentStatuses.mixed.label), hint: $t('visak.gantt.legend.mixed_hint') },
+  { key: 'misaligned', path: icons.filled, color: colors.value.meetingMisaligned, label: $t(meetingAlignmentStatuses.all_mismatch.label), hint: $t('visak.gantt.legend.misaligned_hint') },
+  { key: 'complete', path: icons.filled, color: colors.value.meetingComplete, label: $t(meetingCompletionStatuses.complete.label), hint: $t('visak.gantt.legend.complete_hint') },
+  { key: 'incomplete', path: icons.filled, color: colors.value.meetingIncomplete, label: $t(meetingCompletionStatuses.incomplete.label), hint: $t('visak.gantt.legend.incomplete_hint') },
+  { key: 'no-items', path: icons.regular, color: colors.value.meetingNoItems, label: $t(meetingCompletionStatuses.no_items.label), hint: $t('visak.gantt.legend.no_items_hint') },
+  { key: 'no-access', path: icons.filled, color: colors.value.meetingUnauthorized, label: $t('Nėra prieigos'), hint: $t('visak.gantt.legend.no_access_hint') },
+]);
+
+const meetingTypeEntries = [
+  { key: 'in-person', path: MEETING_ICON_PATHS['in-person'].filled, label: $t('visak.gantt.legend.in_person') },
+  { key: 'remote', path: MEETING_ICON_PATHS.remote.filled, label: $t('visak.gantt.legend.remote') },
+  { key: 'email', path: MEETING_ICON_PATHS.email.filled, label: $t('visak.gantt.legend.email') },
+];
 
 defineEmits<{
   'update:is-open': [value: boolean];

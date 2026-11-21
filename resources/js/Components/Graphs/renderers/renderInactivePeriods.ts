@@ -7,7 +7,8 @@
  * - After the last member ended (if all members have end_date in the past)
  * - Any explicit inactive periods from props
  */
-import type * as d3 from 'd3';
+import * as d3 from 'd3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 interface InactivePeriod {
   institution_id: string | number;
@@ -90,15 +91,18 @@ export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
     // Find if there's currently no active member (all have ended)
     // An active member is one with no endDate or endDate in the future
     const now = new Date();
-    const hasActiveMembers = members.some(m => !m.endDate || m.endDate > now);
+    // End dates are inclusive: a member whose term ends today is still active until midnight.
+    const coveredUntil = (end: Date) => d3.timeDay.offset(d3.timeDay.floor(end), 1);
+    const hasActiveMembers = members.some(m => !m.endDate || coveredUntil(m.endDate) > now);
 
     if (!hasActiveMembers && members.length > 0) {
       // Find the latest end date among all members
       let latestEndDate: Date | null = null;
       for (const m of members) {
         if (m.endDate) {
-          if (!latestEndDate || m.endDate > latestEndDate) {
-            latestEndDate = m.endDate;
+          const end = coveredUntil(m.endDate);
+          if (!latestEndDate || end > latestEndDate) {
+            latestEndDate = end;
           }
         }
       }
@@ -147,5 +151,5 @@ export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
     .attr('fill', 'url(#inactiveStripes)')
     .attr('pointer-events', 'none')
     .append('title')
-    .text(d => `No active members: ${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`);
+    .text(d => $t('visak.gantt.no_active_members', { from: d.fromDate.toLocaleDateString(), until: d.untilDate.toLocaleDateString() }));
 }

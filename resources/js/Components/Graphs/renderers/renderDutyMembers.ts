@@ -5,6 +5,7 @@
  * when duty members started their terms at institutions. Uses unified tooltip system.
  */
 import type * as d3 from 'd3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import {
   getActivityRingColor,
@@ -178,7 +179,7 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
         // Fallback: add native title tooltip
         memberG.append('title').text(() => {
           const startStr = member.startDate.toLocaleDateString();
-          const endStr = member.endDate ? member.endDate.toLocaleDateString() : 'Present';
+          const endStr = member.endDate ? member.endDate.toLocaleDateString() : $t('visak.gantt.present');
           const activityLabel = shouldShowActivityRing
             ? getActivityLabel(member.user.activityCategory as RepresentativeActivityCategory)
             : '';

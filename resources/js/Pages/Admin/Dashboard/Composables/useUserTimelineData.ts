@@ -5,6 +5,7 @@
 import { computed, type Ref, type ComputedRef } from 'vue';
 
 import type {
+  AtstovavimasGap,
   AtstovavimasInstitution,
   GanttMeeting,
   GanttInstitution,
@@ -12,6 +13,7 @@ import type {
   InactivePeriod,
 } from '../types';
 import {
+  extractCheckInGaps,
   extractDutyMembers,
   calculateInactivePeriods,
   formatInstitutionsForGantt,
@@ -26,6 +28,8 @@ interface UseUserTimelineDataOptions {
   institutions: Ref<AtstovavimasInstitution[]> | ComputedRef<AtstovavimasInstitution[]>;
   /** User's direct meetings */
   meetings: Ref<GanttMeeting[]> | ComputedRef<GanttMeeting[]>;
+  /** Check-ins of the user's institutions */
+  gaps: Ref<AtstovavimasGap[]> | ComputedRef<AtstovavimasGap[]>;
   /** Related institutions (lazy-loaded) */
   relatedInstitutions: Ref<AtstovavimasInstitution[]> | ComputedRef<AtstovavimasInstitution[]>;
   /** Whether to show related institutions */
@@ -36,7 +40,6 @@ interface UseUserTimelineDataOptions {
   baseInactivePeriods?: Ref<InactivePeriod[]> | ComputedRef<InactivePeriod[]>;
   /** Base institution names map */
   baseInstitutionNames?: Ref<Record<string, string>> | ComputedRef<Record<string, string>>;
-  /** Base institution tenant map */
   /** Base has public meetings map */
   baseInstitutionHasPublicMeetings?: Ref<Record<string, boolean>> | ComputedRef<Record<string, boolean>>;
   /** Base institution periodicity map */
@@ -47,6 +50,7 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   const {
     institutions,
     meetings,
+    gaps,
     relatedInstitutions,
     showRelatedInstitutions,
     baseDutyMembers,
@@ -85,6 +89,14 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   // Merged meetings: user's + extracted from related institutions
   // Related institutions' meetings arrive through the same windowed store as the user's own.
   const mergedMeetings = computed<GanttMeeting[]>(() => meetings.value);
+
+  const mergedGaps = computed<AtstovavimasGap[]>(() => {
+    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
+      return gaps.value;
+    }
+
+    return [...gaps.value, ...extractCheckInGaps(visibleRelatedInstitutions.value)];
+  });
 
   // Merged duty members
   const mergedDutyMembers = computed<GanttDutyMember[]>(() => {
@@ -150,6 +162,7 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
   return {
     mergedInstitutions,
     mergedMeetings,
+    mergedGaps,
     mergedDutyMembers,
     mergedInactivePeriods,
     mergedInstitutionNames,

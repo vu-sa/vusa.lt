@@ -172,8 +172,8 @@ export function useGanttInteractions(
   }
 
   /**
-   * The labels column has no scrollbar of its own outside focus mode, so it follows the timeline
-   * by transform; in focus mode both scroll and each follows the other.
+   * The labels column follows the timeline's vertical scroll; in focus mode it scrolls itself too,
+   * and the timeline follows it back.
    */
   function setupVerticalScrollSync(isFullscreen: boolean): (() => void) | undefined {
     const timelineScroll = refs.rightScroll.value;
@@ -188,15 +188,8 @@ export function useGanttInteractions(
     const syncFromTimeline = () => {
       if (isSyncing) return;
       isSyncing = true;
-      if (isFullscreen) {
-        labelsContainer.scrollTop = timelineScroll.scrollTop;
-      }
-      else {
-        const labelsContent = labelsContainer.querySelector<HTMLElement>('.grid');
-        if (labelsContent) {
-          labelsContent.style.transform = `translateY(-${timelineScroll.scrollTop}px)`;
-        }
-      }
+      // Scrolled, not translated: a transform would keep the group headers' `sticky` from ever engaging.
+      labelsContainer.scrollTop = timelineScroll.scrollTop;
       release();
     };
 
@@ -248,6 +241,8 @@ export function useGanttInteractions(
 
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      // Toolbar controls (the zoom slider, menus) use the arrow keys themselves.
+      if (target.closest('[role="slider"], [role="menu"], [role="menuitem"], [role="listbox"], [role="option"], [role="combobox"], [role="dialog"]')) return;
 
       const actions: Record<string, () => void> = {
         'ArrowLeft': () => navigateDays(event.shiftKey ? -30 : -7),

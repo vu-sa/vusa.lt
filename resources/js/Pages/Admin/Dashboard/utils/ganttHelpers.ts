@@ -2,9 +2,8 @@
  * Shared helper functions for Gantt chart data transformations.
  * Used by UserTimelineSection and TenantTimelineSection.
  */
-import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
-
 import type {
+  AtstovavimasGap,
   AtstovavimasInstitution,
   GanttDutyMember,
   InactivePeriod,
@@ -12,6 +11,18 @@ import type {
   GanttInstitution,
   GanttInstitutionType,
 } from '../types';
+
+/** `YYYY-MM-DD` at local midnight: `new Date('YYYY-MM-DD')` would be UTC midnight, off the chart's local scale. */
+export function parseDateOnly(value: string): Date {
+  return new Date(`${value.slice(0, 10)}T00:00:00`);
+}
+
+/** The start of the day after an inclusive end date: a term ending on the 31st covers all of the 31st. */
+function dayAfter(date: Date): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + 1);
+  return next;
+}
 
 /**
  * Extract duty members from institutions for Gantt display.
@@ -31,14 +42,27 @@ export function extractDutyMembers(institutions: AtstovavimasInstitution[]): Gan
           profile_photo_path: period.user.profile_photo_path,
           activityCategory: institution.member_activity_categories?.[String(period.user.id)],
         },
-        start_date: new Date(period.start_date),
-        end_date: period.end_date ? new Date(period.end_date) : null,
+        start_date: parseDateOnly(period.start_date),
+        end_date: period.end_date ? parseDateOnly(period.end_date) : null,
       });
     }
 
   }
 
   return members;
+}
+
+/** Check-ins as Gantt gaps; date-only values sit at local midnight, like the chart's time scale. */
+export function extractCheckInGaps(institutions: AtstovavimasInstitution[]): AtstovavimasGap[] {
+  return institutions.flatMap(institution => (institution.check_ins ?? [])
+    .filter(checkIn => checkIn?.start_date && checkIn?.end_date)
+    .map(checkIn => ({
+      institution_id: institution.id,
+      from: parseDateOnly(checkIn.start_date),
+      until: parseDateOnly(checkIn.end_date),
+      mode: 'no_meetings' as const,
+      note: checkIn.note || undefined,
+    })));
 }
 
 /**
@@ -71,7 +95,7 @@ export function calculateInactivePeriods(
 
     for (const member of sortedMembers) {
       const from = member.start_date;
-      const until = member.end_date ?? new Date();
+      const until = member.end_date ? dayAfter(member.end_date) : new Date();
 
       if (activePeriods.length === 0) {
         activePeriods.push({ from, until });

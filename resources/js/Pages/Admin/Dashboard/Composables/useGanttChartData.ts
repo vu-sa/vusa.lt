@@ -10,6 +10,7 @@ import type {
   InactivePeriod,
 } from '../types';
 import {
+  extractCheckInGaps,
   extractDutyMembers,
   calculateInactivePeriods,
   buildInstitutionPeriodicityMap,
@@ -30,28 +31,7 @@ export function useGanttChartData(
   // Meetings come from the windowed meetings store (loaded by visible date range)
   const tenantMeetings = tenantMeetingsRef;
 
-  // Tenant gaps derived from all check-ins for each institution
-  const tenantGaps = computed<AtstovavimasGap[]>(() => {
-    const institutions = tenantInstitutions.value ?? [];
-
-    return institutions.flatMap((institution) => {
-      // Get all check-ins for this institution
-      const checkIns = institution.check_ins ?? [];
-
-      // Transform each check-in to a gap
-      return checkIns.map((checkIn) => {
-        if (!checkIn?.start_date || !checkIn?.end_date) return null;
-
-        return {
-          institution_id: institution.id,
-          from: new Date(`${checkIn.start_date}T00:00:00`),
-          until: new Date(`${checkIn.end_date}T00:00:00`),
-          mode: 'no_meetings', // All check-ins represent "no meetings"
-          note: checkIn.note || undefined,
-        } as AtstovavimasGap;
-      }).filter((gap): gap is AtstovavimasGap => gap !== null);
-    });
-  });
+  const tenantGaps = computed<AtstovavimasGap[]>(() => extractCheckInGaps(tenantInstitutions.value ?? []));
 
   // Institutions keyed by id for quick lookup (tenant names etc.)
   const cachedTenantNames = computed(() => {
