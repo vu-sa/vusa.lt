@@ -161,6 +161,8 @@ return [
     'gantt' => [
         'loading_meetings' => 'Kraunami posėdžiai…',
         'meetings_load_failed' => 'Nepavyko įkelti posėdžių. Bandyk dar kartą.',
+        'agenda_loading' => 'Kraunama darbotvarkė…',
+        'agenda_failed' => 'Nepavyko įkelti darbotvarkės.',
         'tenants_label' => 'Rodoma',
         'group_by' => 'Grupuoti',
         'group_by_current' => 'Grupuoti: :option',

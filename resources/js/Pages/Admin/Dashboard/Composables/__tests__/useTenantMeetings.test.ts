@@ -197,6 +197,65 @@ describe('useTenantMeetings', () => {
   });
 });
 
+describe('useTenantMeetings in flight', () => {
+  const resolvers: Array<() => void> = [];
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    fetchedUrls.splice(0);
+    resolvers.splice(0);
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      fetchedUrls.push(String(url));
+      return new Promise<Response>((resolve) => {
+        resolvers.push(() => resolve({ ok: true, json: async () => ({ success: true, data: [] }) } as Response));
+      });
+    }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('fetches up to three windows at once', async () => {
+    const store = useTenantMeetings(() => ['1']);
+
+    store.ensureRange(new Date(2024, 0, 15), new Date(2027, 0, 15));
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(fetch).toHaveBeenCalledTimes(3);
+
+    resolvers.shift()!();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(4);
+  });
+
+  it('keeps loading when the chart re-emits a range that is already being fetched', async () => {
+    const store = useTenantMeetings(() => ['1']);
+    const from = new Date(2024, 0, 15);
+    const until = new Date(2027, 0, 15);
+
+    store.ensureRange(from, until);
+    await vi.advanceTimersByTimeAsync(200);
+    const planned = fetchedUrls.length;
+
+    // A window landing re-renders the chart, which emits the same range again.
+    resolvers.shift()!();
+    store.ensureRange(from, until);
+    await vi.advanceTimersByTimeAsync(200);
+
+    while (resolvers.length > 0) {
+      resolvers.shift()!();
+      await vi.advanceTimersByTimeAsync(0);
+    }
+    await vi.advanceTimersByTimeAsync(200);
+
+    const windows = fetchedUrls.map(url => new URL(url, 'http://localhost').searchParams.get('from'));
+    expect(planned).toBe(3);
+    expect(new Set(windows).size).toBe(windows.length);
+    expect(store.isFetching.value).toBe(false);
+  });
+});
+
 describe('useInstitutionMeetings', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -254,5 +313,36 @@ describe('useInstitutionMeetings', () => {
     await vi.advanceTimersByTimeAsync(200);
 
     expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('tooltip agendas', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('fetches a meeting agenda once, with the window access, and retries after a failure', async () => {
+    const urls: string[] = [];
+    let fail = true;
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      urls.push(String(url));
+      if (fail) {
+        fail = false;
+        return { ok: false, json: async () => ({}) } as Response;
+      }
+      return { ok: true, json: async () => ({ success: true, data: { agenda_items: [{ id: 'a1', title: 'Item' }] } }) } as Response;
+    }));
+    const store = useTenantMeetings(() => ['1', '2']);
+    const meeting = { id: 'm1', institution_id: 'inst-1' };
+
+    expect(await store.loadAgenda(meeting)).toBeNull();
+    expect(await store.loadAgenda(meeting)).toEqual([{ id: 'a1', title: 'Item' }]);
+    expect(await store.loadAgenda(meeting)).toEqual([{ id: 'a1', title: 'Item' }]);
+
+    expect(urls).toHaveLength(2);
+    const params = new URL(urls[1]!, 'http://localhost').searchParams;
+    expect(urls[1]).toContain('api.v1.admin.atstovavimas.meetings.agenda');
+    expect(params.get('institution_id')).toBe('inst-1');
+    expect(params.getAll('tenant_ids[]')).toEqual(['1', '2']);
   });
 });

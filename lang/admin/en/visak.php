@@ -161,6 +161,8 @@ return [
     'gantt' => [
         'loading_meetings' => 'Loading meetings…',
         'meetings_load_failed' => 'Failed to load meetings. Please try again.',
+        'agenda_loading' => 'Loading agenda…',
+        'agenda_failed' => 'Could not load the agenda.',
         'tenants_label' => 'Showing',
         'group_by' => 'Group',
         'group_by_current' => 'Group: :option',

@@ -66,6 +66,7 @@
           :institution-has-activity
           :loading-range="meetingsLoadingRange"
           :meetings-loading="meetingsLoadingVisible"
+          :agenda-loader="institutionMeetings.loadAgenda"
           @create-meeting="actions.onGapCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
           @range-changed="(min: Date, max: Date) => institutionMeetings.ensureRange(min, max)"

@@ -12,11 +12,15 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { useToasts } from '@/Composables/useToasts';
 import { toNaiveDateTimeString } from '@/Utils/dateTime';
 
+import type { GanttAgendaLoader } from '@/Components/Graphs/types';
+
 import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
 
 /** Smallest padding fetched beyond the visible range; wide views pad a quarter of their span. */
 const MIN_BUFFER_DAYS = 30;
 const FETCH_DEBOUNCE_MS = 150;
+/** Windows fetched at once; the server answers each in tens of milliseconds, so latency dominates. */
+const CONCURRENCY = 3;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 /** One request covers at most this many months, well under the server's 24-month cap. */
 const DEFAULT_CHUNK_MONTHS = 6;
@@ -53,7 +57,11 @@ interface WindowedMeetingsSource {
   request: (from: string, until: string, refresh: boolean) => { url: string; params: URLSearchParams } | null;
   keyOf: (meeting: AtstovavimasTenantMeeting) => string;
   chunkMonths?: number;
+  /** Query for one meeting's tooltip agenda, resolved with the same access as the window. */
+  agendaParams: () => URLSearchParams;
 }
+
+type AgendaItems = NonNullable<Awaited<ReturnType<GanttAgendaLoader>>>;
 
 export function useTenantMeetings(tenantIds: () => Array<string | number>) {
   return useWindowedMeetings({
@@ -70,6 +78,11 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
       return { url: route('api.v1.admin.visak.meetings'), params };
     },
     keyOf: meeting => String(meeting.id),
+    agendaParams: () => {
+      const params = new URLSearchParams();
+      tenantIds().map(String).forEach(id => params.append('tenant_ids[]', id));
+      return params;
+    },
   });
 }
 
@@ -90,6 +103,7 @@ export function useInstitutionMeetings(institutionIds: () => Array<string | numb
     keyOf: meeting => `${meeting.institution_id}:${meeting.id}`,
     // A handful of institutions: a year is still a small response, and the first view is one request.
     chunkMonths: 12,
+    agendaParams: () => new URLSearchParams(),
   });
 }
 
@@ -114,11 +128,14 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
       .sort((a, b) => a.start_time.getTime() - b.start_time.getTime()),
   );
 
-  /** Parts of [from, until] not yet covered by loaded windows. */
-  function missingSegments(from: number, until: number): Window[] {
+  /** Windows of the flush in progress; counted as covered so a re-render mid-flush does not restart it. */
+  let plannedWindows: Window[] = [];
+
+  /** Parts of [from, until] not yet covered by loaded (or, with `includePlanned`, in-progress) windows. */
+  function missingSegments(from: number, until: number, includePlanned = false): Window[] {
     let segments: Window[] = [{ from, until }];
 
-    for (const w of loadedWindows.value) {
+    for (const w of includePlanned ? [...loadedWindows.value, ...plannedWindows] : loadedWindows.value) {
       const next: Window[] = [];
       for (const s of segments) {
         if (w.until < s.from || w.from > s.until) {
@@ -210,13 +227,19 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
 
     inFlight = true;
     isFetching.value = true;
+    plannedWindows = chunks;
+    pendingWindow.value = {
+      from: Math.min(...chunks.map(w => w.from)),
+      until: Math.max(...chunks.map(w => w.until)),
+    };
+    const queue = [...chunks];
     // Chunks fail independently: a transient error on one must not stop the rest from loading.
     let failures = 0;
-    try {
-      for (const window of chunks) {
-        // The view moved on while fetching; what it shows now matters more than the rest of this range.
-        if (pendingRange) break;
-        pendingWindow.value = window;
+
+    async function worker(): Promise<void> {
+      // The view moved somewhere new; what it shows now matters more than the rest of this range.
+      while (queue.length > 0 && !pendingRange) {
+        const window = queue.shift()!;
         try {
           await fetchWindow(window);
           lastError.value = null;
@@ -227,10 +250,15 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
         }
       }
     }
+
+    try {
+      await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, worker));
+    }
     finally {
       inFlight = false;
       isFetching.value = false;
       pendingWindow.value = null;
+      plannedWindows = [];
 
       if (failures > 0) {
         toasts.error($t('visak.gantt.meetings_load_failed'));
@@ -257,7 +285,7 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
       until: monthEnd(until.getTime() + bufferMs),
     };
 
-    if (missingSegments(window.from, window.until).length === 0) return;
+    if (missingSegments(window.from, window.until, true).length === 0) return;
 
     // Only the latest view is kept: a union with an earlier, far-away one would fetch everything in between.
     pendingRange = window;
@@ -268,6 +296,7 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
   async function refresh(): Promise<void> {
     debouncedFlush.cancel();
     pendingRange = null;
+    agendas.clear();
 
     isFetching.value = true;
     pendingWindow.value = loadedWindows.value.length > 0
@@ -298,13 +327,44 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
     }
   }
 
+  const agendas = new Map<string, Promise<AgendaItems | null>>();
+
+  /** One request per meeting; a failure is not cached, so the next hover retries. */
+  const loadAgenda: GanttAgendaLoader = (meeting) => {
+    const key = `${meeting.institution_id}:${meeting.id}`;
+    const cached = agendas.get(key);
+    if (cached) return cached;
+
+    const url = new URL(route('api.v1.admin.atstovavimas.meetings.agenda', { meeting: meeting.id }), window.location.origin);
+    source.agendaParams().forEach((value, name) => url.searchParams.append(name, value));
+    url.searchParams.set('institution_id', String(meeting.institution_id));
+    const request = fetch(url, {
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin',
+    })
+      .then(async (response) => {
+        const json = response.ok ? await response.json() as { success?: boolean; data?: { agenda_items?: AgendaItems } } : null;
+        if (!json?.success || !Array.isArray(json.data?.agenda_items)) throw new Error('agenda');
+        return json.data.agenda_items;
+      })
+      .catch(() => {
+        agendas.delete(key);
+        return null;
+      });
+
+    agendas.set(key, request);
+    return request;
+  };
+
   /** Drop all loaded meetings and windows (e.g. when the selection changes). */
   function reset(): void {
     debouncedFlush.cancel();
     pendingRange = null;
+    plannedWindows = [];
     generation += 1;
     meetingsById.value = new Map();
     loadedWindows.value = [];
+    agendas.clear();
   }
 
   return {
@@ -315,5 +375,6 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
     ensureRange,
     refresh,
     reset,
+    loadAgenda,
   };
 }

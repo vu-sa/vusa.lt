@@ -76,6 +76,7 @@
           :duty-members="ganttData.tenantDutyMembers.value"
           :inactive-periods="ganttData.tenantInactivePeriods.value"
           :loading-range="meetingsLoadingRange"
+          :agenda-loader="tenantMeetings.loadAgenda"
           :meetings-loading="meetingsLoadingVisible"
           :representative-activity
           :activity-requests="ganttActivityRequests.data.value ?? []"
@@ -337,7 +338,11 @@ watch(ganttActive, (active) => {
   if (tenants.length === 0) return;
   ganttRows.load(tenants);
   ganttActivityRequests.load(tenants);
-  loadInitialMeetingWindow();
+}, { immediate: true });
+
+// Meetings are the slow part of the Gantt and do not need its rows, so they start with the page.
+watch(isAtLeastMd, (wide) => {
+  if (wide && timelineFilters.selectedTenantForGantt.value.length > 0) loadInitialMeetingWindow();
 }, { immediate: true });
 
 watch(() => timelineFilters.selectedStatsTenants.value, (tenantIds) => {
@@ -349,10 +354,10 @@ watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants, oldTenant
   const changed = newTenants.join(',') !== (oldTenants ?? []).join(',');
   // Loaded windows belong to the old selection even while the Gantt is hidden.
   if (changed) tenantMeetings.reset();
+  if (changed && isAtLeastMd.value) loadInitialMeetingWindow();
   if (!ganttActive.value) return;
   ganttRows.load(newTenants);
   ganttActivityRequests.load(newTenants);
-  if (changed) loadInitialMeetingWindow();
 }, { deep: true });
 
 // --- Gantt lookup maps ------------------------------------------------------------------------
@@ -399,6 +404,6 @@ function refreshDashboard(): void {
     ganttActivityRequests.load(timelineFilters.selectedTenantForGantt.value, true);
   }
   void statusHistory.load(timelineFilters.selectedStatsTenants.value, historyDays.value, true);
-  if (ganttActive.value) void tenantMeetings.refresh();
+  if (isAtLeastMd.value) void tenantMeetings.refresh();
 }
 </script>

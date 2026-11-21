@@ -152,6 +152,7 @@ export function buildMeetingTooltipContent(
   labelFor: (id: string | number) => string,
   fmt: Intl.DateTimeFormat,
   fmtDateOnly?: Intl.DateTimeFormat,
+  agendaState: 'ready' | 'loading' | 'failed' = 'ready',
 ): TooltipContent {
   const name = labelFor(meeting.institution_id);
   const status = ganttMeetingStatus(meeting);
@@ -178,6 +179,11 @@ export function buildMeetingTooltipContent(
         ${totalCount > 4 ? `<div class="text-[10px] opacity-60 mt-1">+${totalCount - 4}</div>` : ''}
       </div>
     `;
+  }
+
+  else if (meeting.authorized !== false && agendaState !== 'ready') {
+    const key = agendaState === 'loading' ? 'visak.gantt.agenda_loading' : 'visak.gantt.agenda_failed';
+    agendaHtml = `<div class="mt-1.5 pt-1.5 border-t border-current/20 text-[11px] opacity-70">${escapeHtml($t(key))}</div>`;
   }
 
   // Build file status section (protocol and report indicators)

@@ -78,6 +78,7 @@
 </template>
 
 <script setup lang="ts">
+import type { GanttAgendaLoader } from './types';
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -160,6 +161,8 @@ const props = withDefaults(defineProps<{
   showActivityStatus?: boolean;
   /** Days between expected meetings, per institution */
   institutionPeriodicity?: Record<string | number, number>;
+  /** Markers come without their agenda; the tooltip fetches it on first hover. */
+  agendaLoader?: GanttAgendaLoader;
   /** Date range being fetched, drawn as a pulsing band */
   loadingRange?: { from: Date; until: Date } | null;
   meetingsLoading?: boolean;
@@ -583,6 +586,7 @@ function render(): void {
     interactive: true,
     tooltipManager,
     institutionPeriodicity: props.institutionPeriodicity,
+    loadAgenda: props.agendaLoader,
     requestedMeetingIds: requestedMeetingIds.value,
   });
 

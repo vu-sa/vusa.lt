@@ -34,7 +34,7 @@
         :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
         :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
         :institution-names="allInstitutionNames" :tenant-names :institution-has-public-meetings="allInstitutionHasPublicMeetings"
-        :institution-has-activity :loading-range :meetings-loading
+        :institution-has-activity :loading-range :meetings-loading :agenda-loader
         :institution-periodicity="allInstitutionPeriodicity"
         :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
         :show-duty-members="filters.showDutyMembersUser.value"
@@ -55,6 +55,7 @@ import { CalendarRange } from '@lucide/vue';
 import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
+import type { GanttAgendaLoader } from '@/Components/Graphs/types';
 import type {
   AtstovavimasInstitution,
   GanttMeeting,
@@ -90,6 +91,7 @@ interface Props {
   /** Meetings arrive by window, so activity is read from the institution rows instead. */
   institutionHasActivity?: Record<string, boolean>;
   loadingRange?: { from: Date; until: Date } | null;
+  agendaLoader?: GanttAgendaLoader;
   meetingsLoading?: boolean;
 }
 

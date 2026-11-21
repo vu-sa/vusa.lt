@@ -78,4 +78,24 @@ describe('MeetingsGantt', () => {
     expect(wrapper.findAll('.activity-request-chip')).toHaveLength(0);
     expect(wrapper.findAll('[data-slot="gantt-row-request"]')).toHaveLength(0);
   });
+
+  it('fetches a meeting agenda on first hover and shows it in the tooltip', async () => {
+    let resolveAgenda: (items: Array<{ id: string; title: string }>) => void = () => {};
+    const agendaLoader = vi.fn(() => new Promise<Array<{ id: string; title: string }>>((resolve) => {
+      resolveAgenda = resolve;
+    }));
+    await mountGantt({
+      meetings: [{ id: 'm1', institution_id: 'kolegija', start_time: new Date(), agenda_items_count: 2 }],
+      agendaLoader,
+    });
+
+    wrapper.find('.meeting-icon').element.dispatchEvent(new MouseEvent('mouseenter'));
+    const tooltip = () => document.querySelector('.gantt-unified-tooltip')?.textContent ?? '';
+    expect(agendaLoader).toHaveBeenCalledWith(expect.objectContaining({ id: 'm1', institution_id: 'kolegija' }));
+    expect(tooltip()).toMatch(/agenda_loading|Kraunama darbotvarkė/);
+
+    resolveAgenda([{ id: 'a1', title: 'Studijų programos keitimas' }]);
+    await flushPromises();
+    expect(tooltip()).toContain('Studijų programos keitimas');
+  });
 });

@@ -22,6 +22,7 @@
         :height
         :fullscreen-active
         :loading-range
+        :agenda-loader
         :meetings-loading
         @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
@@ -44,6 +45,7 @@ import { ref } from 'vue';
 import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
 import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
 
+import type { GanttAgendaLoader } from '@/Components/Graphs/types';
 import type {
   GanttMeeting,
   GanttInstitution,
@@ -76,6 +78,7 @@ defineProps<{
   showActivityStatus?: boolean;
   institutionPeriodicity?: Record<string | number, number>;
   loadingRange?: { from: Date; until: Date } | null;
+  agendaLoader?: GanttAgendaLoader;
   /** Whether meetings are being fetched (delayed ~300ms by the caller) */
   meetingsLoading?: boolean;
   fullscreenActive?: boolean;

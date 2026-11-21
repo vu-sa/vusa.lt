@@ -10,6 +10,7 @@ import { toast } from 'vue-sonner';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { GanttColors } from '../ganttColors';
+import type { GanttAgendaLoader } from '../types';
 
 import type { GanttTooltipManager } from './GanttTooltip';
 import { buildMeetingTooltipContent } from './GanttTooltip';
@@ -61,6 +62,8 @@ export interface MeetingRenderContext {
   tooltipManager?: GanttTooltipManager;
   /** Meeting periodicity per institution (days between expected meetings) */
   institutionPeriodicity?: Record<string | number, number>;
+  /** Fetches a meeting's tooltip agenda when the markers arrive without it */
+  loadAgenda?: GanttAgendaLoader;
   /** Meetings whose records an open "Papildyk posėdžių įrašus" request asks for */
   requestedMeetingIds?: Set<string>;
 }
@@ -297,20 +300,38 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
 
   // Use unified tooltip manager if provided
   if (tooltipManager) {
+    const meetingContent = (d: any, agendaState?: 'ready' | 'loading' | 'failed') => {
+      const content = buildMeetingTooltipContent(d, labelFor, fmt, fmtDateOnly, agendaState);
+      if (isRequested(d)) {
+        content.html += `<div class="mt-1.5 pt-1.5 border-t border-current/20 text-[11px]" style="color: ${colors.activityRequest}">${$t('activity_requests.gantt.records_requested')}</div>`;
+      }
+      return content;
+    };
+    // The agenda arrives after the pointer may have moved on; only the meeting still hovered is redrawn.
+    let hovered: any = null;
+    let pointer = { x: 0, y: 0 };
+
     dots
       .on('mouseenter', (event, d: any) => {
         const rect = container.getBoundingClientRect();
-        const content = buildMeetingTooltipContent(d, labelFor, fmt, fmtDateOnly);
-        if (isRequested(d)) {
-          content.html += `<div class="mt-1.5 pt-1.5 border-t border-current/20 text-[11px]" style="color: ${colors.activityRequest}">${$t('activity_requests.gantt.records_requested')}</div>`;
-        }
-        tooltipManager.show(content, event.clientX - rect.left, event.clientY - rect.top);
+        hovered = d;
+        pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+        const needsAgenda = ctx.loadAgenda && d.authorized !== false && d.agenda_items === undefined && (d.agenda_items_count ?? 0) > 0;
+        tooltipManager.show(meetingContent(d, needsAgenda ? 'loading' : 'ready'), pointer.x, pointer.y);
+
+        if (!needsAgenda) return;
+        ctx.loadAgenda!(d).then((items) => {
+          if (hovered !== d) return;
+          tooltipManager.show(items === null ? meetingContent(d, 'failed') : meetingContent({ ...d, agenda_items: items }), pointer.x, pointer.y);
+        });
       })
       .on('mousemove', (event) => {
         const rect = container.getBoundingClientRect();
-        tooltipManager.updatePosition(event.clientX - rect.left, event.clientY - rect.top);
+        pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+        tooltipManager.updatePosition(pointer.x, pointer.y);
       })
       .on('mouseleave', () => {
+        hovered = null;
         tooltipManager.hide();
       });
   }
