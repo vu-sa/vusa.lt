@@ -30,7 +30,9 @@ class RepresentativeMeetingsRequest extends FormRequest
             return true;
         }
 
-        $requested = collect($ids)->filter(fn (mixed $id): bool => is_string($id) && Str::isUlid($id));
+        $requested = collect($ids)
+            ->filter(fn (mixed $id): bool => is_string($id) && Str::isUlid($id))
+            ->map(fn (string $id): string => strtoupper($id));
         $own = InstitutionQueries::representativeDashboardInstitutions($user, withSummary: false);
         $related = InstitutionQueries::relatedRepresentativeDashboardInstitutions($own, withSummary: false);
         $this->institutionAccess = collect($own->modelKeys())
@@ -40,9 +42,11 @@ class RepresentativeMeetingsRequest extends FormRequest
                     ? AtstovavimasDashboardService::PROJECTION_FULL
                     : AtstovavimasDashboardService::PROJECTION_RESTRICTED,
             ]))
-            ->only($requested->all());
+            ->filter(fn (string $projection, string $id): bool => $requested->containsStrict(strtoupper($id)));
 
-        return $requested->diff($this->institutionAccess->keys())->isEmpty();
+        $allowed = $this->institutionAccess->keys()->map(fn (string $id): string => strtoupper($id));
+
+        return $requested->diff($allowed)->isEmpty();
     }
 
     /** @return array<string, list<string>> */

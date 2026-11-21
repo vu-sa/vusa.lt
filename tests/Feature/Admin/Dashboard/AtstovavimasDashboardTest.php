@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
+use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
@@ -22,6 +23,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -86,6 +88,24 @@ describe('atstovavimas dashboard', function (): void {
                     ->missing('meetings')
                     ->missing('duties')
                     ->etc()));
+    });
+
+    test('an active check-in remains on the dashboard at midday on its last day', function (): void {
+        $institution = $this->user->current_duties()->first()->institution;
+        $checkIn = InstitutionCheckIn::factory()->for($institution)->for($this->user)->create([
+            'start_date' => '2026-11-01',
+            'end_date' => '2026-11-30',
+        ]);
+
+        Carbon::setTestNow('2026-11-30 12:00:00');
+        try {
+            asUserWithInertia($this->user)->getJson(route('dashboard.atstovavimas'))
+                ->assertOk()
+                ->assertJsonPath('props.userInstitutions.0.active_check_in.id', $checkIn->id)
+                ->assertJsonPath('props.userInstitutions.0.active_check_in.end_date', '2026-11-30');
+        } finally {
+            Carbon::setTestNow();
+        }
     });
 
     test('first-paint query count stays constant as historical incomplete meetings are added', function (): void {
@@ -349,6 +369,29 @@ describe('atstovavimas dashboard authorization', function (): void {
                     ->contains(fn ($inst) => data_get($inst, 'id') === $secretariedInstitution->id && data_get($inst, 'is_secretary') === true)
                 )
             );
+    });
+
+    test('a secretary-only nomination does not add the outgoing linked institution to the dashboard', function (): void {
+        $secretary = User::factory()->create();
+        $source = Institution::factory()->for($this->tenant)->create();
+        $target = Institution::factory()->for($this->tenant)->create();
+        $cadence = Cadence::factory()->for($source)->create();
+        InstitutionSecretary::create([
+            'institution_id' => $source->id,
+            'cadence_id' => $cadence->id,
+            'user_id' => $secretary->id,
+        ]);
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $source->id,
+            'target_institution_id' => $target->id,
+        ]);
+
+        asUserWithInertia($secretary)->get(route('dashboard.atstovavimas'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('userInstitutions.0.id', $source->id)
+                ->where('userInstitutions.0.is_secretary', true)
+                ->reloadOnly('relatedInstitutions', fn (Assert $reload) => $reload->has('relatedInstitutions', 0)));
     });
 
     test('a rep who manages no padalinys opens the overview for its Gantt only', function (): void {

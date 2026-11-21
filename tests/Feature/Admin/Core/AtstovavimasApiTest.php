@@ -10,6 +10,7 @@ use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
+use App\Models\InstitutionSecretary;
 use App\Models\InstitutionStatusSnapshot;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
@@ -55,7 +56,7 @@ describe('representative meetings window', function (): void {
         }
 
         $response = asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
-            'institution_ids' => [$own->id, $this->institution->id],
+            'institution_ids' => [strtoupper($own->id), $this->institution->id],
             'from' => '2026-11-01',
             'to' => '2026-11-30',
         ]))->assertOk()->assertJsonCount(2, 'data');
@@ -85,6 +86,28 @@ describe('representative meetings window', function (): void {
 
         asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings', [
             'institution_ids' => [$own->id, $unrelated->id],
+            'from' => '2026-11-01',
+            'to' => '2026-11-30',
+        ]))->assertForbidden();
+    });
+
+    test('a secretary-only nomination gives 403 for meetings of an outgoing linked institution', function (): void {
+        $secretary = User::factory()->create();
+        $source = Institution::factory()->for($this->tenant)->create();
+        $cadence = Cadence::factory()->for($source)->create();
+        InstitutionSecretary::create([
+            'institution_id' => $source->id,
+            'cadence_id' => $cadence->id,
+            'user_id' => $secretary->id,
+        ]);
+        InstitutionLink::factory()->create([
+            'source_institution_id' => $source->id,
+            'target_institution_id' => $this->institution->id,
+        ]);
+        Meeting::factory()->hasAttached($this->institution)->create(['start_time' => '2026-11-20 09:00:00']);
+
+        asUser($secretary)->getJson(route('api.v1.admin.atstovavimas.meetings', [
+            'institution_ids' => [$this->institution->id],
             'from' => '2026-11-01',
             'to' => '2026-11-30',
         ]))->assertForbidden();

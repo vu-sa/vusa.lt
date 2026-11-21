@@ -29,12 +29,12 @@ class AtstovavimasInstitutionPresenter
     public static function rows(Collection $institutions): array
     {
         $activity = app(InstitutionActivityStatusService::class);
-        $now = now();
+        $today = today();
         $rows = [];
 
         foreach ($institutions as $institution) {
             $tenant = $institution->tenant;
-            $activeCheckIn = $institution->checkIns->where('end_date', '>=', $now)->where('start_date', '<=', $now)->first();
+            $activeCheckIn = $institution->checkIns->where('end_date', '>=', $today)->where('start_date', '<=', $today)->first();
             $authorized = $institution->getAttribute('authorized') !== false;
             $related = (bool) $institution->getAttribute('is_related');
             $secretary = (bool) $institution->getAttribute('is_secretary');

@@ -117,7 +117,13 @@ class InstitutionQueries
         $ownIds = $own->modelKeys();
         $picked = [];
 
-        foreach ($ownIds as $sourceId) {
+        foreach ($own as $institution) {
+            // Only duty assignments can grant access through an institution link.
+            if ($institution->getAttribute('is_secretary') !== false) {
+                continue;
+            }
+
+            $sourceId = $institution->id;
             foreach ($relations->relatedTo($sourceId) as $entry) {
                 $id = $entry['institution_id'];
 
