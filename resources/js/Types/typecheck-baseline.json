@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2559,
+  "total": 2552,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -415,9 +415,7 @@
     "resources/js/Components/Duties/__tests__/DutyHolderCard.component.test.ts | TS2352 | Conversion of type '{ id: string; name: string; pivot: Record<string, unknown>; }' to type 'User' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
     "resources/js/Components/DutyUserWizard/Step1InstitutionSelect.vue | TS2339 | Property 'pivot' does not exist on type 'User'.": 1,
     "resources/js/Components/DutyUserWizard/Step2DutySelect.vue | TS2322 | Type 'readonly Readonly<unknown>[] | null | undefined' is not assignable to type 'string'.": 1,
-    "resources/js/Components/DutyUserWizard/Step2DutySelect.vue | TS2345 | Argument of type '{ readonly id: string; readonly name?: readonly Readonly<unknown>[] | null | undefined; readonly description?: readonly Readonly<unknown>[] | null | undefined; readonly institution_id: string; ... 86 more ...; readonly notifications_exists: boolean; }' is not assignable to parameter of type 'Duty'.": 5,
     "resources/js/Components/DutyUserWizard/Step3UserAssignment.vue | TS2322 | Type 'readonly Readonly<unknown>[] | null | undefined' is not assignable to type 'string'.": 1,
-    "resources/js/Components/DutyUserWizard/Step3UserAssignment.vue | TS2345 | Argument of type '{ readonly id: string; readonly email?: string | null | undefined; readonly phone?: string | null | undefined; readonly facebook_url?: string | null | undefined; readonly name: string; ... 80 more ...; readonly notifications_exists: boolean; }' is not assignable to parameter of type 'User'.": 1,
     "resources/js/Components/DutyUserWizard/Step3UserAssignment.vue | TS2532 | Object is possibly 'undefined'.": 1,
     "resources/js/Components/DutyUserWizard/Step4Review.vue | TS2322 | Type 'readonly Readonly<unknown>[] | null | undefined' is not assignable to type 'string'.": 1,
     "resources/js/Components/DutyUserWizard/__tests__/DutyReferenceCounts.component.test.ts | TS2532 | Object is possibly 'undefined'.": 2,
@@ -1145,7 +1143,6 @@
     "resources/js/Pages/Admin/People/ShowUser.vue | TS2322 | Type '{ id: string; name: string; description?: string | null | undefined; due_date?: string | null | undefined; completed_at?: string | null | undefined; created_at: string; action_type?: string | null | undefined; ... 9 more ...; users?: { ...; }[] | undefined; }[]' is not assignable to type 'TaskDisplayData[]'.": 1,
     "resources/js/Pages/Admin/People/ShowUser.vue | TS2322 | Type '{ name: string; pronouns: unknown[] | null | undefined; }' is not assignable to type 'DutyNameHolder'.": 1,
     "resources/js/Pages/Admin/People/ShowUser.vue | TS2345 | Argument of type 'Omit<User, \"tenants\" | \"reservations\"> & { tenants?: Tenant[] | null | undefined; reservations?: Reservation[] | null | undefined; roles?: Role[] | null | undefined; roles_count?: number | ... 1 more ... | undefined; pivot?: Dutiable | ... 1 more ... | undefined; } & { ...; }' is not assignable to parameter of type 'DutyNameHolder | null | undefined'.": 2,
-    "resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts | TS2322 | Type '{ readonly dutyTypes: readonly []; readonly assignableInstitutions: readonly []; readonly roles: readonly []; readonly assignableTenants: readonly []; readonly assignableDuties: readonly []; } | { readonly assignableTenants: readonly []; readonly institutionTypes: readonly []; }' is not assignable to type '(VNodeProps & { __v_isVNode?: undefined; [Symbol.iterator]?: undefined; } & (Record<string, any> & (NonNullable<{ readonly dutyTypes: DutyType[]; readonly assignableInstitutions: Institution[]; readonly assignableTenants: { ...; }[]; readonly assignableDuties: { ...; }[]; readonly prefillInstitutionId?: string | ......'.": 1,
     "resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts | TS18048 | 'options' is possibly 'undefined'.": 1,
     "resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts | TS2322 | Type '{ is_active: boolean; can_update: boolean; id: string; name: { lt: string; en: string; }; dutiables_count: number; institution: { id: string; name: { lt: string; }; }; }' is not assignable to type 'Duty'.": 1,
     "resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts | TS2532 | Object is possibly 'undefined'.": 2,

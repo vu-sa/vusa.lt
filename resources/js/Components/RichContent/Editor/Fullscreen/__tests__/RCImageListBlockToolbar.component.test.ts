@@ -71,17 +71,17 @@ describe('RCImageListBlockToolbar', () => {
 
     await wrapper.find('[data-test="width-picker"]').trigger('click');
 
-    const updated = wrapper.emitted('update:content')?.at(-1)?.[0] as { options: { width: string } };
-    expect(updated.options.width).toBe('full');
+    const updated = wrapper.emitted('update:content')?.at(-1)?.[0];
+    expect(updated?.options?.width).toBe('full');
 
     await wrapper.findAll('[data-test="select"]')[0]!.trigger('click');
-    const columnsUpdate = wrapper.emitted('update:content')?.at(-1)?.[0] as { options: { columns: string } };
-    expect(columnsUpdate.options.columns).toBe('2');
+    const columnsUpdate = wrapper.emitted('update:content')?.at(-1)?.[0];
+    expect(columnsUpdate?.options?.columns).toBe('2');
 
     await wrapper.find('[data-test="switch"]').trigger('click');
 
-    const galleryUpdate = wrapper.emitted('update:content')?.at(-1)?.[0] as { options: { showLightbox: boolean } };
-    expect(galleryUpdate.options.showLightbox).toBe(false);
+    const galleryUpdate = wrapper.emitted('update:content')?.at(-1)?.[0];
+    expect(galleryUpdate?.options?.showLightbox).toBe(false);
   });
 
   it('disables deleting an image when only one image is left', async () => {

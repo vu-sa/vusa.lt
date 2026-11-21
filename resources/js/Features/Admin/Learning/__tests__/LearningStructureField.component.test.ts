@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { reactive } from 'vue';
 
 import LearningStructureField, { type LearningStructureDraft } from '../LearningStructureField.vue';
 
@@ -27,7 +28,7 @@ describe('LearningStructureField', () => {
   });
 
   it('offers each graph once and adds the next free one', async () => {
-    const structure: LearningStructureDraft[] = [{ graph: 'vusa-structure', node: null }];
+    const structure = reactive<LearningStructureDraft[]>([{ graph: 'vusa-structure', node: null }]);
     const wrapper = mountField(structure);
 
     expect(wrapper.get('select[data-testid="structure-graph-0"]').findAll('option').map(option => option.attributes('value'))).toContain('vusa-structure');

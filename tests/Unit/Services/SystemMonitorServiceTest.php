@@ -64,6 +64,7 @@ describe('SystemMonitorService', function (): void {
             $connection->shouldReceive('getPdo')->once()->andReturn($pdo);
 
             DB::shouldReceive('connection')->once()->andReturn($connection);
+            DB::shouldReceive('getConnections')->andReturn([]);
             DB::shouldReceive('select')->andReturnUsing(function ($query) {
                 if (str_contains($query, 'information_schema')) {
                     return [(object) ['size_mb' => 150.5]];
@@ -84,6 +85,7 @@ describe('SystemMonitorService', function (): void {
 
         test('returns error status when database connection fails', function (): void {
             DB::shouldReceive('connection')->once()->andThrow(new Exception('SQLSTATE[HY000]'));
+            DB::shouldReceive('getConnections')->andReturn([]);
 
             $status = $this->service->getDatabaseStatus();
 

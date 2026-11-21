@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { reactive } from 'vue';
 
 import type { Hero } from '@/Types/contentParts';
 
@@ -11,9 +12,11 @@ const stubs = {
   TiptapImageButton: { template: '<button class="image-btn-stub"><slot /></button>' },
 };
 
-function makeItem(): { json_content: Hero['json_content']; options: Hero['options'] } {
+type HeroItem = Pick<Hero, 'json_content' | 'options'>;
+
+function makeItem(): HeroItem {
   const item = createContentItem('hero');
-  return { json_content: item.json_content, options: item.options };
+  return reactive<HeroItem>({ json_content: item.json_content, options: item.options });
 }
 
 async function openSection(wrapper: ReturnType<typeof mount>, label: string): Promise<void> {

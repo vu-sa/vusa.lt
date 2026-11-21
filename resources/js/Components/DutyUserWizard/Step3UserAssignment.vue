@@ -573,7 +573,7 @@ const handleAddUser = (user: UserSearchResult) => {
   showUserSearch.value = false;
 };
 
-const handleRemoveUser = (user: App.Entities.User) => {
+const handleRemoveUser = (user: Parameters<typeof wizard.addUserToRemove>[0]) => {
   wizard.addUserToRemove(user, getTodayDate());
 };
 

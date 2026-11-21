@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
+import type { Component } from 'vue';
 
 import { createMockForm } from '@/tests/helpers/createMockForm';
 
@@ -12,14 +13,16 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => vi.clearAllMocks());
 
 describe('standalone record creation', () => {
-  it.each([
+  const cases: [string, Component, string, 'duties.store' | 'institutions.store', Record<string, unknown>][] = [
     ['duty', CreateDuty, 'DutyForm', 'duties.store', {
       dutyTypes: [], assignableInstitutions: [], roles: [], assignableTenants: [], assignableDuties: [],
     }],
     ['institution', CreateInstitution, 'InstitutionForm', 'institutions.store', {
       assignableTenants: [], institutionTypes: [],
     }],
-  ] as const)('lets the server choose the destination for a new %s', async (_label, component, formName, storeRoute, props) => {
+  ];
+
+  it.each(cases)('lets the server choose the destination for a new %s', async (_label, component, formName, storeRoute, props) => {
     const form = createMockForm();
     const wrapper = mount(component, {
       props,

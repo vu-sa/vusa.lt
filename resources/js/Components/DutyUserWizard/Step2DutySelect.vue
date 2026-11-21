@@ -284,7 +284,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, type ComputedRef } from 'vue';
+import { ref, computed, inject, type ComputedRef, type DeepReadonly } from 'vue';
 import { usePage, useHttp } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -407,7 +407,7 @@ const filteredDuties = computed(() => {
   );
 });
 
-const isEmptyDuty = (duty: App.Entities.Duty) => duty.is_active !== false && !duty.current_users?.length;
+const isEmptyDuty = (duty: DeepReadonly<App.Entities.Duty>) => duty.is_active !== false && !duty.current_users?.length;
 
 const sortedDuties = computed(() => {
   return [...filteredDuties.value].sort((a, b) => {
@@ -417,8 +417,8 @@ const sortedDuties = computed(() => {
   });
 });
 
-const selectDuty = (duty: App.Entities.Duty) => {
-  wizard.setDuty(duty as App.Entities.Duty);
+const selectDuty = (duty: DeepReadonly<App.Entities.Duty>) => {
+  wizard.setDuty(duty);
   wizard.nextStep();
 };
 

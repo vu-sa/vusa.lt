@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 
+import type { PersonQuote } from '@/Types/contentParts';
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
 
 const mockAttributionData = ref<{ name: string; photoUrl: string | null; attributions: string[] } | null>(null);
@@ -126,7 +127,7 @@ describe('PersonQuoteDisplay — editable (full-screen editor)', () => {
 
     await wrapper.find('.tiptap-editor-stub input').setValue('Naujas tekstas');
     const emitted = wrapper.emitted('update:element');
-    expect((emitted!.at(-1)![0] as { json_content: { quote: unknown } }).json_content.quote).toBe('Naujas tekstas');
+    expect((emitted!.at(-1)![0].json_content as PersonQuote['json_content']).quote).toBe('Naujas tekstas');
   });
 
   it('shows a placeholder when an editable quote is empty', async () => {
@@ -177,9 +178,9 @@ describe('PersonQuoteDisplay — person popover (full-screen editor)', () => {
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();
-    const patched = emitted!.at(-1)![0] as { json_content: { snapshot: { userId?: number; name?: string } } };
-    expect(patched.json_content.snapshot.userId).toBe(7);
-    expect(patched.json_content.snapshot.name).toBe('Naujas Asmuo');
+    const patched = emitted!.at(-1)![0].json_content as PersonQuote['json_content'];
+    expect(patched.snapshot.userId).toBe(7);
+    expect(patched.snapshot.name).toBe('Naujas Asmuo');
   });
 
   it('clearing the picker emits an empty snapshot', async () => {
@@ -190,8 +191,8 @@ describe('PersonQuoteDisplay — person popover (full-screen editor)', () => {
     await wrapper.find('.clear-pick').trigger('click');
 
     const emitted = wrapper.emitted('update:element');
-    const patched = emitted!.at(-1)![0] as { json_content: { snapshot: { name?: string } } };
-    expect(patched.json_content.snapshot.name).toBe('');
+    const patched = emitted!.at(-1)![0].json_content as PersonQuote['json_content'];
+    expect(patched.snapshot.name).toBe('');
   });
 
   it('seeds the attribution from the first suggestion after picking a person, without clobbering an existing one', async () => {
@@ -206,9 +207,9 @@ describe('PersonQuoteDisplay — person popover (full-screen editor)', () => {
     await wrapper.vm.$nextTick();
 
     const emitted = wrapper.emitted('update:element');
-    const patched = emitted!.at(-1)![0] as { json_content: { snapshot: { attribution?: string; photoUrl?: string } } };
-    expect(patched.json_content.snapshot.attribution).toBe('Koordinatorius');
-    expect(patched.json_content.snapshot.photoUrl).toBe('/photo.jpg');
+    const patched = emitted!.at(-1)![0].json_content as PersonQuote['json_content'];
+    expect(patched.snapshot.attribution).toBe('Koordinatorius');
+    expect(patched.snapshot.photoUrl).toBe('/photo.jpg');
   });
 
   it('emits an inline attribution edit once a person is set', async () => {
@@ -224,7 +225,7 @@ describe('PersonQuoteDisplay — person popover (full-screen editor)', () => {
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();
-    const patched = emitted!.at(-1)![0] as { json_content: { snapshot: { attribution?: string } } };
-    expect(patched.json_content.snapshot.attribution).toBe('Pirmininkė');
+    const patched = emitted!.at(-1)![0].json_content as PersonQuote['json_content'];
+    expect(patched.snapshot.attribution).toBe('Pirmininkė');
   });
 });
