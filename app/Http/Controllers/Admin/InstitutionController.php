@@ -21,6 +21,8 @@ use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
+use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\PublicUrl;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionDeactivationService;
@@ -29,6 +31,8 @@ use App\Services\KnowledgeBasePresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Settings\MeetingSettings;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
@@ -111,8 +115,15 @@ class InstitutionController extends AdminController
         $readOnly = fn (): bool => once(fn () => ! Gate::allows('view', $institution));
 
         $loadInstitution = fn (): Institution => once(function () use ($institution): Institution {
-            $institution->loadMissing('tenant:id,shortname', 'types', 'duties.current_users:id,name,profile_photo_path,profile_photo_focal_point', 'checkIns', 'meetings:id,start_time')
-                ->loadCount(['duties', 'meetings', 'problems'])
+            $summary = $this->activityStatusService
+                ->withSummary(Institution::query()->select('institutions.id')->whereKey($institution->id))
+                ->withCount(['duties', 'meetings', 'problems'])
+                ->firstOrFail();
+
+            $institution->setRawAttributes([...$institution->getAttributes(), ...$summary->getAttributes()], true);
+            $institution->setRelation('types', $summary->types);
+            $institution->setRelation('checkIns', $summary->checkIns);
+            $institution->loadMissing('tenant:id,shortname', 'duties.current_users:id,name,profile_photo_path,profile_photo_focal_point')
                 ->append(['has_public_meetings', 'governance_scope']);
 
             return $institution;
@@ -121,6 +132,18 @@ class InstitutionController extends AdminController
         $showsMeetings = fn (): bool => once(fn () => ! $readOnly() || $loadInstitution()->has_public_meetings);
         $activityStatus = fn () => once(fn () => $this->activityStatusService->resolve($loadInstitution()));
 
+        $loadMeetings = function (BelongsToMany $query): Collection {
+            /** @var Collection<int, Meeting> $meetings */
+            $meetings = $query->get();
+
+            foreach ($meetings as $meeting) {
+                $meetingTenants = $meeting->tenants;
+                $meeting->agendaItems->each(fn (AgendaItem $item) => $item->setRelation('tenants', $meetingTenants));
+            }
+
+            return $meetings;
+        };
+
         $meetingQuery = fn () => $institution->meetings()
             ->select(['meetings.id', 'title', 'start_time', 'type', 'meetings.created_at'])
             ->withCount('agendaItems')
@@ -128,6 +151,7 @@ class InstitutionController extends AdminController
                 'agendaItems' => fn ($query) => $query->select(['id', 'meeting_id', 'order', 'is_private', 'type'])->chaperone('meeting'),
                 'agendaItems.votes:id,agenda_item_id,is_main,decision,student_vote,student_benefit,is_consensus',
                 'institutions:id',
+                'tenants',
                 'institutions.types:id',
             ])
             ->withExists([
@@ -135,7 +159,7 @@ class InstitutionController extends AdminController
                 'availableFiles as report_exists' => fn ($query) => $query->where('file_type', FileableFile::TYPE_REPORT),
             ])
             ->orderByDesc('start_time');
-        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $meetingQuery()->where('start_time', '<=', now())->limit(3)->get());
+        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $loadMeetings($meetingQuery()->where('start_time', '<=', now())->limit(3)));
         $canViewActivityRequests = app(GetInstitutionActivityRequestHistory::class)->visible($institution, $request->user());
 
         return Inertia::render('Admin/People/ShowInstitution', [
@@ -146,7 +170,7 @@ class InstitutionController extends AdminController
             'overview' => fn () => InstitutionPresenter::overview($loadInstitution(), $showsMeetings(), $activityStatus(), $overviewMeetings()),
             'files' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::files($institution)),
             'overviewDuties' => fn () => InstitutionPresenter::duties($loadInstitution(), 3),
-            'upcomingMeeting' => fn () => $showsMeetings() ? InstitutionPresenter::meetings($meetingQuery()->where('start_time', '>', now())->reorder('start_time')->limit(1)->get())[0] ?? null : null,
+            'upcomingMeeting' => fn () => $showsMeetings() ? InstitutionPresenter::meetings($loadMeetings($meetingQuery()->where('start_time', '>', now())->reorder('start_time')->limit(1)))[0] ?? null : null,
             'duties' => Inertia::optional(fn () => InstitutionPresenter::duties($institution)),
             'incompleteTasksCount' => fn () => $readOnly() ? 0 : InstitutionPresenter::incompleteTasksCount($institution),
             'tasks' => Inertia::optional(fn () => $readOnly() ? [] : InstitutionPresenter::tasks($institution)),

@@ -354,7 +354,7 @@ const tableData = computed(() => {
     if (selectedValues.length > 0) {
       filteredRegistrations = filteredRegistrations.filter((registration) => {
         const fieldResponse = registration.field_responses.find(
-          fr => String(fr.form_field.id) === fieldId,
+          fr => String(fr.form_field_id) === fieldId,
         );
         const value = fieldResponse?.response?.value;
         return selectedValues.includes(value);
@@ -366,10 +366,10 @@ const tableData = computed(() => {
     const row: Record<string, unknown> = { ...registration };
     registration.field_responses.forEach((fieldResponse) => {
       if (fieldResponse.response && fieldResponse.response.value !== undefined) {
-        row[String(fieldResponse.form_field.id)] = fieldResponse.response.value;
+        row[String(fieldResponse.form_field_id)] = fieldResponse.response.value;
       }
       else {
-        row[String(fieldResponse.form_field.id)] = '';
+        row[String(fieldResponse.form_field_id)] = '';
       }
     });
     return row;

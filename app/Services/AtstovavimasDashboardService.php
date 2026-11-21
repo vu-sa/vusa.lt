@@ -317,6 +317,7 @@ class AtstovavimasDashboardService
                     ->whereBetween('meetings.start_time', [$from, $until])
                     ->with([
                         'agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
+                        'tenants',
                         'agendaItems.votes:id,agenda_item_id,decision,student_vote,student_benefit,is_main,is_consensus',
                         'fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                         // Eager: mapMeeting asks every meeting in the window whether it is announced.
@@ -447,6 +448,12 @@ class AtstovavimasDashboardService
         $isFull = $projection === self::PROJECTION_FULL;
         $agendaItems = $projection === self::PROJECTION_RESTRICTED ? new Collection : $meeting->agendaItems;
         $calendarEvent = $meeting->calendarEvent;
+
+        if ($agendaItems->isNotEmpty()) {
+            $meetingTenants = $meeting->tenants;
+            $agendaItems->each(fn (AgendaItem $item) => $item->setRelation('tenants', $meetingTenants));
+        }
+
         $outcome = $isFull ? $meeting->outcomeSummary(auth()->user()) : null;
 
         return [

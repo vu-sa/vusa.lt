@@ -30,7 +30,7 @@ class GetUserActivityRequests
     public function history(User $recipient, User $viewer, int $page = 1): array
     {
         $requests = $this->query($recipient, $viewer)
-            ->with([...ActivityRequestHistoryMapper::RELATIONS, 'institution'])
+            ->with([...ActivityRequestHistoryMapper::RELATIONS, 'institution.tenants'])
             ->orderByRaw('CASE WHEN answered_at IS NULL AND resolved_at IS NULL AND expires_at > ? THEN 0 ELSE 1 END', [now()])
             ->orderByDesc('created_at')->orderByDesc('id')
             ->paginate(20, page: max(1, $page));

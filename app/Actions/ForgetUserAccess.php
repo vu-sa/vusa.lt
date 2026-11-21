@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Facades\Permission;
 use App\Services\InstitutionAccessService;
+use App\Services\MeetingAccessService;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseScopedKeyService;
 use App\Support\AuthorityCacheExpiry;
@@ -21,6 +22,10 @@ class ForgetUserAccess
     {
         $userIds = collect($userIds)->map(strval(...))->filter()->unique()->values();
 
+        if ($userIds->isEmpty()) {
+            return;
+        }
+
         // Waiting for commit prevents another request from re-warming caches from the old state.
         DB::afterCommit(function () use ($userIds): void {
             foreach ($userIds as $userId) {
@@ -30,6 +35,8 @@ class ForgetUserAccess
                 TypesenseScopedKeyService::invalidateForUser($userId);
                 AuthorityCacheExpiry::forget($userId);
             }
+
+            app(MeetingAccessService::class)->flush();
         });
     }
 }

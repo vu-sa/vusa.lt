@@ -92,6 +92,24 @@ describe('authorized access', function (): void {
             ->and($this->dutyManager->can('delete', $foreign))->toBeFalse();
     })->with(['lazy' => false, 'eager' => true]);
 
+    test('a soft-deleted institution denies duty updates even when its tenant is loaded', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $duty = Duty::factory()->for($institution)->create();
+        expect($this->dutyManager->can('update', $duty))->toBeTrue();
+
+        $institution->delete();
+
+        $unloaded = $duty->fresh();
+        $loaded = $duty->fresh([
+            'institution' => fn ($query) => $query->withTrashed()->with('tenant'),
+        ]);
+
+        expect($loaded->institution->trashed())->toBeTrue()
+            ->and($loaded->institution->tenant->is($this->tenant))->toBeTrue()
+            ->and($this->dutyManager->can('update', $unloaded))->toBeFalse()
+            ->and($this->dutyManager->can('update', $loaded))->toBeFalse();
+    });
+
     test('inline duty creation via API returns the created model', function (): void {
         $response = asUser($this->dutyManager)->postJson(route('api.v1.admin.duties.store'), [
             'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],
@@ -135,7 +153,11 @@ describe('authorized access', function (): void {
         $small->assertJsonCount(3, $itemsPath);
         $large->assertJsonCount(10, $itemsPath)
             ->assertJsonPath($itemsPath.'.0.can_update', true)
-            ->assertJsonPath($itemsPath.'.0.can_delete', true);
+            ->assertJsonPath($itemsPath.'.0.can_delete', true)
+            ->assertJsonPath($itemsPath.'.0.dutiables_count', fn ($count): bool => is_int($count))
+            ->assertJsonPath($itemsPath.'.0.tenants.0.id', $this->tenant->id)
+            ->assertJsonPath($itemsPath.'.0.tenants.0.laravel_through_key', $large->json($itemsPath.'.0.institution.id'))
+            ->assertJsonMissingPath($itemsPath.'.0.force_delete_blocked_reason');
         expect($largeCount)->toBe($smallCount);
     })->with([
         'page' => ['duties.index', 'props.duties.data'],

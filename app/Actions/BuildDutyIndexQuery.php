@@ -18,9 +18,8 @@ final class BuildDutyIndexQuery
     public static function execute(IndexDutyRequest $request, DutyAccessService $access): Builder
     {
         $query = Duty::query()->with([
-            'tenants',
             'institution:id,name,short_name,tenant_id,is_active',
-            'institution.tenant:id,shortname',
+            'institution.tenant',
             'types:id,title',
         ])->withCount('dutiables');
 

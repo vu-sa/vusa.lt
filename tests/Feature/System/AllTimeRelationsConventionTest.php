@@ -36,8 +36,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Actions/ActivityRequests/SendInstitutionActivityRequests.php' => ["'duties" => 1],
     // Reservation participants and the actor's resource-management tenant scope.
     'app/Actions/ApplyReservationIndexFilters.php' => ['->tenants' => 1, "'users'" => 2],
-    // Duty home tenant and duty ID qualifiers for data quality filters.
-    'app/Actions/BuildDutyIndexQuery.php' => ["'tenants'" => 1, "'duties" => 2],
+    // Duty ID qualifiers for data quality filters.
+    'app/Actions/BuildDutyIndexQuery.php' => ["'duties" => 2],
     // Direct role users are checked alongside current duty holders.
     'app/Actions/BuildSupportRequestCollection.php' => ["'users'" => 1],
     // Explicit task assignees and the actor's task-read tenant scope.
@@ -188,8 +188,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/AdminNavigation/AdminNavigationCatalog.php' => ["'duties" => 4],
     // Agenda item tenants are the meeting's institution tenants.
     'app/Services/AgendaItemPresenter.php' => ['->tenants' => 1, "'tenants'" => 2],
-    // Gantt rows show all terms, with separate activity counts from current duties.
-    'app/Services/AtstovavimasDashboardService.php' => ['->users' => 2, "'users'" => 3, '->duties' => 2, "'duties" => 4],
+    // Gantt shows all terms and reuses the meeting's institution tenants for its agenda.
+    'app/Services/AtstovavimasDashboardService.php' => ['->tenants' => 1, "'tenants'" => 2, '->users' => 2, "'users'" => 3, '->duties' => 2, "'duties" => 4],
     // Reads tenants from an already resolved permission scope.
     'app/Services/Authorization/PermissionScope.php' => ['->tenants' => 2],
     // Legacy reservation-resource comments use reservation participants after curated audiences are checked.
@@ -206,8 +206,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/DutyAssignmentService.php' => ["'users'" => 1],
     // Sibling duties load only current holders.
     'app/Services/DutyPanelPresenter.php' => ['->duties' => 1],
-    // Duty record shows every term and the duty's home tenant.
-    'app/Services/DutyPresenter.php' => ['->tenants' => 1, "'tenants'" => 2, '->users' => 1, "'users'" => 1],
+    // Duty record shows every term, and duty rows include the home tenant.
+    'app/Services/DutyPresenter.php' => ['->tenants' => 1, "'tenants'" => 3, '->users' => 1, "'users'" => 1],
     // Duty-update permission key and its resolved tenant options.
     'app/Services/DutyResponsibilityPresenter.php' => ["'tenants'" => 1, "'duties" => 1],
     // Reads permission-scoped tenants for file directories.
@@ -219,7 +219,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Registration options check vacancies through duties.current_users.
     'app/Services/FormOptionResolver.php' => ["'duties" => 1],
     // Institution duty counts and duty lists with current holders.
-    'app/Services/InstitutionPresenter.php' => ['->duties' => 3, "'duties" => 2],
+    'app/Services/InstitutionPresenter.php' => ['->duties' => 4, "'duties" => 3],
     // Related institutions load term history for the Gantt and join the tenant table for graph edges.
     'app/Services/InstitutionRelationService.php' => ["'tenants'" => 1, "'duties" => 2],
     // Duty permission scopes, full term history for Gantt coverage, and trimming those member rows.

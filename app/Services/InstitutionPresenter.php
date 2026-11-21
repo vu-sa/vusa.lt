@@ -136,8 +136,19 @@ class InstitutionPresenter
     /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>}> */
     public static function duties(Institution $institution, ?int $limit = null): array
     {
+        $usersRelation = 'current_users:id,name,profile_photo_path,profile_photo_focal_point';
+
+        if ($institution->relationLoaded('duties')) {
+            $ordered = $institution->duties->sortBy('order');
+            $selected = $limit === null || $limit < 0 ? $ordered : $ordered->take($limit);
+            $selected = $selected->values()->loadMissing($usersRelation);
+        } else {
+            $selected = $institution->duties()->with($usersRelation)->orderBy('order')
+                ->when($limit !== null, fn ($query) => $query->limit($limit))->get();
+        }
+
         $duties = [];
-        foreach ($institution->duties()->with('current_users:id,name,profile_photo_path,profile_photo_focal_point')->orderBy('order')->when($limit !== null, fn ($query) => $query->limit($limit))->get() as $duty) {
+        foreach ($selected as $duty) {
             $attributes = $duty->attributesToArray();
             $users = [];
             foreach ($duty->current_users as $user) {

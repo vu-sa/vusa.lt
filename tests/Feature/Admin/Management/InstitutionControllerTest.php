@@ -19,6 +19,7 @@ use App\Models\InstitutionLink;
 use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
@@ -1400,4 +1401,39 @@ describe('alias', function (): void {
         asUser(makeUser($this->tenant))->delete(route('institutions.publicUrls.destroy', [$institution, $institution->publicUrls()->first()]))
             ->assertForbidden();
     });
+});
+
+test('institution overview batches private agenda access for a padalinys coordinator', function (): void {
+    $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $institution = Institution::factory()->for($this->tenant)->create();
+    $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->subDays(3)]);
+    $addItems = fn (int $count) => AgendaItem::factory()->for($meeting)->count($count)->create(['is_private' => true]);
+    $fetch = fn () => asUserWithInertia($coordinator)->getJson(route('institutions.show', $institution))->assertOk();
+
+    $measure = function (int $expectedItems) use ($fetch, $meeting): int {
+        $fetch();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $response = $fetch();
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $response->assertJsonPath('props.readOnly', false)
+            ->assertJsonPath('props.overview.recentMeetings.0.id', $meeting->id)
+            ->assertJsonPath('props.overview.recentMeetings.0.agenda_items_count', $expectedItems)
+            ->assertJsonPath('props.overview.recentMeetings.0.outcome.completion_status', fn ($status): bool => $status !== null);
+
+        return $queries;
+    };
+
+    $addItems(1);
+    $small = $measure(1);
+    $addItems(4);
+
+    expect($measure(5))->toBe($small);
 });

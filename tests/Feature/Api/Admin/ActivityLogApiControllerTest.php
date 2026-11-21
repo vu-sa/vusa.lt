@@ -13,6 +13,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tiptap\Editor;
 
 pest()->use(RefreshDatabase::class);
@@ -292,4 +293,51 @@ test('role history returns responsibility changes and authorizes against the rol
         ->and(collect($response->json('data'))->firstWhere('id', $edit->id)['causer']['id'])->toBe($this->admin->id);
 
     asUser($this->user)->getJson($url)->assertForbidden();
+});
+
+test('the meeting feed batches access checks for private agenda and vote entries', function (): void {
+    $addEntries = function (int $count): array {
+        $activityIds = [];
+
+        foreach (AgendaItem::factory()->for($this->meeting)->count($count)->create(['is_private' => true]) as $item) {
+            $vote = Vote::factory()->for($item, 'agendaItem')->create();
+
+            foreach ([$item, $vote] as $subject) {
+                $activityIds[] = activity()->performedOn($subject)->causedBy($this->admin)
+                    ->event('updated')->log('updated')->id;
+            }
+        }
+
+        return $activityIds;
+    };
+    $fetch = fn () => asUser($this->admin)->getJson(route('api.v1.admin.activityLog.index', [
+        'subjectType' => 'meeting',
+        'subjectId' => $this->meeting->id,
+        'event' => 'updated',
+        'causer_id' => $this->admin->id,
+        'per_page' => 50,
+    ]))->assertOk();
+
+    $measure = function (array $expectedIds) use ($fetch): int {
+        $fetch();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $response = $fetch();
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        expect(collect($response->json('data'))->pluck('id')->all())->toContain(...$expectedIds);
+
+        return $queries;
+    };
+
+    $first = $addEntries(1);
+    $small = $measure($first);
+
+    expect($measure([...$first, ...$addEntries(4)]))->toBe($small);
 });
