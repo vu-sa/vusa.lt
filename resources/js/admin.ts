@@ -2,17 +2,25 @@ import '../css/app.css';
 import '../css/admin/tour.css';
 import { type DefineComponent, createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, http } from '@inertiajs/vue3';
 import { defineAsyncComponent } from 'vue';
 import { i18nVue } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
+import { notifySessionExpired } from './Composables/apiRequest';
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
 import { isReducedMotionActive, useAccessibilityPreferences } from './Composables/useAccessibilityPreferences';
 import { wantsViewTransition } from './Utils/viewTransition';
 
 initPWA();
+
+// useHttp and router requests bypass apiRequest, so an expired session is caught here too.
+http.onError((error) => {
+  if ('response' in error && error.response.status === 419) {
+    notifySessionExpired();
+  }
+});
 
 const AdminLayout = defineAsyncComponent(
   () => import('./Components/Layouts/AdminLayout.vue'),
