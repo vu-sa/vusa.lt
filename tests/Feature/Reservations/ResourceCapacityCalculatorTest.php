@@ -8,6 +8,7 @@ use App\Services\ResourceCapacityCalculator;
 use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -217,4 +218,64 @@ test('the resource clamps its timeline to the requested range and takes the mini
         $end->getTimestampMs() => ['before' => 8, 'after' => 7],
     ]);
     expect($resource->lowestCapacityAtDateTimeRange($timeline))->toBe(7);
+});
+
+test('timeline query count stays constant from one reservation to six', function (): void {
+    $resource = makeCapacityTestResource();
+    $calculator = new ResourceCapacityCalculator($resource);
+    $range = new TimeRange('2026-01-15 12:00:00', '2026-01-15 20:00:00');
+    $start = Carbon::parse('2026-01-15 13:00:00');
+    reserveCapacityForTest($resource, $start->toDateTimeString(), $start->copy()->addMinutes(30)->toDateTimeString(), 1);
+
+    $queryCount = function (int $expectedPoints) use ($calculator, $range): int {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $timeline = $calculator->getCapacityTimeline($range, ignoreTimeEndedActive: true);
+            expect($timeline)->toHaveCount($expectedPoints);
+
+            return count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    };
+
+    $smallCount = $queryCount(4);
+
+    for ($hour = 1; $hour <= 5; $hour++) {
+        $reservationStart = $start->copy()->addHours($hour);
+        reserveCapacityForTest(
+            $resource,
+            $reservationStart->toDateTimeString(),
+            $reservationStart->copy()->addMinutes(30)->toDateTimeString(),
+            1,
+        );
+    }
+
+    expect($smallCount)->toBe(1);
+    expect($queryCount(14))->toBe($smallCount);
+});
+
+test('a UTC range keeps SQL second precision and counts local pivots at interior points', function (): void {
+    $originalTimezone = date_default_timezone_get();
+    date_default_timezone_set('Europe/Vilnius');
+
+    try {
+        $resource = makeCapacityTestResource();
+        $calculator = new ResourceCapacityCalculator($resource);
+        reserveCapacityForTest($resource, '2026-01-15 09:30:00', '2026-01-15 11:00:00', 2);
+        reserveCapacityForTest($resource, '2026-01-15 10:30:00', '2026-01-15 11:30:00', 3);
+        $range = new TimeRange('2026-01-15T08:00:00.500Z', '2026-01-15T09:30:00.500Z');
+        $interior = Carbon::parse('2026-01-15 11:00:00')->getTimestampMs();
+
+        $timeline = $calculator->getCapacityTimeline($range);
+
+        expect(array_keys($timeline))->toBe([$range->getStartTimestampMs(), $interior, $range->getEndTimestampMs()]);
+        expect($timeline[$interior])->toMatchArray(['before' => 5, 'after' => 7, 'end' => true]);
+        expect($timeline[$range->getEndTimestampMs()])->toBe(['before' => 10, 'after' => 8]);
+    } finally {
+        date_default_timezone_set($originalTimezone);
+    }
 });

@@ -98,6 +98,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Actions/Schedulable/TaskNotifier.php' => ["'users'" => 1],
     // Reservation participants and the actor's resource-management tenant scope.
     'app/Actions/SerializeReservationsForTable.php' => ['->tenants' => 1, '->users' => 2, "'users'" => 1],
+    // Eager-loads explicit reservation participants for the view policy.
+    'app/Actions/SerializeResourceAvailability.php' => ["'users'" => 1],
     // Permission key for validating an institution change.
     'app/Actions/UpdateDuty.php' => ["'duties" => 1],
     // Tenant catalog and the shared prop backed by current_or_upcoming_tenants().

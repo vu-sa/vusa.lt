@@ -281,7 +281,7 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
      * @param  array<int, string>  $exceptReservations  Reservation IDs to exclude from calculation
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
      * @param  bool  $ignoreTimeEndedActive  Ignore active reservations whose end_time has passed
-     * @return array<string, array{before: int, after: int, reservation?: array<string, mixed>, start?: bool, end?: bool}>
+     * @return array<int, array{before: int, after: int, reservation?: array<string, mixed>, start?: bool, end?: bool}>
      *                                                                                                                     Capacity timeline keyed by timestamp (ms), sorted chronologically
      */
     public function getCapacityAtDateTimeRange(
@@ -322,7 +322,7 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
     /**
      * Find the lowest available capacity within a capacity timeline
      *
-     * @param  array<string, array{after: int}>  $capacityTimeline  Timeline from getCapacityAtDateTimeRange()
+     * @param  array<array-key, array{after: int}>  $capacityTimeline  Timeline from getCapacityAtDateTimeRange()
      * @return int The minimum available capacity across all time points
      */
     public function lowestCapacityAtDateTimeRange(array $capacityTimeline): int
