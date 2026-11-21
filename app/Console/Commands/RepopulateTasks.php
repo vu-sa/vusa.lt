@@ -151,22 +151,32 @@ class RepopulateTasks extends Command
             ->with(['types', 'meetings:id,start_time', 'checkIns'])
             ->get();
 
+        $existingTasks = Task::query()
+            ->with('users')
+            ->where('taskable_type', MorphMap::alias(Institution::class))
+            ->whereIn('taskable_id', $institutions->modelKeys())
+            ->where('action_type', ActionType::PeriodicityGap)
+            ->whereNull('completed_at')
+            ->get()
+            ->keyBy('taskable_id');
+        $audienceMemo = collect();
+
         $candidates = $this->activityRecipients->forInstitutions($institutions->pluck('id'));
         $bar = $this->output->createProgressBar($institutions->count());
         foreach ($bar->iterate($institutions) as $institution) {
             $roles = $candidates[$institution->id];
             $tenureStart = collect($roles['secretaries'] ?: $roles['representatives'])->min('held_since');
             $activityStatus = $this->activityEligibility->status($institution, $tenureStart);
-            $existingTask = $this->periodicityGapHandler->findExistingTask($institution);
+            $existingTask = $existingTasks->get($institution->getKey());
 
             if ($existingTask) {
                 $skipped++;
-                $this->reconcilePeriodicityTask($existingTask, $institution, $activityStatus, $dryRun);
+                $this->reconcilePeriodicityTask($existingTask, $institution, $activityStatus, $dryRun, $audienceMemo);
 
                 continue;
             }
 
-            $created += (int) $this->createPeriodicityTask($institution, $activityStatus, $dryRun);
+            $created += (int) $this->createPeriodicityTask($institution, $activityStatus, $dryRun, $audienceMemo);
         }
         $this->newLine();
 
@@ -183,9 +193,17 @@ class RepopulateTasks extends Command
         return ['created' => $created, 'skipped' => $skipped];
     }
 
-    /** A task for an institution approaching or past its threshold; overdue ones are also asked. */
-    private function createPeriodicityTask(Institution $institution, InstitutionActivityStatusData $activityStatus, bool $dryRun): bool
-    {
+    /**
+     * A task for an institution approaching or past its threshold; overdue ones are also asked.
+     *
+     * @param  Collection<string, Collection<int, User>>  $audienceMemo
+     */
+    private function createPeriodicityTask(
+        Institution $institution,
+        InstitutionActivityStatusData $activityStatus,
+        bool $dryRun,
+        Collection $audienceMemo,
+    ): bool {
         $isOverdue = $activityStatus->status === InstitutionActivityStatus::Overdue;
         if (! $isOverdue && $activityStatus->status !== InstitutionActivityStatus::Approaching) {
             return false;
@@ -218,7 +236,7 @@ class RepopulateTasks extends Command
         );
 
         if ($isOverdue) {
-            $this->askAboutActivity($task, $institution, $dryRun);
+            $this->askAboutActivity($task, $institution, $dryRun, $audienceMemo);
         }
 
         return true;
@@ -227,8 +245,10 @@ class RepopulateTasks extends Command
     /**
      * Collected and sent together after the loop, so each assignee gets one email for the whole run.
      * Idempotent per task and recipient, so the daily run asks each assignee once.
+     *
+     * @param  Collection<string, Collection<int, User>>  $audienceMemo
      */
-    private function askAboutActivity(Task $task, Institution $institution, bool $dryRun): void
+    private function askAboutActivity(Task $task, Institution $institution, bool $dryRun, Collection $audienceMemo): void
     {
         if ($dryRun) {
             $this->detail($dryRun, "Overdue, would ask unless already asked: {$institution->name}");
@@ -237,7 +257,7 @@ class RepopulateTasks extends Command
             return;
         }
 
-        $this->pendingAsks[] = ['task' => $task, 'institution' => $institution, 'recipients' => $task->notifiableUsers()];
+        $this->pendingAsks[] = ['task' => $task, 'institution' => $institution, 'recipients' => $task->notifiableUsers($audienceMemo)];
     }
 
     /**
@@ -245,9 +265,16 @@ class RepopulateTasks extends Command
      * report it is completed; once only a new term made it moot (nothing was reported, but the new
      * people have not been in office long enough to owe anything) it is cancelled. While it stands,
      * it follows the current people, so its question never goes to last term's.
+     *
+     * @param  Collection<string, Collection<int, User>>  $audienceMemo
      */
-    private function reconcilePeriodicityTask(Task $task, Institution $institution, InstitutionActivityStatusData $status, bool $dryRun): void
-    {
+    private function reconcilePeriodicityTask(
+        Task $task,
+        Institution $institution,
+        InstitutionActivityStatusData $status,
+        bool $dryRun,
+        Collection $audienceMemo,
+    ): void {
         if (! $status->status->requiresAction()) {
             $resolvedByActivity = ! $this->activityEligibility->status($institution)->status->requiresAction();
             $outcome = $resolvedByActivity ? 'completed' : 'cancelled';
@@ -275,7 +302,7 @@ class RepopulateTasks extends Command
         }
 
         if ($status->status === InstitutionActivityStatus::Overdue) {
-            $this->askAboutActivity($task, $institution, $dryRun);
+            $this->askAboutActivity($task, $institution, $dryRun, $audienceMemo);
         }
     }
 
@@ -459,7 +486,7 @@ class RepopulateTasks extends Command
 
         // Build query - include past meetings if flag is set
         $query = Meeting::query()
-            ->with(['institutions.tenant', 'agendaItems']);
+            ->with(['institutions.tenant', 'institutions.types', 'agendaItems.votes']);
 
         if (! $includePast) {
             $query->where('start_time', '>=', now());

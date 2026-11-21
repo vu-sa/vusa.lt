@@ -17,6 +17,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -36,23 +37,27 @@ class ProcessNotificationDigests extends Command
             return self::SUCCESS;
         }
 
-        $usersWithPendingDigests = NotificationDigestQueue::query()
-            ->select('user_id')
-            ->distinct()
-            ->pluck('user_id');
+        $pendingByUser = NotificationDigestQueue::query()
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->groupBy('user_id');
 
-        if ($usersWithPendingDigests->isEmpty()) {
+        if ($pendingByUser->isEmpty()) {
             $this->info('No pending digests to process.');
 
             return self::SUCCESS;
         }
 
-        $users = User::query()->whereKey($usersWithPendingDigests)->get()->keyBy('id');
+        $users = User::query()
+            ->whereKey($pendingByUser->keys())
+            ->with('current_duties')
+            ->get()
+            ->keyBy('id');
         $sentCount = 0;
         $skippedCount = 0;
         $failedCount = 0;
 
-        foreach ($usersWithPendingDigests as $userId) {
+        foreach ($pendingByUser as $userId => $digestItems) {
             $user = $users->get($userId);
 
             if (! $user) {
@@ -63,16 +68,11 @@ class ProcessNotificationDigests extends Command
             }
 
             // Check if it's time to send digest based on user's frequency setting
-            if (! $this->shouldSendDigest($user)) {
+            if (! $this->shouldSendDigest($user, $digestItems)) {
                 $skippedCount++;
 
                 continue;
             }
-
-            // Get all pending items for this user
-            $digestItems = NotificationDigestQueue::where('user_id', $userId)
-                ->orderBy('created_at', 'asc')
-                ->get();
 
             $digestItems = $this->refreshActivityRequests($digestItems, $user, $eligibility);
 
@@ -111,13 +111,18 @@ class ProcessNotificationDigests extends Command
     }
 
     /**
-     * @param  Collection<int, NotificationDigestQueue>  $digestItems
-     * @return Collection<int, NotificationDigestQueue>
+     * @param  SupportCollection<int, NotificationDigestQueue>  $digestItems
+     * @return SupportCollection<int, NotificationDigestQueue>
      */
-    private function refreshActivityRequests(Collection $digestItems, User $user, ResolveActivityRequestEligibility $eligibility): Collection
+    private function refreshActivityRequests(SupportCollection $digestItems, User $user, ResolveActivityRequestEligibility $eligibility): SupportCollection
     {
         $activityItems = $digestItems->where('notification_class', InstitutionActivityNotification::class);
         $requestIds = $activityItems->flatMap(fn ($item) => $item->data['activity_request_ids'] ?? [])->unique();
+
+        if ($requestIds->isEmpty()) {
+            return $digestItems;
+        }
+
         $activityRequests = InstitutionActivityRequest::query()->open()->whereKey($requestIds)
             ->where('recipient_id', $user->id)->whereHas('institution')->whereHas('recipient')
             ->with(['institution.meetings', 'institution.checkIns', 'institution.types', 'recipient', 'requestedBy', 'task'])->get()->keyBy('id');
@@ -142,14 +147,18 @@ class ProcessNotificationDigests extends Command
 
     /**
      * Daily delivery follows the local clock, including across DST changes.
+     *
+     * @param  SupportCollection<int, NotificationDigestQueue>|null  $items
      */
-    protected function shouldSendDigest(User $user): bool
+    protected function shouldSendDigest(User $user, ?SupportCollection $items = null): bool
     {
         $frequencyHours = $user->getDigestFrequencyHours();
 
-        $oldestItem = NotificationDigestQueue::where('user_id', $user->id)
-            ->orderBy('created_at', 'asc')
-            ->first();
+        $oldestItem = $items !== null
+            ? $items->first()
+            : NotificationDigestQueue::where('user_id', $user->id)
+                ->orderBy('created_at', 'asc')
+                ->first();
 
         if (! $oldestItem) {
             return false;
