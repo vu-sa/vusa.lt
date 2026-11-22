@@ -12,7 +12,6 @@ use App\Models\Resource;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Services\ResourceCapacityCalculator;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 final class ReservationPresenter
@@ -26,13 +25,13 @@ final class ReservationPresenter
      * @param  iterable<Reservation>  $reservations
      * @return list<array{
      *     id: string, name: string, description: string|null,
-     *     start_time: Carbon, end_time: Carbon, created_at: Carbon, updated_at: Carbon,
+     *     start_time: string, end_time: string, created_at: string, updated_at: string,
      *     users: list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>,
      *     resources: list<array{
      *         id: string, name: string, tenant: array{id: int, shortname: string},
      *         pivot: array{
      *             id: int, reservation_id: string, resource_id: string,
-     *             start_time: Carbon|null, end_time: Carbon|null, returned_at: Carbon|null, updated_at: Carbon,
+     *             start_time: string|null, end_time: string|null, returned_at: string|null, updated_at: string,
      *             quantity: int, state: string, state_properties: array{tagType: string, description: string},
      *             approvable: bool, backtrackable: bool, cancellable: bool
      *         }
@@ -58,10 +57,10 @@ final class ReservationPresenter
                 'id' => $reservation->id,
                 'name' => $reservation->name,
                 'description' => $reservation->description,
-                'start_time' => $reservation->start_time,
-                'end_time' => $reservation->end_time,
-                'created_at' => $reservation->created_at,
-                'updated_at' => $reservation->updated_at,
+                'start_time' => $reservation->start_time->toJSON(),
+                'end_time' => $reservation->end_time->toJSON(),
+                'created_at' => $reservation->created_at->toJSON(),
+                'updated_at' => $reservation->updated_at->toJSON(),
                 'users' => $reservation->users
                     ->map(fn (User $manager): array => [
                         'id' => $manager->id,
@@ -85,7 +84,7 @@ final class ReservationPresenter
      *     id: string, name: string, tenant: array{id: int, shortname: string},
      *     pivot: array{
      *         id: int, reservation_id: string, resource_id: string,
-     *         start_time: Carbon|null, end_time: Carbon|null, returned_at: Carbon|null, updated_at: Carbon,
+     *         start_time: string|null, end_time: string|null, returned_at: string|null, updated_at: string,
      *         quantity: int, state: string, state_properties: array{tagType: string, description: string},
      *         approvable: bool, backtrackable: bool, cancellable: bool
      *     }
@@ -108,11 +107,11 @@ final class ReservationPresenter
                 'id' => $pivot->id,
                 'reservation_id' => $pivot->reservation_id,
                 'resource_id' => $pivot->resource_id,
-                'start_time' => $pivot->start_time,
-                'end_time' => $pivot->end_time,
-                'returned_at' => $pivot->returned_at,
+                'start_time' => $pivot->start_time?->toJSON(),
+                'end_time' => $pivot->end_time?->toJSON(),
+                'returned_at' => $pivot->returned_at?->toJSON(),
                 // Fallback for returned_at, which is only stamped on items returned since it started being written.
-                'updated_at' => $pivot->updated_at,
+                'updated_at' => $pivot->updated_at->toJSON(),
                 'quantity' => $pivot->quantity,
                 'state' => $state,
                 'state_properties' => $pivot->state_properties,

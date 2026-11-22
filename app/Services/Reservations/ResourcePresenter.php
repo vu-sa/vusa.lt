@@ -16,7 +16,7 @@ final class ResourcePresenter
     /**
      * The flexible figure ignores active reservations whose time has ended, matching checkout.
      *
-     * @return array{capacity: int, is_reservable: bool, lowestCapacityAtDateTimeRange: int, strictLowestCapacityAtDateTimeRange: int, discrepancies: list<array{key: int, id: string|null, name: string|null, quantity: int, state: string, start_time: int|null, end_time: int|null}>}
+     * @return array{capacity: int, is_reservable: bool, lowestCapacityAtDateTimeRange: int, strictLowestCapacityAtDateTimeRange: int, discrepancies: list<array{key: int, id: string, name: string, quantity: int, state: string, start_time: int|null, end_time: int|null}|array{key: int, id: null, name: null, quantity: int, state: string, start_time: int|null, end_time: int|null}>}
      */
     public static function availability(Resource $resource, Carbon|int $start, Carbon|int $end, User $viewer): array
     {
@@ -39,20 +39,32 @@ final class ResourcePresenter
      * Availability is public to every admin user, the reservations behind it are not: someone
      * else's reservation shows only its period and quantity.
      *
-     * @return array{key: int, id: string|null, name: string|null, quantity: int, state: string, start_time: int|null, end_time: int|null}
+     * @return array{key: int, id: string, name: string, quantity: int, state: string, start_time: int|null, end_time: int|null}|array{key: int, id: null, name: null, quantity: int, state: string, start_time: int|null, end_time: int|null}
      */
     public static function reservationRow(Reservation $reservation, User $viewer): array
     {
-        $visible = $viewer->can('view', $reservation);
+        $pivot = $reservation->pivot;
+
+        if (! $viewer->can('view', $reservation)) {
+            return [
+                'key' => (int) $pivot->id,
+                'id' => null,
+                'name' => null,
+                'quantity' => (int) $pivot->quantity,
+                'state' => (string) $pivot->state,
+                'start_time' => $pivot->start_time?->timestamp,
+                'end_time' => $pivot->end_time?->timestamp,
+            ];
+        }
 
         return [
-            'key' => (int) $reservation->pivot->id,
-            'id' => $visible ? (string) $reservation->id : null,
-            'name' => $visible ? $reservation->name : null,
-            'quantity' => (int) $reservation->pivot->quantity,
-            'state' => (string) $reservation->pivot->state,
-            'start_time' => $reservation->pivot->start_time?->timestamp,
-            'end_time' => $reservation->pivot->end_time?->timestamp,
+            'key' => (int) $pivot->id,
+            'id' => (string) $reservation->id,
+            'name' => (string) $reservation->name,
+            'quantity' => (int) $pivot->quantity,
+            'state' => (string) $pivot->state,
+            'start_time' => $pivot->start_time?->timestamp,
+            'end_time' => $pivot->end_time?->timestamp,
         ];
     }
 

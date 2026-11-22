@@ -70,16 +70,18 @@ export interface ReservationPivot {
   cancellable: boolean;
 }
 
-/** The viewer may only see the period and quantity of another reservation. */
-export interface ReservationAvailabilityRow {
+interface ReservationAvailabilityPeriod {
   key: number;
-  id: string | null;
-  name: string | null;
   quantity: number;
   state: ReservationResourceState;
   start_time: number | null;
   end_time: number | null;
 }
+
+/** The viewer may only see the period and quantity of another reservation. */
+export type ReservationAvailabilityRow
+  = | (ReservationAvailabilityPeriod & { id: string; name: string })
+    | (ReservationAvailabilityPeriod & { id: null; name: null });
 
 export interface ReservationResource {
   id: string;
@@ -123,24 +125,25 @@ type PickupCheckable = Pick<ReservationPivot, 'state' | 'start_time'>;
  * The reservation is still open in the system even though its window is over.
  */
 export function isPivotUnresolved(pivot: ReturnCheckable, now: Date = new Date()): boolean {
-  if (!['created', 'reserved', 'lent'].includes(pivot.state)) {
+  // An item without an end time has no deadline to miss, as on the server.
+  if (!['created', 'reserved', 'lent'].includes(pivot.state) || pivot.end_time === null) {
     return false;
   }
 
-  return new Date(pivot.end_time ?? 0) < now;
+  return new Date(pivot.end_time) < now;
 }
 
 /** A reserved item that was never picked up by its start time. */
 export function isPivotPickupOverdue(pivot: PickupCheckable, now: Date = new Date()): boolean {
-  return pivot.state === 'reserved' && new Date(pivot.start_time ?? 0) < now;
+  return pivot.state === 'reserved' && pivot.start_time !== null && new Date(pivot.start_time) < now;
 }
 
 export function daysUnresolved(pivot: ReturnCheckable, now: Date = new Date()): number {
-  if (!isPivotUnresolved(pivot, now)) {
+  if (!isPivotUnresolved(pivot, now) || pivot.end_time === null) {
     return 0;
   }
 
-  const elapsedMs = now.getTime() - new Date(pivot.end_time ?? 0).getTime();
+  const elapsedMs = now.getTime() - new Date(pivot.end_time).getTime();
 
   return Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
 }

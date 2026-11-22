@@ -10,15 +10,23 @@
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
 
-/** Source fragments that build a payload outside a presenter. */
-const PAGE_PAYLOAD_LEGACY_TOKENS = ['->toArray()', '->toFullArray()', '->map(fn', '->map(function', '->transform(', 'Serialize'];
+/** Patterns that build a payload outside a presenter. */
+const PAGE_PAYLOAD_LEGACY_PATTERNS = [
+    '/->(?:toArray|toFullArray)\(\)/',
+    '/->(?:map|flatMap|mapWithKeys|transform)\(\s*(?:static\s+)?(?:fn|function)\b/',
+    '/->only\(/',
+    '/\bSerialize[A-Z]\w*::/',
+    '/\w+Resource::collection\(|\bnew\s+\w+Resource\(/',
+];
 
 /** `Controller@method` actions that still render legacy payloads. */
 const PAGE_PAYLOAD_HOLDOUTS = [
     'AgendaItemController@show',
     'AtstovavimasDashboardController@atstovavimas',
+    'AtstovavimasDashboardController@padaliniai',
     'BannerController@edit',
     'BannerController@index',
+    'CadenceController@index',
     'CalendarController@create',
     'CalendarController@edit',
     'CalendarController@index',
@@ -27,10 +35,14 @@ const PAGE_PAYLOAD_HOLDOUTS = [
     'DutiableTimelineController@index',
     'DutyController@edit',
     'DutyController@index',
+    'DutyController@show',
     'DutyTypeController@edit',
     'DutyTypeController@show',
     'EventTypeController@index',
+    'FormController@create',
     'FormController@edit',
+    'FormController@show',
+    'GoalController@create',
     'GoalController@edit',
     'GoalController@index',
     'GoalController@show',
@@ -38,7 +50,18 @@ const PAGE_PAYLOAD_HOLDOUTS = [
     'InstitutionController@index',
     'InstitutionTypeController@edit',
     'InstitutionTypeController@show',
+    'KnowledgeItemController@create',
+    'KnowledgeItemController@edit',
+    'KnowledgeItemController@show',
+    'LearningStepController@create',
+    'LearningStepController@edit',
     'MailingListController@renderIndex',
+    'MailingListController@show',
+    'MeetingController@show',
+    'MySupportRequestController@create',
+    'NavigationController@create',
+    'NavigationController@edit',
+    'NavigationController@index',
     'NewsController@create',
     'NewsController@edit',
     'OrganizacijaDashboardController@index',
@@ -50,6 +73,8 @@ const PAGE_PAYLOAD_HOLDOUTS = [
     'ProblemController@index',
     'ProblemController@show',
     'ProfileController@userSettings',
+    'QuickLinkController@create',
+    'QuickLinkController@edit',
     'RepresentativesController@index',
     'ReservationController@show',
     'ResourceCategoryController@index',
@@ -57,9 +82,12 @@ const PAGE_PAYLOAD_HOLDOUTS = [
     'ResourceController@show',
     'ResponsibilityController@index',
     'ResponsibilityController@show',
+    'SistemaDashboardController@index',
     'StudyProgramController@edit',
     'StudySetController@edit',
     'StudySetController@index',
+    'SupportRequestController@edit',
+    'SupportRequestController@show',
     'TagController@edit',
     'TagController@index',
     'TaskController@renderCollection',
@@ -83,19 +111,27 @@ function pagePayloadLegacyActions(): array
             continue;
         }
 
-        $reflection = new ReflectionClass($class);
         $lines = file($file->getPathname());
+        $bodies = [];
 
-        foreach ($reflection->getMethods() as $method) {
+        foreach ((new ReflectionClass($class))->getMethods() as $method) {
             // Trait methods report the using class but the trait's file and lines.
-            if ($method->getDeclaringClass()->getName() !== $class || $method->getFileName() !== $file->getRealPath()) {
+            if ($method->getDeclaringClass()->getName() === $class && $method->getFileName() === $file->getRealPath()) {
+                $bodies[$method->getName()] = pagePayloadCode(array_slice($lines, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1));
+            }
+        }
+
+        foreach ($bodies as $name => $body) {
+            if (! str_contains($body, 'Inertia::render')) {
                 continue;
             }
 
-            $body = implode('', array_slice($lines, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1));
+            // Props are often built in a helper on the same controller, so its body counts too.
+            preg_match_all('/(?:\$this->|self::|static::)(\w+)\(/', $body, $calls);
+            $code = implode("\n", [$body, ...array_map(fn (string $called): string => $called === $name ? '' : ($bodies[$called] ?? ''), $calls[1])]);
 
-            if (str_contains($body, 'Inertia::render') && array_any(PAGE_PAYLOAD_LEGACY_TOKENS, fn (string $token): bool => str_contains($body, $token))) {
-                $actions[] = Str::after($class, 'Admin\\').'@'.$method->getName();
+            if (array_any(PAGE_PAYLOAD_LEGACY_PATTERNS, fn (string $pattern): bool => preg_match($pattern, $code) === 1)) {
+                $actions[] = Str::after($class, 'Admin\\').'@'.$name;
             }
         }
     }
@@ -103,6 +139,19 @@ function pagePayloadLegacyActions(): array
     sort($actions);
 
     return $actions;
+}
+
+/**
+ * @param  list<string>  $lines
+ */
+function pagePayloadCode(array $lines): string
+{
+    $tokens = token_get_all('<?php '.implode('', $lines));
+
+    return implode('', array_map(
+        fn (array|string $token): string => is_array($token) ? (in_array($token[0], [T_COMMENT, T_DOC_COMMENT], true) ? '' : $token[1]) : $token,
+        array_slice($tokens, 1),
+    ));
 }
 
 it('builds new admin page payloads in presenters', function () {

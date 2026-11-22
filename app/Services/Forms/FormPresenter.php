@@ -26,7 +26,7 @@ final class FormPresenter
         foreach ($forms as $form) {
             $registrationsCount = $registrationVisibility->isSharedRegistrationForm($form)
                 ? $registrationVisibility->count($form, $user)
-                : $form->registrations_count;
+                : (int) $form->registrations_count;
 
             $attributes = $form->attributesToArray();
             $rows[] = [
@@ -40,8 +40,8 @@ final class FormPresenter
                 'updated_at' => $attributes['updated_at'],
                 'deleted_at' => $attributes['deleted_at'],
                 'registrations_count' => $registrationsCount,
-                // Appended only on trash rows; computing it for every row would query each form.
-                'force_delete_blocked_reason' => $form->hasAppended('force_delete_blocked_reason') ? $form->force_delete_blocked_reason : null,
+                // Appended only on trash rows, so attributesToArray() has already computed it there.
+                'force_delete_blocked_reason' => $attributes['force_delete_blocked_reason'] ?? null,
                 'tenant' => [
                     'id' => $form->tenant->id,
                     'shortname' => $form->tenant->shortname,
