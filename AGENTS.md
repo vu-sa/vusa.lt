@@ -8,7 +8,7 @@ Other agents must open `.ai/rules/index.md` and the nested `CLAUDE.md` for the p
 
 VU Students' Representation runs a public website and an internal platform for representation work. Keep this student-run project approachable and maintainable.
 Laravel 13+, Vue 3, Inertia v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense search and Laravel Sail.
-Develop at `http://www.vusa.test` (include `www.`). Test login is `test@test.com` / `password`.
+Develop at `https://www.vusa.test` (include `www.`). Test login is `test@test.com` / `password`.
 
 ## Admin UI (Mano VU SA)
 
@@ -299,6 +299,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
     - Execute Node commands: `vendor/bin/sail npm run dev`
     - Execute PHP scripts: `vendor/bin/sail php [script]`
 - View all available Sail commands by running `vendor/bin/sail` without arguments.
+
+=== tests rules ===
+
+# Test Enforcement
+
+- Add or update tests for behavior and logic changes when a test provides meaningful regression coverage.
+- Pure copy, styling, and layout-only changes do not require new or updated tests.
+- When test coverage applies, run the affected tests and ensure they pass.
+- Test the changed behavior and its important failure modes, but do not add tests beyond them.
+- Read the `testing-best-practices` skill before writing tests.
 
 === laravel/core rules ===
 

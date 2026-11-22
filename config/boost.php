@@ -7,6 +7,10 @@ declare(strict_types=1);
  * `boost:update` rewrites AGENTS.md from these, so CI fails on a stale copy.
  */
 return [
+    // Without this Boost probes `artisan test --list-tests`, which lists nothing inside a worktree
+    // (TIA can't read git there) and so drops the test guideline depending on where it ran.
+    'enforce_tests' => true,
+
     'rules' => [
         'enabled' => env('BOOST_RULES_ENABLED', true),
         // Path-scoped Boost guidelines go to .ai/rules/boost/ instead of AGENTS.md, keeping it under Codex's 32 KiB limit.

@@ -9,6 +9,9 @@ paths:
 ## Cache and sessions
 Use Redis for caching and sessions. Target a cache hit ratio above 80%.
 
+## Bulk updates rewrite `updated_at`
+Many timestamp columns are `ON UPDATE current_timestamp()`, so even a `DB::table()->update()` in a command, action or seeder changes them. Keep them with `'updated_at' => DB::raw('updated_at')`; details in `.ai/rules/migrations.md`.
+
 ## Build URLs with the URL helpers
 Use `route()` or `tenantRoute()` for internal links. To change an existing URL, use `Uri::of($url)->withHost(...)->withQuery(...)` so parsing and encoding stay with Laravel.
 

@@ -87,13 +87,11 @@ jobs:
   # match boost:update, and every reference in the rule docs must still resolve.
   agent-guidance:
     needs: [changes, setup]
-    if: ${{ needs.changes.outputs.guidance == 'true' || needs.changes.outputs.php == 'true' }}
+    if: ${{ needs.changes.outputs.guidance == 'true' || needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     name: Agent guidance
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v8
@@ -119,8 +117,13 @@ jobs:
       - name: Generated guidance is current
         run: |
           php artisan boost:update --no-interaction
-          git diff --exit-code -- AGENTS.md .ai .agents .claude/skills \
-            || { echo "::error::Run 'vendor/bin/sail artisan boost:update' and commit the result."; exit 1; }
+          drift=$(git status --porcelain -- AGENTS.md boost.json .ai .agents .claude/skills)
+          if [ -n "$drift" ]; then
+            echo "$drift"
+            git diff -- AGENTS.md boost.json .ai .agents .claude/skills
+            echo "::error::Run 'vendor/bin/sail artisan boost:update' and commit the result."
+            exit 1
+          fi
 
       - name: Rule references resolve
         run: php artisan test --compact tests/Feature/System/RuleReferencesTest.php
@@ -706,8 +709,14 @@ jobs:
           BROWSER_TESTS_RESULT="${{ needs.browser-tests.result }}"
           STORYBOOK_TESTS_RESULT="${{ needs.storybook-tests.result }}"
           TYPECHECK_REQUIRED="${{ needs.changes.outputs.js == 'true' || needs.changes.outputs.types == 'true' || github.ref == 'refs/heads/main' }}"
+          GUIDANCE_REQUIRED="${{ needs.changes.outputs.guidance == 'true' || needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}"
 
           echo "Results: Guidance=$GUIDANCE_RESULT, Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, Typecheck=$TYPECHECK_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT, Storybook Tests=$STORYBOOK_TESTS_RESULT"
+
+          if [[ "$GUIDANCE_REQUIRED" == "true" && "$GUIDANCE_RESULT" != "success" ]]; then
+            echo "❌ Agent guidance is stale or a rule reference no longer resolves"
+            exit 1
+          fi
 
           if [[ "$TYPECHECK_REQUIRED" == "true" && "$TYPECHECK_RESULT" != "success" ]]; then
             echo "❌ TypeScript ratchet or tier boundaries did not pass"

@@ -37,7 +37,7 @@ and generates the search keys. At the end it prints the remaining steps:
    start. Copy it out and trust it:
 
    ```bash
-   docker compose cp nginx:/etc/nginx/certs/root-ca.crt .
+   ./vendor/bin/sail cp nginx:/etc/nginx/certs/root-ca.crt .
    # macOS:  sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain root-ca.crt
    # Debian/Ubuntu:  sudo cp root-ca.crt /usr/local/share/ca-certificates/vusa-test.crt && sudo update-ca-certificates
    # Arch/Fedora:  sudo trust anchor root-ca.crt
