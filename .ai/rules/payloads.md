@@ -11,6 +11,12 @@ generates `Inertia.Pages.*`. It can only type what the PHP declares, so a page y
 its payload from a named presenter with an exact shape. References: `NewsArticlePresenter`
 (public) and `MeetingPresenter` / `MeetingPanelPresenter` / `AgendaItemPresenter` (admin).
 
+## Two mechanisms: presenters for pages, Resources for API rows
+Page props come from a presenter; `app/Http/Resources` serve API rows. No new `Serialize*`
+actions, page-prop Resources, `toArray()` spreads or inline `->map(fn …)` in a render action:
+`tests/Feature/System/PagePayloadConventionTest.php` lists the holdouts, and the list only shrinks.
+An API controller sharing a page's payload calls the same presenter.
+
 ## A payload is a static presenter method with an exact `@return` shape
 `app/Services/<Domain>/<Thing>Presenter.php`, static methods, `@return array{key: type, …}` or
 `list<array{…}>`. Build the array key by key from typed expressions. Analysis loses

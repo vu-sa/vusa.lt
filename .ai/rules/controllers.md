@@ -72,7 +72,7 @@ against the resource prefixes that actually exist in the `permissions` table.
 ## Render Inertia pages with `Inertia::render()` at the return
 Wayfinder types a page's props by reading the `Inertia::render()` call statically; a helper that
 forwards `$component, $props` hides the page from it (admin's old `inertiaResponse()` left 112 pages
-untyped). Build props in presenters (`.ai/rules/payloads.md`), but keep the render call in the action.
+untyped). Build props in presenters (`.ai/rules/payloads.md`, enforced by `PagePayloadConventionTest`), but keep the render call in the action.
 
 ## Authorize with `#[Authorize]` on the method; a Form Request only when it needs input
 A check on a class or a route-bound model is `#[Authorize('update', 'news')]` on the controller

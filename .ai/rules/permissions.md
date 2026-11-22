@@ -23,6 +23,10 @@ paths:
 ## A term grants access before it starts, and nothing else
 A future-dated term grants its permissions immediately, on purpose: `User::current_or_upcoming_duties` has no start check, so an incoming holder can prepare. It carries no responsibility until it starts. Contacts, mailing lists, tasks and any mail use started-and-not-ended (`current_duties`, `Dutiable::activeOn()`); `Dutiable::current()` means *allocated*, so it counts future terms and is for seats and quotas only. Tests: `ScheduledDutyAuthorizationTest`, `InstitutionActivityRequestControllerTest`.
 
+## Policies that bind super admins too
+`Gate::before` in `AuthServiceProvider` grants a super admin everything except the models it lists
+(`Goal`, `LearningStep`), whose policies enforce invariants. Add a model there when its policy must hold for everyone.
+
 ## Baseline versus grant
 What every signed-in member may do belongs in the **policy**, with a sentence in `lang/admin/{lt,en}/access.php` (`baseline.<resource>`, add the resource to `BaselineAccess::RESOURCES`) shown as the lock hint in the matrix. If the permission would grant nothing beyond it, add the name to `BaselineAccess::RETIRED_PERMISSIONS` (the cell shows "Visi nariai") or, for a single dead combination, to `PermissionCatalog::UNGRANTABLE` (the cell shows "–"). Describe every automatic grant a policy gives (own record, assignee, participant, author); the editor is where people learn what a responsibility adds.
 

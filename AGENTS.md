@@ -294,7 +294,7 @@ if ($request->safe()->filled('field')) {
 
 `ui/` (shadcn primitives) → `Brand/` + `Shared/` (both surfaces) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, `Pickers/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → `Features/Admin/` → pages. Dependencies run one way only; `npm run lint:boundaries` enforces it in CI.
 
-Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint rejects `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (`ShowDuty.vue` / `ShowMeeting.vue` are reference pages); collections use `CollectionPage`.
+Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint rejects `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (copy the compact `Pages/Admin/Reservations/ShowResource.vue`; `ShowDuty.vue` / `ShowMeeting.vue` add tab deep links and lazy-loaded panels); collections use `CollectionPage`.
 
 Before adding a card, check the ~40 that exist: `find resources/js -name '*Card*.vue' -not -path '*/ui/*'`.
 
