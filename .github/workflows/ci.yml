@@ -21,6 +21,7 @@ jobs:
       php: ${{ steps.filter.outputs.php }}
       js: ${{ steps.filter.outputs.js }}
       types: ${{ steps.filter.outputs.types }}
+      guidance: ${{ steps.filter.outputs.guidance }}
     steps:
     - uses: actions/checkout@v7
     - uses: dorny/paths-filter@v4
@@ -61,15 +62,68 @@ jobs:
             - 'package-lock.json'
             - 'resources/js/Types/**'
             - 'scripts/typecheck-ratchet.mjs'
+          guidance:
+            - 'AGENTS.md'
+            - 'GEMINI.md'
+            - '**/CLAUDE.md'
+            - '.ai/**'
+            - '.agents/**'
+            - '.claude/skills/**'
+            - 'boost.json'
+            - 'config/boost.php'
+            - 'composer.lock'
+            - 'tests/Feature/System/RuleReferencesTest.php'
 
   setup:
     needs: changes
-    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || needs.changes.outputs.types == 'true' || github.ref == 'refs/heads/main' }}
+    if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || needs.changes.outputs.types == 'true' || needs.changes.outputs.guidance == 'true' || github.ref == 'refs/heads/main' }}
     uses: ./.github/workflows/setup.yml
     with:
       include-coverage: true
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # A docs-only change runs no PHP job, so agent guidance gets its own: the generated Boost files must
+  # match boost:update, and every reference in the rule docs must still resolve.
+  agent-guidance:
+    needs: [changes, setup]
+    if: ${{ needs.changes.outputs.guidance == 'true' || needs.changes.outputs.php == 'true' }}
+    runs-on: ubuntu-latest
+    name: Agent guidance
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: build-assets
+          path: ./
+
+      - name: Unpack vendor
+        run: tar -xzf vendor.tar.gz
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5
+          extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
+      - name: Set up environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      # .mcp.json is left out: it carries a hand-written CLAUDE_CODE_REMOTE switch Boost would not write.
+      - name: Generated guidance is current
+        run: |
+          php artisan boost:update --no-interaction
+          git diff --exit-code -- AGENTS.md .ai .agents .claude/skills \
+            || { echo "::error::Run 'vendor/bin/sail artisan boost:update' and commit the result."; exit 1; }
+
+      - name: Rule references resolve
+        run: php artisan test --compact tests/Feature/System/RuleReferencesTest.php
 
   # PHP Jobs - run in parallel where possible
   php-static-analysis:
@@ -611,7 +665,7 @@ jobs:
 
   status-check:
     name: CI Status
-    needs: [changes, php-static-analysis, php-tests, js-tests, typecheck, js-quality, browser-tests, storybook-tests]
+    needs: [changes, agent-guidance, php-static-analysis, php-tests, js-tests, typecheck, js-quality, browser-tests, storybook-tests]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -643,6 +697,7 @@ jobs:
       - name: Set status
         if: ${{ github.event_name != 'pull_request' || github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
+          GUIDANCE_RESULT="${{ needs.agent-guidance.result }}"
           STATIC_ANALYSIS_RESULT="${{ needs.php-static-analysis.result }}"
           PHP_TESTS_RESULT="${{ needs.php-tests.result }}"
           JS_TESTS_RESULT="${{ needs.js-tests.result }}"
@@ -652,7 +707,7 @@ jobs:
           STORYBOOK_TESTS_RESULT="${{ needs.storybook-tests.result }}"
           TYPECHECK_REQUIRED="${{ needs.changes.outputs.js == 'true' || needs.changes.outputs.types == 'true' || github.ref == 'refs/heads/main' }}"
 
-          echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, Typecheck=$TYPECHECK_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT, Storybook Tests=$STORYBOOK_TESTS_RESULT"
+          echo "Results: Guidance=$GUIDANCE_RESULT, Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, Typecheck=$TYPECHECK_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT, Storybook Tests=$STORYBOOK_TESTS_RESULT"
 
           if [[ "$TYPECHECK_REQUIRED" == "true" && "$TYPECHECK_RESULT" != "success" ]]; then
             echo "❌ TypeScript ratchet or tier boundaries did not pass"
@@ -660,7 +715,7 @@ jobs:
           fi
 
           # Check if any required job failed (js-quality and storybook-tests are non-blocking)
-          if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]] || [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
+          if [[ "$GUIDANCE_RESULT" == "failure" ]] || [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]] || [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
             echo "❌ Some checks failed"
             exit 1
           fi
