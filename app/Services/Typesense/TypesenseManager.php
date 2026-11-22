@@ -126,7 +126,7 @@ class TypesenseManager
      */
     public static function getAdminFrontendConfig(User $user): array
     {
-        if (! self::isConfigured()) {
+        if (! TypesenseScopedKeyService::isConfigured()) {
             return [];
         }
 

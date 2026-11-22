@@ -42,7 +42,7 @@ if [ ! -e .env ]; then
     cp .env.example .env
 fi
 
-if [ ! -d vendor ]; then
+if [ ! -x vendor/bin/sail ]; then
     docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/var/www/html -w /var/www/html \
         composer:2 composer install --ignore-platform-reqs --no-scripts
 fi

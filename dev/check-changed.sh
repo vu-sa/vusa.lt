@@ -83,25 +83,43 @@ repo_git ls-files --others --exclude-standard -z >> "$changed_files"
 LC_ALL=C sort -zu -o "$changed_files" "$changed_files"
 
 php_files=()
+phpmd_files=()
 js_files=()
 pest_files=()
 needs_types=false
 needs_pest=false
+needs_rule_references=false
+rule_references_test=tests/Feature/System/RuleReferencesTest.php
 while IFS= read -r -d '' file; do
     [ -f "$file" ] || continue
     case $file in
         vendor/*) continue ;;
-        *.php) php_files+=("$file"); needs_pest=true ;;
-        composer.json|composer.lock|phpunit.xml|phpunit.xml.dist) needs_pest=true ;;
+        *.blade.php) needs_pest=true ;;
+        *.php)
+            php_files+=("$file")
+            needs_pest=true
+            case $file in
+                app/*.php) phpmd_files+=("$file") ;;
+            esac
+            ;;
+        composer.json|composer.lock|phpunit.xml|phpunit.xml.dist|lang/*|routes/*) needs_pest=true ;;
     esac
     case $file in
+        AGENTS.md|GEMINI.md|CLAUDE.md|*/CLAUDE.md|.ai/*|docs/*)
+            needs_pest=true
+            needs_rule_references=true
+            ;;
+        "$rule_references_test") needs_rule_references=true ;;
         tests/*Test.php) pest_files+=("$file") ;;
+    esac
+    case $file in
+        app/Models/*|app/Enums/*|app/Http/Controllers/*|tsconfig.json) needs_types=true ;;
         resources/js/*)
             case $file in
                 *.js|*.jsx|*.ts|*.tsx|*.vue|*.mjs|*.cjs|*.mts|*.cts) js_files+=("$file") ;;
             esac
             case $file in
-                *.ts|*.vue) needs_types=true ;;
+                *.ts|*.tsx|*.mts|*.vue) needs_types=true ;;
             esac
             ;;
     esac
@@ -111,6 +129,11 @@ steps=()
 results=()
 failed=0
 run_step() {
+    local failure_result=Failed
+    if [ "$1" = --advisory ]; then
+        failure_result=Findings
+        shift
+    fi
     local label=$1
     shift
     printf '\n== %s ==\n' "$label"
@@ -118,13 +141,11 @@ run_step() {
     if "$@"; then
         results+=(Passed)
     else
-        results+=(Failed)
-        failed=1
+        results+=("$failure_result")
+        if [ "$failure_result" = Failed ]; then
+            failed=1
+        fi
     fi
-}
-
-advisory() {
-    "$@" || printf '%s\n' 'PHPMD findings above are advisory and do not fail the check.'
 }
 
 skip_step() {
@@ -135,10 +156,12 @@ skip_step() {
 
 if [ "${#php_files[@]}" -gt 0 ]; then
     run_step Pint run_tool vendor/bin/pint --format agent -- "${php_files[@]}"
-    # Advisory, as in CI: touched files keep their existing findings until someone fixes them.
-    run_step 'PHPMD (advisory)' advisory run_tool vendor/bin/phpmd analyze --no-progress -- "${php_files[@]}"
 else
     skip_step Pint
+fi
+if [ "${#phpmd_files[@]}" -gt 0 ]; then
+    run_step --advisory 'PHPMD (advisory)' run_tool vendor/bin/phpmd analyze --no-progress -- "${phpmd_files[@]}"
+else
     skip_step 'PHPMD (advisory)'
 fi
 
@@ -153,7 +176,7 @@ else
     skip_step 'Typecheck ratchet'
 fi
 if [ "$run_tests" = true ] && [ "${#js_files[@]}" -gt 0 ]; then
-    run_step 'Vitest related' run_tool npx vitest related --run --project unit --project component "${js_files[@]}"
+    run_step 'Vitest related' run_tool npx vitest related --run --passWithNoTests --project unit --project component "${js_files[@]}"
 else
     skip_step 'Vitest related'
 fi
@@ -169,12 +192,15 @@ run_pest_files() {
 if [ "$run_tests" = false ]; then
     skip_step Pest
 elif [ "$git_dir" != "$common_dir" ]; then
+    if [ "$needs_rule_references" = true ]; then
+        pest_files+=("$rule_references_test")
+    fi
     if [ "${#pest_files[@]}" -gt 0 ]; then
         run_step Pest run_pest_files
     else
         skip_step Pest
     fi
-    printf '%s\n' 'Worktrees run changed Pest test files individually. Run the full impact check in CI or from the main checkout.'
+    printf '%s\n' 'Worktrees run selected Pest test files individually. Run the full impact check in CI or from the main checkout.'
 elif [ "$needs_pest" = true ]; then
     run_step Pest run_tool php artisan test --parallel --compact
 else
