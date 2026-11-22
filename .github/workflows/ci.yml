@@ -113,6 +113,16 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
 
+      # Boost only sees JS packages installed in node_modules; without them it drops the Inertia-Vue and Echo guidance.
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci --ignore-scripts
+
       # .mcp.json is left out: it carries a hand-written CLAUDE_CODE_REMOTE switch Boost would not write.
       - name: Generated guidance is current
         run: |
