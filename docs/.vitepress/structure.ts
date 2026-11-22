@@ -146,6 +146,7 @@ export const developerGuide: GuideChapter = {
   pages: [
     { text: 'Užklausos kelias', link: '/kurejams/uzklausos-kelias' },
     { text: 'Pavyzdys: renginys', link: '/kurejams/pavyzdys-renginys' },
+    { text: 'Pirmas pakeitimas', link: '/kurejams/pirmas-pakeitimas' },
   ],
 }
 
