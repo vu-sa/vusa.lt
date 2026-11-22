@@ -69,6 +69,8 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run knip         # unused files/exports/deps — run by hand, verify before deleting
 ```
 
+`./dev/setup.sh` sets up a checkout and is safe to re-run. **Before handing work back, run `./dev/check-changed.sh`** (`npm run check:changed`): Pint, PHPMD, ESLint, the typecheck ratchet, related Vitest and Pest on what the branch changed against `origin/dev`.
+
 Retry Sail failures and run `./vendor/bin/sail ps` before reporting Docker or Podman unavailable.
 
 **Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`) runs natively. `.claude/hooks/session-start.sh` installs dependencies and writes a SQLite `.env`. Drop the Sail prefix and verify with tests. MariaDB, Typesense, Reverb and Mailpit are unavailable. Run `usesTypesense()` tests in CI.
@@ -91,16 +93,9 @@ Verify frontend changes with Vitest. Leave unrelated ESLint fixes to a separate 
 - For **several pieces**, use `gh stack link --base dev <bottom> … <top>`. Each PR targets the branch below it. Keep `dev` outside the stack. Rebase feature branches and push with `--force-with-lease`. Never force-push `dev`.
 - Send only **urgent hotfixes** to `main` and merge `main` back into `dev` immediately.
 
-Place worktrees inside the repo so Sail can mount them.
-
-```bash
-git worktree add .worktrees/<name> -b <fix|feat>/<name> origin/dev   # add /.worktrees/ to .git/info/exclude once
-cp .env .worktrees/<name>/.env && ln -s ../../node_modules .worktrees/<name>/node_modules
-```
-
-Each worktree needs Composer dependencies and `public/build`. Use `./vendor/bin/sail exec -u sail -w /var/www/html/.worktrees/<name> laravel.test <command>` so generated files belong to the Sail user.
+Create and remove worktrees with `./dev/worktree.sh add <name> [base]` / `rm <name>` from the main checkout. It puts them under `.worktrees/` so Sail can mount them, copies `.env`, links `node_modules` and installs Composer dependencies and `public/build`. Inside a worktree, run commands as `./vendor/bin/sail exec -u sail -w /var/www/html/.worktrees/<name> laravel.test <command>` so generated files belong to the Sail user.
 Container Git metadata is inaccessible. Give Pint explicit paths and run Pest files serially. Vitest and Storybook work normally.
-Check status, preserve changes and fix ownership before `git worktree remove <path>`. Avoid `--force`. Verify removal with `git worktree list` and on disk. Use the container if needed to clean confirmed leftovers within that worktree. Avoid following shared symlinks.
+`rm` refuses a dirty or unpushed worktree, fixes container-created ownership and checks the folder is gone. Removing one by hand, never pass `--force` and never follow the shared `.env`/`node_modules` symlinks.
 
 ## Core Patterns
 
