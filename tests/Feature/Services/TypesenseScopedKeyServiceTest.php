@@ -109,6 +109,22 @@ describe('TypesenseCollectionConfig', function (): void {
 });
 
 describe('TypesenseScopedKeyService', function (): void {
+    test('signs scoped keys with the public search key when the admin search key is blank', function (string $adminSearchKey): void {
+        config(['scout.typesense.client-settings.admin_search_key' => $adminSearchKey]);
+        $client = new Client([
+            'api_key' => 'test-admin-key',
+            'nodes' => config('scout.typesense.client-settings.nodes'),
+        ]);
+        $service = new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class));
+
+        $result = $service->generateScopedKeysForUser(makeAdminUser());
+        $keys = [$result['header_key'], ...array_column($result['collections'], 'key')];
+
+        foreach ($keys as $key) {
+            expect($key)->toBe($client->keys->generateScopedSearchKey('test-search-only-key', scopedKeyParams($key)));
+        }
+    })->with(['empty' => '', 'whitespace' => '   ']);
+
     test('super admin gets unrestricted keys for all collections', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $superAdmin = makeAdminUser();

@@ -55,11 +55,18 @@ class TypesenseScopedKeyService
         return md5(implode(':', [
             'meeting-baseline-v2',
             'search-fields-v1',
-            config('scout.typesense.client-settings.admin_search_key'),
+            self::parentSearchKey(),
             Cache::get('agenda-privacy-version', ''),
             InstitutionRelationService::version(),
             app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds()->sort()->implode(','),
         ]));
+    }
+
+    private static function parentSearchKey(): ?string
+    {
+        $adminSearchKey = Config::get('scout.typesense.client-settings.admin_search_key');
+
+        return filled($adminSearchKey) ? $adminSearchKey : Config::get('scout.typesense.client-settings.search_only_key');
     }
 
     /**
@@ -67,8 +74,11 @@ class TypesenseScopedKeyService
      */
     protected function buildScopedKeys(User $user): array
     {
-        $parentKey = Config::get('scout.typesense.client-settings.admin_search_key')
-            ?? Config::get('scout.typesense.client-settings.search_only_key');
+        $parentKey = self::parentSearchKey();
+        if (blank($parentKey)) {
+            throw new \LogicException('A Typesense search key is required to issue scoped keys.');
+        }
+
         // A key also dies when one of the user's duties ends: its filters carry their access.
         $expiresAt = AuthorityCacheExpiry::for($user, self::KEY_EXPIRY)->timestamp;
         $prefix = config('scout.prefix', '');
@@ -338,7 +348,7 @@ class TypesenseScopedKeyService
         $searchOnlyKey = Config::get('scout.typesense.client-settings.search_only_key');
         $apiKey = Config::get('scout.typesense.client-settings.api_key');
 
-        return ! empty($searchOnlyKey) && ! empty($apiKey);
+        return filled($searchOnlyKey) && ! empty($apiKey);
     }
 
     public static function getPermissionForCollection(string $collection): ?string
