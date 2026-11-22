@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildFormIndexQuery;
 use App\Actions\GetTenantsForUpserts;
-use App\Actions\SerializeFormsForTable;
 use App\Enums\FormOptionSource;
 use App\Exports\FormRegistrationsExport;
 use App\Http\Controllers\AdminController;
@@ -18,6 +17,7 @@ use App\Models\FormField;
 use App\Models\Institution;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
+use App\Services\Forms\FormPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
@@ -101,7 +101,7 @@ class FormController extends AdminController
 
         return Inertia::render('Admin/Forms/IndexForm', [
             'forms' => [
-                'data' => SerializeFormsForTable::execute($forms->getCollection(), $user, $this->registrationVisibility),
+                'data' => FormPresenter::tableRows($forms->getCollection(), $user, $this->registrationVisibility),
                 'meta' => [
                     'total' => $forms->total(),
                     'per_page' => $forms->perPage(),

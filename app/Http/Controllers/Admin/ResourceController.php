@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\Media\AddImageMedia;
-use App\Actions\SerializeReservationCart;
-use App\Actions\SerializeResourceAvailability;
-use App\Actions\SerializeResourceManagers;
 use App\Enums\ResponsibilityPurpose;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreResourceRequest;
@@ -19,6 +16,9 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
+use App\Services\Reservations\ReservationPresenter;
+use App\Services\Reservations\ResourcePresenter;
+use App\Services\ResourceCapacityCalculator;
 use App\Services\ResponsibilityResolver;
 use App\Support\StagingProtection;
 use Carbon\Carbon;
@@ -41,7 +41,7 @@ class ResourceController extends AdminController
     public function index()
     {
         return Inertia::render('Admin/Reservations/IndexResource', [
-            'reservationCart' => SerializeReservationCart::execute(request()->user()),
+            'reservationCart' => ReservationPresenter::cart(request()->user()),
             'mainTenantId' => Tenant::main()?->id,
             'managedTenantIds' => app(ResponsibilityResolver::class)
                 ->tenantIdsFor(request()->user(), ResponsibilityPurpose::ReservationHandling)
@@ -117,10 +117,10 @@ class ResourceController extends AdminController
                 'images' => $resource->getMedia('images')->map(fn ($image) => $image->getUrl())->values(),
                 'images_media' => $resource->imageGallery('images'),
             ],
-            'availableNow' => max(0, SerializeResourceAvailability::available($resource, $now, $now->copy()->addMinute())),
+            'availableNow' => max(0, ResourceCapacityCalculator::available($resource, $now, $now->copy()->addMinute())),
             'currentLoans' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->lte($now))->map($row)->values(),
             'upcoming' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->gt($now))->take(10)->map($row)->values(),
-            'managers' => SerializeResourceManagers::execute($resource),
+            'managers' => ResourcePresenter::managers($resource),
             'history' => Inertia::defer(fn () => $resource->reservations()
                 ->with(['users', 'resources.tenant', ...Reservation::TENANT_RELATIONS])
                 ->wherePivotIn('state', ['returned', 'rejected', 'cancelled'])
@@ -129,7 +129,7 @@ class ResourceController extends AdminController
                 ->get()
                 ->map($row)
                 ->values()),
-            'reservationCart' => SerializeReservationCart::execute($user),
+            'reservationCart' => ReservationPresenter::cart($user),
             'can' => [
                 'update' => $user->can('update', $resource),
                 'delete' => $user->can('delete', $resource),

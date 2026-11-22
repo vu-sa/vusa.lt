@@ -124,7 +124,7 @@ const props = defineProps<{
   /** The rows to show — the record's resources, already narrowed by any unit filter. */
   resources: RecordResource[];
   /**
-   * The same reservation through `SerializeReservationsForTable`, the one source of the
+   * The same reservation through `ReservationPresenter::tableRows()`, the one source of the
    * approvable / backtrackable / cancellable flags — so a row never offers what the server refuses.
    */
   target: DashboardReservation;

@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { shallowRef } from 'vue';
 
 import StudyProgramForm from '@/Components/AdminForms/StudyProgramForm.vue';
 
@@ -18,7 +18,7 @@ defineProps<{
   degreeOptions?: Array<{ label: string; value: string }>;
 }>();
 
-const studyProgram = ref({
+const studyProgram = shallowRef({
   name: { lt: '', en: '' },
   degree: '',
   tenant_id: null,

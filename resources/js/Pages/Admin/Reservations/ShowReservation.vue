@@ -145,6 +145,7 @@ import type { AdminRecordAction as ActionDescriptor } from '@/Types/AdminRecordA
 import { ConfirmDialog } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
 import ReservationResourceList from '@/Components/Reservations/ReservationResourceList.vue';
+import type { ReservationTableRow } from '@/Components/Reservations/types';
 import ReservationStateSummary from '@/Components/Reservations/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
@@ -156,7 +157,7 @@ import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import PeopleSearchField from '@/Components/Pickers/PeopleSearchField.vue';
 import type { MemberHit } from '@/Components/Pickers/UserSearchField.vue';
 import { ModelEnum } from '@/Types/enums';
-import type { DashboardReservation, ReservationResourceState } from '@/Utils/ReservationStatus';
+import type { ReservationResourceState } from '@/Utils/ReservationStatus';
 import { getPrimaryAction, isPivotUnresolved, summarizeStates } from '@/Utils/ReservationStatus';
 import { formatDateTime } from '@/Utils/dateTime';
 
@@ -165,7 +166,7 @@ type RecordResource = NonNullable<App.Entities.Reservation['resources']>[number]
 const props = defineProps<{
   reservation: App.Entities.Reservation;
   /** The same reservation with the server's approve / backtrack / cancel flags per item. */
-  decisionTarget: DashboardReservation;
+  decisionTarget: ReservationTableRow;
   can: { update: boolean; delete: boolean };
   allResources?: App.Entities.Resource[];
 }>();

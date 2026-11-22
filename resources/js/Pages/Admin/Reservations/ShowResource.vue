@@ -169,7 +169,7 @@ import ResourceManagers from '@/Components/Reservations/ResourceManagers.vue';
 import ReservationCartSheet from '@/Components/Reservations/ReservationCartSheet.vue';
 import { formatReservationPeriod } from '@/Components/Reservations/reservationPeriod';
 import ResourceBookingRow, { type ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
-import type { ReservationCart } from '@/Components/Reservations/types';
+import type { ReservationCart, ResourceManager } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import type { StatusPresentation } from '@/Constants/statusIcons';
 import { useResourceAvailability } from '@/Search/admin/Composables/useResourceAvailability';
@@ -188,13 +188,6 @@ interface ShowResourcePayload {
   category: string | null;
   images: string[];
   images_media?: ImageData[];
-}
-
-interface ResourceManager {
-  id: string;
-  name: string;
-  email: string | null;
-  profile_photo_path: string | null;
 }
 
 const props = defineProps<{

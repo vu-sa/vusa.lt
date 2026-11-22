@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\SerializeResourceAvailability;
-use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Resource;
+use App\Services\Reservations\ResourcePresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 
@@ -36,12 +35,12 @@ class ResourceApiController extends ApiController
             ->limit(3)
             ->get();
 
-        $mapReservation = fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation, request()->user());
+        $mapReservation = fn ($reservation) => ResourcePresenter::reservationRow($reservation, request()->user());
 
         return $this->jsonSuccess([
             'upcoming_reservations' => $activeReservations->map($mapReservation)->values(),
             'previous_reservations' => $previousReservations->map($mapReservation)->values(),
-            'managers' => SerializeResourceManagers::execute($resource),
+            'managers' => ResourcePresenter::managers($resource),
         ]);
     }
 }

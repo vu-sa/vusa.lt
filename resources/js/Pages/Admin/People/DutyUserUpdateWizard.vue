@@ -318,7 +318,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, ref, onUnmounted } from 'vue';
+import { computed, provide, shallowRef, onUnmounted } from 'vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -366,7 +366,7 @@ const studyPrograms = computed(() => (page.props.studyPrograms as App.Entities.S
 const dutyTypes = computed(() => (page.props.dutyTypes as App.Entities.DutyType[] | undefined) ?? []);
 
 // Reactive institutions list (can be updated when new institution is created)
-const institutionsList = ref([...props.institutions]);
+const institutionsList = shallowRef([...props.institutions]);
 
 // Function to add newly created institution to the list
 const addInstitution = (institution: App.Entities.Institution) => {

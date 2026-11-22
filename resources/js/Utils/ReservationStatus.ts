@@ -54,8 +54,8 @@ export type StatusFilter = ReservationRowStatus | 'all' | 'active';
 
 export interface ReservationPivot {
   id: number | string;
-  start_time: string;
-  end_time: string;
+  start_time: string | null;
+  end_time: string | null;
   returned_at: string | null;
   /** Fallback for returned_at, which is only stamped on items returned since that was added. */
   updated_at: string;
@@ -70,11 +70,29 @@ export interface ReservationPivot {
   cancellable: boolean;
 }
 
+/** The viewer may only see the period and quantity of another reservation. */
+export interface ReservationAvailabilityRow {
+  key: number;
+  id: string | null;
+  name: string | null;
+  quantity: number;
+  state: ReservationResourceState;
+  start_time: number | null;
+  end_time: number | null;
+}
+
 export interface ReservationResource {
   id: string;
   name: string;
-  tenant: { id: string; shortname: string } | null;
+  tenant: { id: string | number; shortname: string } | null;
   pivot: ReservationPivot;
+}
+
+export interface ReservationParticipant {
+  id: string;
+  name: string;
+  email: string | null;
+  profile_photo_path: string | null;
 }
 
 export interface DashboardReservation {
@@ -84,7 +102,7 @@ export interface DashboardReservation {
   start_time: string;
   end_time: string;
   created_at: string;
-  users: App.Entities.User[];
+  users: ReservationParticipant[];
   resources: ReservationResource[];
 }
 
@@ -109,12 +127,12 @@ export function isPivotUnresolved(pivot: ReturnCheckable, now: Date = new Date()
     return false;
   }
 
-  return new Date(pivot.end_time) < now;
+  return new Date(pivot.end_time ?? 0) < now;
 }
 
 /** A reserved item that was never picked up by its start time. */
 export function isPivotPickupOverdue(pivot: PickupCheckable, now: Date = new Date()): boolean {
-  return pivot.state === 'reserved' && new Date(pivot.start_time) < now;
+  return pivot.state === 'reserved' && new Date(pivot.start_time ?? 0) < now;
 }
 
 export function daysUnresolved(pivot: ReturnCheckable, now: Date = new Date()): number {
@@ -122,7 +140,7 @@ export function daysUnresolved(pivot: ReturnCheckable, now: Date = new Date()): 
     return 0;
   }
 
-  const elapsedMs = now.getTime() - new Date(pivot.end_time).getTime();
+  const elapsedMs = now.getTime() - new Date(pivot.end_time ?? 0).getTime();
 
   return Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
 }

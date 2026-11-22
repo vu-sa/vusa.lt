@@ -7,6 +7,7 @@ use App\Models\ReservationDraft;
 use App\Models\ReservationDraftItem;
 use App\Models\Resource;
 use App\Notifications\ReservationDraftItemTakenNotification;
+use App\Services\ResourceCapacityCalculator;
 use Illuminate\Support\Collection;
 
 /**
@@ -46,7 +47,7 @@ class NotifyAffectedReservationDrafts
                         return false;
                     }
 
-                    $available = SerializeResourceAvailability::available($resource, $draft->start_time, $draft->end_time);
+                    $available = ResourceCapacityCalculator::available($resource, $draft->start_time, $draft->end_time);
 
                     // Only this reservation's doing: the item fitted before it took its share.
                     return $item->quantity > $available

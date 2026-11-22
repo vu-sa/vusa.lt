@@ -313,7 +313,7 @@ describe('auth: reservation manager', function (): void {
         );
     });
 
-    // The record page's row actions read the same flags as the collection page (SerializeReservationsForTable),
+    // The record page's row actions read the same flags as the collection page (ReservationPresenter::tableRows()),
     // so a row can never offer what the server would refuse.
     test('the record carries the flagged decision target and per-record permissions', function (): void {
         $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));

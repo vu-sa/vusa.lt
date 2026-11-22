@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions;
+namespace App\Services\Reservations;
 
 use App\Models\Reservation;
 use App\Models\Resource;
@@ -9,21 +9,16 @@ use App\Services\ResourceCapacityCalculator;
 use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
 
-/**
- * The one availability payload for a resource over a period — the create form, the availability
- * API and the reservation cart all read it, so they cannot disagree about how much is free.
- *
- * `lowestCapacityAtDateTimeRange` is the flexible figure (active reservations whose time already
- * ended are ignored); it is what the UI caps quantities at and what checkout enforces.
- */
-class SerializeResourceAvailability
+final class ResourcePresenter
 {
     public const array RESERVATION_POLICY_RELATIONS = ['users', 'resources.tenant', ...Reservation::TENANT_RELATIONS];
 
     /**
-     * @return array{capacity: int, is_reservable: bool, lowestCapacityAtDateTimeRange: int, strictLowestCapacityAtDateTimeRange: int, discrepancies: list<array<string, mixed>>}
+     * The flexible figure ignores active reservations whose time has ended, matching checkout.
+     *
+     * @return array{capacity: int, is_reservable: bool, lowestCapacityAtDateTimeRange: int, strictLowestCapacityAtDateTimeRange: int, discrepancies: list<array{key: int, id: string|null, name: string|null, quantity: int, state: string, start_time: int|null, end_time: int|null}>}
      */
-    public static function execute(Resource $resource, Carbon|int $start, Carbon|int $end, User $viewer): array
+    public static function availability(Resource $resource, Carbon|int $start, Carbon|int $end, User $viewer): array
     {
         $calculator = new ResourceCapacityCalculator($resource);
         $availability = $calculator->summarizeAvailability(new TimeRange($start, $end));
@@ -38,16 +33,6 @@ class SerializeResourceAvailability
                 ->map(fn (Reservation $reservation): array => self::reservationRow($reservation, $viewer))
                 ->all(),
         ];
-    }
-
-    /**
-     * The flexible free quantity alone, for callers that only need the number.
-     */
-    public static function available(Resource $resource, Carbon|int $start, Carbon|int $end, ?int $excludedReservationResourceId = null): int
-    {
-        return $resource->lowestCapacityAtDateTimeRange(
-            $resource->getCapacityAtDateTimeRange($start, $end, [], [], true, $excludedReservationResourceId)
-        );
     }
 
     /**
@@ -69,5 +54,18 @@ class SerializeResourceAvailability
             'start_time' => $reservation->pivot->start_time?->timestamp,
             'end_time' => $reservation->pivot->end_time?->timestamp,
         ];
+    }
+
+    /** @return list<array{id: string, name: string, email: string|null, phone: string|null, facebook_url: string|null, profile_photo_path: string|null}> */
+    public static function managers(Resource $resource): array
+    {
+        return $resource->managers()->map(fn (User $user): array => [
+            'id' => (string) $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'facebook_url' => $user->facebook_url,
+            'profile_photo_path' => $user->profile_photo_path,
+        ])->values()->all();
     }
 }

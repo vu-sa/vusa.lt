@@ -6,7 +6,6 @@ use App\Actions\ActivityRequests\GetUserActivityRequests;
 use App\Actions\GetFollowedInstitutions;
 use App\Actions\GetRecentlyEditedRecords;
 use App\Actions\GetUpcomingMeetingsForUser;
-use App\Actions\SerializeReservationCart;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\ShowAdminHomeRequest;
@@ -22,6 +21,7 @@ use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RepStatisticsScope;
+use App\Services\Reservations\ReservationPresenter;
 use App\Settings\FormSettings;
 use App\Support\Season;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -125,7 +125,7 @@ class DashboardController extends AdminController
             'recentlyEdited' => $recentlyEdited,
             'followedInstitutions' => $followedInstitutions,
             'registrationForms' => fn () => $this->registrationForms($user()),
-            'reservationDraft' => fn () => SerializeReservationCart::summary($user()),
+            'reservationDraft' => fn () => ReservationPresenter::cartSummary($user()),
         ]);
     }
 

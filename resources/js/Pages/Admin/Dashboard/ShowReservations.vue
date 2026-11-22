@@ -108,7 +108,7 @@ import { CollectionSkeleton, OverviewSection } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
 import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import ReservationsNeedingDecision from '@/Components/Reservations/ReservationsNeedingDecision.vue';
-import type { ReservationCart, ReservationDecision } from '@/Components/Reservations/types';
+import type { ReservationCart, ReservationDecision, ReservationTableRow } from '@/Components/Reservations/types';
 import ReservationStateSummary from '@/Components/Reservations/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { useDocsHref } from '@/Composables/useDocsHref';
@@ -123,8 +123,8 @@ const props = defineProps<{
   managesResources: boolean;
   reservationCart: ReservationCart | null;
   counts: { waitingForMe: number; lentOut: number; overdue: number; mine: number; myOverdue: number };
-  waitingForMe?: DashboardReservation[];
-  myUpcoming?: DashboardReservation[];
+  waitingForMe?: ReservationTableRow[];
+  myUpcoming?: ReservationTableRow[];
 }>();
 
 // Known on first paint from the count, so the layout does not jump when the list arrives.
