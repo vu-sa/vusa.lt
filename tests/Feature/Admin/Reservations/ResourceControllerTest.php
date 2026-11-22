@@ -376,6 +376,29 @@ describe('show', function (): void {
             );
     });
 
+    test('a manager from another tenant sees availability with redacted reservation details', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $resource = Resource::factory()->for($otherTenant)->create(['capacity' => 3, 'is_reservable' => true]);
+        $owner = makeUser($otherTenant);
+        bookResource($resource, $owner, now()->subHour(), now()->addHour(), 'lent', 2);
+
+        asUserWithInertia($this->resourceManager)->get(route('resources.show', $resource))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/ShowResource')
+                ->where('resource.id', $resource->id)
+                ->where('resource.tenant.id', $otherTenant->id)
+                ->where('availableNow', 1)
+                ->where('can.update', false)
+                ->where('can.delete', false)
+                ->has('currentLoans', 1)
+                ->where('currentLoans.0.quantity', 2)
+                ->where('currentLoans.0.reservation_id', null)
+                ->where('currentLoans.0.name', null)
+                ->where('currentLoans.0.href', null)
+            );
+    });
+
     test('a finished reservation appears in the deferred history', function (): void {
         bookResource($this->resource, $this->member, now()->subWeek(), now()->subDays(5), 'returned');
 
