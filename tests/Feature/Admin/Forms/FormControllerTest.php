@@ -98,6 +98,22 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('index rows match the FormPresenter shape', function (): void {
+        Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Anketa'], 'path' => ['lt' => 'anketa']]);
+
+        asUserWithInertia($this->admin)
+            ->get(route('forms.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('forms.data.0.name', ['lt' => 'Anketa', 'en' => ''])
+                ->where('forms.data.0.path', ['lt' => 'anketa', 'en' => ''])
+                ->where('forms.data.0.force_delete_blocked_reason', null)
+                ->where('forms.data.0.tenant.id', $this->tenant->id)
+                ->whereType('forms.data.0.registrations_count', 'integer')
+                ->whereType('forms.data.0.created_at', 'string')
+                ->whereType('forms.data.0.can.update', 'boolean')
+            );
+    });
+
     test('index shows forms from all tenants for super admin', function (): void {
         // Clear any existing forms to ensure clean test
         Form::query()->delete();

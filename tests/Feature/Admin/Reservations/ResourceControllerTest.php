@@ -330,6 +330,20 @@ describe('show', function (): void {
             );
     });
 
+    test('managers match the ResourcePresenter shape', function (): void {
+        grantPurpose($this->resourceManager->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
+
+        asUserWithInertia($this->member)->get(route('resources.show', $this->resource))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('managers.0.id', (string) $this->resourceManager->id)
+                ->whereType('managers.0.name', 'string')
+                ->whereType('managers.0.email', 'string|null')
+                ->whereType('managers.0.phone', 'string|null')
+                ->whereType('managers.0.facebook_url', 'string|null')
+                ->whereType('managers.0.profile_photo_path', 'string|null')
+            );
+    });
+
     test('an unreturned item past its end time is flagged overdue', function (): void {
         bookResource($this->resource, $this->member, now()->subDays(3), now()->subDay(), 'lent');
 
