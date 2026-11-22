@@ -6,12 +6,16 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | resources/js/Components/ActionWindow/** | .ai/rules/action-window.md |
 | resources/js/Components/AdminForms/** | .ai/rules/admin-forms.md |
-| app/Enums/ModelEnum.php, app/Support/MorphMap.php, app/Services/AdminNavigation/AdminNavigationCatalog.php, app/Policies/ModelPolicy.php | .ai/rules/admin-section.md |
 | resources/js/Pages/Admin/ShowAdminHome.vue, resources/js/Components/Home/** | .ai/rules/admin-home.md |
+| app/Enums/ModelEnum.php, app/Support/MorphMap.php, app/Services/AdminNavigation/AdminNavigationCatalog.php, app/Policies/ModelPolicy.php | .ai/rules/admin-section.md |
 | app/**, tests/Feature/System/DutiableDetachConventionTest.php | .ai/rules/app.md |
-| app/Actions/**, app/Services/**, app/Support/**, app/ValueObjects/**, app/Helpers/** | .ai/rules/backend-layout.md |
 | app/Actions/GetInstitution*.php, app/Actions/{GetMeetingOverseers,ResolveMeetingNotificationAudience,ResolveMailingListMembers,ResolveTaskAssignees,ResolveTaskAudience}.php, app/Services/{MeetingRepresentative,Responsibility,CommentRecipient}Resolver.php, app/Tasks/Subscribers/**, app/Models/InstitutionSecretary.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |
+| app/Actions/**, app/Services/**, app/Support/**, app/ValueObjects/**, app/Helpers/** | .ai/rules/backend-layout.md |
 | resources/js/Components/Public/Base/MediaFrame.vue | .ai/rules/base.md |
+| app/Http/**, resources/js/**, routes/** | .ai/rules/boost/http-js-routes.md |
+| app/Http/**, routes/** | .ai/rules/boost/http-routes.md |
+| app/Models/** | .ai/rules/boost/models.md |
+| tests/** | .ai/rules/boost/tests.md |
 | tests/Browser/** | .ai/rules/browser.md |
 | app/Models/Cadence.php, app/Policies/CadencePolicy.php, app/Actions/Cadences/**, app/Http/Requests/Cadences/**, resources/js/Components/Cadences/**, app/Http/Requests/UpdateInstitutionSecretariesRequest.php | .ai/rules/cadences.md |
 | docs/changelog/**, docs/en/changelog/** | .ai/rules/changelog.md |
@@ -42,8 +46,8 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Http/Controllers/SitemapController.php, app/Models/News.php | .ai/rules/news-sitemap.md |
 | app/Notifications/**, app/Mail/**, app/Enums/NotificationType.php, app/Services/Notifications/**, app/Listeners/HandleTaskCreated.php, app/Listeners/QueueNotificationForDigest.php, app/Tasks/Subscribers/**, app/Actions/Schedulable/TaskNotifier.php, app/Console/Commands/Send*.php, resources/js/Pages/Admin/ShowNotificationSettings.vue | .ai/rules/notifications.md |
 | resources/css/components/turtle-loader.css, resources/views/turtle-loader.blade.php, resources/js/admin.ts, resources/js/public.ts | .ai/rules/page-loader.md |
-| app/Support/Permissions/**, app/Policies/**, app/Enums/ModelEnum.php, app/Actions/Permissions/**, app/Console/Commands/*Permissions.php, database/seeders/ModelPermissionSeeder.php, resources/js/Features/Admin/PermissionMatrix/** | .ai/rules/permissions.md |
 | app/Services/**/*Presenter.php, app/Http/Resources/** | .ai/rules/payloads.md |
+| app/Support/Permissions/**, app/Policies/**, app/Enums/ModelEnum.php, app/Actions/Permissions/**, app/Console/Commands/*Permissions.php, database/seeders/ModelPermissionSeeder.php, resources/js/Features/Admin/PermissionMatrix/** | .ai/rules/permissions.md |
 | resources/js/Components/AdminForms/**, resources/js/Components/RichContent/**, resources/js/Components/Pickers/**, resources/js/Components/Search/**, resources/js/Components/ui/single-select/**, resources/js/Pages/Admin/** | .ai/rules/pickers.md |
 | app/Providers/** | .ai/rules/providers.md |
 | app/Http/Controllers/Public/**, app/Http/Controllers/PublicController.php, app/Providers/AppServiceProvider.php | .ai/rules/public-head.md |
