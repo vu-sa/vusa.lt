@@ -2,9 +2,15 @@
 paths:
   - 'app/Services/Typesense/**'
   - 'app/Console/Commands/GenerateTypesenseSearchKey.php'
+  - 'app/Models/**'
+  - 'config/scout.php'
+  - 'resources/js/Search/**'
 ---
 
 # Typesense
+
+## Choose the search source by model and visibility
+Scout defaults to `database` (`SCOUT_DRIVER`). Models that override `searchableUsing()` select their engine explicitly. Browser search and Typesense admin collections use scoped keys. Trash collections read from the database, including for indexed models.
 
 ## Typesense narrows, the policy decides
 A search list may only narrow what the user sees; opening any record is always authorized live by its policy (view / viewSummary / follow).

@@ -2,6 +2,8 @@
 paths:
   - 'app/Services/**/*Presenter.php'
   - 'app/Http/Resources/**'
+  - 'app/Http/Controllers/**'
+  - 'resources/js/Pages/**'
 ---
 
 # Page payloads
@@ -44,11 +46,17 @@ Deferred and optional props keep their wrapper and call a presenter inside the c
 that closure **no** return type: in `Inertia::defer(fn (): array => …)` the declared `array`
 wins and the prop becomes `unknown[]`, while `fn () => …` takes the presenter's shape.
 
+## Load payloads when the page needs them
+Use Inertia props for the initial render, history-bound state and partial reloads via `router.reload`. Use `@/Composables/useApi` for on-demand refreshes, polling, cross-component data sharing and real-time updates.
+Send the shell and useful overview data on the first visit. Defer large non-default panels with `Inertia::defer()` and match each with a `<Deferred>` skeleton. Group props normally needed together and use `WhenVisible` for below-the-fold work.
+Share a Resource or named mapper across full admin surfaces with the same data. Keep dashboard and indicator payloads compact.
+
 ## Mirror the shape on the Vue page, test it on the PHP side
 - Replace `App.Entities.*` prop types with a local interface that matches the PHP shape
   exactly. A redacted vs full union is a discriminated union. At Wayfinder adoption a codemod
   swaps these for `Inertia.Pages.*`.
 - The page's feature test asserts keys and types with `assertInertia(...)->whereType(...)`, for
-  every variant (privacy, locale, deferred via `loadDeferredProps()`).
+  every variant (privacy and locale included). Assert deferred props are absent initially, then
+  load their group with `loadDeferredProps()` and assert its keys and types.
 - Shared components that receive the typed data take what all their callers pass. Don't force
   one page's shape onto them. `npm run typecheck:ratchet` must pass with no new errors.

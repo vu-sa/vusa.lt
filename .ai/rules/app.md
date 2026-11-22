@@ -6,6 +6,12 @@ paths:
 
 # App
 
+## Cache and sessions
+Use Redis for caching and sessions. Target a cache hit ratio above 80%.
+
+## Build URLs with the URL helpers
+Use `route()` or `tenantRoute()` for internal links. To change an existing URL, use `Uri::of($url)->withHost(...)->withQuery(...)` so parsing and encoding stay with Laravel.
+
 ## Authorization reads go through ModelAuthorizer's permission-scoped API
 Policies, controllers, form requests and services must resolve authorization with
 `$authorizer->scope($user, $permission)` (or `allows()` / `tenants()` / `duties()`), never from

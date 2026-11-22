@@ -1,21 +1,18 @@
 # VU SR (vusa.lt) — Agent Instructions
 
-Shared instructions for any AI agent (Claude Code, Copilot, Cursor, etc.) working in this repo. Root `CLAUDE.md` and `.github/copilot-instructions.md` source this file.
+Codex, Antigravity and Copilot load this file automatically.
+Claude loads it through `CLAUDE.md` and auto-loads matching rules in `.ai/rules` via `.claude/rules`.
+Other agents must open `.ai/rules/index.md` and the nested `CLAUDE.md` for the paths they touch.
 
 ## Project Overview
 
-**VU SR website (vusa.lt)** — a dual-purpose Laravel app: a **public website** for VU Students' Representation, and an **internal management platform** for student representation work.
-
-**Stack**: Laravel 13+, Vue 3, Inertia.js v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense (public and admin search), Laravel Sail.
-
-**Local dev**: `http://www.vusa.test` (the `www.` subdomain is required). Test login: `test@test.com` / `password`.
-
-This is a **student-run project**. Prioritize maintainability and approachability over clever solutions.
+VU Students' Representation runs a public website and an internal platform for representation work. Keep this student-run project approachable and maintainable.
+Laravel 13+, Vue 3, Inertia v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense search and Laravel Sail.
+Develop at `http://www.vusa.test` (include `www.`). Test login is `test@test.com` / `password`.
 
 ## Admin UI (Mano VU SA)
 
-**Calm, direct, square** — the public site's paper, ink and VU SA red/amber, hairlines instead of
-boxes, at working density. Every screen answers *what needs me?* before *where can I go?*.
+**Calm, direct, square** — paper, ink, VU SA red/amber, hairlines and working density. Answer *what needs me?* before *where can I go?*
 
 1. **Permissions shape the product** — workspaces, sections and actions appear on `viewAny`/`create`; hidden, never disabled.
 2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.
@@ -25,28 +22,20 @@ boxes, at working density. Every screen answers *what needs me?* before *where c
 6. **Phone and tablet are first-class** (390 · 820 · 1180 · 1440, 44px touch, nothing hover-only).
 7. **Speak like a colleague** — *tu*, verbs on buttons, one glossary. The benchmark is a rep finishing an emailed task on a phone in five minutes.
 
-The rules live in `.ai/rules`: `js-pages-admin.md` (page types, anatomy, visual, migrate-on-touch),
-`admin-forms.md`, `pickers.md`, `css.md` (colour system), `constants.md` (statuses,
-entity types), `shell.md` (navigation), `lang.md` (glossary), `notifications.md`, `home.md` (reps).
-The reasoning behind them is in git history: `git log -- .ai/redesign/admin`. Code comments that cite
-a decision ID (D1–D13, O1–O26, U1–U26, R-a…R-h) or a redesign PR number (e.g. "PR 5.5") refer to
-that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
-`git show $(git log -1 --format=%H -- .ai/redesign/admin/decisions.md)^:.ai/redesign/admin/decisions.md`.
+Admin rules in `.ai/rules/` include `js-pages-admin.md`, `admin-forms.md`, `pickers.md`, `css.md`, `constants.md`, `shell.md`, `lang.md`, `notifications.md` and `home.md`.
+Decision IDs (D1–D13, O1–O26, U1–U26, R-a…R-h) and redesign PR numbers refer to `decisions.md`, `reps.md` and `plan.md` in the history of `.ai/redesign/admin`.
+In a checkout with the redesign history, read the decisions with `git show $(git log -1 --format=%H -- .ai/redesign/admin/decisions.md)^:.ai/redesign/admin/decisions.md`.
 
 ## Public UI
 
-Public and admin pages share one paper, ink, and brand palette (global `:root`/`.dark`); `data-surface` on `<html>` only scopes the few rules that differ.
-`--accent` remains the shadcn hover surface; `--brand` and `--brand-fill` carry VU SA red or amber.
-Build from `ui/` → `Brand/` + `Shared/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
-Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and
-use tokens instead of raw colour utilities. Check both themes and phone layouts. Detailed rules
-live in `.ai/rules/public.md`, `.ai/rules/css.md`, and `resources/js/Components/CLAUDE.md`.
-SEO (head metadata, one h1, `data-nosnippet` on chrome, no client `<Head>`) is in `.ai/rules/seo.md`
-and is enforced by `PublicSeoContractTest` and `PublicSeoRenderTest`.
+Both surfaces share paper, ink and brand tokens. Reserve `data-surface` for surface-specific rules, `--accent` for shadcn hover and `--brand` / `--brand-fill` for red or amber.
+Build from `ui/` → `Brand/` + `Shared/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`. Use `Public/Base/` for domain-free primitives and `ui/button` for actions.
+Keep corners square, use colour tokens and check both themes at phone widths. See `.ai/rules/public.md`, `.ai/rules/css.md` and `resources/js/Components/CLAUDE.md`.
+See `.ai/rules/seo.md` for metadata, one h1, `data-nosnippet` on chrome and server-only head metadata. `PublicSeoContractTest` and `PublicSeoRenderTest` enforce these rules.
 
 ## Documentation Hub
 
-Specialized guidance lives in sub-directory `CLAUDE.md` files:
+Before editing, open `.ai/rules/index.md` and read every rule whose globs cover your paths.
 
 - Backend testing: [tests/CLAUDE.md](tests/CLAUDE.md) + [tests/README.md](tests/README.md)
 - Frontend testing: [resources/js/CLAUDE.md](resources/js/CLAUDE.md)
@@ -61,7 +50,7 @@ Specialized guidance lives in sub-directory `CLAUDE.md` files:
 
 Add or update a test when a change affects observable behaviour, a business rule, a security boundary, a data transformation, or a regression likely to recur. Do not add a test solely for deleting dead code, an unused asset/preload or retired integration; comments, formatting, copy-only edits; framework behaviour; or implementation details without a user-facing contract.
 
-For a component behaviour that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model), assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. 
+For a component behaviour that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model), assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion.
 
 ## Development Commands
 
@@ -80,52 +69,38 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run knip         # unused files/exports/deps — run by hand, verify before deleting
 ```
 
-A transient Sail failure is not a blocker: retry the command and run `./vendor/bin/sail ps` before reporting Docker or Podman unavailable.
+Retry Sail failures and run `./vendor/bin/sail ps` before reporting Docker or Podman unavailable.
 
-**Exception — Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`): Docker images can't be pulled there, so Sail never runs. `.claude/hooks/session-start.sh` installs dependencies natively and writes a SQLite `.env`; drop the `./vendor/bin/sail` prefix (`php artisan test --parallel --compact`, `npm run test`, `vendor/bin/pint --dirty`). MariaDB, Typesense, Reverb and Mailpit are unavailable, so verify with tests, not a running site; tests that opt into real Typesense (`usesTypesense()`) fail with `ConnectException` there — run those in CI.
+**Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`) runs natively. `.claude/hooks/session-start.sh` installs dependencies and writes a SQLite `.env`. Drop the Sail prefix and verify with tests. MariaDB, Typesense, Reverb and Mailpit are unavailable. Run `usesTypesense()` tests in CI.
 
-Note: `composer phpmd` has no baseline, so it lists every existing finding; CI runs it only on the PHP files a change touches, existing findings included — fix what you touch where reasonable. Pass paths to narrow it (`composer phpmd -- app/Models/Foo.php`). If numbers look stale, delete pdepend's cache (`~/.cache/pdepend` in the container).
+`composer phpmd` has no baseline. CI checks changed PHP files. Fix existing findings there where reasonable, pass paths to narrow the run and clear `~/.cache/pdepend` in the container if counts look stale.
+`npm run typecheck:ratchet` blocks new errors. `npm run typecheck` lists all errors. Run `npm run typecheck:baseline` after fixes. Increases need `--allow-increase` and PR justification.
 
-Note: `npm run typecheck:ratchet` blocks CI on new TypeScript errors; `npm run typecheck` still lists all findings. Never grow the baseline to make CI pass: fix the error, or use `--allow-increase` with justification in the PR. After fixing errors, run `npm run typecheck:baseline` to lock in the improvement (CI requires it). Don't run ESLint fixes or chase unrelated existing findings unless explicitly asked — verify frontend changes with Vitest.
+**Backend tests** beyond one file use `--parallel` with one common path or `--filter`. Run files serially in a worktree.
+Local TIA reruns affected tests. CI runs the full suite in four shards. See [tests/CLAUDE.md](tests/CLAUDE.md#running-backend-tests) for commands, `--no-tia` and `--fresh`.
 
-### Working in a Git worktree
-
-- Run builds, tests and other file-writing commands as `sail`, never container root. When using the main checkout's running container, pass both the user and worktree directory explicitly: `./vendor/bin/sail exec -u sail -w /var/www/html/.worktrees/<name> laravel.test <command>`. Plain `sail exec` can run as root, leaving generated files owned by `nobody` on the host and preventing worktree removal.
-- Before removing a worktree, check its status and preserve uncommitted work. Fix any container-created ownership problems within that worktree before running `git worktree remove <path>`; do not use `--force` to bypass permission errors or discard work.
-- Verify removal in both `git worktree list` and the filesystem. Missing Git metadata does not prove cleanup succeeded: permission errors can leave a partially deleted folder. Remove confirmed leftovers through the container with sufficient permissions, scoped to that folder; never follow shared `.env`, `node_modules` or other symlinks.
-
-### Running backend tests — always `--parallel`
-
-Anything wider than a single file runs with `--parallel` (the full suite takes ~50s on 16 processes
-and several times that serially — a serial full run is a mistake, not a preference). Test Impact Analysis (TIA) reruns only tests affected by
-your change locally; CI (pull requests and `main`) runs the full suite, sharded across four runners. `--parallel`
-takes exactly one path — passing two files/directories fails with paratest's
-`Too many arguments, expected arguments "path"`; narrow to a common path or use `--filter` instead
-of falling back to a serial run. Full command reference, the TIA baseline/CI mechanics, and the
-`--no-tia`/`--fresh` escape hatches: [tests/CLAUDE.md](tests/CLAUDE.md#running-backend-tests).
-The one exception is a git worktree, where parallel runs fail — see [Branches and worktrees](#branches-and-worktrees).
-
-### Linting
-
-`npm run lint` runs ESLint across the entire `resources/js` directory — expect hundreds of pre-existing warnings and errors (`no-explicit-any`, `no-restricted-imports`, import-order, etc.). To check only the files you changed, use `npm run lint:file -- <path>` (e.g. `vendor/bin/sail npm run lint:file -- resources/js/Pages/Public/Search.vue`). This is the recommended way to verify your edits without drowning in legacy noise.
+**Linting** uses `npm run lint:file -- <path>` for changed files. `npm run lint` also reports legacy findings.
+Verify frontend changes with Vitest. Leave unrelated ESLint fixes to a separate request.
 
 ### Branches and worktrees
 
-`dev` deploys to staging and `main` to production. Work targets `dev`; `dev → main` release PRs ship it, so keep them frequent and nothing waits long on `dev` alone.
+`dev` deploys to staging. Ship frequently to production through `dev → main` release PRs.
 
-- **Short, single-commit fixes** are committed straight to `dev` with a concise message — no PR.
-- **Bigger pieces, refactors and important fixes** get their own branch in a git worktree, based on `dev`, with a PR into `dev` — never `git checkout` in the main checkout, which other agent sessions share.
-- **Several pieces at once** go into one GitHub stack: `gh stack link --base dev <bottom> … <top>`, each PR based on the branch below it, with `dev` never part of the stack. Keep the feature branches linear — update them by rebasing and pushing with `--force-with-lease`, not with merge commits — and never force-push `dev`.
-- **Hotfixes** go to `main` only when urgent, followed straight away by merging `main` back into `dev`.
+- Commit **short, single-commit fixes** directly to `dev` with a concise message.
+- Use a branch and worktree based on `dev` for **larger work, refactors and important fixes**. Open a PR into `dev` and leave the shared checkout on its branch.
+- For **several pieces**, use `gh stack link --base dev <bottom> … <top>`. Each PR targets the branch below it. Keep `dev` outside the stack. Rebase feature branches and push with `--force-with-lease`. Never force-push `dev`.
+- Send only **urgent hotfixes** to `main` and merge `main` back into `dev` immediately.
 
-Put the worktree inside the repo so the Sail container can see it (only `.` is mounted):
+Place worktrees inside the repo so Sail can mount them.
 
 ```bash
 git worktree add .worktrees/<name> -b <fix|feat>/<name> origin/dev   # add /.worktrees/ to .git/info/exclude once
 cp .env .worktrees/<name>/.env && ln -s ../../node_modules .worktrees/<name>/node_modules
 ```
 
-A new worktree also needs its own `composer install` and `public/build`. Run Sail commands there with `-u sail` (root leaves root-owned files behind). Git can't resolve the worktree's `.git` inside the container, so `pint --dirty` and parallel/TIA Pest fail — run Pint on explicit paths and test files serially. Vitest, including the Storybook browser project, runs normally.
+Each worktree needs Composer dependencies and `public/build`. Use `./vendor/bin/sail exec -u sail -w /var/www/html/.worktrees/<name> laravel.test <command>` so generated files belong to the Sail user.
+Container Git metadata is inaccessible. Give Pint explicit paths and run Pest files serially. Vitest and Storybook work normally.
+Check status, preserve changes and fix ownership before `git worktree remove <path>`. Avoid `--force`. Verify removal with `git worktree list` and on disk. Use the container if needed to clean confirmed leftovers within that worktree. Avoid following shared symlinks.
 
 ## Core Patterns
 
@@ -136,246 +111,28 @@ A new worktree also needs its own `composer install` and `public/build`. Run Sai
 | Use Shadcn Vue for UI | Mix UI library styles |
 | Use Tailwind utilities directly | Use `@apply` in `<style>` blocks (except line-clamp/keyframes) |
 | Support both `lt` and `en` | Hardcode user-facing strings |
-| `lang/*.php` for nested translations | Nested objects in `lang/*.json` |
+| `lang/{admin,public,shared}/{lt,en}/` PHP files for nested translations | Nested objects in `lang/*.json` |
 | `vendor/bin/sail` for every CLI command | Run PHP/Node/Composer outside Sail |
 
 ## Comments
 
 Default to none. A comment earns its place by saying something the code cannot.
 
-- **Budget**: one line for a local `why`, up to three for a docblock. Longer than the code it describes is a smell — and a rule of thumb, not a licence to pad up to it.
-- **Say why, never what.** A constraint, a rejected alternative, the bug a line prevents. Never restate the signature or the next line.
-- **No narration.** No history of how the code got here, no reasoning transcript, no essay on why something matters. Durable background belongs in `.ai/rules/` (via `record-rule`) or the changelog.
-- Trim bloated comments in files you touch.
-
-Language specifics: PHPDoc over inline comments (PHP), JSDoc rules under [TypeScript](#typescript).
-
-**Rule docs** (this file, `.ai/rules`, nested `CLAUDE.md`): when a rule can be a test or lint rule, write that and shrink the prose to one line pointing at it. Every `Class::member` and file path they name must resolve — `RuleReferencesTest` checks.
-
-## Architecture
-
-### Routes & API
-
-- `/api/v1/*` — public API (no auth)
-- `/api/v1/admin/*` — admin API (session auth)
-- `/mano/*` — Inertia admin pages (defined in `routes/admin.php`). Note: `/mano`, **not** `/admin`. Route names have **no** `admin.` prefix — e.g. `route('studyPrograms.index')`.
-
-**One HTTP convention** (blocking lint: `no-restricted-globals` / `no-restricted-syntax` in `eslint.config.mjs`):
-- JSON calls to our own endpoints → `useApi` (reactive read), `useApiMutation` (one fixed action) or `apiRequest()` (imperative: any URL, concurrent, `FormData`, `keepalive`, status-aware) from `@/Composables/useApi`.
-- A form with bound fields and validation errors outside page navigation → Inertia `useHttp`.
-- Raw `fetch`, XHR or VueUse `useFetch` only for Typesense, external services, static files and upload progress — the lint allowlist.
-
-**API vs Inertia**:
-
-| Use API (`useApi`) | Use Inertia props |
-|---|---|
-| Dynamic refresh, polling, on-demand | Initial page render |
-| Cross-component data sharing | History-state-bound data |
-| Real-time updates | Partial reloads via `router.reload` |
-
-### Inertia v3 data loading
-
-Keep the first visit to the page shell and immediately useful overview data. Defer large, non-default tabs or panels with `Inertia::defer()`; pair each with `<Deferred>` and a skeleton fallback. Group only props normally needed together; use `WhenVisible` for below-the-fold work.
-
-Use a shared Resource or named mapper when several full admin surfaces need the same payload. Keep dashboard and indicator payloads intentionally compact.
-
-Feature-test a deferred contract: assert the prop is absent initially, then load and assert its group with `loadDeferredProps()`.
-
-**Standard API response shape** (via `ApiResponses` trait):
-- Success: `{ success: true, data, message?, meta? }`
-- Error: `{ success: false, message, errors?, code? }`
-
-API controllers extend `App\Http\Controllers\Api\ApiController` and use the `ApiResponses` trait. Public lives in `App\Http\Controllers\Api\*`, admin in `App\Http\Controllers\Api\Admin\*`.
-
-Frontend usage:
-
-```typescript
-import { useApi } from '@/Composables/useApi';
-import type { TutorialProgressData } from '@/Types/api.d';
-
-const { data, isFetching, execute } = useApi<TutorialProgressData>(
-  route('api.v1.admin.tutorials.progress')
-);
-```
-
-Use Ziggy's `route()` helper — types are auto-generated by `vite.config.mts`.
-
-### Permissions
-
-**Format**: `{resource}.{action}.{scope}` — e.g. `news.update.padalinys`.
-
-- Resource: plural model (`news`, `users`, `documents`)
-- Action: `read | create | update | delete | forceDelete`
-- Scope: `*` (global — `PermissionScopeEnum::ALL`, written `*` in the permission string, not `all`) | `own` (directly associated) | `padalinys` (within user's tenant)
-
-**Resolution order**: super-admin short-circuit → direct user permission → permission via duty/role → scope evaluation.
-
-Key components: `ModelAuthorizer`, `Permission` facade, `HasCommonChecks` trait, `ModelPolicy` base class. Vue receives `$page.props.auth.can`.
-
-The grantable set is `PermissionCatalog` (it feeds the role editor matrix and the seeder). Change it there and run `permissions:sync` (deploys run it); only offer an `own` scope a policy actually reads. See `.ai/rules/permissions.md`.
-
-`ModelAuthorizer` holds no ambient state: resolve one permission at a time with
-`scope($user, $permission)` (returning an immutable `PermissionScope` with `granted`,
-`isAllScope`, `duties`, `tenants`) or its readers `allows()` / `tenants()` / `duties()`. A
-permission the actor does not hold resolves to **zero** tenants — never a wider fallback. See
-`.ai/rules/services.md`.
-
-Authorize on the controller method with `#[Authorize('update', 'news')]`; checks that need request input stay in the Form Request's `authorize()` — see [app/Http/Controllers/CLAUDE.md](app/Http/Controllers/CLAUDE.md). Validate inputs through Form Requests. Return **403** for forbidden, never 302 for direct hits — see "Authorization responses" below.
-
-For tests, prefer the smallest role that covers the case (`'Komunikacijos koordinatorius'`, `'Išteklių administratorius'`, etc.). Use `config('permission.super_admin_role_name')` only when comprehensive coverage is genuinely needed. See [tests/CLAUDE.md](tests/CLAUDE.md).
-
-### Translatable models (Spatie)
-
-- Admin interfaces: use `toFullArray()` to expose the full translation object.
-- Public interfaces: use `toArray()` for the localized string.
-- Factory data: always include both locales — `['lt' => '…', 'en' => '…']`.
-- PHPStan: leave the generated `@property` types on translatable fields as `array|string|null`. That is what the attribute genuinely is — an array via `toFullArray()`, a string via `toArray()` — and it is what `ide-helper:models` now emits. Do not hand-narrow to `string|null`; the next `composer install/update` only reverts it, and level 5 is clean either way.
-
-For admin index responses with translatable models:
-
-```php
-'data' => $models->getCollection()->map->toFullArray() // NOT ->items()
-```
-
-### i18n (laravel-vue-i18n)
-
-- Short / global strings: `lang/lt.json` and `lang/en.json` (flat keys).
-- Feature-specific: PHP files in `lang/lt/` and `lang/en/`, dot-notation keys (e.g. `search.document_search_title`).
-- Vue: `{{ $t('key') }}` in templates, `:title="$t('key')"` for attributes.
-- New features: extend an existing PHP file or add a new one — don't create nested objects in `*.json`.
-
-### Language switching
-
-Public controllers extending `PublicController` should call `shareOtherLangURL()` to enable the language toggle.
-
-- Non-subdomain: `/lt/dokumentai` ↔ `/en/documents` (global content)
-- Subdomain (tenant): `mif.vusa.lt/lt/` ↔ `mif.vusa.lt/en/`
-
-### Search
-
-- Default Scout driver: `database` (`SCOUT_DRIVER` env) — used by every model that does not override `searchableUsing()`.
-- Typesense: models that override `searchableUsing()` (users, institutions, duties, meetings, agenda items, documents, resources, pages, news, calendar). Public search and admin collections/search query it from the browser with scoped keys (`useTypesenseCollectionSource`, `Search/admin`). Trash views always read the database.
-- Redis: caching + sessions; target >80% hit ratio.
-
-### Activity log (spatie/laravel-activitylog)
-
-- Add `use LogsActivity;` to a model; override `getActivitylogOptions()` returning `LogOptions::defaults()->logFillable()->logOnlyDirty()->dontLogEmptyChanges()` to auto-log create/update/delete.
-- Manual entries: `activity()->performedOn($model)->causedBy($user)->event(ActivityEvent::Updated)->withProperties([...])->log('message');`
-- Query: `Activity::forSubject($model)->get()`, `::causedBy($user)`, `::forEvent(ActivityEvent::Created)`.
-- `attribute_changes` column = `{attributes, old}` (auto, from `LogsActivity`); `properties` column = your `withProperties()` data.
-- Config: `config/activitylog.php` (`enabled`, `clean_after_days`, `default_except_attributes`).
-
-### Where backend code lives
-
-Actions, Services and Support each have one job; see `.ai/rules/backend-layout.md` before adding a class to `app/`.
-
-### Common helper patterns
-
-```php
-// The controller reads the actor; actions and services take it as an argument
-GetTenantsForUpserts::execute($request->user(), 'models.create.padalinys', $this->authorizer);
-
-// Manual filtering before TanStack filters: read validated input, never raw
-if ($request->safe()->filled('field')) {
-    $query->where('field', $request->validated('field'));
-}
-```
-
-- Build/manipulate URLs with `Uri::of($url)->withHost(...)->withQuery(...)` (fluent `Illuminate\Support\Uri`) — never `parse_url()` + string concatenation. Prefer `route()`/`tenantRoute()` for internal links.
-
-### Factories
-
-- Standard models → `database/factories/{Model}Factory.php`
-- Pivot models → `database/factories/Pivots/{Model}Factory.php` (namespace must match: `Database\Factories\Pivots\…`)
-
-## Frontend
-
-### Component tiers
-
-`ui/` (shadcn primitives) → `Brand/` + `Shared/` (both surfaces) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, `Pickers/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → `Features/Admin/` → pages. Dependencies run one way only; `npm run lint:boundaries` enforces it in CI.
-
-Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint rejects `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (copy the compact `Pages/Admin/Reservations/ShowResource.vue`; `ShowDuty.vue` / `ShowMeeting.vue` add tab deep links and lazy-loaded panels); collections use `CollectionPage`.
-
-Before adding a card, check the ~40 that exist: `find resources/js -name '*Card*.vue' -not -path '*/ui/*'`.
-
-Full rules and a "what do I reach for" table: [resources/js/Components/CLAUDE.md](resources/js/Components/CLAUDE.md).
-
-### Shadcn Vue gotchas
-
-- **Checkbox** binds via `model-value` / `v-model` — never `:checked` + `@update:checked`. The underlying `reka-ui` `CheckboxRoot` exposes `modelValue`.
-
-### Icon system — one set per surface
-
-| Surface | Primary set | Import path |
-|---|---|---|
-| Admin (`Pages/Admin/**`, admin Components) | **Lucide** | `import { Save, Lock } from '@lucide/vue'` |
-| Public (`Pages/Public/**`, `Components/Public/**`) | **Fluent** | `import IFluentX from '~icons/fluent/x24-regular'` |
-| Brand / social (FB, IG, Microsoft, Spotify…) | **Simple Icons** | `import ISimpleIconsFacebook from '~icons/simple-icons/facebook'` |
-| Dynamic (icon name stored as CMS data) | `@iconify/vue` | `<Icon :icon="\`fluent:${name}\`">` only for runtime-driven names |
-
-**Shared model/form barrel** (`@/Components/icons`): use for admin code that needs the model→icon mapping at runtime (CommandPalette, breadcrumbs, notifications). Contains Fluent icons; will migrate to Lucide once admin pages have moved.
-
-```ts
-import { NewsIcon, MeetingIconFilled } from '@/Components/icons';
-```
-
-**Do not** use `@/Types/Icons/regular` or `@/Types/Icons/filled` — these are deprecated and will be removed. Migrate callers to direct named imports.
-
-### Data tables (TanStack)
-
-Decision tree:
-- Admin collection page → `Layouts/CollectionPage.vue` + `useTypesenseCollectionSource` / `useDatabaseCollectionSource` / `useLocalCollectionSource`; trash is the same page (`?showDeleted=true`)
-- Small table embedded in another page → `SimpleDataTable.vue`
-
-Details: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md).
-
-### Breadcrumbs
-
-Breadcrumbs are used exclusively on public-facing pages (`PublicBreadcrumbs.vue`). The admin shell does not display breadcrumbs — the workspace switcher, section tabs, and page headers establish location.
-
-Source: `resources/js/Composables/useBreadcrumbsUnified.ts`.
-
-### Inertia `useForm` — clearing dirty state
-
-`form.defaults()` (no args) sets `isDirty = false` **synchronously**. Call it before `form.submit()` / `router.visit()` to avoid the unsaved-changes guard firing on programmatic navigation.
-
-`form.defaults(data)` (with arg) only updates stored defaults; `isDirty` recalculates asynchronously through a watcher — too late for `router.on('before')`.
-
-### Feature discovery (spotlights)
-
-New or relocated admin UI that a returning user wouldn't find unaided **must ship with a spotlight** so it's discoverable; something moved into plain sight, such as a visible section tab, needs none. Wrap the entry point with `SpotlightPopover` (`@/Components/Patterns/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the responsibilities spotlight in `Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue`.
-
-## Styling (Tailwind v4)
-
-- Use utilities directly on elements; co-locate styles with components.
-- Avoid `@apply` except for genuinely necessary cases (line-clamp, keyframes).
-- Long class lists: array syntax with logical grouping.
-
-```vue
-<div :class="[
-  'flex items-center justify-between',
-  'bg-white dark:bg-zinc-800',
-  'p-4 rounded-lg shadow-sm',
-  'hover:shadow-md transition-shadow',
-]">
-```
-
-If a page/component supports dark mode, new code in the same area must use matching `dark:` variants.
-
-## TypeScript
-
-- New code: avoid `any` — use `unknown`, specific interfaces, or `ApiResponse<T>`.
-- Existing code: replace `any` opportunistically when touching the file.
-- Globals available: `ApiResponse<T>`, `FormEvent<T>`, `TableActionEvent<T>`.
-- JSDoc: only document non-obvious behavior, deprecations, external workarounds. Don't paraphrase the type signature.
-
-## Static analysis (PHPStan level 5)
-
-- IDE helper annotations are auto-generated on `composer install/update`. Re-run with `composer ide-helper`, and commit what it writes — including `array|string|null` on translatable fields (see Translatable models).
-- What regeneration *does* break is hand-written nullability it cannot infer: a morphTo `Model|null` narrowed to `Model`, a dropped `@property-read`. Those show up as `nullsafe.neverNull` / `property.notFound` in consumer code; check `git diff app/Models/` before believing such an error.
-- For relations PHPStan can't infer, add `@property-read` on the model class.
-- Annotate keyed collections: `/** @var \Illuminate\Support\Collection<int, \App\Models\X> $c */`.
-- For JSON columns, type-check with `is_string()` / `is_array()` before operating.
+- Allow one line for a local explanation and up to three for a docblock. Revisit comments longer than the code and trim bloat on touch.
+- Name the constraint, rejected alternative or bug the code prevents. Leave signatures and mechanics to the code.
+- Keep history and durable rationale in `.ai/rules/` (via `record-rule`) or the changelog.
+- Prefer PHPDoc in PHP. See `.ai/rules/frontend.md` for JSDoc.
+
+**Rule docs** in this file, `.ai/rules` and nested `CLAUDE.md` use one-line pointers. Write a test or lint rule whenever it can enforce the guidance. `RuleReferencesTest` checks members, paths, scripts, aliases and globs. Mark intentionally unresolved examples with `<!-- ref-ignore -->` on their line.
+
+## Permissions
+
+Use `{resource}.{action}.{scope}` (e.g. `news.update.padalinys`), with a plural resource and `read | create | update | delete | forceDelete`.
+Scope is `*` (global, `PermissionScopeEnum::ALL`), `own` (directly associated) or `padalinys` (within the user's tenant).
+Resolve super-admin first, then direct user permission, then permission via duty or role, then scope.
+Resolve each permission through `ModelAuthorizer`'s `scope()`, `allows()`, `tenants()` or `duties()`. An ungranted permission resolves to **zero** tenants. See `.ai/rules/services.md` and `.ai/rules/permissions.md`.
+Put `#[Authorize('update', 'news')]` on the controller method. Put checks that need input in the Form Request's `authorize()`. Validate inputs through Form Requests.
+Use the smallest role that covers the test. Reserve `config('permission.super_admin_role_name')` for comprehensive coverage. See `tests/CLAUDE.md`.
 
 ## Authorization responses
 
@@ -385,17 +142,7 @@ If a page/component supports dark mode, new code in the same area must use match
 | Inertia request | **302** redirect with `error` flash → Sonner toast |
 | API (`/api/*`) | **403** JSON |
 
-Flash data shape:
-
-```php
-// ✅
-return back()->with(['error' => 'Error message']);
-
-// ❌ deprecated — do not use statusCode
-return back()->with(['error' => '…', 'statusCode' => 403]);
-```
-
-Authorization tests expect 403 status codes for direct requests — never `assertRedirect` for them.
+Use `return back()->with(['error' => 'Error message']);` without `statusCode`. Assert 403 for forbidden direct requests.
 
 ## Security rules
 
@@ -443,33 +190,11 @@ That covers every write path (mass assignment, `update()`, `setTranslations()`, 
 
 ## Changelog
 
-User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog/v3.md` (EN) — one file per major version, entries headed `## YYYY-MM-DD — Title` with no minor number; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin **Atnaujinimai** (Updates) link follows automatically. Skip purely internal changes (deps, refactors).
-
-Scale each entry to the release: number main features only when there are several substantial ones;
-include role sections only for substantial changes specific to that role. Small releases use a short
-feature description and one concise bullet per change type or affected area. Omit empty role sections
-and repeated summaries. Write for everyday platform users: describe visible changes and practical
-effects; leave implementation details in the guide. Use annotated screenshots where helpful; the newest
-major also ships as a PDF (`docs/pdf/build-release.ts`). Template and rules: `.ai/rules/changelog.md`. Bullets use
-exactly three emojis:
-- ⭐ new feature
-- ✨ improvement / UX update
-- 🔧 bug fix
-
-**The changelog says what changed; the guide says how it works now.** A user-facing change or fix
-also updates the guide page for that section (`docs/<workspace>/<section>.md`, see
-`docs/.vitepress/structure.ts`) in the same change — its *Kas ką gali*, statuses or *Susitarimai*
-— and the LT changelog entry links to it and, where useful, to the platform page itself (`Gide: [Teisės](/rezervacijos/rezervacijos#teises) · Mano VU SA: [Rezervacijos](app:/mano/reservations)`). A
-section without a page yet gets its stub filled in. If you touch the tests a page cites, update its
-`tests:` paths and `last_reviewed`. For a new feature or a substantial enhancement — never a fix — add a `<ChangelogNote>` next to
-the part of the guide page it changed.
-
-## Database & debugging
-
-- Inspect schema: `vendor/bin/sail artisan db:table {table_name}`.
-- Read-only queries: prefer Boost's `database-query` tool over `tinker`.
-- Migration columns: when modifying, restate **all** existing attributes — anything omitted is dropped.
-- Many timestamp columns are `ON UPDATE current_timestamp()`, so even `DB::table()->update()` rewrites them. To keep them, add `'updated_at' => DB::raw('updated_at')` to the update; test data fixes in a rolled-back transaction first. See `.ai/rules/migrations.md`.
+Record user-facing changes in both `docs/changelog/v3.md` (LT) and `docs/en/changelog/v3.md` (EN).
+Use dated entries, one file per major, and ⭐ for features, ✨ for improvements and 🔧 for fixes.
+Explain what changed in the changelog and how it works now in the affected guide page. Link to the guide from the LT entry.
+Add `<ChangelogNote>` beside new features and substantial enhancements in the guide. Report fixes in the changelog and update the guide's description.
+See `.ai/rules/changelog.md` and `.ai/rules/docs.md` for release grouping, guide evidence and PDF rules.
 
 ---
 

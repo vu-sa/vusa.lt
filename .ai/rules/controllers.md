@@ -5,6 +5,10 @@ paths:
 
 # Controllers
 
+## API controllers share the response envelope
+Extend `App\Http\Controllers\Api\ApiController`, which uses `ApiResponses`. Public controllers live in `App\Http\Controllers\Api` and admin controllers in its `Admin` namespace.
+Success responses use `{ success: true, data, message?, meta? }`. Errors use `{ success: false, message, errors?, code? }`.
+
 ## Validation always lives in a Form Request
 There is no inline `$request->validate()` anywhere in `app/Http/Controllers` and
 `tests/Feature/System/ValidationConventionTest.php` keeps it that way (its exemption list is
@@ -44,6 +48,8 @@ through `fill()`. `CalendarController::store()` shipped that bug. Use
 `$request->safe()->except([...])` / `->only([...])` and `$request->validated('key')`.
 
 If you find yourself reading a field raw because it has no rule, the fix is to add the rule.
+For a manual filter before TanStack filters, check `$request->safe()->filled('field')` and pass `$request->validated('field')` to the query.
+For tenant choices on create or edit, pass the current actor to `GetTenantsForUpserts::execute($request->user(), $permission, $authorizer)`.
 
 ## Preserve check ordering when moving validation out
 A Form Request's `authorize()` runs *before* `rules()`, and both run before the controller body.

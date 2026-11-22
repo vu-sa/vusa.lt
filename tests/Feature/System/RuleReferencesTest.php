@@ -2,7 +2,7 @@
 
 /**
  * Rule docs are read before every edit, so a reference to code that no longer exists misleads
- * quietly. Every app `Class::member` and file path they name in inline code must still resolve.
+ * quietly. References in inline code and rule frontmatter must still resolve.
  *
  * @see AGENTS.md "Comments" — the rule-docs paragraph
  */
@@ -12,16 +12,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\Glob;
+use Symfony\Component\Yaml\Yaml;
 
 /** Roots a relative path in a rule doc may be written against, besides the doc's own directory. */
 const RULE_REFERENCE_PATH_ROOTS = ['', 'resources/js', 'resources/js/Components', 'resources/css', 'tests/Feature', 'docs'];
 
 /**
- * @return array<string, string> repo-relative path => contents, fenced code blocks stripped
+ * @return array<string, string> repo-relative path => contents, without fences or ignored lines
  */
 function ruleReferenceDocs(): array
 {
-    $paths = ['AGENTS.md', ...glob(base_path('.ai/rules/{,*/}*.md'), GLOB_BRACE) ?: []];
+    $paths = [base_path('AGENTS.md'), base_path('GEMINI.md'), ...glob(base_path('.ai/rules/{,*/}*.md'), GLOB_BRACE) ?: []];
 
     foreach (['app', 'resources', 'tests', '.storybook'] as $dir) {
         foreach (Finder::create()->files()->in(base_path($dir))->name('CLAUDE.md')->exclude('node_modules') as $file) {
@@ -31,7 +33,11 @@ function ruleReferenceDocs(): array
 
     return collect($paths)
         ->mapWithKeys(fn (string $path): array => [Str::after($path, base_path().'/') => $path])
-        ->map(fn (string $path): string => preg_replace('/^```.*?^```/ms', '', file_get_contents($path) ?: ''))
+        ->map(function (string $path): string {
+            $markdown = preg_replace('/^```.*?^```/ms', '', file_get_contents($path) ?: '');
+
+            return preg_replace('/^[^\r\n]*<!-- ref-ignore -->[^\r\n]*/m', '', $markdown);
+        })
         ->all();
 }
 
@@ -125,6 +131,86 @@ test('every file path named in the rule docs exists', function (): void {
 
             if (! $exists) {
                 $missing[] = "{$doc}: {$path}";
+            }
+        }
+    }
+
+    expect(array_values(array_unique($missing)))->toBeEmpty(implode("\n", array_unique($missing)));
+});
+
+test('every scoped rule paths glob matches a file', function (): void {
+    $files = [];
+    $finder = Finder::create()->files()->in(base_path())->ignoreDotFiles(false)
+        ->exclude(['vendor', 'node_modules', 'storage', 'public/build', '.git', '.worktrees']);
+
+    foreach ($finder as $file) {
+        $files[] = $file->getRelativePathname();
+    }
+
+    $missing = [];
+
+    foreach (ruleReferenceDocs() as $doc => $markdown) {
+        if (dirname($doc) !== '.ai/rules' || ! preg_match('/\A---\R(.*?)\R---(?:\R|\z)/s', $markdown, $frontmatter)) {
+            continue;
+        }
+
+        foreach (Yaml::parse($frontmatter[1])['paths'] ?? [] as $glob) {
+            if (preg_grep(Glob::toRegex($glob, strictLeadingDot: false), $files) === []) {
+                $missing[] = "{$doc}: {$glob}";
+            }
+        }
+    }
+
+    expect(array_values(array_unique($missing)))->toBeEmpty(implode("\n", array_unique($missing)));
+});
+
+test('every Composer and npm script named in the rule docs exists', function (): void {
+    $composer = json_decode(file_get_contents(base_path('composer.json')), true, flags: JSON_THROW_ON_ERROR);
+    $package = json_decode(file_get_contents(base_path('package.json')), true, flags: JSON_THROW_ON_ERROR);
+    $composerCommands = ['install', 'update', 'require', 'remove', 'show', 'dump-autoload', 'run-script', ...array_keys($composer['scripts'])];
+    $npmScripts = array_keys($package['scripts']);
+    $missing = [];
+
+    foreach (ruleReferenceDocs() as $doc => $markdown) {
+        foreach (ruleReferenceCodeSpans($markdown) as $span) {
+            preg_match_all('/(?<![\w\/-])(composer|npm\h+run)\h+([\w][\w:.-]*)/', $span, $matches, PREG_SET_ORDER);
+
+            foreach ($matches as [, $runner, $script]) {
+                $allowed = $runner === 'composer' ? $composerCommands : $npmScripts;
+
+                if (! in_array($script, $allowed, true)) {
+                    $missing[] = "{$doc}: {$runner} {$script}";
+                }
+            }
+        }
+    }
+
+    expect(array_values(array_unique($missing)))->toBeEmpty(implode("\n", array_unique($missing)));
+});
+
+test('every frontend alias named in the rule docs resolves to a module', function (): void {
+    $root = realpath(resource_path('js'));
+    $missing = [];
+
+    foreach (ruleReferenceDocs() as $doc => $markdown) {
+        foreach (ruleReferenceCodeSpans($markdown) as $span) {
+            preg_match_all('~@/([\w./*<>…-]+)~u', $span, $matches, PREG_SET_ORDER);
+
+            foreach ($matches as [$specifier, $path]) {
+                if (strpbrk($path, '*<') !== false || str_contains($path, '…')) {
+                    continue;
+                }
+
+                $exists = collect(['', '.ts', '.d.ts', '.vue', '.js', '/index.ts'])
+                    ->contains(function (string $suffix) use ($root, $path): bool {
+                        $resolved = realpath("{$root}/{$path}{$suffix}");
+
+                        return $resolved !== false && str_starts_with($resolved, $root.'/') && is_file($resolved);
+                    });
+
+                if (! $exists) {
+                    $missing[] = "{$doc}: {$specifier}";
+                }
             }
         }
     }

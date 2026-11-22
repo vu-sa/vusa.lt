@@ -11,6 +11,8 @@ paths:
 
 # Permissions
 
+Policies extend `ModelPolicy` and use `HasCommonChecks` for common ability checks. Resolve authorization through `ModelAuthorizer` or the `Permission` facade. Vue reads the shared ability flags through `$page.props.auth.can`.
+
 ## The matrix is built from the catalog, not hand-kept
 `PermissionCatalog::abilities()` is the one list of what a responsibility can hold: every `ModelEnum` resource × `CRUDEnum` ability × scope, minus what `allowedScopes()` removes (the enum's per-model scopes, `create.own`, `UNGRANTABLE`, permanent deletion on models without a trash) and minus `BaselineAccess::RETIRED_PERMISSIONS`. `toFrontend()` sends it to `PermissionMatrix.vue`, grouped by workspace in `RESOURCE_AREAS` order — keep that list in `AdminNavigationCatalog` order. The seeder, the editor, `permissions:audit` and `permissions:sync` all read it.
 

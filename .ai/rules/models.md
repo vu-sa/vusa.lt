@@ -7,6 +7,19 @@ paths:
 
 # Models
 
+## Serialize translations for the audience
+On model-backed payloads, `toFullArray()` preserves all translations for admin editing and `toArray()` localizes them for public readers. For a paginated admin index that needs all translations, use `$models->getCollection()->map->toFullArray()` for its data. For typed presenter payloads, see `.ai/rules/payloads.md`.
+
+## Keep generated model annotations accurate
+`composer update` invokes `artisan ide-helper:models -WER` via `post-update-cmd`. Regenerate with `vendor/bin/sail artisan ide-helper:models -WER` and commit the generated edits. Keep translatable `@property` types as `array|string|null` for PHPStan level 5.
+After regeneration, check `git diff -- app/Models/` for lost nullable morph targets or missing `@property-read` relations before changing consumers. Restore annotations for relations the generator cannot infer.
+Annotate keyed collections with their key and model types, e.g. `Collection<int, User>`. Narrow JSON values with `is_string()` or `is_array()` before using them.
+
+## Log model changes through activitylog
+Use `LogsActivity` with `getActivitylogOptions()` returning `LogOptions::defaults()->logFillable()->logOnlyDirty()->dontLogEmptyChanges()`.
+For manual entries use `activity()->performedOn($model)->causedBy($user)->event(ActivityEvent::Updated)->withProperties([...])->log($message)`. Read with `Activity::forSubject($model)`, `Activity::causedBy($user)` and `Activity::forEvent(ActivityEvent::Created)`.
+Automatic attribute diffs live in `attribute_changes` (`attributes` and `old`). Manual context lives in `properties`. Configure logging in `config/activitylog.php`.
+
 ## Public* mirrors are synced by their parent's HasPublicSearchMirror, not their own observer
 A `Public*` mirror is never saved, so its Scout observer never fires. Its parent (`Institution`, `Meeting`, `News`, `Page`) uses `HasPublicSearchMirror`, which pushes the mirror on `saved`/`deleted`.
 - When something outside the row changes visibility (a relation, a related record), call `$parent->syncPublicSearchIndex()`, or `Parent::removeFromPublicSearch($id)` for a row that is gone. Never look up the mirror by hand.
