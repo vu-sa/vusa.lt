@@ -6,7 +6,7 @@ use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GenerateInstitutionAlias;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetUserTenantShortnames;
-use App\Actions\Media\SyncImageMedia;
+use App\Actions\Institutions\CreateInstitution;
 use App\Actions\UpdateInstitution;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\ActivityRequests\ActivityRequestHistoryRequest;
@@ -90,18 +90,9 @@ class InstitutionController extends AdminController
      * Store a newly created resource in storage.
      */
     #[Authorize('create', Institution::class)]
-    public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
+    public function store(StoreInstitutionRequest $request, CreateInstitution $create, PostCreateRedirect $redirect)
     {
-        $institution = new Institution;
-
-        DB::transaction(function () use ($institution, $request, $syncImage): void {
-            $institution->fill($request->safe()->except('types', 'image_media', 'logo_media'))->save();
-            $institution->syncAudited('types', $request->validated('types'));
-
-            $this->syncImages($institution, $request->validated(), $syncImage);
-        });
-
-        $institution->load('tenant:id,shortname', 'types');
+        $institution = $create->execute($request->validated(), $request->user());
 
         return redirect($redirect->url($request->user(), $institution, 'institutions.show', 'viewSummary', 'institutions.index'))
             ->with('success', $this->entityMessage('created', 'institution'));
@@ -225,15 +216,6 @@ class InstitutionController extends AdminController
         $update->execute($institution, $request->validated(), $request->user());
 
         return back()->with('success', $this->entityMessage('updated', 'institution'));
-    }
-
-    /**
-     * @param  array<string, mixed>  $validated
-     */
-    private function syncImages(Institution $institution, array $validated, SyncImageMedia $syncImage): void
-    {
-        $syncImage->fromValidated($institution, 'image', $validated, 'image_media', auth()->user());
-        $syncImage->fromValidated($institution, 'logo', $validated, 'logo_media', auth()->user());
     }
 
     /**

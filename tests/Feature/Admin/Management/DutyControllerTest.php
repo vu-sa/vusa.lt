@@ -20,6 +20,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\PermissionRegistrar;
 
 pest()->use(RefreshDatabase::class);
@@ -110,6 +111,33 @@ describe('authorized access', function (): void {
             ->and($this->dutyManager->can('update', $loaded))->toBeFalse();
     });
 
+    test('the page and the wizard create the same duty', function (string $routeName, int $status): void {
+        $type = DutyType::factory()->create();
+        Role::findByName('Komunikacijos koordinatorius')->attachable_types()->attach($type->id);
+        $target = Duty::factory()->for($this->dutyManagerDuty->institution)->create();
+
+        $response = asUser($this->dutyManager)->postJson(route($routeName), [
+            'name' => ['lt' => 'Bendra pareigybė', 'en' => 'Shared duty'],
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => 'none',
+            'types' => [$type->id],
+            'ex_officio_target_duty_ids' => [$target->id],
+            'assignable_tenants' => [['tenant_id' => $this->tenant->id, 'quota' => 2]],
+            'current_users' => [$this->dutyManager->id],
+        ]);
+
+        $response->assertStatus($status);
+        $created = Duty::where('name->lt', 'Bendra pareigybė')->sole();
+        expect($created->types()->pluck('duty_types.id')->all())->toBe([$type->id])
+            ->and($created->exOfficioTargetDuties()->pluck('duties.id')->all())->toBe([$target->id])
+            ->and($created->assignableTenants()->sole()->pivot->quota)->toBe(2)
+            ->and($created->current_users()->pluck('users.id')->all())->toBe([$this->dutyManager->id])
+            ->and(Activity::query()->whereMorphedTo('subject', $created)->where('event', 'relation_updated')->where('properties->relation', 'types')->exists())->toBeTrue();
+    })->with([
+        'page' => ['duties.store', 302],
+        'wizard API' => ['api.v1.admin.duties.store', 201],
+    ]);
+
     test('inline duty creation via API returns the created model', function (): void {
         $response = asUser($this->dutyManager)->postJson(route('api.v1.admin.duties.store'), [
             'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],
@@ -118,7 +146,8 @@ describe('authorized access', function (): void {
         ]);
 
         $created = Duty::where('name->lt', 'Vedlio pareigybė')->sole();
-        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.duty.id', $created->id);
+        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.duty.id', $created->id)
+            ->assertJsonPath('data.duty.institution.id', $created->institution_id)->assertJsonPath('data.duty.current_users', []);
     });
 
     test('duty manager can access duties index', function (): void {

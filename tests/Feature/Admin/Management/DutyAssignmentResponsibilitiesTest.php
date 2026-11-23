@@ -38,6 +38,20 @@ test('assigning oneself requires grantable responsibilities on every entry point
     expect($duty->users()->whereKey($actor->id)->exists())->toBeFalse();
 })->with(['assignment', 'duty', 'user', 'batch']);
 
+test('creating a duty with oneself as a member requires grantable responsibilities', function (string $routeName): void {
+    $tenant = Tenant::query()->first();
+    $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $institution = Institution::factory()->for($tenant)->create();
+    ResponsibilityGrant::factory()->forWholeInstitution($institution)->of(Role::factory()->create())->create();
+
+    asUser($actor)->postJson(route($routeName), [
+        'name' => ['lt' => 'Savęs priskyrimas'], 'institution_id' => $institution->id,
+        'contacts_grouping' => 'none', 'current_users' => [$actor->id],
+    ])->assertUnprocessable()->assertJsonPath('errors.user_id.0', __('dutiables.assign.self_responsibility'));
+
+    expect(Duty::where('name->lt', 'Savęs priskyrimas')->exists())->toBeFalse();
+})->with(['page' => 'duties.store', 'wizard API' => 'api.v1.admin.duties.store']);
+
 test('a coordinator can assign another member to an ordinary responsibility they do not hold', function (): void {
     $tenant = Tenant::query()->first();
     $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);

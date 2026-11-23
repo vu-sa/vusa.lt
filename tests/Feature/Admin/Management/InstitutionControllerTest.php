@@ -35,6 +35,7 @@ use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -778,8 +779,28 @@ describe('authorized access', function (): void {
         ]);
 
         $created = Institution::where('name->lt', 'Vedlio institucija')->sole();
-        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.institution.id', $created->id);
+        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.institution.id', $created->id)
+            ->assertJsonPath('data.institution.tenant.shortname', $this->tenant->shortname);
     });
+
+    test('the page and the wizard create the same institution', function (string $routeName, int $status): void {
+        $type = InstitutionType::factory()->create();
+
+        asUser($this->admin)->postJson(route($routeName), [
+            'name' => ['lt' => 'Bendra institucija', 'en' => 'Shared institution'],
+            'tenant_id' => $this->tenant->id,
+            'types' => [$type->id],
+            'image_media' => null,
+            'logo_media' => null,
+        ])->assertStatus($status);
+
+        $created = Institution::where('name->lt', 'Bendra institucija')->sole();
+        expect($created->types()->pluck('institution_types.id')->all())->toBe([$type->id])
+            ->and(Activity::query()->whereMorphedTo('subject', $created)->where('event', 'relation_updated')->where('properties->relation', 'types')->exists())->toBeTrue();
+    })->with([
+        'page' => ['institutions.store', 302],
+        'wizard API' => ['api.v1.admin.institutions.store', 201],
+    ]);
 
     test('can store institution', function (): void {
         $institutionData = [

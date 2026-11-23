@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
-use App\Actions\Dutiables\SyncExOfficioTargets;
+use App\Actions\Duties\CreateDuty;
 use App\Actions\Duties\GetAssignableExOfficioDuties;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
@@ -113,25 +113,12 @@ class DutyController extends AdminController
      * Store a newly created resource in storage.
      */
     #[Authorize('create', Duty::class)]
-    public function store(StoreDutyRequest $request, PostCreateRedirect $redirect)
+    public function store(StoreDutyRequest $request, CreateDuty $create, PostCreateRedirect $redirect)
     {
-        return DB::transaction(function () use ($request, $redirect) {
-            $duty = new Duty;
+        $duty = $create->execute($request->validated(), $request->user());
 
-            $validatedData = $request->safe();
-            $duty->fill(collect($validatedData)->except('types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
-
-            $duty->syncAudited('types', $request->validated('types') ?? []);
-            SyncExOfficioTargets::execute($duty, $validatedData['ex_officio_target_duty_ids'] ?? []);
-            $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
-
-            $this->assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
-
-            $duty->load('institution', 'types', 'current_users');
-
-            return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
-                ->with('success', $this->entityMessage('created', 'duty'));
-        });
+        return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
+            ->with('success', $this->entityMessage('created', 'duty'));
     }
 
     /**

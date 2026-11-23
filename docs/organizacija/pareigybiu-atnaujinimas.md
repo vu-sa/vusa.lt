@@ -36,11 +36,12 @@ Pasirinkimas taikomas vienai pareigybei, o ne visai institucijai iš karto.
 Pirmame žingsnyje pasirenkama institucija. Sąraše pateikiamos administruojamų padalinių
 institucijos ir bendros institucijos, kuriose padaliniui leista skirti narius pagal kvotą.
 Galima naudotis paieška; jei institucijos nėra, ją galima sukurti turint kūrimo teisę.
+Vedlio formoje laukų mažiau, bet institucija išsaugoma taip pat, kaip sukurta institucijų puslapyje.
 
 ### 2 žingsnis. Pareigybės pasirinkimas {#zingsnis-2}
 
 Pasirenkama **viena** institucijos pareigybė. Prie jos rodomas dabartinių narių skaičius; aktyvi pareigybė be narių pažymėta kaip neužimta.
-Jei pareigybės nėra, ją galima sukurti turint kūrimo teisę.
+Jei pareigybės nėra, ją galima sukurti turint kūrimo teisę. Ji išsaugoma taip pat, kaip sukurta pareigybių puslapyje: tipai, ex officio pareigos, padalinių kvotos ir nariai, o tipų pakeitimai matomi pakeitimų istorijoje.
 
 ### 3 žingsnis. Narių priskyrimas {#zingsnis-3}
 

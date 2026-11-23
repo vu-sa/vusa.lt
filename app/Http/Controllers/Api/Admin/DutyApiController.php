@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
-use App\Actions\Dutiables\SyncExOfficioTargets;
+use App\Actions\Duties\CreateDuty;
 use App\Actions\SetDutyActive;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\UpdateRecordActivityRequest;
@@ -12,13 +12,11 @@ use App\Http\Requests\StoreDutyRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Services\DutyAccessService;
-use App\Services\DutyAssignmentService;
 use App\Services\DutyPresenter;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
-use Illuminate\Support\Facades\DB;
 
 class DutyApiController extends ApiController
 {
@@ -57,25 +55,10 @@ class DutyApiController extends ApiController
     }
 
     #[Authorize('create', Duty::class)]
-    public function store(StoreDutyRequest $request, DutyAssignmentService $assignments): JsonResponse
+    public function store(StoreDutyRequest $request, CreateDuty $create): JsonResponse
     {
-        return DB::transaction(function () use ($request, $assignments) {
-            $duty = new Duty;
-
-            $validatedData = $request->safe();
-            $duty->fill(collect($validatedData)->except('types', 'roles', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
-
-            $duty->types()->sync($request->types);
-            SyncExOfficioTargets::execute($duty, $validatedData['ex_officio_target_duty_ids'] ?? []);
-            $duty->assignableTenants()->sync($assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
-
-            $assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
-
-            $duty->load('institution', 'types', 'current_users');
-
-            return $this->jsonCreated([
-                'duty' => $duty,
-            ], $this->entityMessage('created', 'duty'));
-        });
+        return $this->jsonCreated([
+            'duty' => $create->execute($request->validated(), $request->user()),
+        ], $this->entityMessage('created', 'duty'));
     }
 }
