@@ -55,6 +55,16 @@ function parityKeyFilter(User $user, string $collection): string
     return json_decode(substr(base64_decode($keys['collections'][$collection]['key']), 48), true, flags: JSON_THROW_ON_ERROR)['filter_by'];
 }
 
+/** As parityKeyFilter(), for a key that embeds no filter at all. */
+function parityKeyFilterOrAll(User $user, string $collection): string
+{
+    $client = new Client(['api_key' => 'test-admin-key', 'nodes' => config('scout.typesense.client-settings.nodes')]);
+    $keys = new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class))
+        ->generateScopedKeysForUser($user);
+
+    return json_decode(substr(base64_decode($keys['collections'][$collection]['key']), 48), true, flags: JSON_THROW_ON_ERROR)['filter_by'] ?? 'id:!=__no_access__';
+}
+
 /**
  * Of this test's records, the ones the filter admits — the collection outlives the rolled-back
  * database, so other tests' documents are in it too.
@@ -313,6 +323,18 @@ test('moving an institution to another tenant moves its private items between te
 
     expect(parityAdmittedIds(AgendaItem::class, $filters[0], [$item]))->toBe(parityAllowedIds($oldReader, [$item->fresh()], 'view'))->toBeEmpty()
         ->and(parityAdmittedIds(AgendaItem::class, $filters[1], [$item]))->toBe(parityAllowedIds($newReader, [$item->fresh()], 'view'))->toHaveCount(1);
+});
+
+test('a global user reader finds members between terms, whom a tenant list would hide', function (): void {
+    $reader = makeUser(Tenant::query()->first());
+    $reader->givePermissionTo('users.read.*');
+    $between = User::factory()->create();
+    $between->searchable();
+    $users = [$between, $this->member];
+    $this->member->searchable();
+
+    expect(parityAdmittedIds(User::class, parityKeyFilterOrAll($reader, 'users'), $users))
+        ->toBe(parityAllowedIds($reader, $users, 'view'))->toHaveCount(2);
 });
 
 test('authorized institution relationships are searchable without an own read grant', function (): void {

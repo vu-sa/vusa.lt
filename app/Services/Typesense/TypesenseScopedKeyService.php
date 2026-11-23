@@ -2,8 +2,6 @@
 
 namespace App\Services\Typesense;
 
-use App\Models\Duty;
-use App\Models\Role;
 use App\Models\User;
 use App\Services\DutyAccessService;
 use App\Services\InstitutionAccessService;
@@ -36,13 +34,13 @@ class TypesenseScopedKeyService
         $cached = Cache::get($cacheKey);
 
         // Keys embed the public meeting types, so a settings change retires every cached key.
-        if (is_array($cached) && ($cached['visibility_version'] ?? null) === self::visibilityVersion()) {
+        if (is_array($cached) && ($cached['visibility_version'] ?? null) === self::visibilityVersion() && ($cached['expires_at'] ?? 0) > now()->timestamp) {
             return $cached;
         }
 
         $keys = [...$this->buildScopedKeys($user), 'visibility_version' => self::visibilityVersion()];
         // Refreshed a little before the key itself expires, so the browser never holds a dead key.
-        Cache::put($cacheKey, $keys, max(1, $keys['expires_at'] - time() - (self::KEY_EXPIRY - self::CACHE_TTL)));
+        Cache::put($cacheKey, $keys, max(1, $keys['expires_at'] - now()->timestamp - (self::KEY_EXPIRY - self::CACHE_TTL)));
 
         return $keys;
     }
@@ -105,6 +103,12 @@ class TypesenseScopedKeyService
                 $collections[$collection] = $this->unrestrictedCollection($parentKey, $prefixedCollectionName, $expiresAt, 'public');
             } elseif ($permission) {
                 if (! $this->authorizer->allows($user, $permission)) {
+                    continue;
+                }
+
+                if ($this->readsEverything($user, $permission)) {
+                    $collections[$collection] = $this->unrestrictedCollection($parentKey, $prefixedCollectionName, $expiresAt, 'all');
+
                     continue;
                 }
 
@@ -197,12 +201,14 @@ class TypesenseScopedKeyService
         $filter = match ($collection) {
             'meetings' => app(MeetingAccessService::class)->searchFilter($user, 'meetings', $this->publicRowsClause($publicRows)),
             'agenda_items' => $this->agendaItemFilter($user, $this->publicRowsClause($publicRows)),
-            default => $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows)),
+            default => $permission && $this->readsEverything($user, $permission)
+                ? 'id:!=__no_access__'
+                : $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows)),
         };
 
         // A collection key also admits public rows outside the user's institution scope.
         $hideActivityStatus = $collection === 'institutions'
-            && ! $this->authorizer->scope($user, 'institutions.read.padalinys')->isAllScope;
+            && ! $this->readsEverything($user, 'institutions.read.padalinys');
 
         $scopedKey = $this->scopedSearchKey($parentKey, [
             'collection' => $prefixedCollectionName,
@@ -211,7 +217,7 @@ class TypesenseScopedKeyService
                 ?? 'tenant_ids:=-1',
             'expires_at' => $expiresAt,
             ...($hideActivityStatus ? [
-                'exclude_fields' => 'activity_status',
+                'exclude_fields' => 'activity_status,'.SearchProfiles::EXCLUDED_FIELDS,
                 'facet_by' => 'tenant_shortname,type_titles,is_active',
             ] : []),
         ]);
@@ -243,6 +249,13 @@ class TypesenseScopedKeyService
             1 => reset($clauses),
             default => '('.implode(' || ', $clauses).')',
         };
+    }
+
+    /** A `*` grant reads records with no tenant too (users between terms), which a tenant list would hide. */
+    private function readsEverything(User $user, string $permission): bool
+    {
+        return $this->authorizer->scope($user, $permission)->isAllScope
+            || $this->authorizer->allows($user, preg_replace('/\.[^.]+$/', '.*', $permission));
     }
 
     /** @return Collection<int, int> */
@@ -314,31 +327,6 @@ class TypesenseScopedKeyService
         Cache::forget(self::getCacheKey($userId));
     }
 
-    public static function invalidateForDuty(Duty $duty): void
-    {
-        $duty->loadMissing('users');
-        foreach ($duty->users as $user) {
-            self::invalidateForUser($user->id);
-        }
-    }
-
-    public static function invalidateForRole(Role $role): void
-    {
-        // Direct role assignments
-        $role->loadMissing('users');
-        foreach ($role->users as $user) {
-            self::invalidateForUser($user->id);
-        }
-
-        // Role assignments through duties
-        $role->loadMissing('duties.users');
-        foreach ($role->duties as $duty) {
-            foreach ($duty->users as $user) {
-                self::invalidateForUser($user->id);
-            }
-        }
-    }
-
     public static function getAdminCollections(): array
     {
         return TypesenseCollectionConfig::getAdminCollectionNames();
@@ -346,10 +334,7 @@ class TypesenseScopedKeyService
 
     public static function isConfigured(): bool
     {
-        $searchOnlyKey = Config::get('scout.typesense.client-settings.search_only_key');
-        $apiKey = Config::get('scout.typesense.client-settings.api_key');
-
-        return filled($searchOnlyKey) && ! empty($apiKey);
+        return filled(self::parentSearchKey()) && filled(Config::get('scout.typesense.client-settings.api_key'));
     }
 
     public static function getPermissionForCollection(string $collection): ?string
