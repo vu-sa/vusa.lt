@@ -37,7 +37,7 @@ class StoreDutyRequest extends FormRequest
             'ex_officio_target_duty_ids' => 'nullable|array',
             'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties')],
             'assignable_tenants' => 'nullable|array',
-            'assignable_tenants.*.tenant_id' => 'required|integer|exists:tenants,id',
+            'assignable_tenants.*.tenant_id' => 'required|integer|distinct|exists:tenants,id',
             'assignable_tenants.*.quota' => 'nullable|integer|min:1',
             'assignable_tenants.*.user_ids' => 'nullable|array',
             'assignable_tenants.*.user_ids.*' => ['string', SoftDeleteRules::existsLive('users')],

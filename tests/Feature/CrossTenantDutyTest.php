@@ -86,6 +86,15 @@ describe('assignable tenants on duty update', function (): void {
         ];
     });
 
+    test('duplicate assignable tenant rows are rejected with 422', function (): void {
+        $localRow = ['tenant_id' => $this->owningTenant->id, 'quota' => 1];
+        $payload = $this->dutyUpdate;
+        $payload['assignable_tenants'] = [$localRow, $localRow, $this->foreignRow];
+
+        asUser($this->owningAdmin)->patchJson(route('duties.update', $this->duty), $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors('assignable_tenants.1.tenant_id');
+    });
+
     test('a tenant admin cannot add a foreign assignable tenant', function (): void {
         $otherTenant = Tenant::query()->whereNotIn('id', [$this->owningTenant->id, $this->assignableTenant->id])->firstOrFail();
         $payload = $this->dutyUpdate;

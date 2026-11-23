@@ -1,13 +1,13 @@
 <?php
 
 use App\Actions\Media\AddImageMedia;
+use App\Actions\Media\SyncImageMedia;
 use App\Models\Banner;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 pest()->use(RefreshDatabase::class);
 
@@ -155,11 +155,20 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('rolls back banner attributes when attaching the image fails', function (): void {
-        $banner = $this->banner->refresh();
+    test('keeps the original banner image and file when an update fails after image sync', function (): void {
+        $banner = $this->banner;
+        $original = app(AddImageMedia::class)->execute($banner, UploadedFile::fake()->image('original.png'), 'image');
+        $banner->refresh();
         $staged = stageImage($this->admin)->refresh();
+        $syncImage = app(SyncImageMedia::class);
 
-        Media::updating(fn () => throw new RuntimeException('Image write failed.'));
+        $this->mock(SyncImageMedia::class)->shouldReceive('fromValidated')->once()
+            ->andReturnUsing(function (...$arguments) use ($syncImage, $banner, $staged): never {
+                $syncImage->fromValidated(...$arguments);
+                expect($banner->fresh()->getMedia('image')->modelKeys())->toBe([$staged->id]);
+
+                throw new RuntimeException('Banner update failed after image sync.');
+            });
         $this->withoutExceptionHandling();
 
         expect(fn () => asUser($this->admin)->patch(route('banners.update', $banner), [
@@ -167,10 +176,12 @@ describe('authorized access', function (): void {
             'link_url' => 'https://example.org',
             'is_active' => false,
             'image_media' => ['id' => $staged->id],
-        ]))->toThrow(RuntimeException::class, 'Image write failed.');
+        ]))->toThrow(RuntimeException::class, 'Banner update failed after image sync.');
 
         expect($banner->fresh()->getAttributes())->toEqual($banner->getAttributes());
         expect($staged->fresh()->getAttributes())->toEqual($staged->getAttributes());
+        expect($banner->fresh()->getMedia('image')->modelKeys())->toBe([$original->id]);
+        Storage::disk($original->disk)->assertExists($original->getPathRelativeToRoot());
     });
 
     test('can update banner with valid data', function (): void {
