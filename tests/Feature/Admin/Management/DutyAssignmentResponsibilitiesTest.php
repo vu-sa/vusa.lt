@@ -246,9 +246,10 @@ test('resuming an own membership is allowed when its responsibilities are alread
 
     asUser($actor)->postJson(route('duties.batchUpdateUsers', $duty), [
         'user_changes' => [['user_id' => $actor->id, 'action' => 'add', 'start_date' => today()->toDateString(), 'end_date' => null]],
-    ])->assertRedirect();
+    ])->assertSessionHasNoErrors()->assertRedirect();
 
-    expect($row->fresh()->end_date)->toBeNull();
+    expect($duty->dutiables()->where('dutiable_id', $actor->id)->current()->exists())->toBeTrue()
+        ->and($row->fresh()->end_date->lt(today()))->toBeTrue();
 });
 
 test('resuming an ended term requires the current responsibility ceiling', function (): void {
