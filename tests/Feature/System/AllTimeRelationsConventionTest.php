@@ -100,8 +100,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/Reservations/ReservationPresenter.php' => ['->tenants' => 1, '->users' => 2, "'users'" => 1],
     // Eager-loads explicit reservation participants for the view policy.
     'app/Services/Reservations/ResourcePresenter.php' => ["'users'" => 1],
-    // Permission key for validating an institution change.
-    'app/Actions/UpdateDuty.php' => ["'duties" => 1],
+    // Duty permission keys and ModelAuthorizer::tenants() for the editable assignable tenants.
+    'app/Actions/UpdateDuty.php' => ['->tenants' => 1, "'duties" => 3],
     // Tenant catalog and the shared prop backed by current_or_upcoming_tenants().
     'app/Http/Middleware/HandleInertiaRequests.php' => ["'tenants'" => 2],
     // Reservation participants payload field.
@@ -150,14 +150,16 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Http/Requests/StoreRoleGrantRequest.php' => ["'duties" => 1],
     // User table used to validate the people involved in a support request.
     'app/Http/Requests/StoreSupportRequestRequest.php' => ["'users'" => 1],
+    // User table validation for task assignees.
+    'app/Http/Requests/StoreTaskRequest.php' => ["'users'" => 1],
     // User and duty tables used to validate new user attributes.
     'app/Http/Requests/StoreUserRequest.php' => ["'users'" => 1, "'duties" => 1],
     // User table used to validate changes to the people involved in a support request.
     'app/Http/Requests/SyncSupportRequestInvolvedUsersRequest.php' => ["'users'" => 1],
     // DutyType catalog duties, the duty ID column, and the Duty tenant relation.
     'app/Http/Requests/SyncTypeModelsRequest.php' => ["'tenants'" => 1, '->duties' => 1, "'duties" => 2],
-    // Duty permission keys and duty and user table validation.
-    'app/Http/Requests/UpdateDutyRequest.php' => ["'users'" => 1, "'duties" => 3],
+    // Duty permission keys, duty and user table validation and ModelAuthorizer::tenants() for locked seats.
+    'app/Http/Requests/UpdateDutyRequest.php' => ['->tenants' => 1, "'users'" => 1, "'duties" => 4],
     // User table used to validate nominated secretaries.
     'app/Http/Requests/UpdateInstitutionSecretariesRequest.php' => ["'users'" => 1],
     // Translation placeholder for blocked tenants and validation against the user and duty tables.

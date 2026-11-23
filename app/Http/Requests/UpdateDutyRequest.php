@@ -186,7 +186,7 @@ class UpdateDutyRequest extends FormRequest
             $tenantId = (int) $row['tenant_id'];
             $tenant = $lockedTenants->get($tenantId);
             $quota = isset($row['quota']) ? (int) $row['quota'] : null;
-            $currentQuota = $tenant?->pivot->quota;
+            $currentQuota = $tenant?->getRelationValue('pivot')?->quota;
 
             if ($tenant === null || $quota !== ($currentQuota === null ? null : (int) $currentQuota)) {
                 $validator->errors()->add("assignable_tenants.$i.tenant_id", $message);
