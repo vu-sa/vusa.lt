@@ -22,7 +22,7 @@ class SyncRelationSearchIndex
     {
         $events->listen(SearchRelationChanged::class, fn (SearchRelationChanged $event) => $this->relationChanged($event));
         $events->listen('eloquent.updated: '.Institution::class, function (Institution $institution): void {
-            if ($institution->wasChanged('is_active')) {
+            if ($institution->wasChanged(['is_active', 'tenant_id'])) {
                 $this->institutionFactsChanged($institution);
             }
         });

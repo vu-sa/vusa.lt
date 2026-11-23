@@ -282,6 +282,39 @@ test('private agenda items follow the view policy from an already cached key, wi
         ->and(parityAllowedIds($global, $items, 'view'))->toHaveCount(2);
 });
 
+test('moving a meeting out of a former members term takes its private items out of their search', function (): void {
+    $institution = Institution::factory()->for($this->otherTenant)->create();
+    $meeting = parityMeetingOf($institution);
+    $item = $meeting->agendaItems->first();
+    $item->update(['is_private' => true]);
+    $this->member->duties()->attach(Duty::factory()->for($institution)->create(), [
+        'start_date' => now()->subMonth()->toDateString(), 'end_date' => now()->subDays(3)->toDateString(),
+    ]);
+    $filter = parityKeyFilter($this->member->refresh(), 'agenda_items');
+    expect(parityAdmittedIds(AgendaItem::class, $filter, [$item]))->toBe([(string) $item->id]);
+
+    $meeting->update(['start_time' => now()->subYear()]);
+
+    expect(parityAllowedIds($this->member, [$item->fresh()], 'view'))->toBeEmpty()
+        ->and(parityAdmittedIds(AgendaItem::class, $filter, [$item]))->toBeEmpty();
+});
+
+test('moving an institution to another tenant moves its private items between tenant readers', function (): void {
+    $institution = Institution::factory()->for($this->otherTenant)->create();
+    $item = parityMeetingOf($institution)->agendaItems->first();
+    $item->update(['is_private' => true]);
+    $oldReader = makeUser($this->otherTenant);
+    $oldReader->givePermissionTo('agendaItems.read.padalinys');
+    $newReader = makeUser(Tenant::query()->first());
+    $newReader->givePermissionTo('agendaItems.read.padalinys');
+    $filters = [parityKeyFilter($oldReader, 'agenda_items'), parityKeyFilter($newReader, 'agenda_items')];
+
+    $institution->update(['tenant_id' => Tenant::query()->first()->id]);
+
+    expect(parityAdmittedIds(AgendaItem::class, $filters[0], [$item]))->toBe(parityAllowedIds($oldReader, [$item->fresh()], 'view'))->toBeEmpty()
+        ->and(parityAdmittedIds(AgendaItem::class, $filters[1], [$item]))->toBe(parityAllowedIds($newReader, [$item->fresh()], 'view'))->toHaveCount(1);
+});
+
 test('authorized institution relationships are searchable without an own read grant', function (): void {
     $source = $this->member->duties()->first()->institution;
     $target = Institution::factory()->for($this->otherTenant)->create();

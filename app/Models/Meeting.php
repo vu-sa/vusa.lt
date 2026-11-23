@@ -589,6 +589,11 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         static::saved(function (Meeting $meeting): void {
             $meeting->syncCalendarEventTiming();
             $meeting->syncAnchoredCadences();
+
+            // Agenda keys admit former members by meeting_start_time, private items included.
+            if ($meeting->wasChanged('start_time')) {
+                $meeting->agendaItems()->withSearchableRelations()->get()->searchable();
+            }
         });
 
         static::deleted(function (Meeting $meeting): void {
