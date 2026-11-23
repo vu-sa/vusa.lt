@@ -540,6 +540,57 @@ describe('duty assignment', function (): void {
 
         expect($activeCount)->toBe(1);
     });
+
+    test('removing a duty on the user form leaves a cross-tenant seat of that duty alone', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $otherTenant = Tenant::factory()->create();
+        $duty->assignableTenants()->attach($otherTenant->id, ['quota' => 1]);
+
+        $target->duties()->attach($duty->id, ['start_date' => now()->subMonth()]);
+        $seat = Dutiable::factory()->create([
+            'duty_id' => $duty->id, 'dutiable_id' => $target->id, 'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => $otherTenant->id, 'start_date' => now()->subMonth(), 'end_date' => null,
+        ]);
+
+        SyncUserDuties::execute($this->admin, new Collection, new Collection([$duty->id]), $target, app(ModelAuthorizer::class), 'users.update.all');
+
+        $homeRow = Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->sole();
+
+        expect($homeRow->end_date->toDateString())->toBe(today()->subDay()->toDateString())
+            ->and($seat->fresh()->end_date)->toBeNull();
+    });
+
+    test('a cross-tenant seat does not count as already holding the duty on the user form', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $otherTenant = Tenant::factory()->create();
+        $duty->assignableTenants()->attach($otherTenant->id, ['quota' => 1]);
+        Dutiable::factory()->create([
+            'duty_id' => $duty->id, 'dutiable_id' => $target->id, 'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => $otherTenant->id, 'start_date' => now()->subMonth(), 'end_date' => null,
+        ]);
+
+        SyncUserDuties::execute($this->admin, new Collection([$duty->id]), new Collection, $target, app(ModelAuthorizer::class), 'users.update.all');
+
+        expect(Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->current()->count())->toBe(1);
+    });
+
+    test('a term added on the user form starts after an institution closure ended the previous one', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $closed = Dutiable::factory()->create([
+            'duty_id' => $duty->id, 'dutiable_id' => $target->id, 'dutiable_type' => MorphMap::alias(User::class),
+            'start_date' => now()->subYear(), 'end_date' => null,
+        ]);
+        $closed->forceFill(['end_date' => today()->subDay(), 'ended_by_institution_deactivation' => true])->save();
+
+        SyncUserDuties::execute($this->admin, new Collection([$duty->id]), new Collection, $target, app(ModelAuthorizer::class), 'users.update.all');
+
+        $new = Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereKeyNot($closed->id)->sole();
+
+        expect($new->start_date->toDateString())->toBe(today()->toDateString());
+    });
 });
 
 describe('create-form field coverage', function (): void {
