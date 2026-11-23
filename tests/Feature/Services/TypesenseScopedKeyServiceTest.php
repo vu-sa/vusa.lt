@@ -498,7 +498,7 @@ describe('public records in every scoped key', function (): void {
         $publicTypes = "institution_type_ids:=[{$this->publicType->id}]";
 
         expect(scopedKeyFilter($collections['meetings']['key']))->toBe('('.$publicTypes.' || institution_ids:=[`'.$institutionId.'`])')
-            ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe('((('.$publicTypes.' || institution_ids:=[`'.$institutionId.'`])) && is_private:=false)')
+            ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe('(institution_ids:=[`'.$institutionId.'`] || ('.$publicTypes.' && is_private:=false))')
             ->and(scopedKeyFilter($collections['institutions']['key']))->toBe('(is_active:=true || institution_ids:=[`'.$institutionId.'`])');
     });
 

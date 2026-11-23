@@ -3,7 +3,6 @@
 namespace App\Services\Typesense;
 
 use App\Models\Duty;
-use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DutyAccessService;
@@ -16,7 +15,6 @@ use App\Support\AuthorityCacheExpiry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Gate;
 use Typesense\Client;
 
 /** Scoped keys enforce visibility even when a browser supplies its own search filters. */
@@ -53,10 +51,9 @@ class TypesenseScopedKeyService
     public static function visibilityVersion(): string
     {
         return md5(implode(':', [
-            'meeting-baseline-v2',
+            'meeting-baseline-v3',
             'search-fields-v1',
             self::parentSearchKey(),
-            Cache::get('agenda-privacy-version', ''),
             InstitutionRelationService::version(),
             app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds()->sort()->implode(','),
         ]));
@@ -197,25 +194,11 @@ class TypesenseScopedKeyService
             ? $this->institutionAccessService->getAccessibleInstitutionIds($user)
             : collect();
 
-        $filter = $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows));
-        if (in_array($collection, ['meetings', 'agenda_items'], true)) {
-            $filter = app(MeetingAccessService::class)->searchFilter(
-                $user,
-                $collection === 'meetings' ? 'meetings' : 'agendaItems',
-                $this->publicRowsClause($publicRows),
-            );
-        }
-        if ($collection === 'agenda_items') {
-            $privateIds = AgendaItem::query()->where('is_private', true)
-                ->with(['meeting.institutions.types', 'meeting.institutions.tenant', 'tenants'])
-                ->get()->filter(fn (AgendaItem $item): bool => Gate::forUser($user)->allows('view', $item))
-                ->pluck('id')->map(fn ($id): string => '`'.$id.'`')->implode(',');
-            $clauses = $filter ? ['('.$filter.') && is_private:=false'] : [];
-            if ($privateIds !== '') {
-                $clauses[] = 'is_private:=true && id:=['.$privateIds.']';
-            }
-            $filter = $clauses ? '('.implode(' || ', $clauses).')' : 'id:=__no_access__';
-        }
+        $filter = match ($collection) {
+            'meetings' => app(MeetingAccessService::class)->searchFilter($user, 'meetings', $this->publicRowsClause($publicRows)),
+            'agenda_items' => $this->agendaItemFilter($user, $this->publicRowsClause($publicRows)),
+            default => $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows)),
+        };
 
         // A collection key also admits public rows outside the user's institution scope.
         $hideActivityStatus = $collection === 'institutions'
@@ -242,6 +225,24 @@ class TypesenseScopedKeyService
             'has_access' => true,
             'scope' => 'combined',
         ];
+    }
+
+    /**
+     * Public meeting types admit only non-private items; private ones need the same access
+     * AgendaItemPolicy::view() checks, so the key never lists individual item ids.
+     */
+    private function agendaItemFilter(User $user, ?string $publicClause): string
+    {
+        $clauses = array_filter([
+            app(MeetingAccessService::class)->searchFilter($user, 'agendaItems', null),
+            $publicClause === null ? null : "({$publicClause} && is_private:=false)",
+        ]);
+
+        return match (count($clauses)) {
+            0 => 'id:=__no_access__',
+            1 => reset($clauses),
+            default => '('.implode(' || ', $clauses).')',
+        };
     }
 
     /** @return Collection<int, int> */

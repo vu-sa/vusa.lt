@@ -15,6 +15,7 @@ Scout defaults to `database` (`SCOUT_DRIVER`). Models that override `searchableU
 ## Typesense narrows, the policy decides
 A search list may only narrow what the user sees; opening any record is always authorized live by its policy (view / viewSummary / follow).
 - Index facts, never settings-dependent conclusions: store e.g. `institution_type_ids`, `is_active`, `type_ids`, and build the scoped key's public clause from current settings in TypesenseScopedKeyService (`public_rows`). A settings change then needs no reindex — the cached key carries `visibility_version`.
+- A key filters on indexed access facts, never on record id lists: private agenda items reuse `MeetingAccessService::searchFilter()`, so the key's cost and size stay flat as items grow. Revoking access reaches the next issued key; one a browser holds lives to its `expires_at` (≤ `KEY_EXPIRY`, cut short by `AuthorityCacheExpiry`).
 - A new fact embedded from a relation needs a reindex path: relation changes go through `auditRelationChange()` → `SearchRelationChanged` → `SyncRelationSearchIndex`.
 - A document built from child rows needs their writes too: a vote or agenda item reaches the meeting through `SyncMeetingOutcomeIndex`, after commit and under `MeetingSearchLock`.
 - A field only shown, never searched or sorted, is `'index' => false, 'optional' => true`, and only what every row a key admits may see goes in: counts over public items, never private ones or member history; load the rest on demand behind the policy. A schema change needs a deploy note naming the `search:reindex` models.

@@ -37,8 +37,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -150,10 +148,6 @@ class AgendaItem extends Pivot implements Commentable
                 if ($publicMeeting?->shouldBeSearchable()) {
                     $publicMeeting->searchableUsing()->update(new Collection([$publicMeeting]));
                 }
-            }
-
-            if ($saved && $visibilityChanged) {
-                $this->getConnection()->afterCommit(fn () => Cache::forever('agenda-privacy-version', (string) Str::uuid()));
             }
 
             return $saved;
