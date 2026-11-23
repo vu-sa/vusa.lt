@@ -477,63 +477,33 @@ class DutyController extends AdminController
 
                 foreach ($validated['user_changes'] as $change) {
                     $userId = $change['user_id'];
+                    $attributes = [
+                        'start_date' => $change['start_date'] ?? null,
+                        'end_date' => $change['end_date'] ?? null,
+                        'study_program_id' => $change['study_program_id'] ?? null,
+                    ];
 
                     if (str_starts_with($userId, 'new-')) {
                         if (isset($createdUsers[$userId])) {
-                            $duty->attachAudited('users', $createdUsers[$userId]->id, [
-                                'start_date' => $change['start_date'] ?? now(),
-                                'end_date' => $change['end_date'] ?? null,
-                                'study_program_id' => $change['study_program_id'] ?? null,
-                                'tenant_id' => $actingTenantId,
-                            ]);
+                            $this->assignments->startTerm($duty, $createdUsers[$userId]->id, $actingTenantId, $attributes);
                         }
 
                         continue;
                     }
 
-                    if ($change['action'] === 'add') {
-                        // Look for an existing row scoped to the acting tenant.
-                        $existingPivotQuery = $duty->dutiables()->where('dutiable_id', $userId)->whereNull('via_dutiable_id');
-                        if ($actingTenantId !== null) {
-                            $existingPivotQuery->where('tenant_id', $actingTenantId);
-                        } else {
-                            $existingPivotQuery->whereNull('tenant_id');
-                        }
-                        $existingPivot = $existingPivotQuery->first();
+                    $currentTerms = $this->assignments->manualTerms($duty->id, $userId, $actingTenantId)->current();
 
-                        if ($existingPivot) {
-                            $existingPivot->update([
-                                'start_date' => $change['start_date'] ?? now(),
-                                'end_date' => $change['end_date'] ?? null,
-                                'study_program_id' => $change['study_program_id'] ?? null,
-                            ]);
-                        } else {
-                            $duty->attachAudited('users', $userId, [
-                                'start_date' => $change['start_date'] ?? now(),
-                                'end_date' => $change['end_date'] ?? null,
-                                'study_program_id' => $change['study_program_id'] ?? null,
-                                'tenant_id' => $actingTenantId,
-                            ]);
-                        }
-                    } elseif ($change['action'] === 'remove') {
-                        // End-date only the active row belonging to the acting tenant.
-                        // Ex-officio rows follow their source and are never removed here.
-                        $removeQuery = Dutiable::where('duty_id', $duty->id)
-                            ->where('dutiable_type', MorphMap::alias(User::class))
-                            ->where('dutiable_id', $userId)
-                            ->whereNull('via_dutiable_id')
-                            ->where(function ($query): void {
-                                $query->whereNull('end_date')
-                                    ->orWhereDate('end_date', '>=', today());
-                            });
+                    if ($change['action'] === 'remove') {
+                        $this->assignments->endTerms($currentTerms, $attributes['end_date']);
 
-                        if ($actingTenantId !== null) {
-                            $removeQuery->where('tenant_id', $actingTenantId);
-                        } else {
-                            $removeQuery->whereNull('tenant_id');
-                        }
+                        continue;
+                    }
 
-                        $this->assignments->endDateDutiables($removeQuery, $change['end_date'] ?? now());
+                    if ($existingTerm = $currentTerms->first()) {
+                        $attributes['start_date'] ??= now();
+                        $existingTerm->update($attributes);
+                    } else {
+                        $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes);
                     }
                 }
             });

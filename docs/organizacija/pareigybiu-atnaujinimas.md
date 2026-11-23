@@ -55,7 +55,9 @@ Nenustatytas skaičius nerodomas; dabartinių narių skaičius lieka narių skil
 Padalinio kvota rodoma ir tikrinama atskirai nuo informacinio vietų skaičiaus.
 
 **Pradžios ir pabaigos dienos įskaitomos.** Užbaigiant siūloma šiandienos data:
-narys šiandien dar eina pareigas. Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).
+narys šiandien dar eina pareigas. Jei pabaigos data nepateikta, paskutinė pareigų diena yra vakar.
+Pakartotinai priskyrus buvusį narį, sukuriamas naujas laikotarpis ir išsaugoma ankstesnio laikotarpio istorija.
+Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).
 
 Naujam laikotarpiui vedlys siūlo liepos 1 d. Jei iki artimiausios liepos liko mažiau nei
 trys kalendoriniai mėnesiai, siūloma kitų metų liepos 1 d.; kitu atveju – artimiausia.

@@ -27,19 +27,52 @@ class DutyAssignmentService
             && (bool) $institutions->firstWhere('id', $target->institution_id)?->is_active;
     }
 
+    /** @return Builder<Dutiable> */
+    public function manualTerms(string $dutyId, string $userId, ?int $tenantId): Builder
+    {
+        return $this->manualDutyTerms($dutyId, $tenantId)->where('dutiable_id', $userId);
+    }
+
+    /** @return Builder<Dutiable> */
+    private function manualDutyTerms(string $dutyId, ?int $tenantId): Builder
+    {
+        $query = Dutiable::query()
+            ->where('duty_id', $dutyId)
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->whereNull('via_dutiable_id');
+
+        return $tenantId === null ? $query->whereNull('tenant_id') : $query->where('tenant_id', $tenantId);
+    }
+
+    /** @param array<string, mixed> $attributes */
+    public function startTerm(Duty $duty, string $userId, ?int $tenantId, array $attributes = [], bool $audit = true): Dutiable
+    {
+        unset($attributes['assignment_origin']);
+        $attributes['start_date'] ??= $this->newTermStartDate($duty, $userId, $tenantId);
+
+        $create = fn (): Dutiable => Dutiable::create([
+            ...$attributes,
+            'duty_id' => $duty->id,
+            'dutiable_type' => MorphMap::alias(User::class),
+            'dutiable_id' => $userId,
+            'tenant_id' => $tenantId,
+            'via_dutiable_id' => null,
+        ]);
+
+        return $audit ? $duty->auditRelationChange('users', $create) : $create();
+    }
+
+    /** @param Builder<Dutiable> $query */
+    public function endTerms(Builder $query, DateTimeInterface|string|null $endDate = null): void
+    {
+        $this->endDateDutiables($query, $endDate ?? today()->subDay());
+    }
+
     /** @param list<string> $userIds */
     public function syncRepresentatives(Duty $duty, array $userIds, ?int $tenantId = null, ?User $actor = null): void
     {
-        // Derived seats follow their source duty, never a manual representative list.
-        $query = Dutiable::query()
-            ->where('duty_id', $duty->id)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('tenant_id', $tenantId)
-            ->whereNull('via_dutiable_id')
-            ->notEnded();
-
-        $currentUserIds = (clone $query)->pluck('dutiable_id')->all();
-        $toRemove = array_values(array_diff($currentUserIds, $userIds));
+        $currentUserIds = $this->manualDutyTerms($duty->id, $tenantId)->current()->distinct()->pluck('dutiable_id')->all();
+        $toRemove = array_diff($currentUserIds, $userIds);
         $toAdd = array_values(array_unique(array_diff($userIds, $currentUserIds)));
 
         if ($actor !== null) {
@@ -48,14 +81,16 @@ class DutyAssignmentService
             }
         }
 
-        if ($toRemove) {
-            $this->endDateDutiables($query->whereIn('dutiable_id', $toRemove), now()->subDay());
+        foreach ($toRemove as $userId) {
+            $this->endTerms($this->manualTerms($duty->id, $userId, $tenantId)->current());
         }
 
         if ($toAdd) {
-            $duty->attachAudited('users', collect($toAdd)->mapWithKeys(fn ($userId) => [
-                $userId => ['start_date' => $this->newTermStartDate($duty, $userId, $tenantId), 'tenant_id' => $tenantId],
-            ])->all());
+            $duty->auditRelationChange('users', function () use ($duty, $toAdd, $tenantId): void {
+                foreach ($toAdd as $userId) {
+                    $this->startTerm($duty, $userId, $tenantId, audit: false);
+                }
+            });
         }
     }
 

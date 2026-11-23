@@ -7,6 +7,7 @@ use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
@@ -59,41 +60,28 @@ class SyncUserDuties
 
         foreach ($removedDutyIds as $dutyId) {
             $rows = Dutiable::query()->where('duty_id', $dutyId)
-                ->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $user->id)->notEnded()->get();
+                ->where('dutiable_type', MorphMap::alias(User::class))
+                ->where('dutiable_id', $user->id)
+                ->whereNull('tenant_id')
+                ->current()->get();
             if ($rows->isNotEmpty() && $rows->whereNull('via_dutiable_id')->isEmpty()) {
                 throw ValidationException::withMessages(['current_duties' => __('users.derived_duty_removal')]);
             }
         }
 
-        // Log duty changes as a single relation_updated activity on the user.
-        DB::transaction(fn () => $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user): void {
+        $assignments = app(DutyAssignmentService::class);
+
+        DB::transaction(fn () => $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments): void {
             foreach ($newDutyIds as $dutyId) {
-                // Prevent duplicate active duty rows from concurrent saves.
-                $alreadyActive = Dutiable::query()
-                    ->where('duty_id', $dutyId)
-                    ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->where('dutiable_id', $user->id)
-                    ->whereNull('via_dutiable_id')
-                    ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', today()))
-                    ->exists();
+                $alreadyActive = $assignments->manualTerms($dutyId, $user->id, null)->current()->exists();
 
                 if (! $alreadyActive) {
-                    $user->duties()->attach($duties->get($dutyId), ['start_date' => now()->subDay()]);
+                    $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false);
                 }
             }
 
             foreach ($removedDutyIds as $dutyId) {
-                // updateExistingPivot() can match a historical row instead of the active term.
-                Dutiable::where('duty_id', $dutyId)
-                    ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->where('dutiable_id', $user->id)
-                    ->whereNull('via_dutiable_id')
-                    ->where(function ($query): void {
-                        $query->whereNull('end_date')
-                            ->orWhereDate('end_date', '>=', today());
-                    })
-                    ->get()
-                    ->each(fn (Dutiable $dutiable) => $dutiable->update(['end_date' => now()->subDay()]));
+                $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->current());
             }
         }));
     }

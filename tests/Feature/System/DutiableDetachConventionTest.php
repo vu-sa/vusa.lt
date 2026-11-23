@@ -37,7 +37,34 @@ const DETACH_EXEMPTIONS = [
     'app/Models/Task.php',
 ];
 
+const DUTIABLE_ATTACH_EXEMPTIONS = [
+    // The service owns manual duty term writes.
+    'app/Services/DutyAssignmentService.php',
+    // Reservation::users() writes to reservation_user.
+    'app/Http/Controllers/Admin/ReservationController.php',
+];
+
 test('app code never detaches through a relation backed by the dutiables pivot', function (): void {
+    $offenders = dutiableRelationCallOffenders('/\b(?:duties|users)\s*\(\s*\)\s*->\s*detach\s*\(/', DETACH_EXEMPTIONS);
+
+    expect($offenders)->toBeEmpty();
+});
+
+test('app code avoids creating manual duty terms through pivot attaches', function (): void {
+    $offenders = dutiableRelationCallOffenders(
+        '/\bduties\s*\(\s*\)\s*->\s*attach\s*\(|\battachAudited\s*\(\s*([\'"])(?:users|duties)\1/',
+        DUTIABLE_ATTACH_EXEMPTIONS,
+    );
+
+    expect($offenders)->toBeEmpty();
+});
+
+/**
+ * @param  list<string>  $exemptions
+ * @return list<string>
+ */
+function dutiableRelationCallOffenders(string $pattern, array $exemptions): array
+{
     $offenders = [];
 
     /** @var SplFileInfo $file */
@@ -48,25 +75,20 @@ test('app code never detaches through a relation backed by the dutiables pivot',
 
         $relative = Str::after($file->getPathname(), base_path().'/');
 
-        if (in_array($relative, DETACH_EXEMPTIONS, true)) {
+        if (in_array($relative, $exemptions, true)) {
             continue;
         }
 
-        // Strip comments: explanatory prose mentioning the forbidden call is
-        // not an offence. php_strip_whitespace also drops whitespace, which the
-        // needle (no spaces inside) does not depend on.
+        // Strip comments so references to forbidden calls do not trigger violations.
         $contents = (string) php_strip_whitespace($file->getPathname());
 
-        // User::duties() and Duty::users() are the only two relations on the
-        // dutiables pivot.
-        foreach (['duties()->detach(', 'users()->detach('] as $needle) {
-            if (str_contains($contents, $needle)) {
-                $offenders[] = "{$relative} uses {$needle}";
-            }
+        preg_match_all($pattern, $contents, $matches);
+        foreach (array_unique($matches[0]) as $call) {
+            $offenders[] = "{$relative} uses {$call}";
         }
     }
 
     sort($offenders);
 
-    expect($offenders)->toBeEmpty();
-});
+    return $offenders;
+}
