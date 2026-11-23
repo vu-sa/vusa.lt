@@ -161,7 +161,7 @@ class ResourceCapacityCalculator
         return $lowestCapacity;
     }
 
-    /** @return BelongsToMany<Reservation, Resource, ReservationResource, 'pivot'> */
+    /** @return BelongsToMany<Reservation, resource, ReservationResource, 'pivot'> */
     private function buildActiveReservationsQuery(Carbon $datetime, string $symbolStart, string $symbolEnd): BelongsToMany
     {
         return $this->resource
@@ -209,7 +209,7 @@ class ResourceCapacityCalculator
     }
 
     /**
-     * @param  BelongsToMany<Reservation, Resource, ReservationResource, 'pivot'>  $query
+     * @param  BelongsToMany<Reservation, resource, ReservationResource, 'pivot'>  $query
      * @param  array<int, string>  $exceptReservations
      * @param  array<int, string>  $exceptResources
      */
