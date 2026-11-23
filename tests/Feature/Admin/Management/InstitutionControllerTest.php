@@ -87,6 +87,24 @@ describe('reorderDuties', function (): void {
 
         expect($otherDuty->fresh()->order)->toBe(1);
     });
+
+    test('leaves every order unchanged when a duty belongs to a trashed institution in another tenant', function (): void {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create(['order' => 1]);
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $trashedInstitution = Institution::factory()->for($otherTenant)->create();
+        $foreignDuty = Duty::factory()->for($trashedInstitution)->create(['order' => 2]);
+        $trashedInstitution->delete();
+
+        asUser($this->admin)->post(route('institutions.reorderDuties'), [
+            'duties' => [
+                ['id' => $duty->id, 'order' => 5],
+                ['id' => $foreignDuty->id, 'order' => 6],
+            ],
+        ])->assertForbidden();
+
+        expect($duty->fresh()->order)->toBe(1)
+            ->and($foreignDuty->fresh()->order)->toBe(2);
+    });
 });
 
 describe('unauthorized access', function (): void {

@@ -57,9 +57,10 @@ test('owning-tenant admin can update their own duty', function (): void {
         'institution_id' => $this->duty->institution_id,
         'places_to_occupy' => 1,
         'contacts_grouping' => 'none',
+        'assignable_tenants' => [['tenant_id' => $this->assignableTenant->id, 'quota' => 2]],
     ]);
 
-    $response->assertRedirect();
+    $response->assertRedirect()->assertSessionHasNoErrors();
     expect($this->duty->fresh()->getTranslation('name', 'lt'))->toBe('Atnaujinta');
 });
 
@@ -72,6 +73,115 @@ test('cross-tenant admin cannot update the duty itself', function (): void {
     ]);
 
     expect($response->status())->toBe(403);
+});
+
+describe('assignable tenants on duty update', function (): void {
+    beforeEach(function (): void {
+        $this->foreignRow = ['tenant_id' => $this->assignableTenant->id, 'quota' => 2];
+        $this->dutyUpdate = [
+            'name' => ['lt' => 'Atnaujinta', 'en' => 'Updated'],
+            'institution_id' => $this->duty->institution_id,
+            'contacts_grouping' => 'none',
+            'assignable_tenants' => [$this->foreignRow],
+        ];
+    });
+
+    test('a tenant admin cannot add a foreign assignable tenant', function (): void {
+        $otherTenant = Tenant::query()->whereNotIn('id', [$this->owningTenant->id, $this->assignableTenant->id])->firstOrFail();
+        $payload = $this->dutyUpdate;
+        $payload['assignable_tenants'][] = ['tenant_id' => $otherTenant->id, 'quota' => 1];
+
+        asUser($this->owningAdmin)->patchJson(route('duties.update', $this->duty), $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors('assignable_tenants.1.tenant_id');
+
+        expect($this->duty->assignableTenants()->pluck('tenants.id')->all())->toBe([$this->assignableTenant->id]);
+    });
+
+    test('a tenant admin cannot change an existing foreign assignable tenant', function (array $change, string $error): void {
+        $rep = Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => $this->tenantUser->id,
+            'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => $this->assignableTenant->id,
+            'start_date' => today()->subDay(),
+            'end_date' => null,
+        ]);
+        $payload = $this->dutyUpdate;
+        $payload['assignable_tenants'] = $change === [] ? [] : [array_replace($this->foreignRow, $change)];
+
+        asUser($this->owningAdmin)->patchJson(route('duties.update', $this->duty), $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors($error);
+
+        $tenant = $this->duty->assignableTenants()->sole();
+
+        expect($tenant->id)->toBe($this->assignableTenant->id)
+            ->and((int) $tenant->pivot->quota)->toBe(2)
+            ->and($rep->fresh()->end_date)->toBeNull();
+    })->with([
+        'omit the row' => [[], 'assignable_tenants'],
+        'change the quota' => [['quota' => 1], 'assignable_tenants.0.tenant_id'],
+        'remove a representative' => [['user_ids' => []], 'assignable_tenants.0.tenant_id'],
+    ]);
+
+    test('a tenant admin can save with the foreign representatives unchanged', function (): void {
+        $rep = Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => $this->tenantUser->id,
+            'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => $this->assignableTenant->id,
+            'start_date' => today()->subDay(),
+            'end_date' => null,
+        ]);
+        $payload = $this->dutyUpdate;
+        $payload['assignable_tenants'][0]['user_ids'] = [$this->tenantUser->id, $this->tenantUser->id];
+
+        asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), $payload)
+            ->assertRedirect()->assertSessionHasNoErrors();
+
+        expect($this->duty->fresh()->getTranslation('name', 'lt'))->toBe('Atnaujinta')
+            ->and($rep->fresh()->end_date)->toBeNull();
+    });
+
+    test('global duty update scope permits adding a foreign assignable tenant', function (): void {
+        $this->owningAdmin->givePermissionTo('duties.update.*');
+        $otherTenant = Tenant::query()->whereNotIn('id', [$this->owningTenant->id, $this->assignableTenant->id])->firstOrFail();
+        $payload = $this->dutyUpdate;
+        $payload['assignable_tenants'][] = ['tenant_id' => $otherTenant->id, 'quota' => 1];
+
+        asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), $payload)
+            ->assertRedirect()->assertSessionHasNoErrors();
+
+        expect($this->duty->assignableTenants()->pluck('tenants.id')->all())
+            ->toEqualCanonicalizing([$this->assignableTenant->id, $otherTenant->id]);
+    });
+
+    test('a tenant admin can change their own assignable tenant quota', function (): void {
+        $this->duty->assignableTenants()->attach($this->owningTenant->id, ['quota' => 1]);
+        $payload = $this->dutyUpdate;
+        $payload['assignable_tenants'][] = ['tenant_id' => $this->owningTenant->id, 'quota' => 3];
+
+        asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), $payload)
+            ->assertRedirect()->assertSessionHasNoErrors();
+
+        $tenant = $this->duty->assignableTenants()->whereKey($this->owningTenant->id)->sole();
+        expect((int) $tenant->pivot->quota)->toBe(3);
+    });
+
+    test('moving a duty refuses an ex-officio target in its former tenant', function (): void {
+        $destination = $this->crossAdmin->duties()->firstOrFail();
+        $this->owningAdmin->duties()->attach($destination->id, ['start_date' => today()]);
+        $target = Duty::factory()->for($this->duty->institution)->create();
+        $payload = array_replace($this->dutyUpdate, [
+            'institution_id' => $destination->institution_id,
+            'ex_officio_target_duty_ids' => [$target->id],
+        ]);
+
+        asUser($this->owningAdmin)->patchJson(route('duties.update', $this->duty), $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors('ex_officio_target_duty_ids');
+
+        expect($this->duty->fresh()->institution_id)->toBe($this->duty->institution_id)
+            ->and($this->duty->exOfficioTargetDuties()->exists())->toBeFalse();
+    });
 });
 
 test('cross-tenant admin can add their own tenant user via batch-update', function (): void {
@@ -543,6 +653,7 @@ test('batch update quota counts user end-dated yesterday as already removed', fu
 });
 
 test('owning admin update with user_ids creates cross-tenant dutiables with tenant_id', function (): void {
+    $this->owningAdmin->givePermissionTo('duties.update.*');
     $crossUser = makeUser($this->assignableTenant);
 
     asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), [
@@ -564,6 +675,7 @@ test('owning admin update with user_ids creates cross-tenant dutiables with tena
 });
 
 test('removing a tenant from assignable_tenants end-dates their active reps', function (): void {
+    $this->owningAdmin->givePermissionTo('duties.update.*');
     $crossUser = makeUser($this->assignableTenant);
     $dutiable = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -701,7 +813,8 @@ test('batchUpdateUsers quota allows swap when removing future-end-dated user', f
     )->toBeTrue();
 });
 
-test('owning admin can remove wizard-added cross-tenant user via duties.update', function (): void {
+test('an admin with global duty scope can remove a wizard-added cross-tenant user', function (): void {
+    $this->owningAdmin->givePermissionTo('duties.update.*');
     $crossUser = makeUser($this->assignableTenant);
 
     // Wizard adds user with a future end_date.
@@ -758,6 +871,7 @@ test('saving the duty form without user_ids keeps cross-tenant reps', function (
 });
 
 test('removing assignable tenant end-dates all active reps including future end_dated ones', function (): void {
+    $this->owningAdmin->givePermissionTo('duties.update.*');
     $crossUser = makeUser($this->assignableTenant);
 
     Dutiable::factory()->create([
@@ -882,7 +996,8 @@ test('saving the duty without a member list keeps its current members', function
         'institution_id' => $this->duty->institution_id,
         'places_to_occupy' => 1,
         'contacts_grouping' => 'none',
-    ])->assertRedirect();
+        'assignable_tenants' => [['tenant_id' => $this->assignableTenant->id, 'quota' => 2]],
+    ])->assertRedirect()->assertSessionHasNoErrors();
 
     expect($dutiable->fresh()->end_date)->toBeNull();
 });

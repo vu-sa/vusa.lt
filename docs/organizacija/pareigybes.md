@@ -155,8 +155,10 @@ Kai kurios institucijos (pvz., VU SA Parlamentas) priklauso bendram dariniui, ta
 padalinių.
 
 Tokioms pareigybėms naudojamas **padalinių kvotų mechanizmas**:
-- Pareigybę sukūręs padalinys nustato, kurie kiti padaliniai gali skirti savo atstovus ir kokia
-  jiems skirta vieta (kvota).
+- Kurie padaliniai gali skirti atstovus ir kiek vietų (kvotą) turi kiekvienas, nustato tie, kurie
+  gali redaguoti pareigybes visuose padaliniuose (pvz., Centrinio biuro administratoriai).
+- Koordinatorius, kurio teisės apsiriboja vienu padaliniu, redaguodamas pareigybę gali keisti
+  savo padalinio kvotą. Kitų padalinių kvotos ir jų atstovų pareigos išlieka.
 - Fakulteto koordinatorius mato šią instituciją ir pareigybę savo sąraše kaip išorinę, gali atidaryti
   jos puslapį peržiūrai ir paskirti savo fakulteto studentą, neviršydamas skirtos kvotos.
 - Fakulteto administratorius negali keisti pačios pareigybės pavadinimo ar kitų padalinių atstovų,

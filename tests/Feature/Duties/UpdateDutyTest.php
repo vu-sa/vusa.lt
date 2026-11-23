@@ -142,6 +142,22 @@ test('target seats are reconciled inside the outer transaction', function (): vo
         ->and($derived->dutiable_id)->toBe($source->dutiable_id);
 });
 
+test('saving a stale duty edit preserves a foreign representative added after validation', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $foreignTenant = Tenant::query()->whereKeyNot($tenant->id)->firstOrFail();
+    $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
+    $duty->assignableTenants()->attach($foreignTenant, ['quota' => 2]);
+    $data = updateDutyActionData($duty, [
+        'assignable_tenants' => [['tenant_id' => $foreignTenant->id, 'quota' => 2, 'user_ids' => []]],
+    ]);
+    $rep = Dutiable::factory()->forDuty($duty)->forTenant($foreignTenant)->active()->create();
+
+    app(UpdateDuty::class)->execute($duty, $data, $actor);
+
+    expect($rep->fresh()->end_date)->toBeNull();
+});
+
 test('target unlink clips seats inside the transaction and keeps derived membership history', function (): void {
     $this->travelTo('2026-10-03 12:00:00');
     $duty = Duty::factory()->create();

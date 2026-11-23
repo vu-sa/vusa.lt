@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
 
@@ -13,6 +14,19 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
     $this->institution = Institution::factory()->for($this->tenant)->create();
+});
+
+test('rejects a nonexistent responsible person when creating a task', function (): void {
+    asUser($this->admin)->postJson(route('tasks.store'), [
+        'name' => 'Sutvarkyti dokumentus',
+        'taskable_type' => MorphMap::alias(Institution::class),
+        'taskable_id' => $this->institution->id,
+        'due_date' => now()->addWeek()->getTimestampMs(),
+        'responsible_people' => [(string) Str::ulid()],
+        'separate_tasks' => false,
+    ])->assertUnprocessable()->assertJsonValidationErrors('responsible_people.0');
+
+    expect(Task::query()->where('taskable_id', $this->institution->id)->exists())->toBeFalse();
 });
 
 /**

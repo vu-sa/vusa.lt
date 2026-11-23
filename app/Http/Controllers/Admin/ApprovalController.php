@@ -121,18 +121,15 @@ class ApprovalController extends AdminController
         $user = auth()->user();
         $notes = $validated['notes'] ?? null;
 
+        $approvables = collect($validated['approvable_ids'])
+            ->map(fn ($id) => $this->resolveApprovable($validated['approvable_type'], $id))
+            ->filter()
+            ->each(fn ($approvable) => $this->authorize('view', $approvable));
+
         $resolved = 0;
         $errors = [];
 
-        foreach ($validated['approvable_ids'] as $id) {
-            $approvable = $this->resolveApprovable($validated['approvable_type'], $id);
-
-            if (! $approvable) {
-                continue;
-            }
-
-            $this->authorize('view', $approvable);
-
+        foreach ($approvables->unique(fn ($approvable) => $approvable->getKey()) as $approvable) {
             try {
                 if ($this->approvalService->fastForward($approvable, $user, $notes)->isNotEmpty()) {
                     $resolved++;

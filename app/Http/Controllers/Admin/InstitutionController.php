@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -287,16 +288,18 @@ class InstitutionController extends AdminController
     {
         $duties = collect($request->validated('duties'));
 
-        $dutyModels = Duty::whereIn('id', $duties->pluck('id'))->get()->keyBy('id');
+        DB::transaction(function () use ($duties): void {
+            $dutyModels = Duty::whereIn('id', $duties->pluck('id'))->get()->keyBy('id');
 
-        foreach ($duties as $duty) {
-            $dutyModel = $dutyModels->get($duty['id']);
+            foreach ($duties as $duty) {
+                $dutyModel = $dutyModels->get($duty['id']);
 
-            if ($dutyModel) {
-                $dutyModel->order = $duty['order'];
-                $dutyModel->save();
+                if ($dutyModel) {
+                    $dutyModel->order = $duty['order'];
+                    $dutyModel->save();
+                }
             }
-        }
+        });
 
         return back()->with('success', __('messages.duty.order_updated'));
     }

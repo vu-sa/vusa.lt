@@ -62,6 +62,7 @@ class UpdateDutyRequest extends FormRequest
             'ex_officio_target_duty_ids' => 'nullable|array',
             'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties'), 'not_in:'.$duty->id],
             'assignable_tenants' => 'nullable|array',
+            'assignable_tenants.*' => 'required|array',
             'assignable_tenants.*.tenant_id' => 'required|integer|exists:tenants,id',
             'assignable_tenants.*.quota' => 'nullable|integer|min:1',
             'assignable_tenants.*.user_ids' => 'nullable|array',
@@ -103,17 +104,35 @@ class UpdateDutyRequest extends FormRequest
                 $v->errors()->add('is_active', __('Pirmiau užbaik narių pareigas, tada pažymėk pareigybę nebeveikiančia.'));
             }
 
-            $hasGlobalDutyScope = app(ModelAuthorizer::class)->allows($this->user(), 'duties.update.*');
+            if ($v->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $authorizer = app(ModelAuthorizer::class);
+            $hasGlobalDutyScope = $authorizer->allows($this->user(), 'duties.update.*');
+            $assignableTenants = collect($this->input('assignable_tenants') ?? []);
 
             if (! $hasGlobalDutyScope) {
-                $sourceTenantId = $duty->institution?->tenant_id;
                 $targetIds = array_filter((array) $this->input('ex_officio_target_duty_ids', []));
 
-                if ($targetIds && Duty::whereIn('id', $targetIds)
-                    ->whereHas('institution', fn ($q) => $q->where('tenant_id', '!=', $sourceTenantId))
-                    ->exists()) {
-                    $v->errors()->add('ex_officio_target_duty_ids', __('Ex-officio pareigos turi priklausyti tam pačiam padaliniui.'));
+                if ($targetIds) {
+                    $institutionId = $this->input('institution_id');
+                    $sourceTenantId = $institutionId === null
+                        ? $duty->institution?->tenant_id
+                        : Institution::whereKey($institutionId)->value('tenant_id');
+
+                    if (Duty::whereIn('id', $targetIds)
+                        ->whereHas('institution', fn ($q) => $q->where('tenant_id', '!=', $sourceTenantId))
+                        ->exists()) {
+                        $v->errors()->add('ex_officio_target_duty_ids', __('Ex-officio pareigos turi priklausyti tam pačiam padaliniui.'));
+                    }
                 }
+
+                $editableTenantIds = $authorizer->tenants($this->user(), 'duties.update.padalinys')->pluck('id');
+                [$assignableTenants, $lockedRows] = $assignableTenants->partition(
+                    fn (array $row) => $editableTenantIds->contains((int) $row['tenant_id']),
+                );
+                $this->validateLockedAssignableTenants($v, $duty, $editableTenantIds->all(), $lockedRows->all());
             }
 
             // Enforce per-tenant quota against the requested user_ids count, plus the
@@ -121,7 +140,7 @@ class UpdateDutyRequest extends FormRequest
             // duty and never appear in the picker, but they do fill the tenant's places.
             $exOfficioUserIdsByTenant = $this->exOfficioUserIdsByTenant($duty);
 
-            foreach ((array) $this->input('assignable_tenants', []) as $i => $row) {
+            foreach ($assignableTenants as $i => $row) {
                 $quota = $row['quota'] ?? null;
 
                 if ($quota === null) {
@@ -139,5 +158,50 @@ class UpdateDutyRequest extends FormRequest
                 }
             }
         });
+    }
+
+    private function validateLockedAssignableTenants(Validator $validator, Duty $duty, array $editableTenantIds, array $rows): void
+    {
+        $lockedTenants = $duty->loadMissing('assignableTenants')->assignableTenants
+            ->whereNotIn('id', $editableTenantIds)->keyBy('id');
+        $message = __('validation.outside_tenant_scope');
+
+        if ($lockedTenants->keys()->diff(array_column($rows, 'tenant_id'))->isNotEmpty()) {
+            $validator->errors()->add('assignable_tenants', $message);
+        }
+
+        $tenantIdsWithUserLists = $lockedTenants->keys()->intersect(array_column(
+            array_filter($rows, fn (array $row) => array_key_exists('user_ids', $row)),
+            'tenant_id',
+        ));
+        $currentReps = $tenantIdsWithUserLists->isEmpty() ? collect() : $duty->dutiables()
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->whereIn('tenant_id', $tenantIdsWithUserLists)
+            ->whereNull('via_dutiable_id')
+            ->current()
+            ->get(['tenant_id', 'dutiable_id'])
+            ->groupBy('tenant_id');
+
+        foreach ($rows as $i => $row) {
+            $tenantId = (int) $row['tenant_id'];
+            $tenant = $lockedTenants->get($tenantId);
+            $quota = isset($row['quota']) ? (int) $row['quota'] : null;
+            $currentQuota = $tenant?->pivot->quota;
+
+            if ($tenant === null || $quota !== ($currentQuota === null ? null : (int) $currentQuota)) {
+                $validator->errors()->add("assignable_tenants.$i.tenant_id", $message);
+
+                continue;
+            }
+
+            if (array_key_exists('user_ids', $row)) {
+                $submitted = $row['user_ids'] ?? [];
+                $current = $currentReps->get($tenantId, collect())->pluck('dutiable_id')->all();
+
+                if (array_diff($submitted, $current) !== [] || array_diff($current, $submitted) !== []) {
+                    $validator->errors()->add("assignable_tenants.$i.tenant_id", $message);
+                }
+            }
+        }
     }
 }
