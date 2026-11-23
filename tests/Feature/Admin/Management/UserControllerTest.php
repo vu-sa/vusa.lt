@@ -576,6 +576,21 @@ describe('duty assignment', function (): void {
         expect(Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->current()->count())->toBe(1);
     });
 
+    test('removing and re-adding a duty on the same day does not overlap the two terms', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $target->duties()->attach($duty->id, ['start_date' => now()->subMonth()]);
+        $sync = fn (array $now, array $before) => SyncUserDuties::execute($this->admin, new Collection($now), new Collection($before), $target, app(ModelAuthorizer::class), 'users.update.all');
+
+        $sync([], [$duty->id]);
+        $sync([$duty->id], []);
+
+        $terms = Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->orderBy('start_date')->get();
+
+        expect($terms)->toHaveCount(2)
+            ->and($terms[1]->start_date->gt($terms[0]->end_date))->toBeTrue();
+    });
+
     test('a term added on the user form starts after an institution closure ended the previous one', function (): void {
         $target = User::factory()->create();
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();

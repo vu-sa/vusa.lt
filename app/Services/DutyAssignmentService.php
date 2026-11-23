@@ -62,9 +62,18 @@ class DutyAssignmentService
         return $audit ? $duty->auditRelationChange('users', $create) : $create();
     }
 
-    /** @param Builder<Dutiable> $query */
+    /**
+     * Without a date the last day is yesterday; a term that has not started yet is withdrawn instead of inverted.
+     *
+     * @param  Builder<Dutiable>  $query
+     */
     public function endTerms(Builder $query, DateTimeInterface|string|null $endDate = null): void
     {
+        if ($endDate === null) {
+            (clone $query)->whereDate('start_date', '>=', today())->get()->each->delete();
+            $query->whereDate('start_date', '<', today());
+        }
+
         $this->endDateDutiables($query, $endDate ?? today()->subDay());
     }
 
@@ -96,13 +105,14 @@ class DutyAssignmentService
 
     private function newTermStartDate(Duty $duty, string $userId, ?int $tenantId): string
     {
-        $lastClosure = Dutiable::query()->where('duty_id', $duty->id)
+        $lastEnd = Dutiable::query()->where('duty_id', $duty->id)
             ->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $userId)
-            ->where('tenant_id', $tenantId)->where('ended_by_institution_deactivation', true)->max('end_date');
+            ->when($tenantId === null, fn ($query) => $query->whereNull('tenant_id'), fn ($query) => $query->where('tenant_id', $tenantId))
+            ->max('end_date');
         $start = today()->subDay()->toDateString();
 
-        // The end date is inclusive, so a returning member's new period must start after it.
-        return is_string($lastClosure) ? max($start, Carbon::parse($lastClosure)->addDay()->toDateString()) : $start;
+        // The end date is inclusive, so a returning member's new period must start after it (closures included).
+        return is_string($lastEnd) ? max($start, Carbon::parse($lastEnd)->addDay()->toDateString()) : $start;
     }
 
     /** @param Builder<Dutiable> $query */

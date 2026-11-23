@@ -500,8 +500,8 @@ class DutyController extends AdminController
                     }
 
                     if ($existingTerm = $currentTerms->first()) {
-                        $attributes['start_date'] ??= now();
-                        $existingTerm->update($attributes);
+                        // Only what the change sends: an omitted start date must not reset the term's history.
+                        $existingTerm->update(array_intersect_key($attributes, $change));
                     } else {
                         $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes);
                     }

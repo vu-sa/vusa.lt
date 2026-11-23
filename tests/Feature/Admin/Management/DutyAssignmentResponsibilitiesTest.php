@@ -252,6 +252,21 @@ test('resuming an own membership is allowed when its responsibilities are alread
         ->and($row->fresh()->end_date->lt(today()))->toBeTrue();
 });
 
+test('reopening an ended row in place requires the current responsibility ceiling', function (): void {
+    $tenant = Tenant::query()->first();
+    $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
+    $row = Dutiable::factory()->forDuty($duty)->forUser(User::factory()->create())->ended()->create();
+    $role = Role::factory()->create();
+    $role->givePermissionTo('news.read.*');
+    $duty->assignRole($role);
+
+    asUser($actor)->patchJson(route('dutiables.update', $row), ['end_date' => null])
+        ->assertUnprocessable()->assertJsonValidationErrors('user_id');
+
+    expect($row->fresh()->end_date->lt(today()))->toBeTrue();
+});
+
 test('resuming an ended term requires the current responsibility ceiling', function (): void {
     $tenant = Tenant::query()->first();
     $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);

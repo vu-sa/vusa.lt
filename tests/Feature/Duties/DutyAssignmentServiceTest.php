@@ -26,8 +26,17 @@ test('representative removal respects inclusive end dates and allocated future s
     'last day today' => ['2026-10-03', '2026-09-01', '2026-10-02'],
     'future end' => ['2026-11-01', '2026-09-01', '2026-10-02'],
     'historical term' => ['2026-09-30', '2026-09-01', '2026-09-30'],
-    'allocated future term' => [null, '2026-11-01', '2026-10-02'],
 ]);
+
+test('representative removal withdraws a term that has not started instead of inverting it', function (string $startDate): void {
+    $this->travelTo('2026-10-03 12:00:00');
+    $duty = Duty::factory()->create();
+    $row = Dutiable::factory()->forDuty($duty)->create(['start_date' => $startDate, 'end_date' => null]);
+
+    app(DutyAssignmentService::class)->syncRepresentatives($duty, []);
+
+    expect($row->fresh())->toBeNull();
+})->with(['starts today' => '2026-10-03', 'allocated future term' => '2026-11-01']);
 
 test('representative lists only change manual rows of the selected duty and tenant', function (bool $crossTenant): void {
     $this->travelTo('2026-10-03 12:00:00');

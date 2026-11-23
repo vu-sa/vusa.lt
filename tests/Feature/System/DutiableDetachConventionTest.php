@@ -38,8 +38,6 @@ const DETACH_EXEMPTIONS = [
 ];
 
 const DUTIABLE_ATTACH_EXEMPTIONS = [
-    // The service owns manual duty term writes.
-    'app/Services/DutyAssignmentService.php',
     // Reservation::users() writes to reservation_user.
     'app/Http/Controllers/Admin/ReservationController.php',
 ];
