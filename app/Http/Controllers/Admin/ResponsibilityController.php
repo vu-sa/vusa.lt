@@ -172,9 +172,12 @@ class ResponsibilityController extends AdminController
         }
 
         $holderIds = $this->holderIds($role);
-        // One by one, so the projection takes the responsibility off every duty it reached.
-        $role->grants()->get()->each->delete();
-        $role->delete();
+
+        DB::transaction(function () use ($role): void {
+            // One by one, so the projection takes the responsibility off every duty it reached.
+            $role->grants()->get()->each->delete();
+            $role->delete();
+        });
 
         ForgetUserAccess::execute($holderIds);
 
@@ -191,19 +194,21 @@ class ResponsibilityController extends AdminController
         $gaps = app(ResponsibilityPermissionGaps::class);
         $gapsBefore = count($gaps->forRole($role));
 
-        $role->auditRelationChange('permissions', function () use ($role, $added, $removed): void {
-            if ($removed->isNotEmpty()) {
-                $role->revokePermissionTo($removed->all());
-            }
+        DB::transaction(function () use ($role, $added, $removed): void {
+            $role->auditRelationChange('permissions', function () use ($role, $added, $removed): void {
+                if ($removed->isNotEmpty()) {
+                    $role->revokePermissionTo($removed->all());
+                }
 
-            if ($added->isNotEmpty()) {
-                $role->givePermissionTo($added->all());
+                if ($added->isNotEmpty()) {
+                    $role->givePermissionTo($added->all());
+                }
+            });
+
+            if ($added->isNotEmpty() || $removed->isNotEmpty()) {
+                $role->touch();
             }
         });
-
-        if ($added->isNotEmpty() || $removed->isNotEmpty()) {
-            $role->touch();
-        }
 
         $message = __('responsibilities.messages.permissions_saved', ['added' => $added->count(), 'removed' => $removed->count()]);
 

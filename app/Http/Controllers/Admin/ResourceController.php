@@ -25,6 +25,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ResourceController extends AdminController
@@ -67,22 +68,28 @@ class ResourceController extends AdminController
     #[Authorize('create', Resource::class)]
     public function store(StoreResourceRequest $request, PostCreateRedirect $redirect)
     {
-        if ($request->validated('media') !== []) {
+        $images = $request->validated('media') ?? [];
+
+        if ($images !== []) {
             StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
 
-        $resource = new Resource;
+        $resource = DB::transaction(function () use ($request, $images): Resource {
+            $resource = new Resource;
 
-        $resource->fill($request->safe()->except('media'));
-        $resource->save();
+            $resource->fill($request->safe()->except('media'));
+            $resource->save();
 
-        $resource = $resource->fresh();
+            $resource = $resource->fresh();
 
-        foreach ($request->validated('media') as $image) {
-            app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
-        }
+            foreach ($images as $image) {
+                app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
+            }
 
-        $resource->afterImageMediaChanged('images');
+            $resource->afterImageMediaChanged('images');
+
+            return $resource;
+        });
 
         return redirect($redirect->url($request->user(), $resource, 'resources.show', 'view', 'resources.index'))
             ->with('success', $this->entityMessage('created', 'resource'));
@@ -201,29 +208,29 @@ class ResourceController extends AdminController
     #[Authorize('update', 'resource')]
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
-        $hasPendingMedia = collect($request->validated('media'))
-            ->contains(fn (array $image): bool => $image['status'] === 'pending' && ($image['file'] ?? null) !== null);
+        $images = $request->validated('media');
+        $pendingImages = collect($images)
+            ->filter(fn (array $image): bool => ($image['status'] ?? null) === 'pending' && isset($image['file']));
 
-        if ($hasPendingMedia) {
+        if ($pendingImages->isNotEmpty()) {
             StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
 
-        $resource->fill($request->safe()->except('media'));
-        $resource->save();
+        DB::transaction(function () use ($request, $resource, $images, $pendingImages): void {
+            $resource->fill($request->safe()->except('media'));
+            $resource->save();
 
-        $resource->getMedia('images')
-            ->filter(fn ($image) => ! in_array($image->id, array_column($request->validated('media'), 'id')))
-            ->each(fn ($image) => $image->delete());
+            $removedImages = $images === null ? collect() : $resource->getMedia('images')
+                ->whereNotIn('id', array_column($images, 'id'));
 
-        if ($request->validated('media')) {
-            foreach ($request->validated('media') as $image) {
-                if ($image['status'] === 'pending' && $image['file']) {
-                    app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
-                }
+            foreach ($pendingImages as $image) {
+                app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
             }
-        }
 
-        $resource->afterImageMediaChanged('images');
+            $removedImages->each->delete();
+
+            $resource->afterImageMediaChanged('images');
+        });
 
         return back()
             ->with('success', $this->entityMessage('updated', 'resource'));

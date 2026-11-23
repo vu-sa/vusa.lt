@@ -51,6 +51,7 @@ Policies extend `ModelPolicy` and resolve permissions through `ModelAuthorizer` 
 
 ## Authorize the destination and save related changes together
 
+- Refuse before the first write where practical. Save multi-step changes in one transaction. Write files outside the database last and allow orphaned files if the transaction rolls back.
 - A class-level create policy grants the ability to create somewhere. `StoreDutyRequest` checks whether the selected institution belongs to a tenant where the actor can create duties. `DutyInstitutionScopeTest` exercises both allowed and refused destinations.
 - `FormController::update()` checks the policy for the bound form, and `UpdateFormRequest` checks the selected tenant. The controller rechecks the locked form and resolves submitted field IDs through its own relation.
 - Put the form save and all field writes in one transaction. `FormControllerTest` checks that a refused edit preserves the form, its fields, and saved responses.

@@ -161,13 +161,14 @@ class FormController extends AdminController
 
         $form->fill($request->safe()->only('name', 'description', 'path', 'publish_time'));
 
-        $form->tenant()->associate($request->tenant_id);
+        $form->tenant()->associate($request->validated('tenant_id'));
 
-        $form->save();
+        DB::transaction(function () use ($form, $request): void {
+            $form->save();
 
-        // Then, update or create the remaining form fields
-        collect($request->safe()->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
-            $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
+            collect($request->safe()->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
+                $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
+            });
         });
 
         return redirect($redirect->url($request->user(), $form, 'forms.show', 'view', 'forms.index'))

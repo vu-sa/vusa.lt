@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 pest()->use(RefreshDatabase::class);
 
@@ -152,6 +153,24 @@ describe('authorized access', function (): void {
                 ->has('banner')
                 ->where('banner.id', $this->banner->id)
             );
+    });
+
+    test('rolls back banner attributes when attaching the image fails', function (): void {
+        $banner = $this->banner->refresh();
+        $staged = stageImage($this->admin)->refresh();
+
+        Media::updating(fn () => throw new RuntimeException('Image write failed.'));
+        $this->withoutExceptionHandling();
+
+        expect(fn () => asUser($this->admin)->patch(route('banners.update', $banner), [
+            'title' => 'Atnaujintas baneris',
+            'link_url' => 'https://example.org',
+            'is_active' => false,
+            'image_media' => ['id' => $staged->id],
+        ]))->toThrow(RuntimeException::class, 'Image write failed.');
+
+        expect($banner->fresh()->getAttributes())->toEqual($banner->getAttributes());
+        expect($staged->fresh()->getAttributes())->toEqual($staged->getAttributes());
     });
 
     test('can update banner with valid data', function (): void {

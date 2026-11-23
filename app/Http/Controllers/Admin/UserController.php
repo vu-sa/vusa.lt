@@ -228,13 +228,10 @@ class UserController extends AdminController
     #[Authorize('update', 'user')]
     public function update(UpdateUserRequest $request, User $user)
     {
-        // TODO: make duty attach / detach work properly
         $actor = $request->user();
         $currentDutyIds = $user->current_duties->pluck('id');
 
-        // UpdateUserRequest already rejects an identity change the actor may not make;
-        // dropping the fields here as well means no future call path can slip one
-        // through by skipping that validator.
+        // Keep the field allowlist permission-scoped for callers that bypass request validation.
         $fields = ['facebook_url', 'phone', 'pronouns', 'show_pronouns'];
 
         if ($actor->can('updateName', $user)) {
@@ -245,13 +242,12 @@ class UserController extends AdminController
             $fields[] = 'email';
         }
 
-        $mutation = function () use ($request, $actor, $user, $currentDutyIds, $fields): void {
-            // Duties are managed on the record (Priskirti sheet), so the form no longer posts
-            // them — and absent must mean "leave alone", never "remove all".
+        $mutation = fn () => DB::transaction(function () use ($request, $actor, $user, $currentDutyIds, $fields): void {
+            // The editor omits current_duties when duty assignments should stay as they are.
             if ($request->has('current_duties')) {
                 SyncUserDuties::execute(
                     $actor,
-                    new SupportCollection($request->current_duties ?? []),
+                    new SupportCollection($request->validated('current_duties') ?? []),
                     $currentDutyIds,
                     $user,
                     $this->authorizer,
@@ -259,11 +255,9 @@ class UserController extends AdminController
                 );
             }
 
-            DB::transaction(function () use ($request, $user, $fields): void {
-                $user->update($request->safe()->only($fields));
-                app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $request->user());
-            });
-        };
+            $user->update($request->safe()->only($fields));
+            app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $actor);
+        });
 
         // Editing your own profile can drop the duties that grant your access.
         $couldAffectSelf = $user->is($actor);

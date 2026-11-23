@@ -326,6 +326,25 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('rolls back duty changes when the user write fails', function (): void {
+        $user = makeUser($this->tenant)->refresh();
+        $dutiable = $user->dutiables()->sole();
+
+        User::updating(fn (User $updating) => $updating->is($user)
+            ? throw new RuntimeException('User write failed.')
+            : null);
+        $this->withoutExceptionHandling();
+
+        expect(fn () => asUser($this->admin)->put(route('users.update', $user), [
+            'name' => $user->name,
+            'phone' => '+370 987 6543',
+            'current_duties' => [],
+        ]))->toThrow(RuntimeException::class, 'User write failed.');
+
+        expect($user->fresh()->getAttributes())->toEqual($user->getAttributes());
+        expect($user->dutiables()->sole()->getAttributes())->toEqual($dutiable->getAttributes());
+    });
+
     test('a former member without an email can still be saved', function (): void {
         $user = makeUser($this->tenant);
         $user->update(['email' => null]);

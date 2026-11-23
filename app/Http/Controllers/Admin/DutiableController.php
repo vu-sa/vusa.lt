@@ -97,16 +97,15 @@ class DutiableController extends AdminController
     {
         $data = $request->validated();
 
-        // Derived (ex-officio) rows have their dates mirrored from the source;
-        // do not allow manual overrides.
+        // Derived seats inherit their dates and tenant from the source.
         if (! is_null($dutiable->via_dutiable_id)) {
             unset($data['start_date'], $data['end_date'], $data['tenant_id']);
         }
 
-        $mutation = function () use ($dutiable, $data, $request): void {
+        $mutation = fn () => DB::transaction(function () use ($dutiable, $data, $request): void {
             $dutiable->fill(Arr::except($data, ['photo_media']))->save();
             app(SyncImageMedia::class)->fromValidated($dutiable, 'photo', $data, 'photo_media', $request->user());
-        };
+        });
 
         $couldAffectSelf = $this->affectsActingUser($dutiable, $request);
 

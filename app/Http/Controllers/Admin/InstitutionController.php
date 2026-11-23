@@ -94,10 +94,12 @@ class InstitutionController extends AdminController
     {
         $institution = new Institution;
 
-        $institution->fill($request->safe()->except('types', 'image_media', 'logo_media'))->save();
-        $this->syncImages($institution, $request->validated(), $syncImage);
+        DB::transaction(function () use ($institution, $request, $syncImage): void {
+            $institution->fill($request->safe()->except('types', 'image_media', 'logo_media'))->save();
+            $institution->syncAudited('types', $request->validated('types'));
 
-        $institution->syncAudited('types', $request->types);
+            $this->syncImages($institution, $request->validated(), $syncImage);
+        });
 
         $institution->load('tenant:id,shortname', 'types');
 

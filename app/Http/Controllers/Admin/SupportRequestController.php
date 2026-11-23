@@ -19,6 +19,7 @@ use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -137,23 +138,24 @@ class SupportRequestController extends AdminController
     // Authorized in UpdateSupportRequestRequest: the support request in the route.
     public function update(UpdateSupportRequestRequest $request, SupportRequest $supportRequest): RedirectResponse
     {
-        $data = $request->safe()->except(['roles', 'images', 'deleted_media_ids']);
-        $supportRequest->update($data);
+        DB::transaction(function () use ($request, $supportRequest): void {
+            $data = $request->safe()->except(['roles', 'images', 'deleted_media_ids']);
+            $supportRequest->update($data);
 
-        if ($request->has('roles')) {
-            $supportRequest->roles()->sync($request->validated('roles', []));
-        }
+            if ($request->has('roles')) {
+                $supportRequest->roles()->sync($request->validated('roles', []));
+            }
 
-        if ($request->filled('deleted_media_ids')) {
-            // Through the model, so the files go too; a query delete left them on disk.
-            $supportRequest->getMedia('evidence')
-                ->whereIn('id', $request->validated('deleted_media_ids'))
-                ->each(fn (Media $media) => $media->delete());
-        }
+            foreach ($request->file('images', []) as $image) {
+                app(AddImageMedia::class)->execute($supportRequest, $image, 'evidence');
+            }
 
-        foreach ($request->file('images', []) as $image) {
-            app(AddImageMedia::class)->execute($supportRequest, $image, 'evidence');
-        }
+            if ($request->filled('deleted_media_ids')) {
+                $supportRequest->getMedia('evidence')
+                    ->whereIn('id', $request->validated('deleted_media_ids'))
+                    ->each(fn (Media $media) => $media->delete());
+            }
+        });
 
         return redirect()->route('supportRequests.show', $supportRequest)->with('success', $this->entityMessage('updated', 'supportRequest'));
     }
