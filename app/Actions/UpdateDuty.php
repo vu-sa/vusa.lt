@@ -110,12 +110,7 @@ class UpdateDuty
         $assignableTenants->detach($removedTenantIds);
         $assignableTenants->syncWithoutDetaching($this->assignments->buildAssignableTenantsSync($rows));
 
-        // A missing list must preserve the existing representatives.
-        foreach ($rows as $row) {
-            if (array_key_exists('user_ids', $row)) {
-                $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id'], $actor);
-            }
-        }
+        $this->assignments->syncTenantRepresentatives($duty, $rows, $actor);
 
         return $removedTenantIds !== [] || array_diff($newTenantIds, $previousTenantIds) !== [];
     }

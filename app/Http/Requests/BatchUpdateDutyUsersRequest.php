@@ -4,15 +4,16 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Duty;
-use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
+use App\Services\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
-use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Fluent;
 use Illuminate\Validation\Rule;
 
 class BatchUpdateDutyUsersRequest extends FormRequest
@@ -53,19 +54,20 @@ class BatchUpdateDutyUsersRequest extends FormRequest
     {
         /** @var Duty $duty */
         $duty = $this->route('duty');
-        $tenantRules = ['nullable', 'integer', 'exists:tenants,id'];
+        $tenantRules = ['nullable', 'integer', Rule::in($duty->assignableTenants->modelKeys())];
 
         if (! $this->user()->can('update', $duty)) {
             $tenantRules[] = $this->tenantIdInAuthorizedScope('duties.update.padalinys');
-            $tenantRules[] = Rule::in($duty->assignableTenants->modelKeys());
         }
 
         return [
             'user_changes' => 'required|array',
             'tenant_id' => $tenantRules,
             'user_changes.*.user_id' => [
+                'bail',
                 'required',
                 'string',
+                'distinct',
                 function ($attribute, $value, $fail): void {
                     if (str_starts_with($value, 'new-')) {
                         return;
@@ -88,65 +90,58 @@ class BatchUpdateDutyUsersRequest extends FormRequest
         ];
     }
 
+    public function actingTenantId(): ?int
+    {
+        /** @var Duty $duty */
+        $duty = $this->route('duty');
+
+        if ($this->filled('tenant_id')) {
+            return $this->integer('tenant_id');
+        }
+
+        if ($this->user()->can('update', $duty)) {
+            return null;
+        }
+
+        $adminTenantIds = app(ModelAuthorizer::class)->tenants($this->user(), 'duties.update.padalinys')->pluck('id');
+        $tenantId = $adminTenantIds->intersect($duty->assignableTenants->modelKeys())->first();
+
+        return $tenantId === null ? null : (int) $tenantId;
+    }
+
     public function withValidator(Validator $validator): void
     {
+        $validator->sometimes(
+            'user_changes.*.end_date',
+            'after_or_equal:user_changes.*.start_date',
+            fn (Fluent $input, mixed $change) => $change instanceof Fluent && filled($change->get('start_date')),
+        );
+
         $validator->after(function (Validator $v): void {
             /** @var Duty $duty */
             $duty = $this->route('duty');
-            $isOwningAdmin = $this->user()->can('update', $duty);
 
-            if ($isOwningAdmin) {
+            if ($v->errors()->isNotEmpty() || $this->user()->can('update', $duty) || ($tenantId = $this->actingTenantId()) === null) {
                 return;
             }
 
-            $duty->loadMissing('assignableTenants');
-            $adminTenantIds = app(ModelAuthorizer::class)
-                ->tenants($this->user(), 'duties.update.padalinys')->pluck('id');
+            $assignments = app(DutyAssignmentService::class);
+            $quota = $assignments->tenantQuota($duty, $tenantId);
 
-            foreach ($duty->assignableTenants as $tenant) {
-                $quota = $tenant->getAttribute('pivot')?->quota;
+            if ($quota === null) {
+                return;
+            }
 
-                if (! $adminTenantIds->contains($tenant->id) || $quota === null) {
-                    continue;
-                }
+            $changes = collect($this->input('user_changes'));
+            $today = today()->toDateString();
+            $endsBeforeToday = fn (array $change): bool => isset($change['end_date']) && Carbon::parse($change['end_date'])->toDateString() < $today;
+            $added = $changes->where('action', 'add')->reject($endsBeforeToday)->pluck('user_id')->all();
+            $freed = $changes->where('action', 'remove')
+                ->filter(fn (array $change) => ! isset($change['end_date']) || $endsBeforeToday($change))
+                ->pluck('user_id')->all();
 
-                $userChanges = collect($this->input('user_changes', []));
-                $addCount = $userChanges->where('action', 'add')->count();
-
-                if ($addCount === 0) {
-                    continue;
-                }
-
-                // Count only removals that actually target an active dutiable for this tenant.
-                $removeUserIds = $userChanges->where('action', 'remove')->pluck('user_id');
-                $validRemoveCount = 0;
-                if ($removeUserIds->isNotEmpty()) {
-                    $validRemoveCount = Dutiable::where('duty_id', $duty->id)
-                        ->where('dutiable_type', MorphMap::alias(User::class))
-                        ->whereIn('dutiable_id', $removeUserIds)
-                        ->where('tenant_id', $tenant->id)
-                        ->where(function ($query): void {
-                            $query->whereNull('end_date')
-                                ->orWhereDate('end_date', '>=', today());
-                        })
-                        ->count();
-                }
-
-                // Count by tenant_id column — explicit and accurate.
-                // Must match Duty::current_users() semantics (the end date is the last day
-                // in office), so a rep end-dated today still counts toward the quota.
-                $currentCount = Dutiable::where('duty_id', $duty->id)
-                    ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->where('tenant_id', $tenant->id)
-                    ->where(function ($query): void {
-                        $query->whereNull('end_date')
-                            ->orWhereDate('end_date', '>=', today());
-                    })
-                    ->count();
-
-                if (($currentCount + $addCount - $validRemoveCount) > $quota) {
-                    $v->errors()->add('user_changes', "Padalinio kvota ({$quota}) viršyta.");
-                }
+            if ($added !== [] && $assignments->exceedsTenantQuota($duty, $tenantId, $quota, $added, $freed)) {
+                $v->errors()->add('user_changes', __('dutiables.assign.quota_exceeded', ['quota' => $quota]));
             }
         });
     }

@@ -444,26 +444,12 @@ class DutyController extends AdminController
     {
         $validated = $request->validated();
 
-        $isOwningAdmin = $request->user()->can('update', $duty);
+        $actingTenantId = $request->actingTenantId();
 
-        // For cross-tenant admins, determine the acting tenant id.
-        // The request may explicitly pass tenant_id; otherwise infer from the admin's
-        // shared assignable tenants. Owning admins always write with tenant_id = null.
-        $actingTenantId = null;
-        if (! $isOwningAdmin) {
-            $actingTenantId = $validated['tenant_id'] ?? null;
-
-            if ($actingTenantId === null) {
-                $duty->loadMissing('assignableTenants');
-                $adminTenantIds = $this->authorizer->tenants($request->user(), 'duties.update.padalinys')->pluck('id');
-                $actingTenantId = $adminTenantIds->intersect($duty->assignableTenants->pluck('id'))->first();
-            }
-        }
-
-        $createdUsers = [];
-
-        $mutation = function () use ($validated, $duty, $actingTenantId, &$createdUsers): void {
-            DB::transaction(function () use ($validated, $duty, $actingTenantId, &$createdUsers): void {
+        $mutation = fn () => DB::transaction(function () use ($validated, $duty, $actingTenantId): void {
+            $this->assignments->lockDuty($duty);
+            $duty->auditRelationChange('current_users', function () use ($validated, $duty, $actingTenantId): void {
+                $createdUsers = [];
                 if (! empty($validated['new_users'])) {
                     foreach ($validated['new_users'] as $newUserData) {
                         $user = User::create([
@@ -484,8 +470,8 @@ class DutyController extends AdminController
                     ];
 
                     if (str_starts_with($userId, 'new-')) {
-                        if (isset($createdUsers[$userId])) {
-                            $this->assignments->startTerm($duty, $createdUsers[$userId]->id, $actingTenantId, $attributes);
+                        if ($change['action'] === 'add' && isset($createdUsers[$userId])) {
+                            $this->assignments->startTerm($duty, $createdUsers[$userId]->id, $actingTenantId, $attributes, audit: false);
                         }
 
                         continue;
@@ -499,15 +485,15 @@ class DutyController extends AdminController
                         continue;
                     }
 
-                    if ($existingTerm = $currentTerms->first()) {
+                    if ($existingTerm = $currentTerms->lockForUpdate()->first()) {
                         // Only what the change sends: an omitted start date must not reset the term's history.
                         $existingTerm->update(array_intersect_key($attributes, $change));
                     } else {
-                        $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes);
+                        $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false);
                     }
                 }
             });
-        };
+        });
 
         // Removing themselves from this duty may strip the acting user's own access.
         $actor = $request->user();
@@ -520,7 +506,7 @@ class DutyController extends AdminController
         }
 
         return redirect()->route('duties.show', $duty)
-            ->with('success', trans('Pareigybės nariai sėkmingai atnaujinti!'));
+            ->with('success', __('dutiables.assign.members_updated'));
     }
 
     #[Authorize('forceDelete', 'duty')]

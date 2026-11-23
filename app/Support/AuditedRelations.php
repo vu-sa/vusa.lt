@@ -37,7 +37,8 @@ class AuditedRelations
         ],
         Duty::class => [
             'exOfficioTargetDuties' => ['display' => 'name'],
-            'users' => ['display' => 'name'],
+            // End-dating a term changes current membership while preserving its history.
+            'current_users' => ['display' => 'name'],
             'types' => ['display' => 'title'],
         ],
         Meeting::class => [

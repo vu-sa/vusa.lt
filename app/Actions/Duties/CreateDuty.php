@@ -25,8 +25,10 @@ class CreateDuty
 
             $duty->syncAudited('types', $data['types'] ?? []);
             SyncExOfficioTargets::execute($duty, $data['ex_officio_target_duty_ids'] ?? []);
-            $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($data['assignable_tenants'] ?? []));
+            $assignableTenants = $data['assignable_tenants'] ?? [];
+            $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($assignableTenants));
             $this->assignments->syncRepresentatives($duty, $data['current_users'] ?? [], actor: $actor);
+            $this->assignments->syncTenantRepresentatives($duty, $assignableTenants, $actor);
 
             return $duty->load('institution', 'types', 'current_users');
         });

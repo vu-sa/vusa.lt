@@ -5,11 +5,9 @@ namespace App\Actions\Duties;
 use App\Actions\GetPermissableTenants;
 use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Models\Duty;
-use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Services\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
-use App\Support\MorphMap;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -42,6 +40,13 @@ class SyncUserDuties
         /** @var Collection<string, Duty> $duties */
         $duties = Duty::with('institution.tenant')->whereIn('id', $touchedIds)->get()->keyBy('id');
 
+        $removedRows = $user->dutiables()->whereIn('duty_id', $removedDutyIds)->current()->get()->groupBy('duty_id');
+        foreach ($removedRows as $rows) {
+            if ($rows->whereNull('tenant_id')->isEmpty()) {
+                throw ValidationException::withMessages(['current_duties' => __('users.delegated_duty_removal')]);
+            }
+        }
+
         $refused = $touchedIds
             ->map(fn ($dutyId) => $duties->get($dutyId))
             ->filter(fn (?Duty $duty) => ! $duty || ! $permissableTenantIds->contains($duty->institution?->tenant?->id));
@@ -58,13 +63,8 @@ class SyncUserDuties
             AuthorizeDutyAssignment::execute($actor, $duties->get($dutyId), (string) $user->id);
         }
 
-        foreach ($removedDutyIds as $dutyId) {
-            $rows = Dutiable::query()->where('duty_id', $dutyId)
-                ->where('dutiable_type', MorphMap::alias(User::class))
-                ->where('dutiable_id', $user->id)
-                ->whereNull('tenant_id')
-                ->current()->get();
-            if ($rows->isNotEmpty() && $rows->whereNull('via_dutiable_id')->isEmpty()) {
+        foreach ($removedRows as $rows) {
+            if ($rows->whereNull('tenant_id')->whereNull('via_dutiable_id')->isEmpty()) {
                 throw ValidationException::withMessages(['current_duties' => __('users.derived_duty_removal')]);
             }
         }
@@ -76,7 +76,17 @@ class SyncUserDuties
                 $alreadyActive = $assignments->manualTerms($dutyId, $user->id, null)->current()->exists();
 
                 if (! $alreadyActive) {
-                    $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false);
+                    try {
+                        $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false);
+                    } catch (ValidationException $exception) {
+                        $message = __('forms.helpers.institution_assignment_closed');
+
+                        if (in_array($message, $exception->errors()['end_date'] ?? [], true)) {
+                            throw ValidationException::withMessages(['current_duties' => $message]);
+                        }
+
+                        throw $exception;
+                    }
                 }
             }
 

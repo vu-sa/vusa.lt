@@ -4,6 +4,7 @@ use App\Actions\CollapseOverlappingDutiables;
 use App\Actions\Media\AddImageMedia;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
+use App\Events\DutiableChanged;
 use App\Models\Approval;
 use App\Models\Comment;
 use App\Models\CommentReaction;
@@ -17,9 +18,11 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\Services\RepStatisticsCache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\Models\Activity;
 
@@ -612,4 +615,24 @@ describe('duplicates on the edit form', function (): void {
                     ->where('duplicates.0.email', null)
                     ->where('duplicates.0.blocked_reason', fn (?string $reason) => filled($reason))));
     });
+});
+
+test('merging users publishes assignment changes for the moved rows after commit', function (): void {
+    $kept = makeNamedUser($this->tenant);
+    $source = makeNamedUser($this->tenant);
+    $row = $source->dutiables()->sole();
+    Event::fake([DutiableChanged::class]);
+    $metric = fn (string $value) => RepStatisticsCache::remember('user-merge', fn () => $value, tenantIds: [$this->tenant->id]);
+    expect($metric('before'))->toBe('before');
+
+    $movedRow = fn (DutiableChanged $event) => $event->dutiableRowId === $row->id && $event->modelId === $kept->id;
+
+    DB::transaction(function () use ($kept, $source, $movedRow): void {
+        mergeUsers($this->admin, $kept, $source)->assertSessionHasNoErrors();
+        Event::assertNotDispatched(DutiableChanged::class, $movedRow);
+    });
+
+    Event::assertDispatched(DutiableChanged::class,
+        fn (DutiableChanged $event) => $event->dutiableRowId === $row->id && $event->modelId === $kept->id && ! $event->wasDeleted);
+    expect($metric('after'))->toBe('after');
 });

@@ -106,7 +106,7 @@ class DutiableTimelineController extends AdminController
         // advisory only.
         $plan = PlanDutiableTimelineChanges::execute($request->operations());
 
-        $mutation = fn () => DB::transaction(fn () => ApplyDutiableTimelineChanges::execute($plan));
+        $mutation = fn () => DB::transaction(fn () => ApplyDutiableTimelineChanges::execute($plan, $request->user()));
 
         // Super admins short-circuit every permission, so no date change can lock them out.
         $couldAffectSelf = ! $request->user()->isSuperAdmin()

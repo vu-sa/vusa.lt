@@ -851,3 +851,29 @@ test('user trash lists blocker reasons without adding queries per row', function
     'page' => ['users.index', 'props.users.data'],
     'API' => ['api.v1.admin.users.index', 'data.items'],
 ]);
+
+test('the user form directs delegated seat removals to the duty record', function (): void {
+    $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+    $other = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+    $duty->assignableTenants()->attach($other, ['quota' => 1]);
+    $seat = Dutiable::factory()->forDuty($duty)->forTenant($other)->active()->create();
+    $user = $seat->user;
+
+    asUser(makeAdminUser($this->tenant))->patch(route('users.update', $user), [
+        'name' => $user->name, 'email' => $user->email, 'current_duties' => [],
+    ])->assertSessionHasErrors(['current_duties' => __('users.delegated_duty_removal')]);
+
+    expect($seat->fresh()->end_date)->toBeNull();
+});
+
+test('the user form places a closed institution assignment error on the duties field', function (): void {
+    $duty = Duty::factory()->for(Institution::factory()->for($this->tenant)->state(['is_active' => false]))->create();
+    $user = User::factory()->create();
+
+    asUser(makeAdminUser($this->tenant))->patch(route('users.update', $user), [
+        'name' => $user->name, 'email' => $user->email, 'current_duties' => [$duty->id],
+    ])->assertSessionHasErrors(['current_duties' => __('forms.helpers.institution_assignment_closed')])
+        ->assertSessionDoesntHaveErrors('end_date');
+
+    expect($duty->dutiables()->exists())->toBeFalse();
+});

@@ -153,11 +153,10 @@ test('the edit form receives the ex-officio seats with their tenant and source d
         );
 });
 
-test('an ex-officio seat counts against the tenant quota', function (): void {
+test('the duty owner can assign past a quota filled by an ex-officio seat', function (): void {
     [$tenant] = grantCrossTenantExOfficioSeat($this->targetDuty, quota: 1);
 
-    // The tenant's single place is already taken ex officio, so its admin cannot
-    // add a second rep on top of it.
+    $member = User::factory()->create();
     asUser($this->superAdmin)->patch(route('duties.update', $this->targetDuty), [
         'name' => ['lt' => 'Narys', 'en' => 'Member'],
         'institution_id' => $this->targetDuty->institution_id,
@@ -165,9 +164,12 @@ test('an ex-officio seat counts against the tenant quota', function (): void {
         'contacts_grouping' => 'none',
         'current_users' => [],
         'assignable_tenants' => [
-            ['tenant_id' => $tenant->id, 'quota' => 1, 'user_ids' => [User::factory()->create()->id]],
+            ['tenant_id' => $tenant->id, 'quota' => 1, 'user_ids' => [$member->id]],
         ],
-    ])->assertSessionHasErrors('assignable_tenants.0.user_ids');
+    ])->assertSessionHasNoErrors();
+
+    expect($this->targetDuty->dutiables()->current()->where('tenant_id', $tenant->id)->pluck('dutiable_id'))
+        ->toContain($member->id)->toHaveCount(2);
 });
 
 test('a tenant quota still admits reps up to the seats left beside ex-officio ones', function (): void {

@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Nariai
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-24
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
@@ -49,6 +49,7 @@ Narių sąrašas pasiekiamas adresu `/mano/users`, o kiekvieno nario profilio ko
 - **Esama paskyra:** prieš kuriant narį verta paieškoti jo sąraše. Pradėjus eiti kitas pareigas ar perėjus į kitą padalinį, esamai paskyrai priskiriamas naujas pareigybės laikotarpis.
 - **Asmeninis el. paštas:** prisijungimui rekomenduojama rinktis paties nario naudojamą adresą, pvz., studentinį `@stud.vu.lt`. Pareigybės institucinis adresas nurodomas prie pareigybės, kad pasikeitus ją einančiam žmogui paskyros istorija liktų susieta su tuo pačiu asmeniu.
 - **Laikotarpio pabaiga:** baigus eiti pareigas, paprastai pakanka užbaigti [pareigybės laikotarpį](/visak/pareigybiu-laikotarpiai). Vien dėl kadencijos pabaigos paskyros trinti nereikia.
+  Vietą, skirtą pagal kito padalinio kvotą, tvarkyk pareigybės puslapyje.
 :::
 
 ## Kaip tai veikia

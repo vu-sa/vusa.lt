@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Pareigybės
-last_reviewed: 2026-11-21
+last_reviewed: 2026-11-24
 tests:
   - tests/Browser/CollectionTrashRefreshTest.php
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
@@ -37,6 +37,7 @@ tests:
   - tests/Feature/Api/Admin/DutyCadenceApiControllerTest.php
   - tests/Feature/Admin/People/DutyLifecycleTest.php
   - tests/Feature/Admin/Management/DutiableControllerTest.php
+  - tests/Feature/Admin/Management/DelegatedDutyTermsTest.php
   - tests/Unit/Services/DutyNameNormalizerTest.php
   - tests/Browser/DutyResponsibilitiesLayoutTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
@@ -169,8 +170,11 @@ Kurio padalinio kvotai skaičiuojama konkreti vieta, galima pakeisti **Priskirti
 pareigybės padalinyje (Superadministratoriui – visur). Pasirinkus „Pareigybės padalinio vieta (ne
 kvota)“, vieta priklauso pačios pareigybės padaliniui.
 
-- Pasirinkus jau užpildytą kvotą, laikotarpis vis tiek išsaugomas, o kvota rodoma viršyta (pvz., 4/3).
-  Fakulteto koordinatoriams pilna kvota ir toliau neleidžia pridėti naujo nario.
+- Pareigybę redaguoti galintys administratoriai, taip pat kvotą **Priskirti** lange pasirinkę ranka,
+  gali viršyti kvotą (pvz., keičiantis atstovams). Kito padalinio administratoriams
+  pilna kvota neleidžia pridėti naujo nario ar atnaujinti jo pasibaigusio laikotarpio.
+- Į kvotą kiekvienas žmogus įskaičiuojamas vieną kartą. Vietą užima ir būsimi bei *ex officio*
+  laikotarpiai. Paskutinė pareigų diena dar įskaitoma.
 - Kito padalinio administratoriai gali valdyti savo kvotai priskirtą vietą, jei narys turi tame
   padalinyje dabartinių arba būsimų pareigų. Jei tokių pareigų nėra, išsaugant parodomas įspėjimas.
 - Prie deleguoto nario rodoma žyma **Deleguota** su padalinio pavadinimu.
@@ -200,7 +204,7 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
 Nebeveikianti pareigybė sąraše pažymėta ženklu prieš pavadinimą ir išblukinta, o atrinkti ją galima filtru **Būsena**.
 Turint teisę redaguoti konkrečią pareigybę, būsena keičiama peržiūros kortelėje arba formoje. Formoje naudojami tie patys
 žali ir pilki būsenų pasirinkimai; formos pakeitimas įsigalioja paspaudus **Išsaugoti**.
-Jei pareigybę dar eina narys, pirmiau reikia užbaigti jo pareigybių laikotarpį.
+Prieš pažymint pareigybę nebeveikiančia reikia užbaigti dabartinius ir atšaukti būsimus jos laikotarpius.
 Institucijos būsena rodoma atskira žyma **Nebeveikianti institucija** ir nekeičia pačios pareigybės būsenos.
 
 Pareigybės istorija neturėtų trūkinėti, net jei pareigybė keitėsi:
@@ -347,6 +351,7 @@ suskirstytas į skirtukus:
 ### Laikotarpio datos {#laikotarpio-datos}
 
 **Abi datos įskaitomos:** laikotarpis nuo 2025-05-30 iki 2025-06-01 apima gegužės 30, 31 ir birželio 1 d.
+Nenurodžius pradžios datos, naujas laikotarpis pradedamas šiandien.
 Pradžia negali būti vėlesnė už pabaigą. Pabaigos data yra paskutinė aktyvi diena. **Užbaigti pareigas šiandien** įrašo šiandieną;
 narys lieka dabartinių narių sąraše iki dienos pabaigos ir tampa buvusiu kitą dieną.
 Istorinis įrašas išlieka. Jei paskutinė pareigų diena buvo vakar, įrašyk vakarykštę datą.
@@ -383,7 +388,7 @@ el. paštas, kai jis prieinamas, ir padaliniai.
 
 </ChangelogNote>
 
-Jei per pasirinktą laikotarpį tas pats žmogus jau eina šias pareigas, jo pasirinkti negalima.
+To paties žmogaus rankiniu būdu priskirti laikotarpiai toje pačioje pareigybėje ir tame pačiame padalinyje negali persidengti.
 Pasibaigęs laikotarpis neužima vietos, todėl jam padalinio kvota netaikoma.
 
 <ChangelogNote date="2026-10-02" title="Buvusių narių priskyrimas">

@@ -30,6 +30,8 @@ ambient state on the service. See `.ai/rules/services.md`, "ModelAuthorizer has 
 BelongsToMany::detach() writes through newPivotQuery()->delete() — a raw query-builder delete. No model events fire, even with ->using(Dutiable::class), so DutiableChanged (the only trigger for HandleDutiableChange's permission-cache reset) and the ex-officio cascade in Dutiable::booted() both silently skip. Delete dutiable rows through the model layer instead: $user->dutiables()->get()->each->delete() (see UserController::forceDelete). Guarded by tests/Feature/System/DutiableDetachConventionTest.php, which forbids duties()->detach(/users()->detach( under app/ (comment-stripped; exemptions for RoleTypeObserver and Reservation — their relations are not on the dutiables pivot). Issue #623.
 
 Use `DutyAssignmentService::startTerm()` and `DutyAssignmentService::endTerms()` as the only entry points for starting and ending manual terms.
+Use `Dutiable::scopeOverlapping()` as the only overlap check for new manual terms.
+Use `DutyAssignmentService::exceedsTenantQuota()` as the only tenant seat counter for quota enforcement.
 
 ## Ex officio seats
 A root term has one attached seat per target rule, mirroring its dates and resolved tenant synchronously through `ReconcileExOfficioSeats`. Seats never grant further seats. Rules are changed through `SyncExOfficioTargets`: removing a rule ends started seats today and deletes upcoming seats through the model; subsequent sync ignores that target, and such a seat stays locked until `DetachExOfficioSeat` releases it, which is refused while the rule exists. Ended history is created only by explicit review. Institution-closed rows are immutable, and reopened seats resume after closure without backdating.

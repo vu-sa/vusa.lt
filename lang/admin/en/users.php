@@ -11,6 +11,7 @@ return [
         'stale' => 'Over 30 days ago',
         'never' => 'Never',
     ],
+    'delegated_duty_removal' => 'This member holds a seat under another unit’s quota. Manage it on the duty page.',
     'derived_duty_removal' => 'End an ex officio assignment by changing its source term.',
     'index' => [
         'lead' => 'Member accounts, contacts and duty history.',

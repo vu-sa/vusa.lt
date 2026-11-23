@@ -2,10 +2,12 @@
 
 namespace App\Actions;
 
+use App\Events\DutiableChanged;
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Observers\RepStatisticsObserver;
 use App\Services\ContactSearchIndexSynchronizer;
 use App\Services\Media\LegacyImageImporter;
 use App\Services\UserMergeDutyEmails;
@@ -82,7 +84,7 @@ class MergeUsers
     public static function execute(User $keptUser, Collection $sources, string $loginEmail, ?User $actor = null, array $dutiableEmailIds = []): void
     {
         DB::transaction(function () use ($keptUser, $sources, $loginEmail, $actor, $dutiableEmailIds): void {
-            $affectedDutyIds = collect();
+            $movedRows = collect();
             $merged = [];
             $preservedEmails = [];
 
@@ -94,7 +96,7 @@ class MergeUsers
             self::copyDutyPhotos($keptUser, $sources);
 
             foreach ($sources as $source) {
-                $affectedDutyIds = $affectedDutyIds->merge(self::moveDutiables($keptUser, $source));
+                $movedRows = $movedRows->concat(self::moveDutiables($keptUser, $source));
                 self::moveRows($keptUser, $source);
                 self::fillBlankAttributes($keptUser, $source);
                 self::mergeProfilePhoto($keptUser, $source);
@@ -103,7 +105,7 @@ class MergeUsers
                 $source->forceDelete();
             }
 
-            foreach ($affectedDutyIds->unique() as $dutyId) {
+            foreach ($movedRows->pluck('duty_id')->unique() as $dutyId) {
                 $duty = Duty::find($dutyId);
 
                 if ($duty) {
@@ -122,8 +124,14 @@ class MergeUsers
                 ->withProperties(['merged' => $merged, 'preserved_dutiable_emails' => $preservedEmails])
                 ->log('users_merged');
 
-            // Dutiables move by query, so no DutiableChanged fires for the kept user.
-            DB::afterCommit(function () use ($keptUser): void {
+            DB::afterCommit(function () use ($keptUser, $movedRows): void {
+                Dutiable::query()->whereKey($movedRows->pluck('id')->all())
+                    ->where('dutiable_id', $keptUser->id)
+                    ->each(function (Dutiable $row): void {
+                        DutiableChanged::dispatch($row);
+                        app(RepStatisticsObserver::class)->saved($row);
+                    });
+
                 ForgetUserAccess::execute([$keptUser->id]);
                 $fresh = $keptUser->fresh();
                 $fresh?->searchable();
@@ -138,18 +146,17 @@ class MergeUsers
      * Repointed in bulk (not pivot-by-pivot) so a duty both users hold lands on the
      * kept user exactly once; CollapseOverlappingDutiables then folds any overlap.
      *
-     * @return Collection<int, string>
+     * @return Collection<int, Dutiable>
      */
     private static function moveDutiables(User $keptUser, User $mergedUser): Collection
     {
-        $query = fn () => Dutiable::query()
+        $rows = Dutiable::query()
             ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('dutiable_id', $mergedUser->id);
+            ->where('dutiable_id', $mergedUser->id)
+            ->lockForUpdate()->get(['id', 'duty_id']);
+        Dutiable::query()->whereKey($rows->modelKeys())->update(['dutiable_id' => $keptUser->id]);
 
-        $affectedDutyIds = $query()->pluck('duty_id')->unique();
-        $query()->update(['dutiable_id' => $keptUser->id]);
-
-        return $affectedDutyIds;
+        return $rows;
     }
 
     private static function moveRows(User $keptUser, User $mergedUser): void

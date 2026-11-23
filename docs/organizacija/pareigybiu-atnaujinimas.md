@@ -1,10 +1,12 @@
 ---
 doc_status: reviewed
 title: Pareigybių atnaujinimas
-last_reviewed: 2026-10-25
+last_reviewed: 2026-11-24
 tests:
   - resources/js/Components/DutyUserWizard/__tests__/DutyReferenceCounts.component.test.ts
   - tests/Feature/Admin/Management/DutyUserWizardTest.php
+  - tests/Feature/Admin/Management/DelegatedDutyTermsTest.php
+  - tests/Feature/Admin/Management/DutyControllerTest.php
   - tests/Feature/Permissions/DutyBatchUsersSelfLockoutTest.php
   - resources/js/Pages/Admin/People/__tests__/DutyUserUpdateWizard.test.ts
   - resources/js/Components/DutyUserWizard/__tests__/Step3UserAssignment.component.test.ts
@@ -56,7 +58,8 @@ Padalinio kvota rodoma ir tikrinama atskirai nuo informacinio vietų skaičiaus.
 
 **Pradžios ir pabaigos dienos įskaitomos.** Užbaigiant siūloma šiandienos data:
 narys šiandien dar eina pareigas. Jei pabaigos data nepateikta, paskutinė pareigų diena yra vakar.
-Pakartotinai priskyrus buvusį narį, sukuriamas naujas laikotarpis ir išsaugoma ankstesnio laikotarpio istorija.
+Nenurodžius pradžios datos, naujas laikotarpis pradedamas šiandien. Pakartotinai priskyrus buvusį narį,
+sukuriamas naujas laikotarpis po ankstesnio pabaigos. Ankstesnis laikotarpis lieka istorijoje.
 Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).
 
 Naujam laikotarpiui vedlys siūlo liepos 1 d. Jei iki artimiausios liepos liko mažiau nei
@@ -103,7 +106,9 @@ pabaigos datos taisyklės: įrašius šiandieną, ji dar įskaitoma.
 - Užbaigimas išsaugo laikotarpio istoriją; kitos nario pareigybės lieka galioti.
 - **Naujo nario įrašo sukūrimas nesiunčia pakvietimo ir nesukuria prisijungimo instrukcijų.**
   Prisijungimo perdavimas suderinamas atskirai.
-- Bendroms pareigybėms sistema tikrina padalinio kvotą.
+- Bendroms pareigybėms sistema tikrina atstovą skiriančio padalinio kvotą. Kiekvienas narys įskaičiuojamas
+  vieną kartą, o vieta atsilaisvina po paskutinės jo pareigų dienos. Pareigybę redaguoti galintys
+  administratoriai gali viršyti kvotą.
 
 ## Techninė informacija {#technine-informacija}
 

@@ -329,3 +329,18 @@ describe('history filter', function (): void {
             ->and($ids('any'))->toContain($renamed->id, $linkedFrom->id, $linkedTo->id)->not->toContain($plain->id);
     });
 });
+
+test('an upcoming term blocks retirement from the record and the duty form', function (bool $api): void {
+    $row = holdDuty($this->duty, User::factory()->create(), today()->addDay()->toDateString());
+
+    if ($api) {
+        asUser($this->admin)->patchJson(route('api.v1.admin.duties.status.update', $this->duty), ['is_active' => false])
+            ->assertUnprocessable()->assertJsonValidationErrors('is_active');
+    } else {
+        asUser($this->admin)->patch(route('duties.update', $this->duty), updateDutyPayload($this->duty, ['is_active' => false]))
+            ->assertSessionHasErrors('is_active');
+    }
+
+    expect($this->duty->fresh()->is_active)->toBeTrue()
+        ->and($row->fresh()->end_date)->toBeNull();
+})->with(['record status' => true, 'duty form' => false]);

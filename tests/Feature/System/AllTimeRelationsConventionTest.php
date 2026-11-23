@@ -56,8 +56,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Actions/Duties/BuildDutyLineage.php' => ['->users' => 1, "'users'" => 1, "'duties" => 2],
     // Duty creation and update scopes restrict selectable ex officio targets.
     'app/Actions/Duties/GetAssignableExOfficioDuties.php' => ['->tenants' => 1, "'duties" => 3],
-    // Assignment error payload and duty attach.
-    'app/Actions/Duties/SyncUserDuties.php' => ['->duties' => 1, "'duties" => 1],
+    // Assignment error payload names the refused duties.
+    'app/Actions/Duties/SyncUserDuties.php' => ["'duties" => 1],
     // Merge candidates show tenants and counts from all terms.
     'app/Actions/FindMergeableUserDuplicates.php' => ['->tenants' => 1, "'tenants'" => 1, '->duties' => 1, "'duties" => 1],
     // Responsibility resolver duties are loaded with current holders.
@@ -206,8 +206,6 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/ContactSearchIndexSynchronizer.php' => ['->users' => 1, '->duties' => 1],
     // Duty record, list and search intentionally include duties the actor has held.
     'app/Services/DutyAccessService.php' => ['->tenants' => 1, "'tenants'" => 1, '->users' => 1, "'users'" => 1, '->duties' => 1, "'duties" => 5],
-    // Audited insert of new assignment rows into dutiables.
-    'app/Services/DutyAssignmentService.php' => ["'users'" => 1],
     // Sibling duties load only current holders.
     'app/Services/DutyPanelPresenter.php' => ['->duties' => 1],
     // Duty record shows every term, and duty rows include the home tenant.

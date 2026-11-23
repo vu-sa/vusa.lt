@@ -288,11 +288,11 @@ test('cross-tenant admin can swap users within their quota', function (): void {
         'end_date' => null,
     ]);
 
-    // Remove 2 and add 2 — net change is 0, so quota should allow it.
+    // Remove 2 (last day yesterday) and add 2 — net change is 0, so quota should allow it.
     $response = asUser($this->crossAdmin)->post(route('duties.batchUpdateUsers', $this->duty), [
         'user_changes' => [
-            ['user_id' => $user1->id, 'action' => 'remove', 'end_date' => now()->toDateString()],
-            ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->toDateString()],
+            ['user_id' => $user1->id, 'action' => 'remove', 'end_date' => now()->subDay()->toDateString()],
+            ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->subDay()->toDateString()],
             ['user_id' => $user3->id, 'action' => 'add', 'start_date' => now()->toDateString()],
             ['user_id' => $user4->id, 'action' => 'add', 'start_date' => now()->toDateString()],
         ],
@@ -534,7 +534,7 @@ test('edit page assignableTenantUsers includes users with null end_date', functi
         );
 });
 
-test('batch update quota allows adding user after end-dating one today', function (): void {
+test('batch update quota keeps a seat occupied through its last day', function (): void {
     // Fill quota (2 slots).
     $user1 = makeUser($this->assignableTenant);
     $user2 = makeUser($this->assignableTenant);
@@ -557,7 +557,6 @@ test('batch update quota allows adding user after end-dating one today', functio
         'end_date' => null,
     ]);
 
-    // End-date one user today and add a new one — net count stays at 2.
     $response = asUser($this->crossAdmin)->post(route('duties.batchUpdateUsers', $this->duty), [
         'user_changes' => [
             ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->toDateString()],
@@ -565,24 +564,10 @@ test('batch update quota allows adding user after end-dating one today', functio
         ],
     ]);
 
-    $response->assertRedirect();
-    $response->assertSessionHasNoErrors();
+    $response->assertSessionHasErrors('user_changes');
 
-    // user3 should now be attached and active
-    expect(
-        Dutiable::where('duty_id', $this->duty->id)
-            ->where('dutiable_id', $user3->id)
-            ->whereNull('end_date')
-            ->exists()
-    )->toBeTrue();
-
-    // user2 should be end-dated
-    expect(
-        Dutiable::where('duty_id', $this->duty->id)
-            ->where('dutiable_id', $user2->id)
-            ->whereNotNull('end_date')
-            ->exists()
-    )->toBeTrue();
+    expect($this->duty->dutiables()->where('dutiable_id', $user3->id)->exists())->toBeFalse()
+        ->and($this->duty->dutiables()->where('dutiable_id', $user2->id)->sole()->end_date)->toBeNull();
 });
 
 test('batch update quota still blocks when net count exceeds quota after swaps', function (): void {
@@ -612,7 +597,7 @@ test('batch update quota still blocks when net count exceeds quota after swaps',
     // Try to remove 1 and add 2 — net count would be 3, exceeding quota of 2.
     $response = asUser($this->crossAdmin)->post(route('duties.batchUpdateUsers', $this->duty), [
         'user_changes' => [
-            ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->toDateString()],
+            ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->subDay()->toDateString()],
             ['user_id' => $user3->id, 'action' => 'add', 'start_date' => now()->toDateString()],
             ['user_id' => $user4->id, 'action' => 'add', 'start_date' => now()->toDateString()],
         ],
@@ -806,7 +791,7 @@ test('batchUpdateUsers quota allows swap when removing future-end-dated user', f
     // Remove future-end-dated user2 and add user3 — net count stays at 2.
     $response = asUser($this->crossAdmin)->post(route('duties.batchUpdateUsers', $this->duty), [
         'user_changes' => [
-            ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->toDateString()],
+            ['user_id' => $user2->id, 'action' => 'remove', 'end_date' => now()->subDay()->toDateString()],
             ['user_id' => $user3->id, 'action' => 'add', 'start_date' => now()->toDateString()],
         ],
     ]);

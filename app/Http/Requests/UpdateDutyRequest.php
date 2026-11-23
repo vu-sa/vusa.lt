@@ -5,12 +5,9 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\ValidatesDutyTypeAssignments;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Pivots\Dutiable;
-use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Rules\WithinAuthorizedTenantScope;
 use App\Services\ModelAuthorizer;
-use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -70,27 +67,6 @@ class UpdateDutyRequest extends FormRequest
         ];
     }
 
-    /**
-     * Holders of an active ex-officio seat on this duty, keyed by the tenant they represent.
-     *
-     * @return array<int, array<int, string>>
-     */
-    private function exOfficioUserIdsByTenant(Duty $duty): array
-    {
-        return Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->whereNotNull('via_dutiable_id')
-            ->whereNotNull('tenant_id')
-            ->where(function ($query): void {
-                $query->whereNull('end_date')
-                    ->orWhereDate('end_date', '>=', today());
-            })
-            ->get(['tenant_id', 'dutiable_id'])
-            ->groupBy('tenant_id')
-            ->map(fn ($rows) => $rows->pluck('dutiable_id')->map(fn ($id) => (string) $id)->all())
-            ->all();
-    }
-
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v): void {
@@ -100,8 +76,8 @@ class UpdateDutyRequest extends FormRequest
             $this->authorizeDutyTypeChanges($v, $duty->types()->pluck('duty_types.id')->all());
 
             // Retiring a duty must not quietly strand the people still holding it.
-            if ($this->has('is_active') && ! $this->boolean('is_active') && $duty->current_users()->exists()) {
-                $v->errors()->add('is_active', __('Pirmiau užbaik narių pareigas, tada pažymėk pareigybę nebeveikiančia.'));
+            if ($this->has('is_active') && ! $this->boolean('is_active') && $duty->dutiables()->current()->exists()) {
+                $v->errors()->add('is_active', __('dutiables.assign.finish_terms_before_retiring'));
             }
 
             if ($v->errors()->isNotEmpty()) {
@@ -133,29 +109,6 @@ class UpdateDutyRequest extends FormRequest
                     fn (array $row) => $editableTenantIds->contains((int) $row['tenant_id']),
                 );
                 $this->validateLockedAssignableTenants($v, $duty, $editableTenantIds->all(), $lockedRows->all());
-            }
-
-            // Enforce per-tenant quota against the requested user_ids count, plus the
-            // seats the tenant already holds ex officio — those are granted by another
-            // duty and never appear in the picker, but they do fill the tenant's places.
-            $exOfficioUserIdsByTenant = $this->exOfficioUserIdsByTenant($duty);
-
-            foreach ($assignableTenants as $i => $row) {
-                $quota = $row['quota'] ?? null;
-
-                if ($quota === null) {
-                    continue;
-                }
-
-                $exOfficioUserIds = $exOfficioUserIdsByTenant[$row['tenant_id'] ?? null] ?? [];
-                $userIds = array_map(strval(...), (array) ($row['user_ids'] ?? []));
-                $occupied = count(array_unique([...$userIds, ...$exOfficioUserIds]));
-
-                if ($occupied > (int) $quota) {
-                    $v->errors()->add("assignable_tenants.$i.user_ids", $exOfficioUserIds === []
-                        ? __('Padalinio kvota (:quota) viršyta.', ['quota' => $quota])
-                        : __('Padalinio kvota (:quota) viršyta, įskaitant ex officio narius.', ['quota' => $quota]));
-                }
             }
         });
     }

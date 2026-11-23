@@ -11,6 +11,7 @@ return [
         'stale' => 'Seniau nei prieš 30 d.',
         'never' => 'Niekada',
     ],
+    'delegated_duty_removal' => 'Šiam nariui vieta skirta pagal kito padalinio kvotą. Keisk ją pareigybės puslapyje.',
     'derived_duty_removal' => 'Ex officio pareigas užbaik pakeisdamas jas suteikiančią kadenciją.',
     'index' => [
         'lead' => 'Narių paskyros, kontaktai ir pareigų istorija.',

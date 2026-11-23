@@ -288,6 +288,7 @@ return [
         // Relation names, for relation_updated activities (see
         // App\Support\AuditedRelations / LogsRelationshipChanges).
         'users' => 'nariai',
+        'current_users' => 'nariai',
         'types' => 'tipai',
         'institutions' => 'institucijos',
         'resources' => 'ištekliai',

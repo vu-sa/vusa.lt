@@ -4,6 +4,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -33,7 +34,7 @@ test('attachAudited logs a relation_updated activity with the attached member', 
     $userA = User::factory()->create(['name' => 'Jonas Jonaitis']);
     $userB = User::factory()->create(['name' => 'Ona Onaitė']);
 
-    $this->duty->attachAudited('users', dutyAttachData([$userA->id, $userB->id]));
+    $this->duty->attachAudited('current_users', dutyAttachData([$userA->id, $userB->id]));
 
     $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))
         ->where('subject_id', $this->duty->id)
@@ -50,20 +51,20 @@ test('attachAudited logs a relation_updated activity with the attached member', 
 
 test('re-syncing the same members logs no activity', function (): void {
     $user = User::factory()->create();
-    $this->duty->attachAudited('users', dutyAttachData([$user->id]));
+    $this->duty->attachAudited('current_users', dutyAttachData([$user->id]));
 
     $before = Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->count();
 
-    $this->duty->syncAudited('users', [$user->id]);
+    app(DutyAssignmentService::class)->syncRepresentatives($this->duty, [$user->id]);
 
     expect(Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->count())->toBe($before);
 });
 
-test('detaching a member logs it under detached', function (): void {
+test('ending a member’s term logs it under detached', function (): void {
     $user = User::factory()->create(['name' => 'Petras Petraitis']);
-    $this->duty->attachAudited('users', dutyAttachData([$user->id]));
+    $this->duty->users()->attach($user->id, ['start_date' => today()->subMonth()]);
 
-    $this->duty->detachAudited('users', [$user->id]);
+    app(DutyAssignmentService::class)->syncRepresentatives($this->duty, []);
 
     $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))
         ->where('event', 'relation_updated')
@@ -80,10 +81,10 @@ test('a relation not in the allowlist throws instead of silently logging nothing
         ->toThrow(InvalidArgumentException::class);
 });
 
-test('a Duty <-> users sync appears on the parent Institution activity feed via root roll-up', function (): void {
+test('a duty member change appears on the parent Institution activity feed via root roll-up', function (): void {
     $user = User::factory()->create();
 
-    $this->duty->attachAudited('users', dutyAttachData([$user->id]));
+    $this->duty->attachAudited('current_users', dutyAttachData([$user->id]));
 
     $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->latest('id')->first();
 

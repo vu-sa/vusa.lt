@@ -308,6 +308,19 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
         return $query->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', now()->toDateString()));
     }
 
+    /** Matches DutiablePeriods::overlap() returning a positive number of days. */
+    public function scopeOverlapping($query, string $start, ?string $end)
+    {
+        if ($end !== null && $end < $start) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere(fn ($q) => $q
+                ->whereDate('end_date', '>=', DB::raw('date(start_date)'))->whereDate('end_date', '>=', $start)))
+            ->when($end !== null, fn ($q) => $q->whereDate('start_date', '<=', $end));
+    }
+
     /**
      * Rows genuinely in force on the given date. Unlike {@see scopeNotEnded()} this also
      * requires the term to have begun, which is what point-in-time questions

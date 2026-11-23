@@ -47,6 +47,7 @@ class SyncRelationSearchIndex
         match (true) {
             $event->model instanceof Institution && $event->relation === 'types' => $this->institutionFactsChanged($event->model),
             $event->model instanceof Meeting && $event->relation === 'institutions' => $this->meetingInstitutionsChanged($event->model),
+            // DutiableChanged already reindexes assignment changes.
             default => null,
         };
     }

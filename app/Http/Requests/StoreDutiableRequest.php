@@ -10,8 +10,8 @@ use App\Models\User;
 use App\Policies\DutyPolicy;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
+use App\Services\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
-use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -162,51 +162,27 @@ class StoreDutiableRequest extends FormRequest
 
     private function overlapsExistingTerm(): bool
     {
-        $end = $this->input('end_date');
-
-        return Dutiable::query()
-            ->where('duty_id', $this->input('duty_id'))
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('dutiable_id', $this->input('user_id'))
-            ->where(function ($query): void {
-                $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', $this->input('start_date'));
-            })
-            ->when($end, fn ($query) => $query->where('start_date', '<=', $end))
+        return app(DutyAssignmentService::class)
+            ->manualTerms($this->input('duty_id'), $this->input('user_id'), $this->delegatedTenantId())
+            ->overlapping($this->input('start_date'), $this->input('end_date'))
             ->exists();
     }
 
     private function validateTenantQuota(Validator $validator): void
     {
-        // Whoever picks the quota by hand may knowingly go over it, e.g. during a handover.
-        if ($this->choosesQuotaTenant()) {
-            return;
-        }
-
+        $duty = $this->duty();
         $tenantId = $this->delegatedTenantId();
 
-        // A term that already ended occupies no seat today.
-        if ($tenantId === null || ($this->filled('end_date') && Carbon::parse($this->input('end_date'))->lt(today()))) {
+        // Whoever picks the quota tenant by hand, or owns the duty, may knowingly go over it, e.g. during a handover.
+        if ($duty === null || $tenantId === null || $this->choosesQuotaTenant() || $this->user()->can('update', $duty)
+            || ($this->filled('end_date') && Carbon::parse($this->input('end_date'))->lt(today()))) {
             return;
         }
 
-        $quota = $this->duty()?->assignableTenants->firstWhere('id', $tenantId)?->getAttribute('pivot')?->quota;
+        $assignments = app(DutyAssignmentService::class);
+        $quota = $assignments->tenantQuota($duty, $tenantId);
 
-        if ($quota === null) {
-            return;
-        }
-
-        // Same "still counts" semantics as Duty::current_users().
-        $occupied = Dutiable::query()
-            ->where('duty_id', $this->input('duty_id'))
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('tenant_id', $tenantId)
-            ->where(function ($query): void {
-                $query->whereNull('end_date')->orWhereDate('end_date', '>=', today());
-            })
-            ->count();
-
-        if ($occupied >= (int) $quota) {
+        if ($quota !== null && $assignments->exceedsTenantQuota($duty, $tenantId, $quota, [$this->input('user_id') ?? ''])) {
             $validator->errors()->add('user_id', __('dutiables.assign.quota_exceeded', ['quota' => $quota]));
         }
     }

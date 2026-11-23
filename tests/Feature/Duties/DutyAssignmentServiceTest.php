@@ -1,11 +1,16 @@
 <?php
 
+use App\Events\DutiableChanged;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\DutyAssignmentService;
+use App\Support\Dutiables\DutiablePeriods;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
@@ -74,11 +79,11 @@ test('duplicate representative ids create one audited membership and repeated sy
 
     $rows = $duty->dutiables()->where('dutiable_id', $user->id)->get();
     expect($rows)->toHaveCount(1)
-        ->and($rows->first()->start_date->toDateString())->toBe('2026-10-02')
+        ->and($rows->first()->start_date->toDateString())->toBe('2026-10-03')
         ->and($rows->first()->tenant_id)->toBe($tenant->id);
     $activities = Activity::forSubject($duty)->where('event', 'relation_updated')->get();
     expect($activities)->toHaveCount(1)
-        ->and($activities->first()->properties->get('relation'))->toBe('users')
+        ->and($activities->first()->properties->get('relation'))->toBe('current_users')
         ->and($activities->first()->properties->get('attached')[0]['id'])->toBe($user->id);
 });
 
@@ -111,6 +116,48 @@ test('returning representatives get a new term without overwriting their history
     expect($historical->fresh()->end_date->toDateString())->toBe('2026-06-30');
     $current = $duty->dutiables()->notEnded()->sole();
     expect($current->id)->not->toBe($historical->id)
-        ->and($current->start_date->toDateString())->toBe('2026-10-02')
+        ->and($current->start_date->toDateString())->toBe('2026-10-03')
         ->and($current->end_date)->toBeNull();
+});
+
+test('a new manual term cannot share an inclusive boundary with a term in the same seat', function (): void {
+    $duty = Duty::factory()->create();
+    $term = Dutiable::factory()->forDuty($duty)->create(['start_date' => '2023-04-01', 'end_date' => '2023-04-30']);
+    $assignments = app(DutyAssignmentService::class);
+
+    expect(fn () => $assignments->startTerm($duty, $term->dutiable_id, null, ['start_date' => '2023-04-30']))
+        ->toThrow(ValidationException::class, __('dutiables.assign.already_assigned'));
+
+    $next = $assignments->startTerm($duty, $term->dutiable_id, null, ['start_date' => '2023-05-01']);
+    expect($next->start_date->toDateString())->toBe('2023-05-01');
+});
+
+test('representative sync rolls back removals, additions and audit when a write fails', function (): void {
+    $duty = Duty::factory()->create();
+    $holder = Dutiable::factory()->forDuty($duty)->active()->create();
+    [$first, $second] = User::factory()->count(2)->create()->modelKeys();
+
+    Event::listen(DutiableChanged::class, function (DutiableChanged $event) use ($second): void {
+        if ($event->modelId === $second) {
+            throw new RuntimeException('Assignment write failed');
+        }
+    });
+
+    expect(fn () => app(DutyAssignmentService::class)->syncRepresentatives($duty, [$first, $second]))
+        ->toThrow(RuntimeException::class, 'Assignment write failed');
+
+    expect($duty->dutiables()->sole()->id)->toBe($holder->id)
+        ->and($holder->fresh()->end_date)->toBeNull()
+        ->and(Activity::forSubject($duty)->where('event', 'relation_updated')->exists())->toBeFalse();
+});
+
+test('the overlap scope and timeline agree on one day even if stored times differ', function (): void {
+    $row = Dutiable::factory()->create([
+        'start_date' => Carbon::parse('2025-02-10 20:00:00'),
+        'end_date' => Carbon::parse('2025-02-10 08:00:00'),
+    ])->refresh();
+    $period = ['start_date' => '2025-02-10', 'end_date' => '2025-02-10'];
+
+    expect(DutiablePeriods::overlap(DutiablePeriods::dates($row), $period))->toBe(1)
+        ->and(Dutiable::whereKey($row->id)->overlapping($period['start_date'], $period['end_date'])->exists())->toBeTrue();
 });
