@@ -17,7 +17,7 @@ paths:
 |---|---|---|
 | `User::duties()` / `tenants()`, `Duty::users()`, `Institution::users()`, `Meeting::users()` | every term ever held | history, lineage, the duty page |
 | `current_duties()`, `current_users()`, `Dutiable::activeOn()` | started and not ended | who holds it, contacts, mail, counts |
-| `current_or_upcoming_duties()` / `current_or_upcoming_tenants()`, `Dutiable::current()` | not ended | permissions, "my units", quotas |
+| `current_or_upcoming_duties()` / `current_or_upcoming_tenants()`, `Dutiable::notEnded()` | not ended | permissions, "my units", seats, quotas, upcoming reps |
 
 The default name is the all-time one. `AllTimeRelationsConventionTest` keeps it out of policies, requests, middleware, notifications, tasks, `app/Actions` and `app/Services` unless the use is allowlisted with a reason.
 

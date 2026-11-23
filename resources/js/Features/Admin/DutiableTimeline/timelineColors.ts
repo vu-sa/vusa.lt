@@ -79,7 +79,7 @@ export function getTimelineColors(isDark: boolean): TimelineColors {
   return isDark ? DARK : LIGHT;
 }
 
-/** Open-ended, or ending today or later. Matches Dutiable::scopeCurrent() on the server. */
+/** Open-ended, or ending today or later. Matches Dutiable::scopeNotEnded() on the server. */
 export function isActivePeriod(endDate: Date | null, today = new Date()): boolean {
   if (endDate === null) return true;
 

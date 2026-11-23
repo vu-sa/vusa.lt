@@ -36,7 +36,7 @@ class DutyAssignmentService
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('tenant_id', $tenantId)
             ->whereNull('via_dutiable_id')
-            ->current();
+            ->notEnded();
 
         $currentUserIds = (clone $query)->pluck('dutiable_id')->all();
         $toRemove = array_values(array_diff($currentUserIds, $userIds));

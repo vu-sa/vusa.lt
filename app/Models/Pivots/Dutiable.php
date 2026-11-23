@@ -68,7 +68,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable notEnded()
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
@@ -300,16 +300,16 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
     }
 
     /**
-     * Non-ended terms match User::current_or_upcoming_duties() and quota checks.
-     * A seat is allocated even before the term starts.
+     * Terms that have not ended, including ones yet to start: seats, quotas and permissions,
+     * like User::current_or_upcoming_duties(). Use {@see scopeActiveOn()} for who holds a seat on a date.
      */
-    public function scopeCurrent($query)
+    public function scopeNotEnded($query)
     {
         return $query->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', now()->toDateString()));
     }
 
     /**
-     * Rows genuinely in force on the given date. Unlike {@see scopeCurrent()} this also
+     * Rows genuinely in force on the given date. Unlike {@see scopeNotEnded()} this also
      * requires the term to have begun, which is what point-in-time questions
      * (who held this seat in March?) need.
      */

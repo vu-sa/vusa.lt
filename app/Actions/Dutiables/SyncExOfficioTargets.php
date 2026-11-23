@@ -20,7 +20,7 @@ class SyncExOfficioTargets
                 $targets = Duty::withTrashed()->whereKey($changes['detached'])->get()->keyBy('id');
                 Dutiable::query()->whereIn('duty_id', $changes['detached'])
                     ->whereHas('viaDutiable', fn ($query) => $query->where('duty_id', $source->id))
-                    ->where('ended_by_institution_deactivation', false)->current()
+                    ->where('ended_by_institution_deactivation', false)->notEnded()
                     ->with('viaDutiable')->orderBy('id')->lockForUpdate()->get()
                     ->each(function (Dutiable $seat) use ($targets): void {
                         $target = $targets->get($seat->duty_id);

@@ -55,7 +55,7 @@ test('reopened target resumes today and preserves the closed seat exactly', func
     app(UpdateInstitution::class)->execute($targetInstitution, ['is_active' => true], $actor);
 
     expect($closed->fresh()->getAttributes())->toBe($snapshot)
-        ->and($source->derivedDutiables()->current()->sole()->start_date->toDateString())->toBe('2026-11-04');
+        ->and($source->derivedDutiables()->notEnded()->sole()->start_date->toDateString())->toBe('2026-11-04');
 });
 
 test('editing an ended source never invents history but explicit review can create it', function (): void {

@@ -102,7 +102,7 @@ class UpdateDuty
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('tenant_id', $tenantId)
                     ->whereNull('via_dutiable_id')
-                    ->current(),
+                    ->notEnded(),
                 now()->subDay()
             );
         }

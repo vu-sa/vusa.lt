@@ -169,8 +169,8 @@ test('reactivation and repeated saves preserve ended periods and returning membe
     app(DutyAssignmentService::class)->syncRepresentatives($duty, [$user->id]);
 
     expect($term->fresh()->end_date->toDateString())->toBe('2026-10-15')
-        ->and($duty->dutiables()->current()->sole()->id)->not->toBe($term->id)
-        ->and($duty->dutiables()->current()->sole()->start_date->toDateString())->toBe('2026-10-16')
+        ->and($duty->dutiables()->notEnded()->sole()->id)->not->toBe($term->id)
+        ->and($duty->dutiables()->notEnded()->sole()->start_date->toDateString())->toBe('2026-10-16')
         ->and(Activity::forSubject($institution)->where('description', 'institution_deactivated')->count())->toBe(1);
 });
 

@@ -23,7 +23,7 @@ Policies extend `ModelPolicy` and use `HasCommonChecks` for common ability check
 - A scope reserved for later (`goals.*.own`) is listed in `OWN_SCOPES` with a null relation and a comment saying so.
 
 ## A term grants access before it starts, and nothing else
-A future-dated term grants its permissions immediately, on purpose: `User::current_or_upcoming_duties` has no start check, so an incoming holder can prepare. It carries no responsibility until it starts. Contacts, mailing lists, tasks and any mail use started-and-not-ended (`current_duties`, `Dutiable::activeOn()`); `Dutiable::current()` means *allocated*, so it counts future terms and is for seats and quotas only. Tests: `ScheduledDutyAuthorizationTest`, `InstitutionActivityRequestControllerTest`.
+A future-dated term grants its permissions immediately, on purpose: `User::current_or_upcoming_duties` has no start check, so an incoming holder can prepare. It carries no responsibility until it starts. Contacts, mailing lists, tasks and any mail use started-and-not-ended (`current_duties`, `Dutiable::activeOn()`); `Dutiable::notEnded()` counts future terms: seats, quotas and upcoming reps, never contacts or mail. Tests: `ScheduledDutyAuthorizationTest`, `InstitutionActivityRequestControllerTest`.
 
 ## Policies that bind super admins too
 `Gate::before` in `AuthServiceProvider` grants a super admin everything except the models it lists

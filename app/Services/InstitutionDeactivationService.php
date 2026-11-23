@@ -20,7 +20,7 @@ class InstitutionDeactivationService
 
         return Dutiable::query()
             ->where('dutiable_type', MorphMap::alias(User::class))
-            ->current()
+            ->notEnded()
             ->where(fn ($query) => $query
                 ->whereIn('id', (clone $ownTerms)->select('id'))
                 ->orWhereIn('via_dutiable_id', $ownTerms->select('id')));

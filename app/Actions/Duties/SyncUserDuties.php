@@ -59,7 +59,7 @@ class SyncUserDuties
 
         foreach ($removedDutyIds as $dutyId) {
             $rows = Dutiable::query()->where('duty_id', $dutyId)
-                ->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $user->id)->current()->get();
+                ->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $user->id)->notEnded()->get();
             if ($rows->isNotEmpty() && $rows->whereNull('via_dutiable_id')->isEmpty()) {
                 throw ValidationException::withMessages(['current_duties' => __('users.derived_duty_removal')]);
             }

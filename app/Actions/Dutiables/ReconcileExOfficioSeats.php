@@ -113,7 +113,7 @@ class ReconcileExOfficioSeats
         DB::transaction(function () use ($duty): void {
             $sourceIds = $duty->exOfficioSourceDuties()->pluck('duties.id')->push($duty->id)->unique();
             Dutiable::query()->whereIn('duty_id', $sourceIds)->whereNull('via_dutiable_id')
-                ->where('dutiable_type', MorphMap::alias(User::class))->current()->orderBy('id')
+                ->where('dutiable_type', MorphMap::alias(User::class))->notEnded()->orderBy('id')
                 ->each(fn (Dutiable $source) => self::forSource($source));
         });
     }

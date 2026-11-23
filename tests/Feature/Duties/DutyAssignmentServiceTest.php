@@ -100,7 +100,7 @@ test('returning representatives get a new term without overwriting their history
     app(DutyAssignmentService::class)->syncRepresentatives($duty, [$user->id]);
 
     expect($historical->fresh()->end_date->toDateString())->toBe('2026-06-30');
-    $current = $duty->dutiables()->current()->sole();
+    $current = $duty->dutiables()->notEnded()->sole();
     expect($current->id)->not->toBe($historical->id)
         ->and($current->start_date->toDateString())->toBe('2026-10-02')
         ->and($current->end_date)->toBeNull();

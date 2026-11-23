@@ -178,7 +178,7 @@ class UpdateDutyRequest extends FormRequest
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereIn('tenant_id', $tenantIdsWithUserLists)
             ->whereNull('via_dutiable_id')
-            ->current()
+            ->notEnded()
             ->get(['tenant_id', 'dutiable_id'])
             ->groupBy('tenant_id');
 

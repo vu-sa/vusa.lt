@@ -7,6 +7,7 @@ use App\Models\Meeting;
 use App\Models\Permission;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
@@ -14,9 +15,11 @@ use App\Services\ModelAuthorizer;
 use App\Services\Permissions\CapabilitySnapshot;
 use App\Services\ResponsibilityResolver;
 use App\Settings\SettingsSettings;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
 
 pest()->use(RefreshDatabase::class);
@@ -88,3 +91,24 @@ test('scheduled duty responsibilities work in internal access checks', function 
         ->and($resolver->holdsAnywhere($this->actor, ResponsibilityPurpose::StudentRepCoordination))->toBeFalse()
         ->and(app(SettingsSettings::class)->canUserManageSettings($this->actor))->toBeTrue();
 });
+
+test('a term boundary decides authority, contact and task recipient together', function (int $startOffset, ?int $endOffset, bool $hasAuthority, bool $isHolder): void {
+    Notification::fake();
+    $this->term->update([
+        'start_date' => today()->addDays($startOffset)->toDateString(),
+        'end_date' => $endOffset === null ? null : today()->addDays($endOffset)->toDateString(),
+    ]);
+
+    $meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => today()->setTime(12, 0)]);
+    $task = Task::factory()->forMeeting($meeting)->create(['action_type' => ActionType::AgendaCompletion]);
+    $task->users()->sync([$this->actor->id]);
+
+    expect(app(ModelAuthorizer::class)->allows($this->actor, 'news.update.padalinys'))->toBe($hasAuthority)
+        ->and($this->duty->fresh()->current_users()->pluck('users.id')->contains($this->actor->id))->toBe($isHolder)
+        ->and($task->fresh()->notifiableUsers()->pluck('id')->contains($this->actor->id))->toBe($isHolder);
+})->with([
+    'starts tomorrow' => [1, null, true, false],
+    'started, open-ended' => [-30, null, true, true],
+    'last day is today' => [-30, 0, true, true],
+    'ended yesterday' => [-30, -1, false, false],
+]);

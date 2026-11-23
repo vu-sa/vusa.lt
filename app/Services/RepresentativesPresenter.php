@@ -99,7 +99,7 @@ class RepresentativesPresenter
      */
     public static function representative(User $viewer, User $rep, string $locale): ?array
     {
-        $terms = Dutiable::query()->current()->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $rep->id)
+        $terms = Dutiable::query()->notEnded()->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $rep->id)
             ->whereHas('duty', fn ($duties) => $duties->where('is_active', true)->holdingPurpose(ResponsibilityPurpose::StudentRepresentation))
             ->with('duty:id,institution_id')
             ->get(['id', 'duty_id', 'dutiable_id', 'start_date', 'end_date']);
@@ -124,7 +124,7 @@ class RepresentativesPresenter
      */
     private static function terms(Collection $institutionIds): Builder
     {
-        return Dutiable::query()->current()->where('dutiable_type', MorphMap::alias(User::class))
+        return Dutiable::query()->notEnded()->where('dutiable_type', MorphMap::alias(User::class))
             ->whereHas('duty', fn ($duties) => $duties->where('is_active', true)
                 ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
                 ->whereIn('institution_id', $institutionIds->all()))

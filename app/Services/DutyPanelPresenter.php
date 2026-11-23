@@ -127,7 +127,7 @@ class DutyPanelPresenter
             ->where('duty_id', $duty->id)
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->whereNotNull('tenant_id')
-            ->current()
+            ->notEnded()
             ->selectRaw('tenant_id, count(*) as seats')
             ->groupBy('tenant_id')
             ->pluck('seats', 'tenant_id');

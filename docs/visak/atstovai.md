@@ -139,7 +139,7 @@ Puslapis pranešimų nesiunčia. Dėmesio priežastys skaičiuojamos kiekvieną 
 - Prieiga – vartai `viewRepresentatives` / `viewRepresentative`: padaliniai iš
   `AtstovavimasSettings::getVisibleTenantIds()` (`institutions.read.padalinys` arba `institutions.read.*`),
   koordinuojamos institucijos iš `ResponsibilityResolver` su `StudentRepCoordination`.
-- Atstovai – dabartinės ir būsimos pareigos (`Dutiable::current()`) aktyviose pareigybėse su
+- Atstovai – dabartinės ir būsimos pareigos (`Dutiable::notEnded()`) aktyviose pareigybėse su
   `StudentRepresentation`; padalinių institucijos parenkamos per `RepStatisticsScope::institutions()`.
 - Pažanga – `ResolveLearningPath::forUsers()` visiems atstovams suvestinei; eilutėje `learning` lieka
   `null`, jei žiūrintysis nekoordinuoja atstovo institucijos (taip pat ir priežastis „nepradėjo būtinų
