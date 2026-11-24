@@ -20,6 +20,7 @@ class CreateDuty
     public function execute(array $data, User $actor): Duty
     {
         return DB::transaction(function () use ($data, $actor): Duty {
+            $this->assignments->lockDuties(Duty::query()->whereKey($data['ex_officio_target_duty_ids'] ?? [])->get(), [$data['institution_id']]);
             $duty = new Duty;
             $duty->fill(Arr::except($data, ['types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants']))->save();
 

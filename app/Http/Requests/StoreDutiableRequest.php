@@ -11,7 +11,6 @@ use App\Policies\DutyPolicy;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
 use App\Services\DutyAssignmentService;
-use App\Services\ModelAuthorizer;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -132,11 +131,7 @@ class StoreDutiableRequest extends FormRequest
             return null;
         }
 
-        $duty->loadMissing('assignableTenants');
-
-        $adminTenantIds = app(ModelAuthorizer::class)
-            ->tenants($this->user(), 'duties.update.padalinys')->pluck('id');
-        $sharedTenantIds = $duty->assignableTenants->pluck('id')->intersect($adminTenantIds);
+        $sharedTenantIds = app(DutyPolicy::class)->sharedAssignableTenantIds($this->user(), $duty);
 
         // A new member has no tenant of their own yet; they join through the admin's.
         $tenantId = $this->isCreatingMember()
@@ -150,7 +145,7 @@ class StoreDutiableRequest extends FormRequest
         return $tenantId === null ? null : (int) $tenantId;
     }
 
-    private function choosesQuotaTenant(): bool
+    public function choosesQuotaTenant(): bool
     {
         return $this->has('tenant_id') && $this->canAssignQuota($this->duty());
     }

@@ -4,8 +4,10 @@ namespace App\Actions;
 
 use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Actions\Media\SyncImageMedia;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use App\Services\InstitutionDeactivationService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,14 @@ class UpdateInstitution
     public function execute(Institution $institution, array $data, User $actor): void
     {
         DB::transaction(function () use ($institution, $data, $actor): void {
+            if (array_key_exists('is_active', $data)) {
+                $termDutyIds = $this->deactivation->affectedTerms($institution)->select('duty_id');
+                $duties = Duty::withTrashed()->where('institution_id', $institution->id)
+                    ->orWhereIn('id', $termDutyIds)
+                    ->orWhereHas('exOfficioTargetDuties', fn ($query) => $query->where($query->qualifyColumn('institution_id'), $institution->id))
+                    ->get();
+                app(DutyAssignmentService::class)->lockDuties($duties, [$institution->id]);
+            }
             $institution->refreshForUpdate();
             $reopening = ! $institution->is_active && ! empty($data['is_active']);
             $closing = (bool) $institution->is_active && array_key_exists('is_active', $data) && ! $data['is_active'];

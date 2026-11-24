@@ -57,7 +57,9 @@ Nenustatytas skaičius nerodomas; dabartinių narių skaičius lieka narių skil
 Padalinio kvota rodoma ir tikrinama atskirai nuo informacinio vietų skaičiaus.
 
 **Pradžios ir pabaigos dienos įskaitomos.** Užbaigiant siūloma šiandienos data:
-narys šiandien dar eina pareigas. Jei pabaigos data nepateikta, paskutinė pareigų diena yra vakar.
+narys šiandien dar eina pareigas. Jei pabaigos data nepateikta, pradėtas laikotarpis baigiamas vakar,
+o šiandien ar vėliau turėjęs prasidėti laikotarpis atšaukiamas. Įrašius datą iki laikotarpio
+pradžios, laikotarpis taip pat atšaukiamas.
 Nenurodžius pradžios datos, naujas laikotarpis pradedamas šiandien. Pakartotinai priskyrus buvusį narį,
 sukuriamas naujas laikotarpis po ankstesnio pabaigos. Ankstesnis laikotarpis lieka istorijoje.
 Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).

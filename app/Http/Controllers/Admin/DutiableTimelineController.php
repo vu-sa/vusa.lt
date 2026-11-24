@@ -17,6 +17,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
@@ -102,30 +103,29 @@ class DutiableTimelineController extends AdminController
     // Authorized in ApplyDutiableTimelineRequest: every affected assignment.
     public function apply(ApplyDutiableTimelineRequest $request): RedirectResponse
     {
-        // Re-planned server-side from the operation list; whatever diff the client drew is
-        // advisory only.
-        $plan = PlanDutiableTimelineChanges::execute($request->operations());
+        return DB::transaction(function () use ($request): RedirectResponse {
+            $actor = $request->user();
+            $plan = PlanDutiableTimelineChanges::execute($request->operations(), lockRows: true);
+            $mutation = fn () => ApplyDutiableTimelineChanges::execute($plan, $actor);
+            $couldAffectSelf = ! $actor->isSuperAdmin() && $plan->touchesUser($actor->id);
 
-        $mutation = fn () => DB::transaction(fn () => ApplyDutiableTimelineChanges::execute($plan, $request->user()));
+            if ($warning = $this->guardSelfLockout($actor, $couldAffectSelf, $request, $mutation)) {
+                return $warning;
+            }
 
-        // Super admins short-circuit every permission, so no date change can lock them out.
-        $couldAffectSelf = ! $request->user()->isSuperAdmin()
-            && $plan->touchesUser($request->user()->id);
-
-        if ($warning = $this->guardSelfLockout($request->user(), $couldAffectSelf, $request, $mutation)) {
-            return $warning;
-        }
-
-        return $this->redirectBack(array_filter([
-            'success' => $this->entityMessage('updated', 'dutiable'),
-            'info' => $plan->blockedMessage(),
-        ]));
+            return $this->redirectBack(array_filter([
+                'success' => $this->entityMessage('updated', 'dutiable'),
+                'info' => $plan->blockedMessage(),
+            ]));
+        });
     }
 
     #[Authorize('manageDutiable', 'dutiable')]
-    public function reviewExOfficio(ReviewExOfficioRequest $request, Dutiable $dutiable): RedirectResponse
+    public function reviewExOfficio(ReviewExOfficioRequest $request, Dutiable $dutiable, DutyAssignmentService $assignments): RedirectResponse
     {
-        $mutation = fn () => DB::transaction(function () use ($request, $dutiable): void {
+        $mutation = fn () => DB::transaction(function () use ($request, $dutiable, $assignments): void {
+            $sourceDutyId = Dutiable::query()->whereKey($request->validated('source_id'))->value('duty_id');
+            $assignments->lockDuties(Duty::withTrashed()->whereKey(array_filter([$dutiable->duty_id, $sourceDutyId]))->get());
             $dutiable = $dutiable->newQuery()->lockForUpdate()->findOrFail($dutiable->id);
             $this->authorize('manageDutiable', $dutiable);
             $properties = $request->safe()->only(['decision', 'source_id']);
@@ -165,11 +165,12 @@ class DutiableTimelineController extends AdminController
      * merge deletes rows, which no operation in the planner's vocabulary can express.
      */
     // Authorized in MergeDutiablesRequest: every selected assignment.
-    public function merge(MergeDutiablesRequest $request): RedirectResponse
+    public function merge(MergeDutiablesRequest $request, DutyAssignmentService $assignments): RedirectResponse
     {
         $rows = $request->rows();
 
-        $mutation = fn () => DB::transaction(function () use ($rows, $request): void {
+        $mutation = fn () => DB::transaction(function () use ($rows, $request, $assignments): void {
+            $assignments->lockDuties(Duty::withTrashed()->whereKey($rows->pluck('duty_id')->unique()->all())->get());
             $locked = Dutiable::query()->whereKey($rows->modelKeys())->orderBy('id')->lockForUpdate()->get();
             abort_unless($locked->count() === $rows->count() && MergeDutiables::isMergeable($locked), 422);
             foreach ($locked as $row) {

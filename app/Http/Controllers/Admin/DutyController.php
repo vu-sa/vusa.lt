@@ -143,6 +143,7 @@ class DutyController extends AdminController
             'duty' => fn (): array => DutyPresenter::forShow($loadDuty()),
             'files' => Inertia::defer(fn () => DutyPanelPresenter::files($duty->availableFiles()->orderByDesc('file_date')->get()), 'files'),
             'can' => fn (): array => DutyPanelPresenter::abilities($duty, $user()),
+            'delegatedSeatTenants' => fn () => DutyPanelPresenter::delegatedSeatTenants($loadDuty(), $user()),
             'otherDuties' => Inertia::defer(fn () => DutyPanelPresenter::otherDuties($duty), 'dutyPanels'),
             'studyPrograms' => Inertia::defer(fn () => DutyPanelPresenter::studyPrograms($this->studyProgramsFor($duty)), 'dutyPanels'),
             'lineage' => Inertia::defer(fn () => DutyPanelPresenter::lineage($duty, $user()), 'dutyPanels'),
@@ -446,9 +447,10 @@ class DutyController extends AdminController
 
         $actingTenantId = $request->actingTenantId();
 
-        $mutation = fn () => DB::transaction(function () use ($validated, $duty, $actingTenantId): void {
+        $actor = $request->user();
+        $mutation = fn () => DB::transaction(function () use ($validated, $duty, $actingTenantId, $actor): void {
             $this->assignments->lockDuty($duty);
-            $duty->auditRelationChange('current_users', function () use ($validated, $duty, $actingTenantId): void {
+            $duty->auditRelationChange('current_users', function () use ($validated, $duty, $actingTenantId, $actor): void {
                 $createdUsers = [];
                 if (! empty($validated['new_users'])) {
                     foreach ($validated['new_users'] as $newUserData) {
@@ -461,7 +463,9 @@ class DutyController extends AdminController
                     }
                 }
 
-                foreach ($validated['user_changes'] as $change) {
+                $allocatedSeat = false;
+                foreach ($validated['user_changes'] as $index => $change) {
+                    $dateAttribute = "user_changes.$index.end_date";
                     $userId = $change['user_id'];
                     $attributes = [
                         'start_date' => $change['start_date'] ?? null,
@@ -470,33 +474,40 @@ class DutyController extends AdminController
                     ];
 
                     if (str_starts_with($userId, 'new-')) {
-                        if ($change['action'] === 'add' && isset($createdUsers[$userId])) {
-                            $this->assignments->startTerm($duty, $createdUsers[$userId]->id, $actingTenantId, $attributes, audit: false);
+                        if ($change['action'] !== 'add' || ! isset($createdUsers[$userId])) {
+                            continue;
                         }
 
-                        continue;
+                        $userId = $createdUsers[$userId]->id;
                     }
 
                     $currentTerms = $this->assignments->manualTerms($duty->id, $userId, $actingTenantId)->current();
 
                     if ($change['action'] === 'remove') {
-                        $this->assignments->endTerms($currentTerms, $attributes['end_date']);
+                        $this->assignments->endTerms($currentTerms, $attributes['end_date'], $dateAttribute);
 
                         continue;
                     }
 
-                    if ($existingTerm = $currentTerms->lockForUpdate()->first()) {
-                        // Only what the change sends: an omitted start date must not reset the term's history.
-                        $existingTerm->update(array_intersect_key($attributes, $change));
+                    if ($existingTerm = $currentTerms->orderBy('start_date')->orderBy('id')->lockForUpdate()->first()) {
+                        $edit = array_intersect_key($attributes, $change);
+                        $edit['start_date'] ??= $existingTerm->start_date->toDateString();
+                        $endDate = array_key_exists('end_date', $edit) ? $edit['end_date'] : $existingTerm->end_date?->toDateString();
+                        $this->assignments->validateTermEdit($existingTerm, $edit['start_date'], $endDate, $actingTenantId, $dateAttribute);
+                        $existingTerm->update($edit);
                     } else {
-                        $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false);
+                        $term = $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false, dateAttribute: $dateAttribute);
+                        $allocatedSeat = $allocatedSeat || $term->end_date === null || $term->end_date->gte(today());
                     }
+                }
+
+                if ($allocatedSeat) {
+                    $this->assignments->enforceTenantQuota($duty, $actingTenantId, $actor, 'user_changes');
                 }
             });
         });
 
         // Removing themselves from this duty may strip the acting user's own access.
-        $actor = $request->user();
         $couldAffectSelf = ! $actor->isSuperAdmin()
             && collect($validated['user_changes'])
                 ->contains(fn ($change) => (string) $change['user_id'] === (string) $actor->id);

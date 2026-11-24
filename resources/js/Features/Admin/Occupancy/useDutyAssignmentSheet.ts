@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useToasts } from '@/Composables/useToasts';
@@ -10,6 +10,7 @@ interface AssignmentSheetSource {
   terms: () => AssignmentTerm[] | undefined;
   /** Whether the sheet's own data (study programmes) is still to load. */
   needsManagement: () => boolean;
+  needsPicker: () => boolean;
 }
 
 /**
@@ -23,9 +24,6 @@ export function useDutyAssignmentSheet(source: AssignmentSheetSource) {
   const duty = ref<(AssignmentDuty & { current_users?: UserWithPivot[] }) | null>(null);
   const dutiable = ref<AssignmentTerm | null>(null);
   const user = ref<AssignmentUser | null>(null);
-
-  /** Who already holds the duty right now cannot be assigned to it again. */
-  const takenIds = computed(() => (duty.value?.current_users ?? []).map(holder => String(holder.id)));
 
   const openFor = (target: DutyWithUsers, holder: UserWithPivot | null) => {
     if (loading.value) return;
@@ -44,6 +42,7 @@ export function useDutyAssignmentSheet(source: AssignmentSheetSource) {
     const only = [
       ...(source.needsManagement() ? ['management'] : []),
       ...(holder ? ['assignmentTerms'] : []),
+      ...(!holder && source.needsPicker() ? ['assignmentPicker'] : []),
     ];
     if (only.length) {
       loading.value = true;
@@ -60,7 +59,6 @@ export function useDutyAssignmentSheet(source: AssignmentSheetSource) {
     duty,
     dutiable,
     user,
-    takenIds,
     assign: (target: DutyWithUsers) => openFor(target, null),
     editTerm: (target: DutyWithUsers, holder: UserWithPivot) => openFor(target, holder),
   };

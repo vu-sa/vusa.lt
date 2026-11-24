@@ -4,7 +4,6 @@ namespace App\Actions\Dutiables;
 
 use App\Actions\CollapseOverlappingDutiables;
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Services\DutyAssignmentService;
@@ -30,13 +29,8 @@ class ApplyExOfficioReview
                 ->whereKey($targetIds)
                 ->orWhereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey($targetIds))
                 ->orderBy('id')
-                ->lockForUpdate()
                 ->get();
-            Institution::withTrashed()
-                ->whereKey($duties->pluck('institution_id'))
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get();
+            app(DutyAssignmentService::class)->lockDuties($duties);
             $rows = Dutiable::query()
                 ->with(['duty.institution', 'user'])
                 ->whereIn('duty_id', $duties->modelKeys())

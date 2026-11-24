@@ -75,8 +75,10 @@ class UpdateDutyRequest extends FormRequest
 
             $this->authorizeDutyTypeChanges($v, $duty->types()->pluck('duty_types.id')->all());
 
-            // Retiring a duty must not quietly strand the people still holding it.
-            if ($this->has('is_active') && ! $this->boolean('is_active') && $duty->dutiables()->current()->exists()) {
+            if ($this->has('is_active') && ! $this->boolean('is_active')
+                && (! empty($this->input('current_users'))
+                    || collect($this->input('assignable_tenants'))->pluck('user_ids')->filter()->isNotEmpty()
+                    || $duty->dutiables()->current()->exists())) {
                 $v->errors()->add('is_active', __('dutiables.assign.finish_terms_before_retiring'));
             }
 

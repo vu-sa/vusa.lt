@@ -121,6 +121,40 @@ describe('AssignDutyUserSheet.vue', () => {
       expect(wrapper.find('[data-testid="member-search"]').attributes('data-taken')).toBe('now');
     });
 
+    it('only blocks an overlapping manual term for the quota selected in the sheet', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet({
+        canAssignQuota: true,
+        quotaTenants: [{ id: 3, shortname: 'VU SA MIF', quota: 3, occupied: 2 }],
+        existingTerms: [
+          { user_id: 'home', start_date: '2026-09-20', tenant_id: null, via_dutiable_id: null },
+          { user_id: 'delegated', start_date: '2026-09-20', tenant_id: 3, via_dutiable_id: null },
+          { user_id: 'ex-officio', start_date: '2026-09-20', tenant_id: 3, via_dutiable_id: 'source' },
+        ],
+      });
+      await flushPromises();
+
+      const taken = () => wrapper.find('[data-testid="member-search"]').attributes('data-taken');
+      expect(taken()).toBe('home');
+
+      await wrapper.find('[data-testid="assign-quota-tenant"] select').setValue('3');
+      expect(taken()).toBe('delegated');
+    });
+
+    it('matches each holder against the tenant that delegation would use for them', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet({
+        delegatedSeatTenants: { matching: 3, other: 4 },
+        existingTerms: [
+          { user_id: 'matching', start_date: '2026-09-20', tenant_id: 3, via_dutiable_id: null },
+          { user_id: 'other', start_date: '2026-09-20', tenant_id: 3, via_dutiable_id: null },
+        ],
+      });
+      await flushPromises();
+
+      expect(wrapper.find('[data-testid="member-search"]').attributes('data-taken')).toBe('matching');
+    });
+
     it('keeps the stored dates when editing a term', async () => {
       respondWithCadences();
       mountSheet({ dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2024-02-01', end_date: null, duty }, duty: null });
@@ -375,7 +409,7 @@ describe('AssignDutyUserSheet.vue', () => {
     });
 
     it.each([null, 1, 38])('does not warn about an informational seat count of %s', (places) => {
-      const wrapper = mountSheet({ duty: { ...duty, places_to_occupy: places }, takenIds: ['current-holder'] });
+      const wrapper = mountSheet({ duty: { ...duty, places_to_occupy: places }, existingTerms: [{ user_id: 'current-holder', start_date: '2026-01-01' }] });
 
       expect(wrapper.find('[data-testid="assign-sheet-full-notice"]').exists()).toBe(false);
     });

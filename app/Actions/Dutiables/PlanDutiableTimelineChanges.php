@@ -3,7 +3,9 @@
 namespace App\Actions\Dutiables;
 
 use App\Models\Cadence;
+use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Services\DutyAssignmentService;
 use App\Support\Dutiables\CadenceMatcher;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;
@@ -27,10 +29,14 @@ class PlanDutiableTimelineChanges
     /**
      * @param  list<array<string, mixed>>  $operations
      */
-    public static function execute(array $operations): DutiableTimelinePlan
+    public static function execute(array $operations, bool $lockRows = false): DutiableTimelinePlan
     {
         $rowIds = self::targetedRowIds($operations);
-        $rows = self::loadRows($rowIds);
+        if ($lockRows) {
+            $dutyIds = Dutiable::query()->whereKey($rowIds)->select('duty_id');
+            app(DutyAssignmentService::class)->lockDuties(Duty::withTrashed()->whereIn('id', $dutyIds)->get());
+        }
+        $rows = self::loadRows($rowIds, $lockRows);
         $cadences = self::cadencesFor($rows);
 
         /** @var array<string, array{start_date: string, end_date: string|null}> $state */
@@ -376,7 +382,7 @@ class PlanDutiableTimelineChanges
      * @param  list<string>  $rowIds
      * @return Collection<string, Dutiable>
      */
-    private static function loadRows(array $rowIds): Collection
+    private static function loadRows(array $rowIds, bool $lockRows): Collection
     {
         if ($rowIds === []) {
             return collect();
@@ -385,6 +391,7 @@ class PlanDutiableTimelineChanges
         return Dutiable::query()
             ->with(['duty:id,name,institution_id', 'user:id,name,pronouns', 'derivedDutiables.duty:id,name', 'derivedDutiables.media'])
             ->whereIn('id', $rowIds)
+            ->when($lockRows, fn ($rows) => $rows->orderBy('id')->lockForUpdate())
             ->get()
             ->keyBy('id');
     }

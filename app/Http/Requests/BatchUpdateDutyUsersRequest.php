@@ -114,7 +114,8 @@ class BatchUpdateDutyUsersRequest extends FormRequest
         $validator->sometimes(
             'user_changes.*.end_date',
             'after_or_equal:user_changes.*.start_date',
-            fn (Fluent $input, mixed $change) => $change instanceof Fluent && filled($change->get('start_date')),
+            fn (Fluent $input, mixed $change) => $change instanceof Fluent
+                && $change->get('action') === 'add' && filled($change->get('start_date')),
         );
 
         $validator->after(function (Validator $v): void {
@@ -137,7 +138,9 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             $endsBeforeToday = fn (array $change): bool => isset($change['end_date']) && Carbon::parse($change['end_date'])->toDateString() < $today;
             $added = $changes->where('action', 'add')->reject($endsBeforeToday)->pluck('user_id')->all();
             $freed = $changes->where('action', 'remove')
-                ->filter(fn (array $change) => ! isset($change['end_date']) || $endsBeforeToday($change))
+                ->filter(fn (array $change) => ! isset($change['end_date']) || $endsBeforeToday($change)
+                    || ! $assignments->manualTerms($duty->id, $change['user_id'], $tenantId)->current()
+                        ->whereDate('start_date', '<=', Carbon::parse($change['end_date'])->toDateString())->exists())
                 ->pluck('user_id')->all();
 
             if ($added !== [] && $assignments->exceedsTenantQuota($duty, $tenantId, $quota, $added, $freed)) {

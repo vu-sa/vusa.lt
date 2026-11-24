@@ -358,6 +358,7 @@ test('dutiable can be edited by cross-tenant admin when user belongs to their te
         'duty_id' => $this->duty->id,
         'dutiable_id' => $this->tenantUser->id,
         'dutiable_type' => MorphMap::alias(User::class),
+        'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
     ]);
@@ -375,6 +376,7 @@ test('cross-tenant admin cannot edit dutiable of user from another tenant', func
         'duty_id' => $this->duty->id,
         'dutiable_id' => $this->outsideUser->id,
         'dutiable_type' => MorphMap::alias(User::class),
+        'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => null,
     ]);
@@ -393,6 +395,7 @@ test('cross-tenant admin cannot edit or remove a dutiable based on former tenant
         'end_date' => now()->subYears(2),
     ]);
     $dutiable = Dutiable::factory()->forDuty($this->duty)->forUser($this->tenantUser)->create([
+        'tenant_id' => $this->assignableTenant->id,
         'start_date' => now()->subDay(),
         'end_date' => null,
         'additional_email' => null,
@@ -1099,6 +1102,8 @@ describe('choosing the quota padalinys of a seat', function (): void {
     });
 
     test('a cross-tenant admin cannot choose the quota', function (): void {
+        $this->seat->update(['tenant_id' => $this->assignableTenant->id]);
+
         asUser($this->crossAdmin)->patch(route('dutiables.update', $this->seat), ['tenant_id' => $this->assignableTenant->id])
             ->assertSessionHasErrors('tenant_id');
     });

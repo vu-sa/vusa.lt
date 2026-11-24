@@ -7,13 +7,13 @@ use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Contracts\ImageMediaOwner;
 use App\Events\DutiableChanged;
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -113,7 +113,7 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
     {
         return DB::transaction(function () use ($options): bool {
             $duty = Duty::withTrashed()->find($this->duty_id);
-            $institution = $duty ? Institution::withTrashed()->lockForUpdate()->find($duty->institution_id) : null;
+            $institution = $duty === null ? null : app(DutyAssignmentService::class)->lockDuty($duty)->get($duty->institution_id);
             $stored = $this->exists ? self::query()->lockForUpdate()->find($this->id) : null;
 
             $resumes = $stored?->end_date?->lt(today())

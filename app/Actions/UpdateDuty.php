@@ -31,8 +31,10 @@ class UpdateDuty
     public function execute(Duty $duty, array $data, ?User $actor = null): void
     {
         DB::transaction(function () use ($duty, $data, $actor): void {
-            Institution::withTrashed()->whereIn('id', [$duty->institution_id, $data['institution_id']])
-                ->orderBy('id')->lockForUpdate()->get();
+            $relatedDuties = Duty::query()->whereKey($data['ex_officio_target_duty_ids'] ?? [])
+                ->orWhereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey($duty->id))->get();
+            $this->assignments->lockDuties($relatedDuties->push($duty), [$data['institution_id']]);
+            $duty->refreshForUpdate();
             $institutionChanged = $duty->institution_id !== $data['institution_id'];
             if ($institutionChanged && $actor === null) {
                 throw ValidationException::withMessages(['institution_id' => __('validation.outside_tenant_scope')]);
@@ -75,6 +77,11 @@ class UpdateDuty
             if ($institutionChanged || $tenantIdsChanged) {
                 ReconcileExOfficioSeats::forDuty($duty);
             }
+
+            if (array_key_exists('is_active', $data) && ! $duty->is_active
+                && $duty->dutiables()->current()->lockForUpdate()->first(['id']) !== null) {
+                throw ValidationException::withMessages(['is_active' => __('dutiables.assign.finish_terms_before_retiring')]);
+            }
         });
     }
 
@@ -95,16 +102,15 @@ class UpdateDuty
         $newTenantIds = array_column($rows, 'tenant_id');
         $removedTenantIds = array_diff($previousTenantIds, $newTenantIds);
 
-        foreach ($removedTenantIds as $tenantId) {
-            $this->assignments->endDateDutiables(
+        if ($removedTenantIds !== []) {
+            $duty->auditRelationChange('current_users', fn () => $this->assignments->endTerms(
                 Dutiable::query()
                     ->where('duty_id', $duty->id)
                     ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->where('tenant_id', $tenantId)
+                    ->whereIn('tenant_id', $removedTenantIds)
                     ->whereNull('via_dutiable_id')
                     ->notEnded(),
-                now()->subDay()
-            );
+            ));
         }
 
         $assignableTenants->detach($removedTenantIds);

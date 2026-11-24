@@ -1284,3 +1284,40 @@ test('the wizard logs one member change when a former holder returns and a curre
         ->and(collect($activity->properties->get('attached'))->pluck('id')->all())->toBe([$former->dutiable_id])
         ->and(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$current->dutiable_id]);
 });
+
+test('a duty cannot be retired and given a holder in the same update', function (bool $sharedSeat): void {
+    $duty = Duty::factory()->for($this->dutyManagerDuty->institution)->create(['is_active' => true]);
+    $member = $this->regularUser;
+    $holders = $sharedSeat
+        ? ['assignable_tenants' => [['tenant_id' => $this->tenant->id, 'quota' => 1, 'user_ids' => [$member->id]]]]
+        : ['current_users' => [$member->id]];
+
+    asUser($this->dutyManager)->patch(route('duties.update', $duty), [
+        'name' => $duty->getTranslations('name'),
+        'institution_id' => $duty->institution_id,
+        'contacts_grouping' => 'tenant',
+        'is_active' => false,
+        ...$holders,
+    ])->assertSessionHasErrors('is_active');
+
+    expect($duty->fresh()->is_active)->toBeTrue()->and($duty->dutiables()->exists())->toBeFalse();
+})->with(['home holder' => false, 'quota holder' => true]);
+
+test('retirement is rolled back if a term appears during the update', function (): void {
+    $duty = Duty::factory()->for($this->dutyManagerDuty->institution)->create(['is_active' => true]);
+    $member = $this->regularUser;
+    Duty::updated(function (Duty $updated) use ($duty, $member): void {
+        if ($updated->is($duty) && $updated->wasChanged('is_active')) {
+            Dutiable::factory()->forDuty($updated)->forUser($member)->active()->create();
+        }
+    });
+
+    asUser($this->dutyManager)->patch(route('duties.update', $duty), [
+        'name' => $duty->getTranslations('name'),
+        'institution_id' => $duty->institution_id,
+        'contacts_grouping' => 'tenant',
+        'is_active' => false,
+    ])->assertSessionHasErrors('is_active');
+
+    expect($duty->fresh()->is_active)->toBeTrue()->and($duty->dutiables()->exists())->toBeFalse();
+});

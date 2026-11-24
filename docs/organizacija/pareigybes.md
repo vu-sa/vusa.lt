@@ -175,6 +175,7 @@ kvota)“, vieta priklauso pačios pareigybės padaliniui.
   pilna kvota neleidžia pridėti naujo nario ar atnaujinti jo pasibaigusio laikotarpio.
 - Į kvotą kiekvienas žmogus įskaičiuojamas vieną kartą. Vietą užima ir būsimi bei *ex officio*
   laikotarpiai. Paskutinė pareigų diena dar įskaitoma.
+- Pašalinus padalinį iš pareigybės kvotų, jo pradėti rankiniai laikotarpiai baigiasi vakar, o dar neprasidėję atšaukiami.
 - Kito padalinio administratoriai gali valdyti savo kvotai priskirtą vietą, jei narys turi tame
   padalinyje dabartinių arba būsimų pareigų. Jei tokių pareigų nėra, išsaugant parodomas įspėjimas.
 - Prie deleguoto nario rodoma žyma **Deleguota** su padalinio pavadinimu.
@@ -389,6 +390,8 @@ el. paštas, kai jis prieinamas, ir padaliniai.
 </ChangelogNote>
 
 To paties žmogaus rankiniu būdu priskirti laikotarpiai toje pačioje pareigybėje ir tame pačiame padalinyje negali persidengti.
+Lange **Priskirti** toks narys paieškoje nepasirenkamas, kol datos persidengia. Kito padalinio
+kvotai priskirtas arba *ex officio* laikotarpis pasirinkimo neriboja.
 Pasibaigęs laikotarpis neužima vietos, todėl jam padalinio kvota netaikoma.
 
 <ChangelogNote date="2026-10-02" title="Buvusių narių priskyrimas">

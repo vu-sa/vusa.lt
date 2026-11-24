@@ -176,6 +176,8 @@ class InstitutionController extends AdminController
             'management' => Inertia::optional(fn () => $request->user()->can('update', $institution)
                 ? InstitutionPresenter::management($institution) : null),
             'assignmentTerms' => Inertia::optional(fn () => $request->user()->can('update', $institution) ? InstitutionPresenter::assignmentTerms($institution) : []),
+            'assignmentPicker' => Inertia::optional(fn () => $request->user()->can('update', $institution)
+                ? InstitutionPresenter::assignmentPicker($institution, $request->user()) : []),
             'subscription' => fn () => InstitutionPresenter::subscription($institution, $request->user()),
             'knowledgePages' => Inertia::defer(fn () => KnowledgeBasePresenter::forInstitution($institution, app()->getLocale()), 'knowledge'),
         ]);

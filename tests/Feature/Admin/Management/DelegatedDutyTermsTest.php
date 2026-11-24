@@ -3,8 +3,10 @@
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
+use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -156,7 +158,12 @@ test('a tenant quota counts people once even when they hold multiple terms', fun
 });
 
 test('the duty owner can lower a quota below the current count with the holder list omitted', function (): void {
-    Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->active()->count(2)->create();
+    $this->duty->assignableTenants()->updateExistingPivot($this->tenant->id, ['quota' => 2]);
+
+    $sourceDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+    $sourceDuty->exOfficioTargetDuties()->attach($this->duty);
+    Dutiable::factory()->forDuty($sourceDuty)->active()->count(2)->create();
+    expect($this->duty->dutiables()->whereNotNull('via_dutiable_id')->current()->count())->toBe(2);
 
     asUser($this->owner)->patch(route('duties.update', $this->duty), [
         'name' => $this->duty->getTranslations('name'),
@@ -227,4 +234,252 @@ test('removing a temporary member cannot create a term through a full quota', fu
     ])->assertSessionHasNoErrors();
 
     expect($this->duty->dutiables()->current()->count())->toBe(1);
+});
+
+test('existing term edits reject an overlap with another manual term in the same quota', function (string $surface): void {
+    $term = Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->forUser($this->member)
+        ->active()->create(['start_date' => today()->subMonth(), 'end_date' => today()->addWeek()]);
+    Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->forUser($this->member)
+        ->active()->create(['start_date' => today()->addWeeks(2)]);
+
+    $end = today()->addWeeks(2)->toDateString();
+    $client = asUser($this->owner);
+
+    match ($surface) {
+        'wizard' => $client->post(route('duties.batchUpdateUsers', $this->duty), [
+            'tenant_id' => $this->tenant->id,
+            'user_changes' => [['user_id' => $this->member->id, 'action' => 'add', 'end_date' => $end]],
+        ])->assertSessionHasErrors('user_changes.0.end_date'),
+        'sheet' => $client->patch(route('dutiables.update', $term), ['end_date' => $end])->assertSessionHasErrors('end_date'),
+        'timeline' => $client->post(route('dutiables.timeline.apply'), [
+            'operations' => [['type' => 'set_dates', 'row_ids' => [$term->id], 'end_date' => $end]],
+        ])->assertSessionHasErrors('operations'),
+    };
+
+    expect($term->fresh()->end_date->toDateString())->toBe(today()->addWeek()->toDateString());
+})->with(['wizard', 'sheet', 'timeline']);
+
+test('a null start date in the wizard preserves the existing start', function (): void {
+    $term = Dutiable::factory()->forDuty($this->duty)->forUser($this->member)->active()
+        ->create(['start_date' => today()->subMonth()]);
+    $end = today()->addWeek()->toDateString();
+
+    asUser($this->owner)->post(route('duties.batchUpdateUsers', $this->duty), [
+        'user_changes' => [['user_id' => $this->member->id, 'action' => 'add', 'start_date' => null, 'end_date' => $end]],
+    ])->assertSessionHasNoErrors();
+
+    expect($term->fresh()->start_date->toDateString())->toBe(today()->subMonth()->toDateString())
+        ->and($term->fresh()->end_date->toDateString())->toBe($end);
+});
+
+test('the wizard rejects an end date before the resulting start date', function (string $state): void {
+    if ($state !== 'new') {
+        Dutiable::factory()->forDuty($this->duty)->forUser($this->member)->create([
+            'start_date' => today()->addWeek(),
+            'end_date' => null,
+        ]);
+    }
+
+    asUser($this->owner)->post(route('duties.batchUpdateUsers', $this->duty), [
+        'user_changes' => [['user_id' => $this->member->id, 'action' => 'add', 'end_date' => today()->subDay()->toDateString()]],
+    ])->assertSessionHasErrors('user_changes.0.end_date');
+})->with(['new', 'upcoming']);
+
+test('a wizard removal before the term starts withdraws the row', function (): void {
+    $term = Dutiable::factory()->forDuty($this->duty)->forUser($this->member)->active()
+        ->create(['start_date' => today()->addWeek()]);
+
+    asUser($this->owner)->post(route('duties.batchUpdateUsers', $this->duty), [
+        'user_changes' => [['user_id' => $this->member->id, 'action' => 'remove', 'end_date' => today()->toDateString()]],
+    ])->assertSessionHasNoErrors();
+
+    $this->assertModelMissing($term);
+});
+
+test('the seat quota is rechecked when a place is taken during the write', function (string $surface): void {
+    $competing = Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->ended()->create();
+    $returning = in_array($surface, ['update', 'timeline'], true)
+        ? Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->forUser($this->member)->ended()->create()
+        : null;
+    $dutyId = $this->duty->id;
+    $memberId = $this->member->id;
+
+    Dutiable::saving(function (Dutiable $term) use ($competing, $dutyId, $memberId): void {
+        if ($term->duty_id === $dutyId && $term->dutiable_id === $memberId) {
+            Dutiable::whereKey($competing->id)->update(['end_date' => null]);
+        }
+    });
+
+    $client = asUser($this->delegate);
+    match ($surface) {
+        'wizard' => $client->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [['user_id' => $memberId, 'action' => 'add']],
+        ])->assertSessionHasErrors('user_changes'),
+        'store' => $client->post(route('dutiables.store'), ['duty_id' => $dutyId, 'user_id' => $memberId])
+            ->assertSessionHasErrors('user_id'),
+        'update' => $client->patch(route('dutiables.update', $returning), ['end_date' => null])
+            ->assertSessionHasErrors('end_date'),
+        'timeline' => $client->post(route('dutiables.timeline.apply'), [
+            'operations' => [['type' => 'set_dates', 'row_ids' => [$returning->id], 'end_date' => null]],
+        ])->assertSessionHasErrors('operations'),
+    };
+
+    expect($this->duty->dutiables()->current()->exists())->toBeFalse();
+})->with(['wizard', 'store', 'update', 'timeline']);
+
+test('a delegate cannot edit or delete a seat outside their quota', function (string $seat): void {
+    $other = Tenant::query()->whereKeyNot($this->tenant->id)
+        ->whereKeyNot($this->duty->institution->tenant_id)->firstOrFail();
+    $this->duty->assignableTenants()->attach($other, ['quota' => 1]);
+    $term = Dutiable::factory()->forDuty($this->duty)->forUser($this->member)->active()->create([
+        'tenant_id' => $seat === 'another quota' ? $other->id : null,
+    ]);
+
+    asUser($this->delegate)->patch(route('dutiables.update', $term), [
+        'end_date' => today()->subDay()->toDateString(),
+    ])->assertForbidden();
+    asUser($this->delegate)->delete(route('dutiables.destroy', $term), ['stay' => true])->assertForbidden();
+
+    expect($term->fresh()->end_date)->toBeNull();
+})->with(['another quota', 'home']);
+
+test('a delegate cannot manage a seat whose holder has been deleted', function (): void {
+    $term = Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->forUser($this->member)->active()->create();
+    $this->member->delete();
+
+    asUser($this->delegate)->patch(route('dutiables.update', $term), [
+        'end_date' => today()->subDay()->toDateString(),
+    ])->assertForbidden();
+    asUser($this->delegate)->delete(route('dutiables.destroy', $term), ['stay' => true])->assertForbidden();
+});
+
+test('removing an assignable tenant withdraws future terms and audits the departing holder', function (): void {
+    $started = Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->active()
+        ->create(['start_date' => today()->subMonth()]);
+    $future = Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->active()
+        ->create(['start_date' => today()->addWeek()]);
+
+    asUser($this->owner)->patch(route('duties.update', $this->duty), [
+        'name' => $this->duty->getTranslations('name'),
+        'institution_id' => $this->duty->institution_id,
+        'contacts_grouping' => 'tenant',
+        'assignable_tenants' => [],
+    ])->assertSessionHasNoErrors();
+
+    $this->assertModelMissing($future);
+    expect($started->fresh()->end_date->toDateString())->toBe(today()->subDay()->toDateString());
+    $activity = Activity::forSubject($this->duty)->forEvent('relation_updated')->where('properties->relation', 'current_users')->sole();
+    expect(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$started->dutiable_id]);
+});
+
+test('a creator without duty update permission cannot fill more than the tenant quota', function (bool $api): void {
+    $creator = makeUser($this->tenant);
+    $role = Role::create(['name' => 'Duty creator', 'guard_name' => 'web']);
+    $role->givePermissionTo('duties.create.padalinys');
+    $creator->duties()->sole()->assignRole($role);
+    $payload = [
+        'name' => ['lt' => 'Bendra kvotuota pareigybė', 'en' => 'Shared quota duty'],
+        'institution_id' => $creator->duties()->sole()->institution_id,
+        'contacts_grouping' => 'tenant',
+        'assignable_tenants' => [[
+            'tenant_id' => $this->tenant->id,
+            'quota' => 1,
+            'user_ids' => [$this->member->id, makeUser($this->tenant)->id],
+        ]],
+    ];
+
+    if ($api) {
+        asUser($creator)->postJson(route('api.v1.admin.duties.store'), $payload)->assertUnprocessable()
+            ->assertJsonValidationErrors('assignable_tenants.0.user_ids');
+    } else {
+        asUser($creator)->post(route('duties.store'), $payload)->assertSessionHasErrors('assignable_tenants.0.user_ids');
+    }
+
+    expect(Duty::where('name->lt', $payload['name']['lt'])->exists())->toBeFalse();
+})->with(['web' => false, 'API' => true]);
+
+test('a creator cannot leave a quota exceeded when another holder appears during creation', function (): void {
+    $creator = makeUser($this->tenant);
+    $role = Role::create(['name' => 'Duty creator', 'guard_name' => 'web']);
+    $role->givePermissionTo('duties.create.padalinys');
+    $creator->duties()->sole()->assignRole($role);
+    $member = $this->member;
+    $other = makeUser($this->tenant);
+    $tenant = $this->tenant;
+    $name = 'Pareigybė su viena vieta';
+
+    Dutiable::creating(function (Dutiable $term) use ($member, $other, $tenant, $name): void {
+        if ($term->dutiable_id === $member->id && $term->duty->getTranslation('name', 'lt') === $name) {
+            Dutiable::factory()->forDuty($term->duty)->forTenant($tenant)->forUser($other)->active()->create();
+        }
+    });
+
+    asUser($creator)->post(route('duties.store'), [
+        'name' => ['lt' => $name, 'en' => 'One-seat duty'],
+        'institution_id' => $creator->duties()->sole()->institution_id,
+        'contacts_grouping' => 'tenant',
+        'assignable_tenants' => [['tenant_id' => $tenant->id, 'quota' => 1, 'user_ids' => [$member->id]]],
+    ])->assertSessionHasErrors('assignable_tenants.0.user_ids');
+
+    expect(Duty::where('name->lt', $name)->exists())->toBeFalse();
+});
+
+test('the duty record counts manual and ex officio seats held by one person once', function (): void {
+    $source = $this->member->dutiables()->sole();
+    Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->forUser($this->member)->active()->create();
+    Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->forUser($this->member)->active()->create([
+        'via_dutiable_id' => $source->id,
+    ]);
+
+    asUser($this->owner)->get(route('duties.show', $this->duty))->assertInertia(fn ($page) => $page
+        ->loadDeferredProps('dutyPanels', fn ($loaded) => $loaded->where('quotaTenants.0.occupied', 1)));
+});
+
+test('the duty record supplies the quota that a delegate would use for an existing holder', function (): void {
+    Dutiable::factory()->forDuty($this->duty)->forUser($this->member)->active()->create();
+
+    asUser($this->delegate)->get(route('duties.show', $this->duty))->assertInertia(fn ($page) => $page
+        ->where('delegatedSeatTenants.'.$this->member->id, $this->tenant->id));
+});
+
+test('editing or deleting a current assignment logs the departing member once', function (string $action): void {
+    $target = Duty::factory()->for($this->duty->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target);
+    $term = Dutiable::factory()->forDuty($this->duty)->forTenant($this->tenant)->forUser($this->member)
+        ->active()->create(['start_date' => today()->subMonth()]);
+    $client = asUser($this->delegate);
+    $end = today()->subDay()->toDateString();
+
+    (match ($action) {
+        'sheet' => $client->patch(route('dutiables.update', $term), ['end_date' => $end]),
+        'delete' => $client->delete(route('dutiables.destroy', $term), ['stay' => true]),
+        'timeline' => $client->post(route('dutiables.timeline.apply'), [
+            'operations' => [['type' => 'set_dates', 'row_ids' => [$term->id], 'end_date' => $end]],
+        ]),
+    })->assertSessionHasNoErrors();
+
+    foreach ([$this->duty, $target] as $duty) {
+        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_users')->sole();
+        expect(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$this->member->id]);
+    }
+})->with(['sheet', 'delete', 'timeline']);
+
+test('one timeline save audits all departing members once on each affected duty', function (): void {
+    $target = Duty::factory()->for($this->duty->institution)->create();
+    $this->duty->exOfficioTargetDuties()->attach($target);
+    $terms = Dutiable::factory()->forDuty($this->duty)->active()->count(2)->create(['start_date' => today()->subMonth()]);
+
+    asUser($this->owner)->post(route('dutiables.timeline.apply'), [
+        'operations' => [[
+            'type' => 'set_dates',
+            'row_ids' => $terms->modelKeys(),
+            'end_date' => today()->subDay()->toDateString(),
+        ]],
+    ])->assertSessionHasNoErrors();
+
+    foreach ([$this->duty, $target] as $duty) {
+        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_users')->sole();
+        expect(collect($activity->properties->get('detached'))->pluck('id')->all())
+            ->toEqualCanonicalizing($terms->pluck('dutiable_id')->all());
+    }
 });

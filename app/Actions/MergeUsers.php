@@ -9,6 +9,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Observers\RepStatisticsObserver;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\DutyAssignmentService;
 use App\Services\Media\LegacyImageImporter;
 use App\Services\UserMergeDutyEmails;
 use App\Support\MergeRepointer;
@@ -88,6 +89,10 @@ class MergeUsers
             $merged = [];
             $preservedEmails = [];
 
+            $dutyIds = Dutiable::query()->where('dutiable_type', MorphMap::alias(User::class))
+                ->whereIn('dutiable_id', $sources->pluck('id')->push($keptUser->id))->select('duty_id');
+            app(DutyAssignmentService::class)->lockDuties(Duty::withTrashed()->whereIn('id', $dutyIds)->get());
+
             if ($dutiableEmailIds !== []) {
                 abort_unless($actor instanceof User, 403);
                 $preservedEmails = app(UserMergeDutyEmails::class)->preserve($keptUser, $sources, $loginEmail, $actor, $dutiableEmailIds);
@@ -153,7 +158,7 @@ class MergeUsers
         $rows = Dutiable::query()
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('dutiable_id', $mergedUser->id)
-            ->lockForUpdate()->get(['id', 'duty_id']);
+            ->orderBy('id')->lockForUpdate()->get(['id', 'duty_id']);
         Dutiable::query()->whereKey($rows->modelKeys())->update(['dutiable_id' => $keptUser->id]);
 
         return $rows;

@@ -51,10 +51,11 @@ test('representative lists only change manual rows of the selected duty and tena
     $tenantId = $crossTenant ? $tenant->id : null;
     $otherTenantId = $crossTenant ? null : $tenant->id;
     $user = User::factory()->create();
-    $source = Dutiable::factory()->forDuty($otherDuty)->forUser($user)->active()->create();
-    $manual = Dutiable::factory()->forDuty($duty)->forUser($user)->active()->create(['tenant_id' => $tenantId]);
-    $otherTenant = Dutiable::factory()->forDuty($duty)->forUser($user)->active()->create(['tenant_id' => $otherTenantId]);
+    $source = Dutiable::factory()->forDuty($otherDuty)->forUser($user)->active()->create(['start_date' => '2026-10-01']);
+    $manual = Dutiable::factory()->forDuty($duty)->forUser($user)->active()->create(['start_date' => '2026-10-01', 'tenant_id' => $tenantId]);
+    $otherTenant = Dutiable::factory()->forDuty($duty)->forUser($user)->active()->create(['start_date' => '2026-10-01', 'tenant_id' => $otherTenantId]);
     $derived = Dutiable::factory()->forDuty($duty)->active()->create([
+        'start_date' => '2026-10-01',
         'via_dutiable_id' => $source->id,
         'tenant_id' => $tenantId,
     ]);
@@ -93,13 +94,21 @@ test('end dating through the service propagates to derived seats', function (): 
     $sourceDuty = Duty::factory()->create();
     $targetDuty = Duty::factory()->create();
     $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
-    $source = Dutiable::factory()->forDuty($sourceDuty)->create(['start_date' => '2026-10-03', 'end_date' => null]);
+    $source = Dutiable::factory()->forDuty($sourceDuty)->create(['start_date' => '2026-10-01', 'end_date' => null]);
     $derived = Dutiable::where('via_dutiable_id', $source->id)->firstOrFail();
 
     app(DutyAssignmentService::class)->endDateDutiables(Dutiable::whereKey($source->id), '2026-10-02');
 
     expect($source->fresh()->end_date->toDateString())->toBe('2026-10-02')
         ->and($derived->fresh()->end_date->toDateString())->toBe('2026-10-02');
+});
+
+test('explicit end dating rejects a last day before the term starts', function (): void {
+    $term = Dutiable::factory()->active()->create(['start_date' => today()]);
+
+    expect(fn () => app(DutyAssignmentService::class)->endDateDutiables(Dutiable::whereKey($term->id), today()->subDay()))
+        ->toThrow(ValidationException::class);
+    expect($term->fresh()->end_date)->toBeNull();
 });
 
 test('returning representatives get a new term without overwriting their history', function (): void {
@@ -134,7 +143,7 @@ test('a new manual term cannot share an inclusive boundary with a term in the sa
 
 test('representative sync rolls back removals, additions and audit when a write fails', function (): void {
     $duty = Duty::factory()->create();
-    $holder = Dutiable::factory()->forDuty($duty)->active()->create();
+    $holder = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => today()->subMonth()]);
     [$first, $second] = User::factory()->count(2)->create()->modelKeys();
 
     Event::listen(DutiableChanged::class, function (DutiableChanged $event) use ($second): void {

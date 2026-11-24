@@ -106,6 +106,7 @@ describe('the roles the guide names', function (): void {
             'duty_id' => $stranger->duties()->first()->id,
             'dutiable_id' => $stranger->id,
             'start_date' => '2024-05-18',
+            'end_date' => '2024-12-31',
         ]);
 
         $central = makeUser($this->tenant);
@@ -129,6 +130,7 @@ describe('the roles the guide names', function (): void {
         $crossRow = Dutiable::factory()->create([
             'duty_id' => $this->duty->id,
             'dutiable_id' => $crossMember->id,
+            'tenant_id' => $otherTenant->id,
             'start_date' => '2024-05-18',
         ]);
 
@@ -312,7 +314,6 @@ describe('applying', function (): void {
 
         $spanning = Dutiable::factory()->create([
             'duty_id' => $this->duty->id,
-            'dutiable_id' => $this->holder->id,
             'start_date' => '2024-07-05',
             'end_date' => '2026-06-20',
         ]);
@@ -344,7 +345,6 @@ describe('applying', function (): void {
 
         $farOut = Dutiable::factory()->create([
             'duty_id' => $this->duty->id,
-            'dutiable_id' => $this->holder->id,
             'start_date' => '2024-01-15',
             'end_date' => '2025-06-30',
         ]);
@@ -364,7 +364,6 @@ describe('applying', function (): void {
     test('close_open_ended only touches rows without an end date', function (): void {
         $open = Dutiable::factory()->create([
             'duty_id' => $this->duty->id,
-            'dutiable_id' => $this->holder->id,
             'start_date' => '2024-07-01',
             'end_date' => null,
         ]);
@@ -382,7 +381,6 @@ describe('applying', function (): void {
     test('each written row fires its own DutiableChanged event', function (): void {
         $second = Dutiable::factory()->create([
             'duty_id' => $this->duty->id,
-            'dutiable_id' => $this->holder->id,
             'start_date' => '2024-07-01',
         ]);
 

@@ -1,3 +1,4 @@
+import type { DutyAssignmentPicker } from '@/Types/DutyAssignment';
 import type { WikiPageSummary } from '@/Types/learning';
 import type { ActionType, InstitutionActivityAnswer, InstitutionActivityCampaign, InstitutionActivityStatus, InstitutionRelationKind, InstitutionScope, MeetingType } from '@/Types/enums';
 
@@ -282,6 +283,7 @@ export interface ShowInstitutionPageProps {
   tasks?: InstitutionTask[];
   incompleteTasksCount: number;
   assignmentTerms?: InstitutionMemberTerm[];
+  assignmentPicker?: Record<string, DutyAssignmentPicker>;
   relatedInstitutions?: InstitutionPageRelatedInstitution[];
   institutionLinks?: InstitutionLinkRow[];
   relationKinds: { value: InstitutionRelationKind; label: string }[];

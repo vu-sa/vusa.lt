@@ -61,7 +61,7 @@ test('duty update persists attributes institution and types, leaving responsibil
 test('duty update leaves omitted or null member lists alone and removes an empty list', function (array $overrides, ?string $expectedEndDate): void {
     $this->travelTo('2026-10-03 12:00:00');
     $duty = Duty::factory()->create();
-    $row = Dutiable::factory()->forDuty($duty)->active()->create();
+    $row = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => '2026-10-01']);
 
     app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, $overrides));
 
@@ -103,12 +103,12 @@ test('assignable tenant removal ends only root seats while retained tenants sync
     $removedTenant = Tenant::factory()->create();
     $retainedTenant = Tenant::factory()->create();
     $duty->assignableTenants()->attach([$removedTenant->id, $retainedTenant->id]);
-    $source = Dutiable::factory()->active()->create();
-    $removed = Dutiable::factory()->forDuty($duty)->forTenant($removedTenant)->active()->create(['end_date' => '2026-11-01']);
-    $removedDerived = Dutiable::factory()->forDuty($duty)->forTenant($removedTenant)->active()->create(['via_dutiable_id' => $source->id]);
-    $retainedDerived = Dutiable::factory()->forDuty($duty)->forTenant($retainedTenant)->active()->create(['via_dutiable_id' => $source->id]);
-    $retained = Dutiable::factory()->forDuty($duty)->forTenant($retainedTenant)->active()->create();
-    $owning = Dutiable::factory()->forDuty($duty)->active()->create();
+    $source = Dutiable::factory()->active()->create(['start_date' => '2026-10-01']);
+    $removed = Dutiable::factory()->forDuty($duty)->forTenant($removedTenant)->active()->create(['start_date' => '2026-10-01', 'end_date' => '2026-11-01']);
+    $removedDerived = Dutiable::factory()->forDuty($duty)->forTenant($removedTenant)->active()->create(['start_date' => '2026-10-01', 'via_dutiable_id' => $source->id]);
+    $retainedDerived = Dutiable::factory()->forDuty($duty)->forTenant($retainedTenant)->active()->create(['start_date' => '2026-10-01', 'via_dutiable_id' => $source->id]);
+    $retained = Dutiable::factory()->forDuty($duty)->forTenant($retainedTenant)->active()->create(['start_date' => '2026-10-01']);
+    $owning = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => '2026-10-01']);
 
     app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, [
         'assignable_tenants' => [['tenant_id' => $retainedTenant->id, 'quota' => 3, 'user_ids' => [$retained->dutiable_id]]],

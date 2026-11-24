@@ -55,13 +55,23 @@ class ReconcileExOfficioSeats
         if ($source === null || ! self::isRootSource($source) || $source->duty === null) {
             return [];
         }
-        // Rules are locked first: a term with no seats yet has no row to lock against a concurrent create.
-        $targets = $source->duty->exOfficioTargetDuties()->with('assignableTenants')->orderBy('duties.id')->lockForUpdate()->get();
+        $sourceDuty = $source->duty;
+        $institutions = app(DutyAssignmentService::class)->lockDuty($sourceDuty);
+        if (! $institutions->get($sourceDuty->institution_id)?->is_active) {
+            return [];
+        }
+
+        $source = Dutiable::query()->lockForUpdate()->find($source->id);
+        if ($source === null || ! self::isRootSource($source)) {
+            return [];
+        }
+
+        $targets = $sourceDuty->exOfficioTargetDuties()->with('assignableTenants')->orderBy('duties.id')
+            ->when($targetId !== null, fn ($query) => $query->whereKey($targetId))->get();
         $seats = $source->derivedDutiables()->with('media')->orderBy('id')->lockForUpdate()->get();
         $findings = [];
         foreach ($targets as $target) {
-            if (($targetId === null || $targetId === $target->id)
-                && app(DutyAssignmentService::class)->lockExOfficioContext($source, $target)) {
+            if ($institutions->get($target->institution_id)?->is_active) {
                 array_push($findings, ...self::reconcileTarget($source, $target, $seats, $includeHistory));
             }
         }
@@ -111,7 +121,10 @@ class ReconcileExOfficioSeats
             return;
         }
         DB::transaction(function () use ($duty): void {
-            $sourceIds = $duty->exOfficioSourceDuties()->pluck('duties.id')->push($duty->id)->unique();
+            $sourceDuties = $duty->exOfficioSourceDuties();
+            $sources = $sourceDuties->get($sourceDuties->getRelated()->qualifyColumns(['id', 'institution_id']))->push($duty);
+            app(DutyAssignmentService::class)->lockDuties($sources);
+            $sourceIds = $sources->modelKeys();
             Dutiable::query()->whereIn('duty_id', $sourceIds)->whereNull('via_dutiable_id')
                 ->where('dutiable_type', MorphMap::alias(User::class))->notEnded()->orderBy('id')
                 ->each(fn (Dutiable $source) => self::forSource($source));

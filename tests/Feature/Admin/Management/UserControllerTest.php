@@ -571,7 +571,11 @@ describe('duty assignment', function (): void {
             'tenant_id' => $otherTenant->id, 'start_date' => now()->subMonth(), 'end_date' => null,
         ]);
 
-        SyncUserDuties::execute($this->admin, new Collection([$duty->id]), new Collection, $target, app(ModelAuthorizer::class), 'users.update.all');
+        asUser($this->admin)->put(route('users.update', $target), [
+            'name' => $target->name,
+            'email' => $target->email,
+            'current_duties' => [$duty->id],
+        ])->assertSessionHasNoErrors();
 
         expect(Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->current()->count())->toBe(1);
     });
@@ -852,7 +856,7 @@ test('user trash lists blocker reasons without adding queries per row', function
     'API' => ['api.v1.admin.users.index', 'data.items'],
 ]);
 
-test('the user form directs delegated seat removals to the duty record', function (): void {
+test('an empty home duty list leaves delegated seats untouched', function (): void {
     $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
     $other = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
     $duty->assignableTenants()->attach($other, ['quota' => 1]);
@@ -861,7 +865,7 @@ test('the user form directs delegated seat removals to the duty record', functio
 
     asUser(makeAdminUser($this->tenant))->patch(route('users.update', $user), [
         'name' => $user->name, 'email' => $user->email, 'current_duties' => [],
-    ])->assertSessionHasErrors(['current_duties' => __('users.delegated_duty_removal')]);
+    ])->assertSessionHasNoErrors();
 
     expect($seat->fresh()->end_date)->toBeNull();
 });

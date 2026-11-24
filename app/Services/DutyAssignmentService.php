@@ -9,9 +9,11 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Support\Dutiables\DutiablePeriods;
 use App\Support\MorphMap;
+use Closure;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -48,15 +50,17 @@ class DutyAssignmentService
     }
 
     /** @param array<string, mixed> $attributes */
-    public function startTerm(Duty $duty, string $userId, ?int $tenantId, array $attributes = [], bool $audit = true): Dutiable
+    public function startTerm(Duty $duty, string $userId, ?int $tenantId, array $attributes = [], bool $audit = true, string $dateAttribute = 'end_date'): Dutiable
     {
-        return DB::transaction(function () use ($duty, $userId, $tenantId, $attributes, $audit): Dutiable {
+        return DB::transaction(function () use ($duty, $userId, $tenantId, $attributes, $audit, $dateAttribute): Dutiable {
             $this->lockDuty($duty);
             unset($attributes['assignment_origin']);
             $attributes['start_date'] = isset($attributes['start_date'])
                 ? Carbon::parse($attributes['start_date'])->toDateString()
                 : $this->newTermStartDate($duty, $userId, $tenantId);
             $end = isset($attributes['end_date']) ? Carbon::parse($attributes['end_date'])->toDateString() : null;
+
+            $this->validateDateOrder($attributes['start_date'], $end, $dateAttribute);
 
             if ($this->manualTerms($duty->id, $userId, $tenantId)
                 ->overlapping($attributes['start_date'], $end)->lockForUpdate()->first(['id']) !== null) {
@@ -77,22 +81,93 @@ class DutyAssignmentService
         });
     }
 
-    public function lockDuty(Duty $duty): void
+    /** @return Collection<string, Institution> */
+    public function lockDuty(Duty $duty): Collection
     {
-        // Follow the institution-first lock order used by closure and duty updates.
-        Institution::withTrashed()->whereKey($duty->institution_id)->lockForUpdate()->first();
-        Duty::whereKey($duty->id)->lockForUpdate()->firstOrFail();
+        return $this->lockDuties(collect([$duty]));
     }
 
     /**
-     * @param  list<string>  $addedUserIds
-     * @param  list<string>  $freedUserIds  Users whose current manual terms will all end before today.
+     * @param  Collection<int, Duty>  $duties
+     * @return Collection<string, Institution>
      */
-    public function exceedsTenantQuota(Duty $duty, int $tenantId, int $quota, array $addedUserIds, array $freedUserIds = []): bool
+    public function lockDuties(Collection $duties, array $additionalInstitutionIds = []): Collection
     {
-        $seats = $duty->dutiables()->current()->where('tenant_id', $tenantId)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->get(['dutiable_id', 'via_dutiable_id']);
+        $dutyIds = $duties->pluck('id')->unique()->all();
+        $targetsQuery = Duty::query()->whereHas('exOfficioSourceDuties', fn ($query) => $query->whereKey($dutyIds));
+        $targets = $targetsQuery->get(array_values($targetsQuery->qualifyColumns(['id', 'institution_id'])));
+        $context = $duties->concat($targets);
+
+        $institutions = Institution::withTrashed()->whereKey($context->pluck('institution_id')->concat($additionalInstitutionIds)->unique()->all())
+            ->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+        Duty::withTrashed()->whereKey($context->pluck('id')->unique()->all())
+            ->orderBy('id')->lockForUpdate()->get();
+
+        return $institutions;
+    }
+
+    /** @param Collection<int, Duty> $duties */
+    public function auditCurrentUsers(Collection $duties, Closure $mutation): mixed
+    {
+        foreach ($duties->unique('id') as $duty) {
+            $write = $mutation;
+            $mutation = fn () => $duty->auditRelationChange('current_users', $write);
+        }
+
+        return $mutation();
+    }
+
+    public function validateTermEdit(Dutiable $row, ?string $startDate, ?string $endDate, ?int $tenantId, string $attribute): void
+    {
+        $start = $startDate === null ? $row->start_date->toDateString() : Carbon::parse($startDate)->toDateString();
+        $end = $endDate === null ? null : Carbon::parse($endDate)->toDateString();
+        $this->validateDateOrder($start, $end, $attribute);
+
+        if ($row->via_dutiable_id === null && $row->dutiable_type === MorphMap::alias(User::class)
+            && $this->manualTerms($row->duty_id, $row->dutiable_id, $tenantId)
+                ->whereKeyNot($row->id)->overlapping($start, $end)->lockForUpdate()->first(['id']) !== null) {
+            throw ValidationException::withMessages([$attribute => __('dutiables.assign.already_assigned')]);
+        }
+    }
+
+    private function validateDateOrder(string $startDate, ?string $endDate, string $attribute): void
+    {
+        if ($endDate !== null && $endDate < $startDate) {
+            throw ValidationException::withMessages([
+                $attribute => __('validation.after_or_equal', [
+                    'attribute' => __('forms.fields.duty_end_date'),
+                    'date' => __('forms.fields.duty_start_date'),
+                ]),
+            ]);
+        }
+    }
+
+    /** @return Builder<Dutiable> */
+    private function quotaSeats(Duty $duty): Builder
+    {
+        return $duty->dutiables()->getQuery()->current()
+            ->where('dutiable_type', MorphMap::alias(User::class))->whereNotNull('tenant_id');
+    }
+
+    /** @return Collection<int, int> */
+    public function occupiedTenantSeats(Duty $duty): Collection
+    {
+        return $this->quotaSeats($duty)->selectRaw('tenant_id, count(distinct dutiable_id) as seats')
+            ->groupBy('tenant_id')->pluck('seats', 'tenant_id');
+    }
+
+    /**
+     * @param  list<string>|null  $addedUserIds  Null counts the committed and pending writes under the duty lock.
+     * @param  list<string>  $freedUserIds
+     */
+    public function exceedsTenantQuota(Duty $duty, int $tenantId, int $quota, ?array $addedUserIds, array $freedUserIds = []): bool
+    {
+        $query = $this->quotaSeats($duty)->where('tenant_id', $tenantId);
+        if ($addedUserIds === null) {
+            return $query->lockForUpdate()->pluck('dutiable_id')->unique()->count() > $quota;
+        }
+
+        $seats = $query->get(['dutiable_id', 'via_dutiable_id']);
         $occupied = $seats->pluck('dutiable_id')->unique()->all();
         $freedUserIds = array_diff($freedUserIds, $seats->whereNotNull('via_dutiable_id')->pluck('dutiable_id')->all());
         $remaining = array_diff($occupied, $freedUserIds);
@@ -108,44 +183,48 @@ class DutyAssignmentService
         return $quota === null ? null : (int) $quota;
     }
 
-    public function validateSeatChange(Dutiable $row, ?string $endDate, ?int $tenantId, User $actor, string $attribute): void
+    public function enforceTenantQuota(Duty $duty, ?int $tenantId, ?User $actor, string $attribute): void
     {
-        $today = today()->toDateString();
-
-        if (($row->tenant_id === $tenantId && DutiablePeriods::grantsAccess($row))
-            || ($endDate ?? $today) < $today
-            || $tenantId === null || $row->via_dutiable_id !== null
-            || $row->dutiable_type !== MorphMap::alias(User::class)
-            || ($duty = $row->duty) === null || $actor->can('update', $duty)) {
+        if ($tenantId === null || $actor === null || $actor->can('update', $duty)) {
             return;
         }
 
-        $quota = $this->tenantQuota($duty, $tenantId);
-
-        if ($quota !== null && $this->exceedsTenantQuota($duty, $tenantId, $quota, [$row->dutiable_id])) {
+        $quota = $duty->assignableTenants()->newPivotQuery()->where('tenant_id', $tenantId)->lockForUpdate()->value('quota');
+        if ($quota !== null && $this->exceedsTenantQuota($duty, $tenantId, (int) $quota, null)) {
             throw ValidationException::withMessages([$attribute => __('dutiables.assign.quota_exceeded', ['quota' => $quota])]);
         }
     }
 
-    /**
-     * Without a date the last day is yesterday; a term that has not started yet is withdrawn instead of inverted.
-     *
-     * @param  Builder<Dutiable>  $query
-     */
-    public function endTerms(Builder $query, DateTimeInterface|string|null $endDate = null): void
+    public function allocatesSeat(Dutiable $row, ?string $endDate, ?int $tenantId): bool
     {
-        if ($endDate === null) {
-            (clone $query)->whereDate('start_date', '>=', today())->get()->each->delete();
-            $query->whereDate('start_date', '<', today());
-        }
+        $today = today()->toDateString();
 
-        $this->endDateDutiables($query, $endDate ?? today()->subDay());
+        return $tenantId !== null && $row->via_dutiable_id === null
+            && $row->dutiable_type === MorphMap::alias(User::class)
+            && ($endDate ?? $today) >= $today
+            && ($row->tenant_id !== $tenantId || ! DutiablePeriods::grantsAccess($row));
+    }
+
+    /** @param Builder<Dutiable> $query */
+    public function endTerms(Builder $query, DateTimeInterface|string|null $endDate = null, string $attribute = 'end_date'): void
+    {
+        $lastDay = Carbon::parse($endDate ?? today()->subDay())->toDateString();
+        $terms = $query->orderBy('id')->lockForUpdate()->get();
+
+        foreach ($terms as $term) {
+            if ($term->start_date->toDateString() > $lastDay) {
+                $term->delete();
+            } elseif ($term->end_date?->toDateString() !== $lastDay) {
+                $this->validateTermEdit($term, null, $lastDay, $term->tenant_id, $attribute);
+                $term->update(['end_date' => $lastDay]);
+            }
+        }
     }
 
     /** @param list<string> $userIds */
-    public function syncRepresentatives(Duty $duty, array $userIds, ?int $tenantId = null, ?User $actor = null): void
+    public function syncRepresentatives(Duty $duty, array $userIds, ?int $tenantId = null, ?User $actor = null, string $quotaAttribute = 'user_ids'): void
     {
-        DB::transaction(function () use ($duty, $userIds, $tenantId, $actor): void {
+        DB::transaction(function () use ($duty, $userIds, $tenantId, $actor, $quotaAttribute): void {
             $this->lockDuty($duty);
             $currentUserIds = $this->manualDutyTerms($duty->id, $tenantId)->current()->lockForUpdate()->pluck('dutiable_id')->all();
             $toRemove = array_unique(array_diff($currentUserIds, $userIds));
@@ -166,6 +245,10 @@ class DutyAssignmentService
                     $this->startTerm($duty, $userId, $tenantId, audit: false);
                 }
             });
+
+            if ($toAdd !== []) {
+                $this->enforceTenantQuota($duty, $tenantId, $actor, $quotaAttribute);
+            }
         });
     }
 
@@ -174,9 +257,9 @@ class DutyAssignmentService
      */
     public function syncTenantRepresentatives(Duty $duty, array $items, ?User $actor): void
     {
-        foreach ($items as $item) {
+        foreach ($items as $index => $item) {
             if (array_key_exists('user_ids', $item)) {
-                $this->syncRepresentatives($duty, $item['user_ids'] ?? [], (int) $item['tenant_id'], $actor);
+                $this->syncRepresentatives($duty, $item['user_ids'] ?? [], (int) $item['tenant_id'], $actor, "assignable_tenants.$index.user_ids");
             }
         }
     }
@@ -196,13 +279,17 @@ class DutyAssignmentService
     /** @param Builder<Dutiable> $query */
     public function endDateDutiables(Builder $query, DateTimeInterface|string $endDate, bool $institutionDeactivation = false): void
     {
-        // Mass updates skip the model events that sync derived seats and invalidate access.
-        foreach ($query->get() as $dutiable) {
-            if ($institutionDeactivation) {
-                $dutiable->forceFill(['ended_by_institution_deactivation' => true]);
+        DB::transaction(function () use ($query, $endDate, $institutionDeactivation): void {
+            $lastDay = Carbon::parse($endDate)->toDateString();
+            $terms = $query->get();
+            foreach ($terms as $dutiable) {
+                $this->validateDateOrder($dutiable->start_date->toDateString(), $lastDay, 'end_date');
+                if ($institutionDeactivation) {
+                    $dutiable->forceFill(['ended_by_institution_deactivation' => true]);
+                }
+                $dutiable->update(['end_date' => $lastDay]);
             }
-            $dutiable->update(['end_date' => $endDate]);
-        }
+        });
     }
 
     /**

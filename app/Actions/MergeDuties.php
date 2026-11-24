@@ -4,9 +4,9 @@ namespace App\Actions;
 
 use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use App\Support\MergeRepointer;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
@@ -51,8 +51,8 @@ class MergeDuties
         return DB::transaction(function () use ($kept, $sources, $actor): array {
             $summary = ReconcileExOfficioSeats::paused(function () use ($kept, $sources, $actor): array {
                 $sourceIds = $sources->pluck('id')->all();
-                Institution::withTrashed()->whereIn('id', $sources->pluck('institution_id')->push($kept->institution_id))
-                    ->orderBy('id')->lockForUpdate()->get();
+                $incoming = Duty::query()->whereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey([...$sourceIds, $kept->id]))->get();
+                app(DutyAssignmentService::class)->lockDuties($sources->concat($incoming)->push($kept));
 
                 $movedAssignments = Dutiable::query()->whereIn('duty_id', $sourceIds)->count();
                 // Model saves retain assignment events while reconciliation is paused.

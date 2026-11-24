@@ -52,3 +52,16 @@ export interface DutyWithUsers {
   current_users?: UserWithPivot[];
   previous_users?: UserWithPivot[];
 }
+
+export interface ExistingTerm {
+  user_id: string;
+  tenant_id?: number | null;
+  via_dutiable_id?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
+export interface DutyAssignmentPicker {
+  terms: ExistingTerm[];
+  delegatedSeatTenants: Record<string, number> | null;
+}

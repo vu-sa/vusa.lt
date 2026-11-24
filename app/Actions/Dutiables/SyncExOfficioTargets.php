@@ -12,8 +12,10 @@ class SyncExOfficioTargets
     public static function execute(Duty $source, array $targetIds): void
     {
         DB::transaction(function () use ($source, $targetIds): void {
-            Duty::query()->whereKey($source->id)->lockForUpdate()->firstOrFail();
             $targetIds = array_values(array_unique(array_filter($targetIds, fn ($id) => $id !== $source->id)));
+            $duties = Duty::query()->whereKey([...$targetIds, $source->id])
+                ->orWhereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey($source->id))->get();
+            app(DutyAssignmentService::class)->lockDuties($duties);
             $changes = $source->syncAudited('exOfficioTargetDuties', $targetIds);
             $source->unsetRelation('exOfficioTargetDuties');
             if ($changes['detached'] !== []) {

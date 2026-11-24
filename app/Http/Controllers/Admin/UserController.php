@@ -229,7 +229,6 @@ class UserController extends AdminController
     public function update(UpdateUserRequest $request, User $user)
     {
         $actor = $request->user();
-        $currentDutyIds = $user->current_duties->pluck('id');
 
         // Keep the field allowlist permission-scoped for callers that bypass request validation.
         $fields = ['facebook_url', 'phone', 'pronouns', 'show_pronouns'];
@@ -242,13 +241,13 @@ class UserController extends AdminController
             $fields[] = 'email';
         }
 
-        $mutation = fn () => DB::transaction(function () use ($request, $actor, $user, $currentDutyIds, $fields): void {
+        $mutation = fn () => DB::transaction(function () use ($request, $actor, $user, $fields): void {
             // The editor omits current_duties when duty assignments should stay as they are.
             if ($request->has('current_duties')) {
                 SyncUserDuties::execute(
                     $actor,
                     new SupportCollection($request->validated('current_duties') ?? []),
-                    $currentDutyIds,
+                    $user->current_duties()->wherePivotNull('tenant_id')->wherePivotNull('via_dutiable_id')->pluck('duties.id'),
                     $user,
                     $this->authorizer,
                     'users.update.padalinys'
