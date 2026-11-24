@@ -20,6 +20,9 @@ use Illuminate\Validation\ValidationException;
 
 class DutyAssignmentService
 {
+    /** @var array<string, Closure>|null */
+    private static ?array $membershipAudits = null;
+
     /** Called inside a transaction so closure and automatic assignment serialize on the same institutions. */
     public function lockExOfficioContext(Dutiable $source, Duty $target): bool
     {
@@ -68,7 +71,7 @@ class DutyAssignmentService
                 throw ValidationException::withMessages(['user_id' => __('dutiables.assign.already_assigned')]);
             }
 
-            $create = fn (): Dutiable => DutyAssignmentActor::as($actor, fn () => Dutiable::create([
+            $create = fn (): Dutiable => Dutiable::create([
                 ...$attributes,
                 'end_date' => $end,
                 'duty_id' => $duty->id,
@@ -76,9 +79,11 @@ class DutyAssignmentService
                 'dutiable_id' => $userId,
                 'tenant_id' => $tenantId,
                 'via_dutiable_id' => null,
-            ]));
+            ]);
 
-            return $audit ? $this->auditMemberships(collect([$duty]), User::whereKey($userId)->get(), $create) : $create();
+            return DutyAssignmentActor::as($actor, fn () => $audit
+                ? $this->auditMemberships(collect([$duty]), User::whereKey($userId)->get(), $create)
+                : $create());
         });
     }
 
@@ -111,19 +116,42 @@ class DutyAssignmentService
      * @param  Collection<int, Duty>  $duties
      * @param  Collection<int, User>  $members
      */
-    public function auditMemberships(Collection $duties, Collection $members, Closure $mutation): mixed
+    public function auditMemberships(Collection $duties, Collection $members, Closure $mutation, ?User $actor = null): mixed
     {
-        foreach ($duties->unique('id') as $duty) {
-            $write = $mutation;
-            $mutation = fn () => $duty->auditRelationChange('current_or_upcoming_users', $write);
+        return DutyAssignmentActor::as($actor, fn () => $this->batchMembershipAudits(function () use ($duties, $members, $mutation): mixed {
+            foreach ($duties as $duty) {
+                self::$membershipAudits['duty:'.$duty->id] ??= $duty->prepareRelationAudit('current_or_upcoming_users');
+            }
+
+            foreach ($members as $member) {
+                self::$membershipAudits['user:'.$member->id] ??= $member->prepareRelationAudit('current_or_upcoming_duties');
+            }
+
+            return $mutation();
+        }));
+    }
+
+    /** Keep the first snapshot and actor per subject until the outer write succeeds. */
+    public function batchMembershipAudits(Closure $mutation): mixed
+    {
+        if (self::$membershipAudits !== null) {
+            return $mutation();
         }
 
-        foreach ($members->unique('id') as $member) {
-            $write = $mutation;
-            $mutation = fn () => $member->auditRelationChange('current_or_upcoming_duties', $write);
+        self::$membershipAudits = [];
+
+        try {
+            $result = $mutation();
+            $audits = self::$membershipAudits;
+        } finally {
+            self::$membershipAudits = null;
         }
 
-        return $mutation();
+        array_walk($audits, static function (Closure $finish): void {
+            $finish();
+        });
+
+        return $result;
     }
 
     public function validateTermEdit(Dutiable $row, ?string $startDate, ?string $endDate, ?int $tenantId, string $attribute): void
@@ -246,15 +274,15 @@ class DutyAssignmentService
             }
 
             $members = User::whereKey([...$toRemove, ...$toAdd])->get();
-            $this->auditMemberships(collect([$duty]), $members, function () use ($duty, $toRemove, $toAdd, $tenantId, $actor): void {
+            $this->auditMemberships(collect([$duty]), $members, function () use ($duty, $toRemove, $toAdd, $tenantId): void {
                 foreach ($toRemove as $userId) {
-                    $this->endTerms($this->manualTerms($duty->id, $userId, $tenantId)->notEnded(), actor: $actor);
+                    $this->endTerms($this->manualTerms($duty->id, $userId, $tenantId)->notEnded());
                 }
 
                 foreach ($toAdd as $userId) {
-                    $this->startTerm($duty, $userId, $tenantId, audit: false, actor: $actor);
+                    $this->startTerm($duty, $userId, $tenantId, audit: false);
                 }
-            });
+            }, actor: $actor);
 
             if ($toAdd !== []) {
                 $this->enforceTenantQuota($duty, $tenantId, $actor, $quotaAttribute);

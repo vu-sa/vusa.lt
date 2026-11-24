@@ -67,13 +67,13 @@ class SyncUserDuties
 
         DB::transaction(function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments, $actor): void {
             $assignments->lockDuties($duties->values());
-            $assignments->auditMemberships($duties->values(), collect([$user]), function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments, $actor): void {
+            $assignments->auditMemberships($duties->values(), collect([$user]), function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments): void {
                 foreach ($newDutyIds as $dutyId) {
                     $alreadyActive = $assignments->manualTerms($dutyId, $user->id, null)->notEnded()->exists();
 
                     if (! $alreadyActive) {
                         try {
-                            $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false, actor: $actor);
+                            $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false);
                         } catch (ValidationException $exception) {
                             $message = __('forms.helpers.institution_assignment_closed');
 
@@ -87,9 +87,9 @@ class SyncUserDuties
                 }
 
                 foreach ($removedDutyIds as $dutyId) {
-                    $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->notEnded(), actor: $actor);
+                    $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->notEnded());
                 }
-            });
+            }, actor: $actor);
         });
     }
 }

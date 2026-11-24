@@ -3,8 +3,11 @@
 namespace App\Models\Traits;
 
 use App\Events\SearchRelationChanged;
+use App\Models\User;
 use App\Support\AuditedRelations;
+use App\Support\Dutiables\DutyAssignmentActor;
 use Closure;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 /**
@@ -44,6 +47,15 @@ trait LogsRelationshipChanges
      */
     public function auditRelationChange(string $relation, Closure $mutation): mixed
     {
+        $finish = $this->prepareRelationAudit($relation);
+        $result = $mutation();
+        $finish();
+
+        return $result;
+    }
+
+    public function prepareRelationAudit(string $relation): Closure
+    {
         $config = AuditedRelations::configFor($this, $relation);
 
         if ($config === null) {
@@ -56,32 +68,38 @@ trait LogsRelationshipChanges
         // ambiguous.
         $display = $related->qualifyColumn($config['display']);
         $keyName = $related->getQualifiedKeyName();
+        $snapshot = fn () => $this->{$relation}()->pluck($display, $keyName);
+        $before = $snapshot();
+        $actor = DutyAssignmentActor::scoped();
 
-        $before = $this->{$relation}()->pluck($display, $keyName);
+        return fn () => $this->logRelationChange($relation, $before, $snapshot(), $actor);
+    }
 
-        $result = $mutation();
-
-        $after = $this->{$relation}()->pluck($display, $keyName);
-
+    private function logRelationChange(string $relation, Collection $before, Collection $after, User|false|null $actor): void
+    {
         $attachedIds = $after->keys()->diff($before->keys());
         $detachedIds = $before->keys()->diff($after->keys());
 
         if ($attachedIds->isEmpty() && $detachedIds->isEmpty()) {
-            return $result;
+            return;
         }
 
-        activity()
+        $activity = activity()
             ->performedOn($this)
             ->event('relation_updated')
             ->withProperties([
                 'relation' => $relation,
                 'attached' => $attachedIds->map(fn ($id) => ['id' => (string) $id, 'label' => (string) $after->get($id)])->values()->all(),
                 'detached' => $detachedIds->map(fn ($id) => ['id' => (string) $id, 'label' => (string) $before->get($id)])->values()->all(),
-            ])
-            ->log('relation_updated');
+            ]);
+
+        $activity = match ($actor) {
+            null => $activity,
+            false => $activity->causedByAnonymous(),
+            default => $activity->causedBy($actor),
+        };
+        $activity->log('relation_updated');
 
         SearchRelationChanged::dispatch($this, $relation);
-
-        return $result;
     }
 }

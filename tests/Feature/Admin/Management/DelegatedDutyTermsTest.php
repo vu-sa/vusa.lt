@@ -449,6 +449,7 @@ test('editing or deleting a current assignment logs the departing member once', 
         ->active()->create(['start_date' => today()->subMonth()]);
     $client = asUser($this->delegate);
     $end = today()->subDay()->toDateString();
+    $lastActivityId = Activity::query()->max('id') ?? 0;
 
     (match ($action) {
         'sheet' => $client->patch(route('dutiables.update', $term), ['end_date' => $end]),
@@ -459,7 +460,10 @@ test('editing or deleting a current assignment logs the departing member once', 
     })->assertSessionHasNoErrors();
 
     foreach ([$this->duty, $target] as $duty) {
-        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_or_upcoming_users')->sole();
+        $activity = Activity::forSubject($duty)->forEvent('relation_updated')
+            ->where('properties->relation', 'current_or_upcoming_users')
+            ->where('id', '>', $lastActivityId)
+            ->sole();
         expect(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$this->member->id]);
     }
 })->with(['sheet', 'delete', 'timeline']);
@@ -468,6 +472,7 @@ test('one timeline save audits all departing members once on each affected duty'
     $target = Duty::factory()->for($this->duty->institution)->create();
     $this->duty->exOfficioTargetDuties()->attach($target);
     $terms = Dutiable::factory()->forDuty($this->duty)->active()->count(2)->create(['start_date' => today()->subMonth()]);
+    $lastActivityId = Activity::query()->max('id') ?? 0;
 
     asUser($this->owner)->post(route('dutiables.timeline.apply'), [
         'operations' => [[
@@ -478,7 +483,10 @@ test('one timeline save audits all departing members once on each affected duty'
     ])->assertSessionHasNoErrors();
 
     foreach ([$this->duty, $target] as $duty) {
-        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_or_upcoming_users')->sole();
+        $activity = Activity::forSubject($duty)->forEvent('relation_updated')
+            ->where('properties->relation', 'current_or_upcoming_users')
+            ->where('id', '>', $lastActivityId)
+            ->sole();
         expect(collect($activity->properties->get('detached'))->pluck('id')->all())
             ->toEqualCanonicalizing($terms->pluck('dutiable_id')->all());
     }

@@ -60,7 +60,8 @@ class ReconcileExOfficioSeats
             return [];
         }
         $sourceDuty = $source->duty;
-        $institutions = app(DutyAssignmentService::class)->lockDuty($sourceDuty);
+        $assignments = app(DutyAssignmentService::class);
+        $institutions = $assignments->lockDuty($sourceDuty);
         if (! $institutions->get($sourceDuty->institution_id)?->is_active) {
             return [];
         }
@@ -73,14 +74,19 @@ class ReconcileExOfficioSeats
         $targets = $sourceDuty->exOfficioTargetDuties()->with('assignableTenants')->orderBy('duties.id')
             ->when($targetId !== null, fn ($query) => $query->whereKey($targetId))->get();
         $seats = $source->derivedDutiables()->with('media')->orderBy('id')->lockForUpdate()->get();
-        $findings = [];
-        foreach ($targets as $target) {
-            if ($institutions->get($target->institution_id)?->is_active) {
-                array_push($findings, ...self::reconcileTarget($source, $target, $seats, $includeHistory));
-            }
+        $targets = $targets->filter(fn (Duty $target): bool => (bool) $institutions->get($target->institution_id)?->is_active);
+        if ($targets->isEmpty()) {
+            return [];
         }
 
-        return $findings;
+        return $assignments->auditMemberships($targets, collect([$source->user])->filter(), function () use ($source, $targets, $seats, $includeHistory): array {
+            $findings = [];
+            foreach ($targets as $target) {
+                array_push($findings, ...self::reconcileTarget($source, $target, $seats, $includeHistory));
+            }
+
+            return $findings;
+        });
     }
 
     private static function reconcileTarget(Dutiable $source, Duty $target, Collection $seats, bool $includeHistory): array
@@ -127,11 +133,12 @@ class ReconcileExOfficioSeats
         DB::transaction(function () use ($duty): void {
             $sourceDuties = $duty->exOfficioSourceDuties();
             $sources = $sourceDuties->get($sourceDuties->getRelated()->qualifyColumns(['id', 'institution_id']))->push($duty);
-            app(DutyAssignmentService::class)->lockDuties($sources);
+            $assignments = app(DutyAssignmentService::class);
+            $assignments->lockDuties($sources);
             $sourceIds = $sources->modelKeys();
-            Dutiable::query()->whereIn('duty_id', $sourceIds)->whereNull('via_dutiable_id')
-                ->where('dutiable_type', MorphMap::alias(User::class))->notEnded()->orderBy('id')
-                ->each(fn (Dutiable $source) => self::forSource($source));
+            $terms = Dutiable::query()->whereIn('duty_id', $sourceIds)->whereNull('via_dutiable_id')
+                ->where('dutiable_type', MorphMap::alias(User::class))->notEnded()->orderBy('id');
+            $assignments->batchMembershipAudits(fn () => $terms->each(fn (Dutiable $source) => self::forSource($source)));
         });
     }
 
@@ -140,6 +147,8 @@ class ReconcileExOfficioSeats
         if (self::isPaused()) {
             return;
         }
-        DB::transaction(fn () => $institution->duties()->orderBy('id')->each(fn (Duty $duty) => self::forDuty($duty)));
+        DB::transaction(fn () => app(DutyAssignmentService::class)->batchMembershipAudits(
+            fn () => $institution->duties()->orderBy('id')->each(fn (Duty $duty) => self::forDuty($duty)),
+        ));
     }
 }

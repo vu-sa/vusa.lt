@@ -231,7 +231,16 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
                 return;
             }
 
-            $dutiable->derivedDutiables()->get()->each->delete();
+            $seats = $dutiable->derivedDutiables()->get();
+            if ($seats->isEmpty()) {
+                return;
+            }
+
+            app(DutyAssignmentService::class)->auditMemberships(
+                Duty::withTrashed()->whereKey($seats->pluck('duty_id')->unique()->all())->get(),
+                collect([$dutiable->user])->filter(),
+                fn () => $seats->each->delete(),
+            );
         });
     }
 

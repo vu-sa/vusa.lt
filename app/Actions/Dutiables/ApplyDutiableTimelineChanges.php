@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;
-use App\Support\Dutiables\DutyAssignmentActor;
 
 class ApplyDutiableTimelineChanges
 {
@@ -21,7 +20,7 @@ class ApplyDutiableTimelineChanges
 
         $members = User::whereKey($rows->pluck('dutiable_id')->unique()->all())->get();
         $assignments->auditMemberships($affectedDuties, $members,
-            fn () => DutyAssignmentActor::as($actor, fn () => self::writeChanges($plan, $actor, $assignments)));
+            fn () => self::writeChanges($plan, $actor, $assignments), actor: $actor);
     }
 
     private static function writeChanges(DutiableTimelinePlan $plan, User $actor, DutyAssignmentService $assignments): void

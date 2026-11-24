@@ -172,7 +172,8 @@ pagal atpažįstamą vardo galūnę. Laikotarpio parinktis išlaikyti originalų
 [Galūnių taisyklės](/organizacija/pareigybes#lytis-ir-dublikatai) taip pat taikomos paieškai ir viešiems kontaktams.
 
 Nario įrašo pakeitimų istorija peržiūrima veiklos žurnalo lange; tai nėra atskiras profilio skirtukas.
-Pridėjus būsimą pareigų laikotarpį, pakeitimas iškart matomas nario ir pareigybės veiklos žurnaluose.
+Nario ar pareigybės formoje pakeitus dabartinę ar būsimą narystę, pakeitimas iškart matomas
+abiejuose veiklos žurnaluose. Perkėlus narį į padalinio kvotą toje pačioje pareigybėje, jo pareigos tęsiasi.
 
 Per meniu **⋯** profilio viršuje pasiekiami veiksmai: **Redaguoti**, laikotarpių tvarkyklė,
 **Generuoti naują slaptažodį** (tik Superadministratoriui) ir **Ištrinti narį**.
@@ -230,7 +231,9 @@ Sujungti galima tik to paties asmens įrašus:
 
 - **vardai ir pavardės turi sutapti** – žodžių tvarka, lietuviškos raidės ir antrasis vardas nesvarbūs
   („Jonas Čiurlionis“ ir „Ciurlionis Jonas“ sutampa, „Jonas Jonaitis“ ir „Jonas Petraitis“ – ne);
-- prijungiamas įrašas negali turėti tiesiogiai priskirtų rolių ar teisių.
+- prijungiamas įrašas negali turėti tiesiogiai priskirtų rolių ar teisių;
+- prijungiamo įrašo dabartines ir būsimas rankiniu būdu skirtas pareigas turi galėti priskirti
+  paliekamai paskyrai.
 
 Superadministratorius gali sujungti ir įrašus, kurių vardai nesutampa – tai daroma iš narių
 sąrašo, nes redagavimo formoje rodomi tik to paties vardo įrašai. Tiesiogiai priskirtų rolių ar teisių draudimas galioja visiems.

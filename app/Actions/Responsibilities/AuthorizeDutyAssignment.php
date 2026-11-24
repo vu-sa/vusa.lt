@@ -13,8 +13,20 @@ class AuthorizeDutyAssignment
 {
     public static function execute(User $actor, Duty $duty, string $userId): void
     {
+        if (($key = self::denialKey($actor, $duty, $userId)) !== null) {
+            throw ValidationException::withMessages(['user_id' => __($key)]);
+        }
+    }
+
+    public static function allows(User $actor, Duty $duty, string $userId): bool
+    {
+        return self::denialKey($actor, $duty, $userId) === null;
+    }
+
+    private static function denialKey(User $actor, Duty $duty, string $userId): ?string
+    {
         if ($actor->isSuperAdmin()) {
-            return;
+            return null;
         }
 
         /** @var Collection<int, Role> $roles */
@@ -24,12 +36,14 @@ class AuthorizeDutyAssignment
             || $role->permissions->contains(fn ($permission) => str_ends_with($permission->name, '.*')));
 
         if ($hasGlobalRole && ! $managesResponsibilities) {
-            throw ValidationException::withMessages(['user_id' => __('dutiables.assign.global_responsibility')]);
+            return 'dutiables.assign.global_responsibility';
         }
 
         if ((string) $actor->id === $userId && $roles->isNotEmpty()
             && $roles->diff(GrantableResponsibilities::for($actor))->isNotEmpty()) {
-            throw ValidationException::withMessages(['user_id' => __('dutiables.assign.self_responsibility')]);
+            return 'dutiables.assign.self_responsibility';
         }
+
+        return null;
     }
 }

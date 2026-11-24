@@ -17,6 +17,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
 use App\Services\Permissions\AccessChangeAnalyzer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,6 +57,26 @@ test('reopened target resumes today and preserves the closed seat exactly', func
 
     expect($closed->fresh()->getAttributes())->toBe($snapshot)
         ->and($source->derivedDutiables()->notEnded()->sole()->start_date->toDateString())->toBe('2026-11-04');
+});
+
+test('reopening an institution checks the explicit actor before recreating a protected seat', function (): void {
+    $targetInstitution = Institution::factory()->for($this->tenant)->create();
+    $this->targetDuty->update(['institution_id' => $targetInstitution->id]);
+    $this->sourceDuty->exOfficioTargetDuties()->attach($this->targetDuty->id);
+    $source = reconcilerSource();
+    $administrator = makeAdminUser($this->tenant);
+    app(UpdateInstitution::class)->execute($targetInstitution, ['is_active' => false], $administrator);
+    $role = Role::factory()->create();
+    $role->givePermissionTo('news.read.*');
+    $this->targetDuty->assignRole($role);
+    $this->actingAs($administrator);
+    $actor = makeUser($this->tenant);
+
+    expect(fn () => app(UpdateInstitution::class)->execute($targetInstitution, ['is_active' => true], $actor))
+        ->toThrow(ValidationException::class, __('dutiables.assign.global_responsibility'));
+
+    expect((bool) $targetInstitution->fresh()->is_active)->toBeFalse()
+        ->and($source->derivedDutiables()->notEnded()->exists())->toBeFalse();
 });
 
 test('editing an ended source never invents history but explicit review can create it', function (): void {
@@ -314,16 +335,58 @@ test('removing a rule ends started seats yesterday and deletes upcoming seats th
         fn ($event) => $event->dutiableRowId === $futureSeat->id);
 });
 
-test('removing a rule withdraws seats starting today and audits the affected duty', function (): void {
+test('removing a rule withdraws seats starting today and audits the duty and member anonymously', function (): void {
     SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
     $source = reconcilerSource(['start_date' => today()]);
     $seat = $source->derivedDutiables()->sole();
+    $this->actingAs(makeAdminUser($this->tenant));
 
     SyncExOfficioTargets::execute($this->sourceDuty, []);
 
     $this->assertModelMissing($seat);
-    $activity = Activity::forSubject($this->targetDuty)->forEvent('relation_updated')->sole();
-    expect($activity->properties->get('detached')[0]['id'])->toBe($this->holder->id);
+    $dutyActivities = Activity::forSubject($this->targetDuty)->forEvent('relation_updated')->orderBy('id')->get();
+    $userActivities = Activity::forSubject($this->holder)->forEvent('relation_updated')->orderBy('id')->get();
+    expect($dutyActivities)->toHaveCount(2)->and($userActivities)->toHaveCount(2);
+    $dutyActivity = $dutyActivities->last();
+    $userActivity = $userActivities->last();
+    expect($dutyActivity->properties->get('detached')[0]['id'])->toBe($this->holder->id)
+        ->and($dutyActivity->causer_id)->toBeNull();
+    expect($userActivity->properties->get('detached')[0]['id'])->toBe($this->targetDuty->id)
+        ->and($userActivity->causer_id)->toBeNull();
+});
+
+test('adding rules groups upcoming seats into one audit per target duty and member', function (): void {
+    $secondTarget = Duty::factory()->for($this->institution)->create();
+    $future = reconcilerSource(['start_date' => '2026-12-01']);
+    $other = Dutiable::factory()->forDuty($this->sourceDuty)->active()->create();
+
+    SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id, $secondTarget->id]);
+
+    $dutyActivity = Activity::forSubject($this->targetDuty)->forEvent('relation_updated')->sole();
+    $userActivity = Activity::forSubject($this->holder)->forEvent('relation_updated')->sole();
+    expect($dutyActivity->properties->get('relation'))->toBe('current_or_upcoming_users')
+        ->and(collect($dutyActivity->properties->get('attached'))->pluck('id')->sort()->values()->all())
+        ->toBe(collect([$future->dutiable_id, $other->dutiable_id])->sort()->values()->all());
+    expect($userActivity->properties->get('relation'))->toBe('current_or_upcoming_duties')
+        ->and(collect($userActivity->properties->get('attached'))->pluck('id')->sort()->values()->all())
+        ->toBe(collect([$this->targetDuty->id, $secondTarget->id])->sort()->values()->all());
+});
+
+test('ending a source term audits the derived departure in the same member entry', function (): void {
+    $this->sourceDuty->exOfficioTargetDuties()->attach($this->targetDuty);
+    $assignments = app(DutyAssignmentService::class);
+    $source = $assignments->startTerm($this->sourceDuty, $this->holder->id, null, ['start_date' => '2026-01-01']);
+
+    $assignments->syncRepresentatives($this->sourceDuty, []);
+
+    expect($source->derivedDutiables()->sole()->end_date->toDateString())->toBe('2026-10-29');
+    $memberActivities = Activity::forSubject($this->holder)->forEvent('relation_updated')->orderBy('id')->get();
+    expect($memberActivities)->toHaveCount(2);
+    expect(collect($memberActivities->last()->properties->get('detached'))->pluck('id')->sort()->values()->all())
+        ->toBe(collect([$this->sourceDuty->id, $this->targetDuty->id])->sort()->values()->all());
+
+    $targetActivity = Activity::forSubject($this->targetDuty)->forEvent('relation_updated')->latest('id')->firstOrFail();
+    expect($targetActivity->properties->get('detached')[0]['id'])->toBe($this->holder->id);
 });
 
 test('system reconciliation creates a derived seat without a logged-in user', function (): void {

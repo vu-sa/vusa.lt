@@ -26,11 +26,13 @@ class CreateDuty
             $duty->fill(Arr::except($data, ['types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants']))->save();
 
             $duty->syncAudited('types', $data['types'] ?? []);
-            DutyAssignmentActor::as($actor, fn () => SyncExOfficioTargets::execute($duty, $data['ex_officio_target_duty_ids'] ?? []));
-            $assignableTenants = $data['assignable_tenants'] ?? [];
-            $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($assignableTenants));
-            $this->assignments->syncRepresentatives($duty, $data['current_users'] ?? [], actor: $actor);
-            $this->assignments->syncTenantRepresentatives($duty, $assignableTenants, $actor);
+            DutyAssignmentActor::as($actor, fn () => $this->assignments->batchMembershipAudits(function () use ($duty, $data, $actor): void {
+                SyncExOfficioTargets::execute($duty, $data['ex_officio_target_duty_ids'] ?? []);
+                $assignableTenants = $data['assignable_tenants'] ?? [];
+                $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($assignableTenants));
+                $this->assignments->syncRepresentatives($duty, $data['current_users'] ?? [], actor: $actor);
+                $this->assignments->syncTenantRepresentatives($duty, $assignableTenants, $actor);
+            }));
 
             return $duty->load('institution', 'types', 'current_users');
         });

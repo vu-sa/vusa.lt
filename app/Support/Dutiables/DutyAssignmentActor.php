@@ -14,6 +14,11 @@ final class DutyAssignmentActor
         return self::$actor === false ? null : (self::$actor ?? auth()->user());
     }
 
+    public static function scoped(): User|false|null
+    {
+        return self::$actor;
+    }
+
     /** A null actor keeps the enclosing scope or the authenticated fallback. */
     public static function as(?User $actor, Closure $write): mixed
     {

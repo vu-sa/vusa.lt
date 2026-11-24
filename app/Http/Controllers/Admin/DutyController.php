@@ -36,7 +36,6 @@ use App\Services\Institutions\InstitutionQueries;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
-use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -486,7 +485,7 @@ class DutyController extends AdminController
                     $currentTerms = $this->assignments->manualTerms($duty->id, $userId, $actingTenantId)->notEnded();
 
                     if ($change['action'] === 'remove') {
-                        $this->assignments->endTerms($currentTerms, $attributes['end_date'], $dateAttribute, $actor);
+                        $this->assignments->endTerms($currentTerms, $attributes['end_date'], $dateAttribute);
 
                         continue;
                     }
@@ -496,9 +495,9 @@ class DutyController extends AdminController
                         $edit['start_date'] ??= $existingTerm->start_date->toDateString();
                         $endDate = array_key_exists('end_date', $edit) ? $edit['end_date'] : $existingTerm->end_date?->toDateString();
                         $this->assignments->validateTermEdit($existingTerm, $edit['start_date'], $endDate, $actingTenantId, $dateAttribute);
-                        DutyAssignmentActor::as($actor, fn () => $existingTerm->update($edit));
+                        $existingTerm->update($edit);
                     } else {
-                        $term = $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false, dateAttribute: $dateAttribute, actor: $actor);
+                        $term = $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false, dateAttribute: $dateAttribute);
                         $allocatedSeat = $allocatedSeat || $term->end_date === null || $term->end_date->gte(today());
                     }
                 }
@@ -506,7 +505,7 @@ class DutyController extends AdminController
                 if ($allocatedSeat) {
                     $this->assignments->enforceTenantQuota($duty, $actingTenantId, $actor, 'user_changes');
                 }
-            });
+            }, actor: $actor);
         });
 
         // Removing themselves from this duty may strip the acting user's own access.

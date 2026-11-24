@@ -4,6 +4,7 @@ namespace App\Actions\Dutiables;
 
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Models\User;
 use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutyAssignmentActor;
 use Illuminate\Support\Facades\DB;
@@ -20,27 +21,34 @@ class SyncExOfficioTargets
             $assignments->lockDuties($duties);
             $changes = $source->syncAudited('exOfficioTargetDuties', $targetIds);
             $source->unsetRelation('exOfficioTargetDuties');
-            if ($changes['detached'] !== []) {
-                $targets = Duty::withTrashed()->whereKey($changes['detached'])->get()->keyBy('id');
-                $seats = Dutiable::query()->whereIn('duty_id', $changes['detached'])
-                    ->whereHas('viaDutiable', fn ($query) => $query->where('duty_id', $source->id))
-                    ->where('ended_by_institution_deactivation', false)->notEnded()
-                    ->with('viaDutiable')->orderBy('id')->lockForUpdate()->get()
-                    ->filter(function (Dutiable $seat) use ($assignments, $targets): bool {
-                        $target = $targets->get($seat->duty_id);
-
-                        return $target !== null && $assignments->lockExOfficioContext($seat->viaDutiable, $target);
-                    });
-
-                foreach ($seats->groupBy('duty_id') as $dutyId => $terms) {
-                    $targets[$dutyId]->auditRelationChange('current_or_upcoming_users', fn () => DutyAssignmentActor::system(
-                        fn () => $assignments->endTerms(Dutiable::whereKey($terms->modelKeys())),
-                    ));
+            $assignments->batchMembershipAudits(function () use ($source, $changes, $assignments): void {
+                if ($changes['detached'] !== []) {
+                    self::endDetachedSeats($source, $changes['detached'], $assignments);
                 }
-            }
-            if ($changes['attached'] !== [] || $changes['detached'] !== [] || $changes['updated'] !== []) {
-                ReconcileExOfficioSeats::forDuty($source);
-            }
+                if ($changes['attached'] !== [] || $changes['detached'] !== [] || $changes['updated'] !== []) {
+                    ReconcileExOfficioSeats::forDuty($source);
+                }
+            });
         });
+    }
+
+    private static function endDetachedSeats(Duty $source, array $targetIds, DutyAssignmentService $assignments): void
+    {
+        $targets = Duty::withTrashed()->whereKey($targetIds)->get()->keyBy('id');
+        $seats = Dutiable::query()->whereIn('duty_id', $targetIds)
+            ->whereHas('viaDutiable', fn ($query) => $query->where('duty_id', $source->id))
+            ->where('ended_by_institution_deactivation', false)->notEnded()
+            ->with('viaDutiable')->orderBy('id')->lockForUpdate()->get()
+            ->filter(function (Dutiable $seat) use ($assignments, $targets): bool {
+                $target = $targets->get($seat->duty_id);
+
+                return $target !== null && $assignments->lockExOfficioContext($seat->viaDutiable, $target);
+            });
+
+        $affectedDuties = $targets->only($seats->pluck('duty_id')->all())->values();
+        $members = User::whereKey($seats->pluck('dutiable_id')->unique()->all())->get();
+        DutyAssignmentActor::system(fn () => $assignments->auditMemberships($affectedDuties, $members,
+            fn () => $assignments->endTerms(Dutiable::whereKey($seats->modelKeys())),
+        ));
     }
 }

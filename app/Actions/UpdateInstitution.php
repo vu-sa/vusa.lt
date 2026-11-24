@@ -9,6 +9,7 @@ use App\Models\Institution;
 use App\Models\User;
 use App\Services\Duties\DutyAssignmentService;
 use App\Services\Institutions\InstitutionDeactivationService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Enums\ActivityEvent;
@@ -46,7 +47,7 @@ class UpdateInstitution
             $this->syncImage->fromValidated($institution, 'logo', $data, 'logo_media', $actor);
 
             if ($reopening) {
-                ReconcileExOfficioSeats::forInstitution($institution);
+                DutyAssignmentActor::as($actor, fn () => ReconcileExOfficioSeats::forInstitution($institution));
             }
 
             if ($closing) {

@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiablePeriods;
+use App\Support\Dutiables\DutyAssignmentActor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
@@ -32,6 +33,23 @@ test('starting a term uses the explicit actor’s responsibility ceiling', funct
         ->toThrow(ValidationException::class, __('dutiables.assign.global_responsibility'));
     expect($duty->dutiables()->exists())->toBeFalse();
 })->with(['without a login' => false, 'with a different administrator logged in' => true]);
+
+test('term membership audits name the scoped actor and leave system writes anonymous', function (): void {
+    $this->actingAs(makeAdminUser());
+    $actor = User::factory()->create();
+    $member = User::factory()->create();
+    $manual = Duty::factory()->create();
+    $system = Duty::factory()->create();
+    $assignments = app(DutyAssignmentService::class);
+
+    $assignments->startTerm($manual, $member->id, null, actor: $actor);
+    DutyAssignmentActor::system(fn () => $assignments->startTerm($system, $member->id, null));
+
+    expect(Activity::forSubject($manual)->forEvent('relation_updated')->sole()->causer_id)->toBe($actor->id)
+        ->and(Activity::forSubject($system)->forEvent('relation_updated')->sole()->causer_id)->toBeNull();
+    expect(Activity::forSubject($member)->forEvent('relation_updated')->orderBy('id')->pluck('causer_id')->all())
+        ->toBe([$actor->id, null]);
+});
 
 test('representative removal respects inclusive end dates and allocated future starts', function (?string $endDate, string $startDate, string $expectedEndDate): void {
     $this->travelTo('2026-10-03 12:00:00');

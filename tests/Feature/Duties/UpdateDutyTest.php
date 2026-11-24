@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Queue\CallQueuedClosure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -71,6 +72,30 @@ test('duty update leaves omitted or null member lists alone and removes an empty
     'null' => [['current_users' => null], null],
     'empty' => [['current_users' => []], '2026-10-02'],
 ]);
+
+test('moving a member into a tenant quota keeps membership continuous in both logs', function (): void {
+    $this->travelTo('2026-10-03 12:00:00');
+    $duty = Duty::factory()->create();
+    $tenant = Tenant::query()->firstOrFail();
+    $target = Duty::factory()->create();
+    $duty->exOfficioTargetDuties()->attach($target);
+    $term = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => '2026-10-01']);
+    $member = $term->user;
+    $activityCount = Activity::forSubject($member)->forEvent('relation_updated')->count();
+
+    app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, [
+        'current_users' => [],
+        'ex_officio_target_duty_ids' => [$target->id],
+        'assignable_tenants' => [['tenant_id' => $tenant->id, 'quota' => 1, 'user_ids' => [$member->id]]],
+    ]));
+
+    expect($term->fresh()->end_date->toDateString())->toBe('2026-10-02')
+        ->and($duty->dutiables()->notEnded()->sole()->tenant_id)->toBe($tenant->id)
+        ->and($target->dutiables()->notEnded()->sole()->dutiable_id)->toBe($member->id);
+    expect(Activity::forSubject($duty)->forEvent('relation_updated')->exists())->toBeFalse()
+        ->and(Activity::forSubject($target)->forEvent('relation_updated')->count())->toBe(1)
+        ->and(Activity::forSubject($member)->forEvent('relation_updated')->count())->toBe($activityCount);
+});
 
 test('duty update clears omitted types targets and assignable tenants but keeps responsibilities', function (): void {
     $duty = Duty::factory()->create();

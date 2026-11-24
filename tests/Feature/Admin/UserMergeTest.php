@@ -78,6 +78,24 @@ describe('authorization', function (): void {
 });
 
 describe('merge guard', function (): void {
+    test('refuses to transfer an upcoming manual duty beyond the actor’s assignment ceiling', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+        $duty = Duty::factory()->for($this->institution)->create();
+        $role = Role::factory()->create();
+        $role->givePermissionTo('news.read.*');
+        $duty->assignRole($role);
+        $term = Dutiable::factory()->forDuty($duty)->forUser($source)
+            ->create(['start_date' => today()->addWeek(), 'end_date' => null]);
+
+        mergeUsers($this->admin, $kept, $source)->assertSessionHasErrors([
+            'source_user_ids.0' => __('users.merge.unassignable_duties', ['name' => $source->name]),
+        ]);
+
+        $this->assertModelExists($source);
+        expect($term->fresh()->dutiable_id)->toBe($source->id);
+    });
+
     test('refuses records whose names do not match', function (): void {
         $kept = makeNamedUser($this->tenant, 'Jonas Jonaitis');
         $merged = makeNamedUser($this->tenant, 'Petras Petraitis');

@@ -12,7 +12,6 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Duties\DutyAssignmentService;
-use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -134,13 +133,13 @@ class DutiableController extends AdminController
             $affectedDuties = collect([$duty])->concat($duty->exOfficioTargetDuties);
             $members = collect([$dutiable->user])->filter()->values();
             $assignments->auditMemberships($affectedDuties, $members, function () use ($dutiable, $duty, $data, $request, $assignments, $tenantId, $attribute, $allocatesSeat): void {
-                DutyAssignmentActor::as($request->user(), fn () => $dutiable->fill(Arr::except($data, ['photo_media']))->save());
+                $dutiable->fill(Arr::except($data, ['photo_media']))->save();
                 if ($allocatesSeat) {
                     $assignments->enforceTenantQuota($duty, $tenantId, $request->user(), $attribute);
                 }
 
                 app(SyncImageMedia::class)->fromValidated($dutiable, 'photo', $data, 'photo_media', $request->user());
-            });
+            }, actor: $request->user());
         });
 
         $couldAffectSelf = $this->affectsActingUser($dutiable, $request);
@@ -188,7 +187,7 @@ class DutiableController extends AdminController
             $this->authorize('manageDutiable', $dutiable);
             $members = collect([$dutiable->user])->filter()->values();
             $assignments->auditMemberships($affectedDuties, $members,
-                fn () => DutyAssignmentActor::as($request->user(), fn () => $dutiable->delete()));
+                fn () => $dutiable->delete(), actor: $request->user());
         });
 
         if ($warning = $this->guardSelfLockout($request->user(), $this->affectsActingUser($dutiable, $request), $request, $mutation)) {
