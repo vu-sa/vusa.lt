@@ -21,13 +21,20 @@ describe('SearchDetailPane', () => {
   });
 
   it('shows the selected hit when its collection has no preview', () => {
-    const preview = adminSearchCollections.agenda_items.preview;
+    const { preview } = adminSearchCollections.agenda_items;
     adminSearchCollections.agenda_items.preview = undefined;
-    const hit = normalizeHit('agenda_items', { id: 'a1', title: 'Posėdžio klausimas' });
-    const wrapper = mount(SearchDetailPane, { props: { hit } });
-
-    adminSearchCollections.agenda_items.preview = preview;
-    expect(wrapper.get('[data-slot="search-hit-row"]').text()).toContain(hit.title);
-    wrapper.unmount();
+    try {
+      const hit = normalizeHit('agenda_items', { id: 'a1', title: 'Posėdžio klausimas' });
+      const wrapper = mount(SearchDetailPane, { props: { hit } });
+      try {
+        expect(wrapper.get('[data-slot="search-hit-row"]').text()).toContain(hit.title);
+      }
+      finally {
+        wrapper.unmount();
+      }
+    }
+    finally {
+      adminSearchCollections.agenda_items.preview = preview;
+    }
   });
 });

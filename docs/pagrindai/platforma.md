@@ -9,7 +9,6 @@ tests:
   - resources/js/Search/core/__tests__/useBaseSearch.test.ts
   - tests/Feature/Profile/UIPreferencesTest.php
   - resources/js/Composables/__tests__/useAdminSearch.test.ts
-  - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Search/admin/Composables/__tests__/useAdminCollectionSearch.initial.test.ts
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
   - resources/js/Utils/__tests__/dateTime.test.ts

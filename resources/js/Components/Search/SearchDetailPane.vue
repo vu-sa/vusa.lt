@@ -9,13 +9,13 @@
       class="m-auto"
     />
 
-    <template v-else-if="entry">
+    <template v-else>
       <p v-if="excerpt" class="line-clamp-2 border-b border-border px-5 py-3 text-sm text-muted-foreground">
         <SearchMatch :match="excerpt" />
       </p>
-      <component :is="entry.component" :key="hit.id" v-bind="entry.props(hit)" class="min-h-0 flex-1" />
+      <component :is="entry.component" v-if="entry" :key="hit.id" v-bind="entry.props(hit)" class="min-h-0 flex-1" />
+      <SearchHitRow v-else :hit trailing="none" class="p-4" />
     </template>
-    <SearchHitRow v-else :hit trailing="none" />
   </div>
 </template>
 
@@ -27,6 +27,7 @@ import { computed } from 'vue';
 import { EmptyState } from '@/Components/Patterns';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { SearchMatchDocument } from '@/Search/core/matches';
+
 import { adminSearchCollections, type NormalizedSearchHit } from './adminSearchCollections';
 import SearchHitRow from './SearchHitRow.vue';
 

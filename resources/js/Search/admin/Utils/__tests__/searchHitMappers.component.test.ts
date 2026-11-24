@@ -71,7 +71,7 @@ describe('normalizeHit', () => {
   it('links an agenda item to its edit page and uses institution as subtitle', () => {
     const hit = normalizeHit('agenda_items', { id: '3', title: 'Punktas', meeting_title: 'M', meeting_id: '9', institution_name_lt: 'VU Senatas' });
 
-    expect(hit.id).toBe('agendaItems-3');
+    expect(hit.id).toBe('agenda_items-3');
     expect(hit.subtitle).toBe('VU Senatas');
     expect(hit.href).toContain('agendaItems.edit');
   });

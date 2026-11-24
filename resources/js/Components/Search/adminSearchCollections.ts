@@ -29,7 +29,6 @@ interface SearchCollection<Doc> {
   limit: number;
   rank: number;
   dateField?: keyof Doc & string;
-  rowIdPrefix?: string;
   preview?: {
     component: Component;
     props: (doc: Doc, hit: SearchHit<string>) => Record<string, unknown>;
@@ -66,7 +65,6 @@ export const adminSearchCollections = {
     limit: 3,
     rank: 4,
     dateField: 'meeting_start_time',
-    rowIdPrefix: 'agendaItems',
     preview: {
       component: defineAsyncComponent(() => import('@/Components/AgendaItems/AgendaItemPreview.vue')),
       props: doc => ({ item: doc }),
@@ -175,7 +173,7 @@ export function normalizeHit(collection: AdminSearchCollectionId, doc: unknown, 
   const mapped = entry.mapHit(doc, ctx);
   return {
     ...mapped,
-    id: `${entry.rowIdPrefix ?? collection}-${mapped.recordId}`,
+    id: `${collection}-${mapped.recordId}`,
     collection,
     raw: doc,
   };
