@@ -115,7 +115,7 @@ class TrashApiController extends ApiController
         }
 
         if ($query->hasNamedScope('withSearchableRelations')) {
-            $query->withSearchableRelations();
+            $query->scopes('withSearchableRelations');
         }
 
         $records = $query->paginate($request->getPerPage());
