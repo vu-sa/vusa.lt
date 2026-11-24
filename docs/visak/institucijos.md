@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Institucijos
-last_reviewed: 2026-11-21
+last_reviewed: 2026-11-24
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
@@ -78,6 +78,9 @@ Institucijų sąraše pavadinimai ir tipai rodomi pasirinkta Mano VU SA kalba. J
 ### Institucijos puslapis {#puslapis}
 
 Atvėrus instituciją iškart rodoma **Santrauka**: aprašymas po pavadinimu (dvi eilutės, visas tekstas – paspaudus **Skaityti daugiau**), iki trijų posėdžių kortelių (artimiausias būsimas ir du paskutiniai įvykę arba trys įvykę, jei būsimo nėra) ir iki trijų pareigybių peržiūra; visos pareigybės visada turi atskirą skirtuką. Kitų skirtukų turinys įkeliamas juos pirmą kartą pasirinkus; kol lauki, rodomas įkėlimo vietaženklis. Skirtukų juosta lieka matoma slenkant, o perjungus skirtuką puslapis nebeperšoka į kitą vietą. Naršyklės mygtukas „Atgal“ grąžina į ankstesnį skirtuką.
+
+Institucijos puslapyje atvėrus **Priskirti**, nario pasirinkimui taikomos tos pačios
+[laikotarpių ir kvotų taisyklės](/organizacija/pareigybes#priskirti-nari) kaip pareigybės puslapyje.
 
 Telefone iš pradžių rodoma Santrauka. Prisegtame laukelyje **Rodyti** galima pasirinkti vieną skiltį. Nuoroda su pasirinktu skirtuku iškart atveria tą skiltį – ir telefone.
 

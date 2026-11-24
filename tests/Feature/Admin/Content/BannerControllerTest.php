@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Media\AddImageMedia;
+use App\Actions\Media\SyncImageMedia;
 use App\Models\Banner;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -152,6 +153,34 @@ describe('authorized access', function (): void {
                 ->has('banner')
                 ->where('banner.id', $this->banner->id)
             );
+    });
+
+    test('keeps the original banner image and file when an update fails after image sync', function (): void {
+        $banner = $this->banner;
+        $original = app(AddImageMedia::class)->execute($banner, UploadedFile::fake()->image('original.png'), 'image');
+        $banner->refresh();
+        $staged = stageImage($this->admin)->refresh();
+        $syncImage = app(SyncImageMedia::class);
+
+        $this->mock(SyncImageMedia::class)->shouldReceive('fromValidated')->once()
+            ->andReturnUsing(function (...$arguments) use ($syncImage, $banner, $staged): never {
+                $syncImage->fromValidated(...$arguments);
+                expect($banner->fresh()->getMedia('image')->modelKeys())->toBe([$staged->id]);
+
+                throw new RuntimeException('Banner update failed after image sync.');
+            });
+        $this->withoutExceptionHandling();
+
+        expect(fn () => asUser($this->admin)->patch(route('banners.update', $banner), [
+            'title' => 'Atnaujintas baneris',
+            'link_url' => 'https://example.org',
+            'is_active' => false,
+            'image_media' => ['id' => $staged->id],
+        ]))->toThrow(RuntimeException::class, 'Banner update failed after image sync.')
+            ->and($banner->fresh()->getAttributes())->toEqual($banner->getAttributes())
+            ->and($staged->fresh()->getAttributes())->toEqual($staged->getAttributes())
+            ->and($banner->fresh()->getMedia('image')->modelKeys())->toBe([$original->id]);
+        Storage::disk($original->disk)->assertExists($original->getPathRelativeToRoot());
     });
 
     test('can update banner with valid data', function (): void {

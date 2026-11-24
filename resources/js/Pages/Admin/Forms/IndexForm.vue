@@ -131,13 +131,23 @@ import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Com
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatRecordDate } from '@/Utils/dateTime';
 
-type FormRow = App.Entities.Form & {
-  can?: {
-    view?: boolean;
-    update?: boolean;
-    delete?: boolean;
-  };
-};
+type FormTranslation = { lt: string; en: string };
+
+interface FormRow {
+  id: string;
+  name: FormTranslation;
+  description: FormTranslation;
+  tenant_id: number;
+  path: FormTranslation;
+  publish_time: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  registrations_count: number;
+  force_delete_blocked_reason: string | null;
+  tenant: { id: number; shortname: string };
+  can: { view: boolean; update: boolean; delete: boolean };
+}
 
 const props = defineProps<{
   forms: {
@@ -147,8 +157,8 @@ const props = defineProps<{
       current_page: number;
       per_page: number;
       last_page: number;
-      from: number;
-      to: number;
+      from: number | null;
+      to: number | null;
     };
   };
   filters?: Record<string, unknown>;
@@ -184,23 +194,9 @@ const targetFormToForceDelete = ref<FormRow | null>(null);
 
 const formKey = (item: FormRow) => String(item.id);
 
-const localizedName = (form: FormRow): string => {
-  if (!form.name) return '';
-  if (typeof form.name === 'object') {
-    const locale = getActiveLanguage() as 'lt' | 'en';
-    return getTranslatedValue(form.name as unknown as Record<string, string>, locale);
-  }
-  return String(form.name);
-};
+const localizedName = (form: FormRow): string => getTranslatedValue(form.name, getActiveLanguage() as 'lt' | 'en');
 
-const localizedPath = (form: FormRow): string => {
-  if (!form.path) return '';
-  if (typeof form.path === 'object') {
-    const locale = getActiveLanguage() as 'lt' | 'en';
-    return getTranslatedValue(form.path as unknown as Record<string, string>, locale);
-  }
-  return String(form.path);
-};
+const localizedPath = (form: FormRow): string => getTranslatedValue(form.path, getActiveLanguage() as 'lt' | 'en');
 
 const tenants = computed(() => usePage().props.tenants || []);
 

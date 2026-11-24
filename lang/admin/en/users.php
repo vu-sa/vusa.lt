@@ -54,6 +54,7 @@ return [
         'login_email_locked' => 'You cannot change this account’s login email. The current address will be kept after merging.',
         'name_mismatch' => 'Only records of the same person can be merged, and the name of :name does not match.',
         'direct_roles' => ':name has a directly assigned responsibility. Remove it before merging.',
+        'unassignable_duties' => ':name holds a duty you cannot assign to the account you are keeping.',
         'outside_scope' => 'Only administrators covering every unit of both records can merge them.',
         'action' => 'Merge',
         'login_email' => 'Sign-in email',

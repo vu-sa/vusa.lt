@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\ApplyReservationIndexFilters;
-use App\Actions\SerializeReservationsForTable;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\IndexReservationRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Reservation;
 use App\Services\ModelAuthorizer;
+use App\Services\Reservations\ReservationPresenter;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +25,7 @@ class ReservationApiController extends ApiController
     {
         $query = fn (IndexReservationRequest $request) => $this->applyTanstackFilters(
             ApplyReservationIndexFilters::execute(
-                Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS),
+                Reservation::query()->with(ReservationPresenter::EAGER_LOADS),
                 $request,
                 $request->user(),
                 $this->authorizer,
@@ -37,7 +37,7 @@ class ReservationApiController extends ApiController
         $reservations = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
-            'items' => SerializeReservationsForTable::execute($reservations->getCollection(), $request->user(), $this->authorizer),
+            'items' => ReservationPresenter::tableRows($reservations->getCollection(), $request->user(), $this->authorizer),
             'total' => $reservations->total(),
             'per_page' => $reservations->perPage(),
             'current_page' => $reservations->currentPage(),

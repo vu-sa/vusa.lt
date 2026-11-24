@@ -1,10 +1,12 @@
 ---
 doc_status: reviewed
 title: Pareigybių atnaujinimas
-last_reviewed: 2026-10-25
+last_reviewed: 2026-11-24
 tests:
   - resources/js/Components/DutyUserWizard/__tests__/DutyReferenceCounts.component.test.ts
   - tests/Feature/Admin/Management/DutyUserWizardTest.php
+  - tests/Feature/Admin/Management/DelegatedDutyTermsTest.php
+  - tests/Feature/Admin/Management/DutyControllerTest.php
   - tests/Feature/Permissions/DutyBatchUsersSelfLockoutTest.php
   - resources/js/Pages/Admin/People/__tests__/DutyUserUpdateWizard.test.ts
   - resources/js/Components/DutyUserWizard/__tests__/Step3UserAssignment.component.test.ts
@@ -36,11 +38,12 @@ Pasirinkimas taikomas vienai pareigybei, o ne visai institucijai iš karto.
 Pirmame žingsnyje pasirenkama institucija. Sąraše pateikiamos administruojamų padalinių
 institucijos ir bendros institucijos, kuriose padaliniui leista skirti narius pagal kvotą.
 Galima naudotis paieška; jei institucijos nėra, ją galima sukurti turint kūrimo teisę.
+Vedlio formoje laukų mažiau, bet institucija išsaugoma taip pat, kaip sukurta institucijų puslapyje.
 
 ### 2 žingsnis. Pareigybės pasirinkimas {#zingsnis-2}
 
 Pasirenkama **viena** institucijos pareigybė. Prie jos rodomas dabartinių narių skaičius; aktyvi pareigybė be narių pažymėta kaip neužimta.
-Jei pareigybės nėra, ją galima sukurti turint kūrimo teisę.
+Jei pareigybės nėra, ją galima sukurti turint kūrimo teisę. Ji išsaugoma taip pat, kaip sukurta pareigybių puslapyje: tipai, ex officio pareigos, padalinių kvotos ir nariai, o tipų pakeitimai matomi pakeitimų istorijoje.
 
 ### 3 žingsnis. Narių priskyrimas {#zingsnis-3}
 
@@ -54,7 +57,12 @@ Nenustatytas skaičius nerodomas; dabartinių narių skaičius lieka narių skil
 Padalinio kvota rodoma ir tikrinama atskirai nuo informacinio vietų skaičiaus.
 
 **Pradžios ir pabaigos dienos įskaitomos.** Užbaigiant siūloma šiandienos data:
-narys šiandien dar eina pareigas. Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).
+narys šiandien dar eina pareigas. Jei pabaigos data nepateikta, pradėtas laikotarpis baigiamas vakar,
+o šiandien ar vėliau turėjęs prasidėti laikotarpis atšaukiamas. Įrašius datą iki laikotarpio
+pradžios, laikotarpis taip pat atšaukiamas.
+Nenurodžius pradžios datos, naujas laikotarpis pradedamas šiandien. Pakartotinai priskyrus buvusį narį,
+sukuriamas naujas laikotarpis po ankstesnio pabaigos. Ankstesnis laikotarpis lieka istorijoje.
+Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).
 
 Naujam laikotarpiui vedlys siūlo liepos 1 d. Jei iki artimiausios liepos liko mažiau nei
 trys kalendoriniai mėnesiai, siūloma kitų metų liepos 1 d.; kitu atveju – artimiausia.
@@ -100,7 +108,9 @@ pabaigos datos taisyklės: įrašius šiandieną, ji dar įskaitoma.
 - Užbaigimas išsaugo laikotarpio istoriją; kitos nario pareigybės lieka galioti.
 - **Naujo nario įrašo sukūrimas nesiunčia pakvietimo ir nesukuria prisijungimo instrukcijų.**
   Prisijungimo perdavimas suderinamas atskirai.
-- Bendroms pareigybėms sistema tikrina padalinio kvotą.
+- Bendroms pareigybėms sistema tikrina atstovą skiriančio padalinio kvotą. Kiekvienas narys įskaičiuojamas
+  vieną kartą, o vieta atsilaisvina po paskutinės jo pareigų dienos. Pareigybę redaguoti galintys
+  administratoriai gali viršyti kvotą.
 
 ## Techninė informacija {#technine-informacija}
 

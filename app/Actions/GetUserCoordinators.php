@@ -20,36 +20,10 @@ class GetUserCoordinators
     public static function execute(User $user): array
     {
         // Queried afresh: ModelAuthorizer caches these duties with a name-less `institution:id,tenant_id`.
-        $institutions = Institution::query()
+        $institutions = Institution::query()->with('types')
             ->whereIn('id', $user->current_or_upcoming_duties->pluck('institution_id')->filter()->unique())
             ->get();
 
-        $coordinators = [];
-
-        foreach ($institutions as $institution) {
-            // The first a rep would be pointed to, as before.
-            $coordinator = GetInstitutionCoordinators::execute([$institution], $user)[0] ?? null;
-
-            if ($coordinator === null) {
-                continue;
-            }
-
-            if (isset($coordinators[$coordinator['id']])) {
-                $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->getTranslation('name', app()->getLocale());
-            } else {
-                $coordinators[$coordinator['id']] = [
-                    ...$coordinator,
-                    'institutions' => [(string) $institution->getTranslation('name', app()->getLocale())],
-                ];
-            }
-        }
-
-        $result = [];
-
-        foreach ($coordinators as $coordinator) {
-            $result[] = $coordinator;
-        }
-
-        return $result;
+        return GetInstitutionCoordinators::execute($institutions, $user, firstPerInstitution: true);
     }
 }

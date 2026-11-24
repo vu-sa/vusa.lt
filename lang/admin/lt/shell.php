@@ -43,6 +43,7 @@ return [
     'chrome' => [
         'product' => 'Mano VU SA',
         'workspaces' => 'Skyriai',
+        'experimental' => 'Eksperimentinė',
         'sections_nav' => 'Skyriaus puslapiai',
         'more_sections' => 'Daugiau',
         'all_clear' => 'Viskas tvarkoje',

@@ -1,12 +1,17 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
-import { useHttp } from '@inertiajs/vue3';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
 
 import { commonStubs } from '@/tests/stubs';
 
 import FileUploadArea from '../FileUploadArea.vue';
 
 const wrappers: ReturnType<typeof mount>[] = [];
+const mockFetch = vi.fn();
+
+beforeEach(() => {
+  mockFetch.mockReset();
+  vi.stubGlobal('fetch', mockFetch);
+});
 
 function lastEmitted(wrapper: ReturnType<typeof mount>, event: string) {
   const emitted = wrapper.emitted(event) ?? [];
@@ -27,43 +32,33 @@ function mountArea(props: Record<string, unknown> = {}) {
   return wrapper;
 }
 
-/** The mock's `get` records the call; the component's callbacks are driven from here. */
-function respondWith(payload: unknown) {
-  const { results } = vi.mocked(useHttp).mock;
-  const http = results[results.length - 1]?.value;
-  const { calls } = vi.mocked(http.get).mock;
-  calls[calls.length - 1][1].onSuccess(payload);
+async function mountWithAllowedTypes(payload: unknown) {
+  mockFetch.mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(payload) });
+  const wrapper = mountArea();
+  await flushPromises();
+  return wrapper;
 }
 
 const ALLOWED = { extensions: ['jpg', 'pdf'], accept: '.jpg,.pdf', maxSizeMB: 50 };
 
 describe('FileUploadArea allowed types', () => {
   it('reads the {success, data} envelope every API controller returns', async () => {
-    const wrapper = mountArea();
-
     // Regression: the component used to assign the envelope itself, so `.extensions` was
     // undefined and `.join()` threw out of the render, freezing the panel.
-    expect(() => respondWith({ success: true, data: ALLOWED })).not.toThrow();
-    await wrapper.vm.$nextTick();
+    const wrapper = await mountWithAllowedTypes({ success: true, data: ALLOWED });
 
     expect(wrapper.text()).toContain('JPG, PDF');
     expect(wrapper.find('input[type="file"]').attributes('accept')).toBe('.jpg,.pdf');
   });
 
   it('still accepts a bare, unwrapped payload', async () => {
-    const wrapper = mountArea();
-
-    respondWith(ALLOWED);
-    await wrapper.vm.$nextTick();
+    const wrapper = await mountWithAllowedTypes(ALLOWED);
 
     expect(wrapper.text()).toContain('JPG, PDF');
   });
 
   it('falls back rather than throwing when the payload has no extensions', async () => {
-    const wrapper = mountArea();
-
-    expect(() => respondWith({ success: true, data: { accept: '*' } })).not.toThrow();
-    await wrapper.vm.$nextTick();
+    const wrapper = await mountWithAllowedTypes({ success: true, data: { accept: '*' } });
 
     expect(wrapper.text()).toContain('Visi formatai');
   });
@@ -71,8 +66,7 @@ describe('FileUploadArea allowed types', () => {
   it('skips the request entirely when the caller forces its own extensions', () => {
     const wrapper = mountArea({ forceAccept: true, extensions: ['png'], accept: '.png' });
 
-    const { results } = vi.mocked(useHttp).mock;
-    expect(results[results.length - 1]?.value.get).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('PNG');
   });
 });

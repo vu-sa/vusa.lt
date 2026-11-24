@@ -11,16 +11,7 @@ import { computed, ref, watch } from 'vue';
 
 import { useApiMutation } from '@/Composables/useApi';
 
-/** `id` and `name` are null for a reservation the viewer may not open. */
-export interface ReservationSummary {
-  key: number;
-  id: string | null;
-  name: string | null;
-  quantity: number;
-  state: string;
-  start_time: number | null;
-  end_time: number | null;
-}
+import type { ReservationAvailabilityRow } from '@/Utils/ReservationStatus';
 
 export interface ResourceAvailability {
   id: string;
@@ -28,8 +19,8 @@ export interface ResourceAvailability {
   is_reservable: boolean;
   lowestCapacityAtDateTimeRange: number;
   strictLowestCapacityAtDateTimeRange: number;
-  reservations: ReservationSummary[];
-  discrepancies: ReservationSummary[];
+  reservations: ReservationAvailabilityRow[];
+  discrepancies: ReservationAvailabilityRow[];
 }
 
 export interface DateTimeRange {

@@ -14,6 +14,7 @@ use App\Models\Tag;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -156,29 +157,27 @@ class TagController extends AdminController
         $targetTagId = $request->validated('target_tag_id');
         $sourceTagIds = $request->validated('source_tag_ids');
 
-        // Ensure target tag is not in source tags
         if (in_array($targetTagId, $sourceTagIds)) {
             return back()->withErrors(['source_tag_ids' => 'Target tag cannot be in the list of tags to merge.']);
         }
 
         $targetTag = Tag::findOrFail($targetTagId);
-        $sourceTags = Tag::whereIn('id', $sourceTagIds)->get();
 
-        // Move every taggable relation (news, pages, calendar events) from source tags to the
-        // target tag. syncWithoutDetaching attaches only the missing ids, avoiding duplicates
-        // without a per-model existence query.
-        foreach ($sourceTags as $sourceTag) {
-            foreach (Tag::TAGGABLE_RELATIONS as $relation) {
-                $sourceIds = $sourceTag->{$relation}()->pluck($sourceTag->{$relation}()->getRelated()->getTable().'.id');
+        DB::transaction(function () use ($targetTag, $sourceTagIds): void {
+            $sourceTags = Tag::whereIn('id', $sourceTagIds)->get();
 
-                $targetTag->{$relation}()->syncWithoutDetaching($sourceIds);
+            foreach ($sourceTags as $sourceTag) {
+                foreach (Tag::TAGGABLE_RELATIONS as $relation) {
+                    $sourceIds = $sourceTag->{$relation}()->pluck($sourceTag->{$relation}()->getRelated()->getTable().'.id');
 
-                $sourceTag->{$relation}()->detach();
+                    $targetTag->{$relation}()->syncWithoutDetaching($sourceIds);
+
+                    $sourceTag->{$relation}()->detach();
+                }
             }
-        }
 
-        // Delete source tags
-        Tag::whereIn('id', $sourceTagIds)->delete();
+            Tag::whereIn('id', $sourceTagIds)->delete();
+        });
 
         return to_route('tags.index')
             ->with('success', __('Tags merged successfully. :count tags merged into :target.', [

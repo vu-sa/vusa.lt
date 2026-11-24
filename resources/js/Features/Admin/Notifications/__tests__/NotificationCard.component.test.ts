@@ -123,10 +123,11 @@ describe('NotificationCard', () => {
   it('does not re-mark an already read card when its action is used', async () => {
     const wrapper = mountCard(make({ primaryAction: { label: 'Atidaryti', url: '/mano/x' } }, '2026-09-20T11:00:00Z'));
 
-    await wrapper.find('[data-action="primary"] a').trigger('click');
+    const action = wrapper.get('[data-action="primary"] a');
+    await action.trigger('click');
 
     expect(markNotificationRead).not.toHaveBeenCalled();
-    expect(wrapper.get('[data-action="primary"] a').attributes('href')).toBe('/mano/x');
+    expect(action.attributes('href')).toBe('/mano/x');
   });
 
   it.each([

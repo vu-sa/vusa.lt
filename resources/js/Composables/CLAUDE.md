@@ -35,3 +35,7 @@ The system uses Vue's provide/inject pattern:
 1. **Provider**: `createBreadcrumbState()` - called in public layout components (`PublicLayout.vue`)
 2. **Consumer**: `useBreadcrumbs()` - injects state with graceful fallback
 3. **Page helper**: `usePageBreadcrumbs()` - recommended API for public pages, handles lifecycle
+
+## HTTP calls
+
+`apiRequest()` (`apiRequest.ts`, re-exported from `useApi.ts`) resolves for every status with `{ ok, status, headers, data, body, errors, meta }`, so conflict (409) and rate-limit (429) branches read the result instead of hand-rolling `fetch`. It unwraps `{ success, data }` only when present; pass `raw: true` for non-standard envelopes. Error toasts are opt-in (`showErrorToast`); a 419 always shows one session-expired toast.

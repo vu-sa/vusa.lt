@@ -9,6 +9,7 @@ use App\Rules\SoftDeleteRules;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateDutiableRequest extends FormRequest
 {
@@ -40,9 +41,17 @@ class UpdateDutiableRequest extends FormRequest
      */
     public function rules(): array
     {
+        $term = $this->route('dutiable');
+        $term = $term instanceof Dutiable ? $term : null;
+        $storedStart = $term?->start_date?->toDateString();
+        $storedEnd = $term?->end_date?->toDateString();
+        $start = $this->filled('start_date') ? 'start_date' : $storedStart;
+        $datesChanged = ($this->input('start_date') ?? $storedStart) !== $storedStart
+            || ($this->has('end_date') && $this->input('end_date') !== $storedEnd);
+
         return [
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'start_date' => ['nullable', 'date', Rule::when($datesChanged && $this->missing('end_date') && $storedEnd !== null, 'before_or_equal:'.$storedEnd)],
+            'end_date' => ['nullable', 'date', Rule::when($datesChanged && $start !== null, 'after_or_equal:'.$start)],
             'description' => 'nullable|array',
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
@@ -51,7 +60,7 @@ class UpdateDutiableRequest extends FormRequest
             'study_program_note.lt' => 'nullable|string|max:100',
             'study_program_note.en' => 'nullable|string|max:100',
             'additional_email' => 'nullable|email',
-            ...$this->imageMediaRules('photo_media', $this->route('dutiable') instanceof Dutiable ? $this->route('dutiable') : new Dutiable, 'photo'),
+            ...$this->imageMediaRules('photo_media', $term ?? new Dutiable, 'photo'),
             'use_original_duty_name' => 'nullable|boolean',
             'tenant_id' => $this->quotaTenantRules($this->route('dutiable')?->duty),
         ];

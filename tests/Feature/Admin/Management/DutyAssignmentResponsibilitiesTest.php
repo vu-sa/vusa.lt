@@ -38,6 +38,20 @@ test('assigning oneself requires grantable responsibilities on every entry point
     expect($duty->users()->whereKey($actor->id)->exists())->toBeFalse();
 })->with(['assignment', 'duty', 'user', 'batch']);
 
+test('creating a duty with oneself as a member requires grantable responsibilities', function (string $routeName): void {
+    $tenant = Tenant::query()->first();
+    $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $institution = Institution::factory()->for($tenant)->create();
+    ResponsibilityGrant::factory()->forWholeInstitution($institution)->of(Role::factory()->create())->create();
+
+    asUser($actor)->postJson(route($routeName), [
+        'name' => ['lt' => 'Savęs priskyrimas'], 'institution_id' => $institution->id,
+        'contacts_grouping' => 'none', 'current_users' => [$actor->id],
+    ])->assertUnprocessable()->assertJsonPath('errors.user_id.0', __('dutiables.assign.self_responsibility'));
+
+    expect(Duty::where('name->lt', 'Savęs priskyrimas')->exists())->toBeFalse();
+})->with(['page' => 'duties.store', 'wizard API' => 'api.v1.admin.duties.store']);
+
 test('a coordinator can assign another member to an ordinary responsibility they do not hold', function (): void {
     $tenant = Tenant::query()->first();
     $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
@@ -232,9 +246,25 @@ test('resuming an own membership is allowed when its responsibilities are alread
 
     asUser($actor)->postJson(route('duties.batchUpdateUsers', $duty), [
         'user_changes' => [['user_id' => $actor->id, 'action' => 'add', 'start_date' => today()->toDateString(), 'end_date' => null]],
-    ])->assertRedirect();
+    ])->assertSessionHasNoErrors()->assertRedirect();
 
-    expect($row->fresh()->end_date)->toBeNull();
+    expect($duty->dutiables()->where('dutiable_id', $actor->id)->notEnded()->exists())->toBeTrue()
+        ->and($row->fresh()->end_date->lt(today()))->toBeTrue();
+});
+
+test('reopening an ended row in place requires the current responsibility ceiling', function (): void {
+    $tenant = Tenant::query()->first();
+    $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
+    $row = Dutiable::factory()->forDuty($duty)->forUser(User::factory()->create())->ended()->create();
+    $role = Role::factory()->create();
+    $role->givePermissionTo('news.read.*');
+    $duty->assignRole($role);
+
+    asUser($actor)->patchJson(route('dutiables.update', $row), ['end_date' => null])
+        ->assertUnprocessable()->assertJsonValidationErrors('user_id');
+
+    expect($row->fresh()->end_date->lt(today()))->toBeTrue();
 });
 
 test('resuming an ended term requires the current responsibility ceiling', function (): void {

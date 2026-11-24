@@ -10,6 +10,7 @@ use App\Enums\MeetingKind;
 use App\Enums\MeetingType;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Pivots\Dutiable;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasPublicSearchMirror;
 use App\Models\Traits\HasSharepointFiles;
@@ -24,7 +25,10 @@ use App\Services\Typesense\MeetingSearchEngine;
 use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Support\MeetingTitle;
+use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -32,6 +36,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -78,17 +83,18 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withoutTrashed()
+ * @method static Builder<static>|Meeting newModelQuery()
+ * @method static Builder<static>|Meeting newQuery()
+ * @method static Builder<static>|Meeting onlyTrashed()
+ * @method static Builder<static>|Meeting query()
+ * @method static Builder<static>|Meeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Meeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Meeting whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Meeting whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Meeting whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Meeting withSearchableRelations()
+ * @method static Builder<static>|Meeting withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Meeting withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -280,6 +286,28 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return MeetingSearchEngine::resolve();
     }
 
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'institutions.types',
+            'institutions.tenant',
+            'agendaItems.votes',
+            'users',
+        ]);
+    }
+
+    /**
+     * @template TModel of Meeting
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     /**
      * Get searchable array for Typesense indexing.
      * Includes tenant_ids for scoped API key filtering in admin search.
@@ -441,11 +469,38 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     {
         $date = $this->start_time->toDateString();
 
-        return $this->hadMemberMemo[$user->getKey().':'.$date] ??= $user->duties()
+        return $this->hadMemberMemo[$user->getKey().':'.$date] ??= self::dutiesHeldOn($user, $date)
             ->whereIn('duties.institution_id', $this->institutions()->select('institutions.id'))
-            ->whereDate('dutiables.start_date', '<=', $date)
-            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', $date))
             ->exists();
+    }
+
+    /** @param  Collection<int, self>  $meetings */
+    public static function preloadMembershipAtMeetingTime(User $user, Collection $meetings): void
+    {
+        if ($meetings->isEmpty()) {
+            return;
+        }
+
+        $memberMeetingIds = self::query()
+            ->whereKey($meetings->modelKeys())
+            ->whereHas('institutions', fn (Builder $institutions) => $institutions->whereIn(
+                'institutions.id',
+                self::dutiesHeldOn($user, DB::raw('date(meetings.start_time)'))->select('duties.institution_id'),
+            ))
+            ->pluck('meetings.id')
+            ->flip();
+
+        foreach ($meetings as $meeting) {
+            $meeting->hadMemberMemo[$user->getKey().':'.$meeting->start_time->toDateString()] = $memberMeetingIds->has($meeting->id);
+        }
+    }
+
+    /** @return MorphToMany<Duty, User, Dutiable, 'pivot'> */
+    private static function dutiesHeldOn(User $user, string|Expression $date): MorphToMany
+    {
+        return $user->duties()
+            ->whereDate('dutiables.start_date', '<=', $date)
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', $date));
     }
 
     /**
@@ -537,6 +592,11 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         static::saved(function (Meeting $meeting): void {
             $meeting->syncCalendarEventTiming();
             $meeting->syncAnchoredCadences();
+
+            // Agenda keys admit former members by meeting_start_time, private items included.
+            if ($meeting->wasChanged('start_time')) {
+                $meeting->agendaItems()->withSearchableRelations()->get()->searchable();
+            }
         });
 
         static::deleted(function (Meeting $meeting): void {

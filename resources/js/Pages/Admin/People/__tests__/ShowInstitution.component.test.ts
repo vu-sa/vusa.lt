@@ -62,7 +62,7 @@ const stubs = {
   InstitutionScopeBadge: true,
   CadenceSection: { template: '<div data-testid="cadences" />' },
   SecretariesSection: { template: '<div data-testid="secretaries" />' },
-  AssignDutyUserSheet: { name: 'AssignDutyUserSheet', props: ['open', 'duty', 'dutiable'], template: '<div data-testid="assign-sheet" :data-open="open" />' },
+  AssignDutyUserSheet: { name: 'AssignDutyUserSheet', props: ['open', 'duty', 'dutiable', 'existingTerms', 'delegatedSeatTenants'], template: '<div data-testid="assign-sheet" :data-open="open" />' },
   AddCheckInDialog: true,
   RelationshipLinkSheet: { name: 'RelationshipLinkSheet', props: ['open'], template: '<div data-testid="link-sheet" :data-open="open" />' },
   FileableUploadSheet: { name: 'FileableUploadSheet', props: ['open'], template: '<div data-testid="upload-sheet" :data-open="open" />' },
@@ -495,6 +495,25 @@ describe('ShowInstitution.vue', () => {
 
     expect(navigation).toEqual({ method: 'get', only: [], except: [] });
     expect(partialMutation).toEqual({ method: 'post', only: ['subscription'], except: [] });
+  });
+
+  it('loads period and quota context before opening the member picker', async () => {
+    const wrapper = createWrapper({ duties_count: 4 });
+    const duty = { id: 'duty1', name: 'Narys', current_users: [] };
+    wrapper.findComponent({ name: 'InstitutionDutiesSection' }).vm.$emit('assign', duty);
+    await wrapper.vm.$nextTick();
+
+    expect(router.reload).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ only: ['assignmentPicker'] }));
+
+    const terms = [{ user_id: 'member1', tenant_id: 1, start_date: '2026-01-01' }];
+    const delegatedSeatTenants = { member1: 1 };
+    await wrapper.setProps({ assignmentPicker: { duty1: { terms, delegatedSeatTenants } } });
+    vi.mocked(router.reload).mock.calls[0]?.[0]?.onSuccess?.(createMockPage());
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent({ name: 'AssignDutyUserSheet' }).props()).toMatchObject({
+      existingTerms: terms, delegatedSeatTenants,
+    });
   });
 
   it('waits for the complete term before mounting its editor', async () => {

@@ -9,7 +9,8 @@ use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Support\MorphMap;
+use App\Policies\DutyPolicy;
+use App\Services\Duties\DutyAssignmentService;
 use Illuminate\Support\Collection;
 
 class DutyPanelPresenter
@@ -116,6 +117,26 @@ class DutyPanelPresenter
         ];
     }
 
+    /** @return array<string, int>|null */
+    public static function delegatedSeatTenants(Duty $duty, User $actor): ?array
+    {
+        if ($actor->can('update', $duty) || ! $actor->can('managePeople', $duty)) {
+            return null;
+        }
+
+        $sharedTenantIds = app(DutyPolicy::class)->sharedAssignableTenantIds($actor, $duty);
+        $holders = $duty->users->unique('id')->loadMissing('current_or_upcoming_tenants:tenants.id');
+        $tenants = [];
+        foreach ($holders as $holder) {
+            $tenantId = $sharedTenantIds->intersect($holder->current_or_upcoming_tenants->modelKeys())->first();
+            if ($tenantId !== null) {
+                $tenants[$holder->id] = (int) $tenantId;
+            }
+        }
+
+        return $tenants;
+    }
+
     /**
      * The padaliniai the duty offers seats to, with how many current seats count toward each.
      *
@@ -123,14 +144,7 @@ class DutyPanelPresenter
      */
     public static function quotaTenants(Duty $duty): array
     {
-        $occupied = Dutiable::query()
-            ->where('duty_id', $duty->id)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->whereNotNull('tenant_id')
-            ->current()
-            ->selectRaw('tenant_id, count(*) as seats')
-            ->groupBy('tenant_id')
-            ->pluck('seats', 'tenant_id');
+        $occupied = app(DutyAssignmentService::class)->occupiedTenantSeats($duty);
 
         /** @var \Illuminate\Database\Eloquent\Collection<int, Tenant> $tenants */
         $tenants = $duty->assignableTenants()->orderBy('shortname')->get(['tenants.id', 'tenants.shortname']);

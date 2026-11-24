@@ -5,6 +5,8 @@ namespace App\Actions;
 use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Models\User;
+use App\Support\Dutiables\DutyAssignmentActor;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -20,7 +22,14 @@ class CollapseOverlappingDutiables
      *
      * @return int The number of redundant rows removed.
      */
-    public static function execute(Duty $kept): int
+    public static function execute(Duty $kept, ?User $actor = null): int
+    {
+        $collapse = fn () => self::collapse($kept);
+
+        return $actor === null ? DutyAssignmentActor::system($collapse) : DutyAssignmentActor::as($actor, $collapse);
+    }
+
+    private static function collapse(Duty $kept): int
     {
         $collapsed = 0;
 

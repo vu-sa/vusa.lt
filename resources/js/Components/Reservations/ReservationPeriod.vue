@@ -26,8 +26,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import { formatDateWith, isSameDay, parseDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
-  startTime: string | Date;
-  endTime: string | Date;
+  startTime: string | Date | null;
+  endTime: string | Date | null;
 }>();
 
 const locale = computed(() => usePage().props.app.locale);

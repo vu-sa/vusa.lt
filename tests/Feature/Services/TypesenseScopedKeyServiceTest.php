@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
+use App\Services\Typesense\SearchProfiles;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseManager;
 use App\Services\Typesense\TypesenseScopedKeyService;
@@ -109,6 +110,22 @@ describe('TypesenseCollectionConfig', function (): void {
 });
 
 describe('TypesenseScopedKeyService', function (): void {
+    test('signs scoped keys with the public search key when the admin search key is blank', function (string $adminSearchKey): void {
+        config(['scout.typesense.client-settings.admin_search_key' => $adminSearchKey]);
+        $client = new Client([
+            'api_key' => 'test-admin-key',
+            'nodes' => config('scout.typesense.client-settings.nodes'),
+        ]);
+        $service = new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class));
+
+        $result = $service->generateScopedKeysForUser(makeAdminUser());
+        $keys = [$result['header_key'], ...array_column($result['collections'], 'key')];
+
+        foreach ($keys as $key) {
+            expect($key)->toBe($client->keys->generateScopedSearchKey('test-search-only-key', scopedKeyParams($key)));
+        }
+    })->with(['empty' => '', 'whitespace' => '   ']);
+
     test('super admin gets unrestricted keys for all collections', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $superAdmin = makeAdminUser();
@@ -482,7 +499,7 @@ describe('public records in every scoped key', function (): void {
         $publicTypes = "institution_type_ids:=[{$this->publicType->id}]";
 
         expect(scopedKeyFilter($collections['meetings']['key']))->toBe('('.$publicTypes.' || institution_ids:=[`'.$institutionId.'`])')
-            ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe('((('.$publicTypes.' || institution_ids:=[`'.$institutionId.'`])) && is_private:=false)')
+            ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe('(institution_ids:=[`'.$institutionId.'`] || ('.$publicTypes.' && is_private:=false))')
             ->and(scopedKeyFilter($collections['institutions']['key']))->toBe('(is_active:=true || institution_ids:=[`'.$institutionId.'`])');
     });
 
@@ -574,7 +591,7 @@ describe('public records in every scoped key', function (): void {
         $user = User::factory()->create();
         $params = scopedKeyParams(keysFor($user)['institutions']['key']);
 
-        expect($params['exclude_fields'])->toBe('activity_status')
+        expect($params['exclude_fields'])->toBe('activity_status,'.SearchProfiles::EXCLUDED_FIELDS)
             ->and(explode(',', $params['facet_by']))->not->toContain('activity_status')
             ->and(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])->toBe(['activity_status']);
     });
@@ -597,7 +614,7 @@ describe('public records in every scoped key', function (): void {
         $user = makeUser(Tenant::query()->first());
         $user->givePermissionTo('institutions.read.padalinys');
 
-        expect(scopedKeyParams(keysFor($user)['institutions']['key'])['exclude_fields'])->toBe('activity_status');
+        expect(scopedKeyParams(keysFor($user)['institutions']['key'])['exclude_fields'])->toBe('activity_status,'.SearchProfiles::EXCLUDED_FIELDS);
     });
 
     test('global institution readers receive activity status', function (): void {
@@ -606,6 +623,37 @@ describe('public records in every scoped key', function (): void {
         $params = scopedKeyParams(keysFor($user)['institutions']['key']);
 
         expect($params)->not->toHaveKey('exclude_fields')->not->toHaveKey('facet_by')
+            ->and($params['filter_by'])->toBe('id:!=__no_access__')
             ->and(TypesenseManager::getAdminFrontendConfig($user)['collections']['institutions']['excludedFields'])->toBe([]);
+    });
+    test('global readers of tenant-scoped collections get keys without a tenant filter', function (): void {
+        $user = User::factory()->create();
+        $user->givePermissionTo(['users.read.*', 'news.read.*']);
+        $padalinys = makeUser(Tenant::query()->first());
+        $padalinys->givePermissionTo('users.read.padalinys');
+        $keys = keysFor($user);
+
+        expect(scopedKeyParams($keys['users']['key']))->not->toHaveKey('filter_by')
+            ->and(scopedKeyParams($keys['news']['key']))->not->toHaveKey('filter_by')
+            ->and($keys['users']['scope'])->toBe('all')
+            ->and(scopedKeyFilter(keysFor($padalinys)['users']['key']))->toStartWith('tenant_ids:=[');
+    });
+
+    test('a cached key at its expiry is issued again rather than returned', function (): void {
+        $this->freezeTime();
+        $user = User::factory()->create();
+        keysFor($user);
+        $cacheKey = TypesenseScopedKeyService::getCacheKey($user->id);
+        cache()->put($cacheKey, [...cache()->get($cacheKey), 'expires_at' => now()->timestamp], 60);
+
+        expect(app(TypesenseScopedKeyService::class)->generateScopedKeysForUser($user)['expires_at'])->toBe(now()->addMinutes(15)->timestamp);
+    });
+
+    test('scoped keys count as configured with only the admin search key', function (): void {
+        config(['scout.typesense.client-settings.search_only_key' => null]);
+        expect(TypesenseScopedKeyService::isConfigured())->toBeTrue();
+
+        config(['scout.typesense.client-settings.admin_search_key' => null]);
+        expect(TypesenseScopedKeyService::isConfigured())->toBeFalse();
     });
 });

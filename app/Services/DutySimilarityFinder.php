@@ -125,7 +125,7 @@ class DutySimilarityFinder
         $matches = Duty::query()
             ->where('institution_id', $institutionId)
             ->when($excludeDutyId, fn ($query) => $query->where('id', '!=', $excludeDutyId))
-            ->with(['institution:id,name', 'institution.tenant:id,shortname', 'current_users:id,name', 'formerNames'])
+            ->with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname', 'current_users:id,name', 'formerNames'])
             ->get()
             ->map(function (Duty $duty) use ($name, $normalized) {
                 if ($this->currentNames($duty)->contains(fn (string $currentName) => mb_strtolower($currentName) === mb_strtolower($name))) {
@@ -166,7 +166,7 @@ class DutySimilarityFinder
             // The tenant's own duties are already reported, with links, by findWithinTenant().
             ->when($tenantId, fn ($q) => $q->whereHas('institution', fn (Builder $institution) => $institution->where('tenant_id', '!=', $tenantId)))
             ->when($excludeDutyId, fn ($q) => $q->where('id', '!=', $excludeDutyId))
-            ->with(['institution:id,name', 'institution.tenant:id,shortname']);
+            ->with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname']);
 
         $matches = $query->whereTranslationLike('name', $longestWord)
             ->limit(self::CANDIDATE_SCAN_LIMIT)->get()

@@ -59,9 +59,9 @@ describe('useAgendaItemNotes', () => {
 
   it('saves against the loaded version, and on a conflict merges the stored notes before saving again', async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(json(200, { data: { yjs_state: storedState('Mano'), version: 2 } }))
-      .mockResolvedValueOnce(json(409, { data: { yjs_state: storedState('Kito'), version: 3 } }))
-      .mockResolvedValueOnce(json(200, { data: { version: 4 } }));
+      .mockResolvedValueOnce(json(200, { success: true, data: { yjs_state: storedState('Mano'), version: 2 } }))
+      .mockResolvedValueOnce(json(409, { success: false, code: 'notes_conflict', data: { yjs_state: storedState('Kito'), version: 3 } }))
+      .mockResolvedValueOnce(json(200, { success: true, data: { version: 4 } }));
     const { notes, scope } = setup();
     await vi.advanceTimersByTimeAsync(2500);
 

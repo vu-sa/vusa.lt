@@ -87,6 +87,34 @@ class InstitutionPresenter
         ];
     }
 
+    /** @return array<string, array{terms: list<array{user_id: string, tenant_id: int|null, via_dutiable_id: string|null, start_date: string, end_date: string|null}>, delegatedSeatTenants: array<string, int>|null}> */
+    public static function assignmentPicker(Institution $institution, User $actor): array
+    {
+        $institution->loadMissing('tenant');
+
+        $duties = $institution->duties()->with('users:id')->get();
+
+        return $duties->mapWithKeys(function (Duty $duty) use ($institution, $actor): array {
+            $duty->setRelation('institution', $institution);
+            if (! $actor->can('managePeople', $duty)) {
+                return [];
+            }
+
+            $terms = $duty->users->map(fn (User $holder) => [
+                'user_id' => $holder->id,
+                'tenant_id' => $holder->pivot->tenant_id,
+                'via_dutiable_id' => $holder->pivot->via_dutiable_id,
+                'start_date' => $holder->pivot->start_date->toDateString(),
+                'end_date' => $holder->pivot->end_date?->toDateString(),
+            ])->all();
+
+            return [$duty->id => [
+                'terms' => $terms,
+                'delegatedSeatTenants' => DutyPanelPresenter::delegatedSeatTenants($duty, $actor),
+            ]];
+        })->all();
+    }
+
     /** @return list<array{duty_id: string, dutiable_id: string, dutiable_type: string, id: string, via_dutiable_id: string|null, tenant_id: int|null, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null, additional_email: string|null, use_original_duty_name: bool, description: array{lt: string, en: string}|null, study_program_id: string|null, study_program_note: array{lt: string, en: string}|null, created_at: string, updated_at: string}> */
     public static function assignmentTerms(Institution $institution): array
     {
@@ -136,8 +164,19 @@ class InstitutionPresenter
     /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>}> */
     public static function duties(Institution $institution, ?int $limit = null): array
     {
+        $usersRelation = 'current_users:id,name,profile_photo_path,profile_photo_focal_point';
+
+        if ($institution->relationLoaded('duties')) {
+            $ordered = $institution->duties->sortBy('order');
+            $selected = $limit === null || $limit < 0 ? $ordered : $ordered->take($limit);
+            $selected = $selected->values()->loadMissing($usersRelation);
+        } else {
+            $selected = $institution->duties()->with($usersRelation)->orderBy('order')
+                ->when($limit !== null, fn ($query) => $query->limit($limit))->get();
+        }
+
         $duties = [];
-        foreach ($institution->duties()->with('current_users:id,name,profile_photo_path,profile_photo_focal_point')->orderBy('order')->when($limit !== null, fn ($query) => $query->limit($limit))->get() as $duty) {
+        foreach ($selected as $duty) {
             $attributes = $duty->attributesToArray();
             $users = [];
             foreach ($duty->current_users as $user) {

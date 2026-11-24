@@ -130,10 +130,11 @@
 import type { HTMLAttributes } from 'vue';
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { useDebounceFn, useFetch } from '@vueuse/core';
+import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { LogOut, UserCog, X } from '@lucide/vue';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -192,16 +193,8 @@ const debouncedSearch = useDebounceFn(async () => {
 
   try {
     const url = `${route('api.v1.admin.impersonate.search')}?search=${encodeURIComponent(searchQuery.value)}`;
-    const { data } = await useFetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': String(page.props.csrf_token ?? ''),
-      },
-      credentials: 'same-origin',
-    }).json<{ success: boolean; data: SearchUser[] }>();
-
-    searchResults.value = data.value?.data ?? [];
+    const result = await apiRequest<SearchUser[]>(url);
+    searchResults.value = result.ok ? result.data ?? [] : [];
   }
   finally {
     searching.value = false;
@@ -214,20 +207,10 @@ async function startImpersonating(userId: string) {
 
   try {
     const url = route('api.v1.admin.impersonate.start');
-    const { data, error } = await useFetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': String(page.props.csrf_token ?? ''),
-      },
-      credentials: 'same-origin',
-      body: JSON.stringify({ user_id: userId }),
-    }).json<{ success: boolean; message?: string }>();
+    const result = await apiRequest(url, { method: 'POST', body: { user_id: userId } });
 
-    if (error.value || !data.value?.success) {
-      requestError.value = data.value?.message ?? $t('Nepavyko prisijungti kaip šis narys.');
+    if (!result.ok) {
+      requestError.value = (result.status === 0 ? null : result.message) ?? $t('Nepavyko prisijungti kaip šis narys.');
       return;
     }
 
@@ -246,19 +229,10 @@ async function stopImpersonating() {
 
   try {
     const url = route('api.v1.admin.impersonate.stop');
-    const { data, error } = await useFetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': String(page.props.csrf_token ?? ''),
-      },
-      credentials: 'same-origin',
-    }).json<{ success: boolean; message?: string }>();
+    const result = await apiRequest(url, { method: 'POST' });
 
-    if (error.value || !data.value?.success) {
-      requestError.value = data.value?.message ?? $t('Nepavyko grįžti į savo paskyrą.');
+    if (!result.ok) {
+      requestError.value = (result.status === 0 ? null : result.message) ?? $t('Nepavyko grįžti į savo paskyrą.');
       return;
     }
 

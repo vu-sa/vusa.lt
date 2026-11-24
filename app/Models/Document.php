@@ -80,6 +80,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|Document newQuery()
  * @method static Builder<static>|Document published()
  * @method static Builder<static>|Document query()
+ * @method static Builder<static>|Document withSearchableRelations()
  *
  * @mixin \Eloquent
  */
@@ -131,6 +132,21 @@ class Document extends Model
         static::deleted(function ($document): void {
             Cache::tags(['documents'])->flush();
         });
+    }
+
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
+    {
+        $query->with(['institution.tenant', 'meeting.calendarEvent']);
+    }
+
+    /**
+     * @param  Builder<Document>  $query
+     * @return Builder<Document>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     public function toSearchableArray(): array

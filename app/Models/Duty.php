@@ -64,6 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
  * @property-read DutyDutyType|DutySuccession|Dutiable|null $pivot
+ * @property-read Collection<int, User> $current_or_upcoming_users
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Dutiable> $dutiables
@@ -115,6 +116,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|Duty whereLocale(string $column, string $locale)
  * @method static Builder<static>|Duty whereLocales(string $column, array $locales)
  * @method static Builder<static>|Duty whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Duty withSearchableRelations()
  * @method static Builder<static>|Duty withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Duty withoutPermission($permissions)
  * @method static Builder<static>|Duty withoutRole($roles, ?string $guard = null)
@@ -167,9 +169,38 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         ];
     }
 
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'institution.tenant',
+            'types',
+            'assignableTenants',
+            'formerNames',
+            'current_users' => fn ($users) => $users->select(['users.id', 'users.name']),
+            'previous_users' => fn ($users) => $users->select(['users.id', 'users.name'])->orderByDesc('dutiables.end_date'),
+        ]);
+    }
+
+    /**
+     * @param  Builder<Duty>  $query
+     * @return Builder<Duty>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants', 'formerNames']);
+        $this->loadMissing([
+            'institution.tenant',
+            'types',
+            'assignableTenants',
+            'formerNames',
+            'current_users' => fn ($users) => $users->select(['users.id', 'users.name']),
+            'previous_users' => fn ($users) => $users->select(['users.id', 'users.name'])->orderByPivot('end_date', 'desc'),
+        ]);
 
         $homeTenantId = $this->institution?->tenant_id ? (int) $this->institution->tenant_id : null;
 
@@ -184,11 +215,9 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             ->values()
             ->all();
 
-        $currentUsersCount = $this->current_users()->count();
-        $currentUsers = $this->current_users()->get(['users.id', 'name']);
-        $previousUsers = $this->previous_users()
-            ->orderByPivot('end_date', 'desc')
-            ->get(['users.id', 'name']);
+        $currentUsers = $this->current_users;
+        $currentUsersCount = $currentUsers->count();
+        $previousUsers = $this->previous_users->sortByDesc(fn (User $user) => $user->pivot?->end_date)->values();
 
         return [
             ...SearchText::forModel($this),
@@ -291,6 +320,15 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
                             ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             })
+            ->withTimestamps();
+    }
+
+    /** @return MorphToMany<User, $this, Dutiable, 'pivot'> */
+    public function current_or_upcoming_users(): MorphToMany
+    {
+        return $this->users()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()))
             ->withTimestamps();
     }
 
@@ -504,7 +542,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     protected static function booted()
     {
         static::saving(function (Duty $duty): void {
-            if ($duty->exists && $duty->isDirty('institution_id') && $duty->dutiables()->current()->exists()
+            if ($duty->exists && $duty->isDirty('institution_id') && $duty->dutiables()->notEnded()->exists()
                 && ! Institution::withTrashed()->find($duty->institution_id)?->is_active) {
                 throw ValidationException::withMessages([
                     'institution_id' => __('forms.helpers.institution_assignment_closed'),

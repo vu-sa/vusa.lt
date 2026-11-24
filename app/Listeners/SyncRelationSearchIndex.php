@@ -22,7 +22,7 @@ class SyncRelationSearchIndex
     {
         $events->listen(SearchRelationChanged::class, fn (SearchRelationChanged $event) => $this->relationChanged($event));
         $events->listen('eloquent.updated: '.Institution::class, function (Institution $institution): void {
-            if ($institution->wasChanged('is_active')) {
+            if ($institution->wasChanged(['is_active', 'tenant_id'])) {
                 $this->institutionFactsChanged($institution);
             }
         });
@@ -47,6 +47,7 @@ class SyncRelationSearchIndex
         match (true) {
             $event->model instanceof Institution && $event->relation === 'types' => $this->institutionFactsChanged($event->model),
             $event->model instanceof Meeting && $event->relation === 'institutions' => $this->meetingInstitutionsChanged($event->model),
+            // DutiableChanged already reindexes assignment changes.
             default => null,
         };
     }
@@ -57,13 +58,14 @@ class SyncRelationSearchIndex
 
         $meetings = Meeting::query()->withTrashed()->whereHas('institutions', fn ($query) => $query->where('institutions.id', $institution->getKey()));
 
-        (clone $meetings)->with('institutions.types')->chunkById(100, function ($chunk): void {
+        (clone $meetings)->withSearchableRelations()->chunkById(100, function ($chunk): void {
             $chunk->each(fn (Meeting $meeting) => $meeting->refreshTitle());
             $chunk->searchable();
             $chunk->each(fn (Meeting $meeting) => $meeting->syncPublicSearchIndex());
         });
         AgendaItem::query()
             ->whereIn('meeting_id', (clone $meetings)->select('meetings.id'))
+            ->withSearchableRelations()
             ->chunkById(200, fn ($chunk) => $chunk->searchable());
     }
 
@@ -71,7 +73,7 @@ class SyncRelationSearchIndex
     {
         $meeting->unsetRelation('institutions')->refreshTitle();
         $meeting->searchable();
-        $meeting->agendaItems()->get()->searchable();
+        $meeting->agendaItems()->withSearchableRelations()->get()->searchable();
         $meeting->syncPublicSearchIndex();
     }
 }

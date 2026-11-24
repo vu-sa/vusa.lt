@@ -54,6 +54,7 @@ return [
         'login_email_locked' => 'Šios paskyros prisijungimo el. pašto keisti negali. Sujungus liks dabartinis adresas.',
         'name_mismatch' => 'Sujungti galima tik to paties asmens įrašus, o :name vardas ir pavardė nesutampa.',
         'direct_roles' => ':name atsakomybė priskirta tiesiogiai. Prieš sujungdamas ją pašalink.',
+        'unassignable_duties' => ':name eina pareigas, kurių negali priskirti paliekamai paskyrai.',
         'outside_scope' => 'Sujungti gali administratoriai, kuriems priklauso visi abiejų įrašų padaliniai.',
         'action' => 'Sujungti',
         'login_email' => 'Prisijungimo el. paštas',

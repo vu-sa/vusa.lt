@@ -344,6 +344,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { CircleX, ChevronRight, Eye, EyeOff, Folder, FolderTree, List, Search, Trash2, TriangleAlert } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { quickFilterLabel } from '@/Components/Collection/quickFilterLabel';
 import CollectionQuickFilters from '@/Components/Collection/CollectionQuickFilters.vue';
@@ -468,29 +469,26 @@ async function load(options: { offset?: number; refresh?: boolean } = {}): Promi
   }
 
   try {
-    const response = await fetch(url, {
-      credentials: 'same-origin',
-      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-    });
-    const payload = await response.json() as { success: boolean; data?: DocumentFolderListing; message?: string };
-
-    if (!response.ok || !payload.success || !payload.data) {
-      throw new Error(payload.message ?? $t('Nepavyko įkelti aplanko.'));
+    const { ok, data, message, body, status } = await apiRequest<DocumentFolderListing>(url.toString());
+    if (status === 0) throw new TypeError(message ?? 'Network error');
+    if (body === null) throw new SyntaxError('Unexpected end of JSON input');
+    if (!ok || !data) {
+      throw new Error(message ?? $t('Nepavyko įkelti aplanko.'));
     }
 
     if (current !== latestRequest) return;
 
     if (options.offset && listing.value) {
-      listing.value = { ...listing.value, files: [...listing.value.files, ...payload.data.files], next_offset: payload.data.next_offset };
+      listing.value = { ...listing.value, files: [...listing.value.files, ...data.files], next_offset: data.next_offset };
       return;
     }
 
-    listing.value = payload.data;
-    path.value = payload.data.path;
+    listing.value = data;
+    path.value = data.path;
     // Search answers carry no type list; keep the folder's.
-    if (!debouncedSearch.value.trim()) contentTypes.value = payload.data.content_types;
+    if (!debouncedSearch.value.trim()) contentTypes.value = data.content_types;
     // Files no longer listed cannot stay selected.
-    const listed = new Set(payload.data.files.map(file => file.id));
+    const listed = new Set(data.files.map(file => file.id));
     selectedIds.value = new Set([...selectedIds.value].filter(id => listed.has(id)));
     if (!options.refresh) syncUrl();
   }

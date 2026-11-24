@@ -11,8 +11,8 @@ use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
-use App\Services\InstitutionDeactivationService;
+use App\Services\Duties\DutyAssignmentService;
+use App\Services\Institutions\InstitutionDeactivationService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -169,8 +169,8 @@ test('reactivation and repeated saves preserve ended periods and returning membe
     app(DutyAssignmentService::class)->syncRepresentatives($duty, [$user->id]);
 
     expect($term->fresh()->end_date->toDateString())->toBe('2026-10-15')
-        ->and($duty->dutiables()->current()->sole()->id)->not->toBe($term->id)
-        ->and($duty->dutiables()->current()->sole()->start_date->toDateString())->toBe('2026-10-16')
+        ->and($duty->dutiables()->notEnded()->sole()->id)->not->toBe($term->id)
+        ->and($duty->dutiables()->notEnded()->sole()->start_date->toDateString())->toBe('2026-10-16')
         ->and(Activity::forSubject($institution)->where('description', 'institution_deactivated')->count())->toBe(1);
 });
 

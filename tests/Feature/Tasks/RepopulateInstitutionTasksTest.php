@@ -24,6 +24,7 @@ use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
@@ -631,4 +632,39 @@ describe('a no-history institution when a new term starts', function (): void {
         expect(NotificationDigestQueue::query()->where('user_id', $this->rep->id)
             ->where('notification_class', InstitutionActivityNotification::class)->exists())->toBeTrue();
     });
+});
+
+test('tasks:repopulate institution preloads periodicity gap tasks without per-institution task queries', function (): void {
+    $this->travelTo('2026-10-15 10:00:00');
+    institutionWithRepresentative();
+
+    // Seed the open task and initial request so later runs only reconcile and check asks.
+    $this->artisan('tasks:repopulate institution')->assertSuccessful();
+
+    $countTaskQueries = function (): int {
+        DB::enableQueryLog();
+        try {
+            DB::flushQueryLog();
+            $this->artisan('tasks:repopulate institution')->assertSuccessful();
+
+            return collect(DB::getQueryLog())
+                ->filter(fn (array $entry): bool => preg_match('/\b(tasks|task_user)\b/i', $entry['query']) === 1)
+                ->count();
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+    };
+
+    $oneInstitutionTaskQueries = $countTaskQueries();
+
+    for ($i = 0; $i < 3; $i++) {
+        institutionWithRepresentative();
+    }
+    $this->artisan('tasks:repopulate institution')->assertSuccessful();
+
+    $fourInstitutionTaskQueries = $countTaskQueries();
+
+    expect(Task::query()->where('action_type', ActionType::PeriodicityGap)->whereNull('completed_at')->count())->toBe(4)
+        ->and($fourInstitutionTaskQueries)->toBe($oneInstitutionTaskQueries);
 });

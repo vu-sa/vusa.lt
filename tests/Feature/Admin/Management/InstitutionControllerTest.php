@@ -19,6 +19,7 @@ use App\Models\InstitutionLink;
 use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
@@ -34,6 +35,7 @@ use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -85,6 +87,24 @@ describe('reorderDuties', function (): void {
         ])->assertStatus(403);
 
         expect($otherDuty->fresh()->order)->toBe(1);
+    });
+
+    test('leaves every order unchanged when a duty belongs to a trashed institution in another tenant', function (): void {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create(['order' => 1]);
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $trashedInstitution = Institution::factory()->for($otherTenant)->create();
+        $foreignDuty = Duty::factory()->for($trashedInstitution)->create(['order' => 2]);
+        $trashedInstitution->delete();
+
+        asUser($this->admin)->post(route('institutions.reorderDuties'), [
+            'duties' => [
+                ['id' => $duty->id, 'order' => 5],
+                ['id' => $foreignDuty->id, 'order' => 6],
+            ],
+        ])->assertForbidden();
+
+        expect($duty->fresh()->order)->toBe(1)
+            ->and($foreignDuty->fresh()->order)->toBe(2);
     });
 });
 
@@ -759,8 +779,28 @@ describe('authorized access', function (): void {
         ]);
 
         $created = Institution::where('name->lt', 'Vedlio institucija')->sole();
-        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.institution.id', $created->id);
+        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.institution.id', $created->id)
+            ->assertJsonPath('data.institution.tenant.shortname', $this->tenant->shortname);
     });
+
+    test('the page and the wizard create the same institution', function (string $routeName, int $status): void {
+        $type = InstitutionType::factory()->create();
+
+        asUser($this->admin)->postJson(route($routeName), [
+            'name' => ['lt' => 'Bendra institucija', 'en' => 'Shared institution'],
+            'tenant_id' => $this->tenant->id,
+            'types' => [$type->id],
+            'image_media' => null,
+            'logo_media' => null,
+        ])->assertStatus($status);
+
+        $created = Institution::where('name->lt', 'Bendra institucija')->sole();
+        expect($created->types()->pluck('institution_types.id')->all())->toBe([$type->id])
+            ->and(Activity::query()->whereMorphedTo('subject', $created)->where('event', 'relation_updated')->where('properties->relation', 'types')->exists())->toBeTrue();
+    })->with([
+        'page' => ['institutions.store', 302],
+        'wizard API' => ['api.v1.admin.institutions.store', 201],
+    ]);
 
     test('can store institution', function (): void {
         $institutionData = [
@@ -1400,4 +1440,39 @@ describe('alias', function (): void {
         asUser(makeUser($this->tenant))->delete(route('institutions.publicUrls.destroy', [$institution, $institution->publicUrls()->first()]))
             ->assertForbidden();
     });
+});
+
+test('institution overview batches private agenda access for a padalinys coordinator', function (): void {
+    $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $institution = Institution::factory()->for($this->tenant)->create();
+    $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->subDays(3)]);
+    $addItems = fn (int $count) => AgendaItem::factory()->for($meeting)->count($count)->create(['is_private' => true]);
+    $fetch = fn () => asUserWithInertia($coordinator)->getJson(route('institutions.show', $institution))->assertOk();
+
+    $measure = function (int $expectedItems) use ($fetch, $meeting): int {
+        $fetch();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $response = $fetch();
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        $response->assertJsonPath('props.readOnly', false)
+            ->assertJsonPath('props.overview.recentMeetings.0.id', $meeting->id)
+            ->assertJsonPath('props.overview.recentMeetings.0.agenda_items_count', $expectedItems)
+            ->assertJsonPath('props.overview.recentMeetings.0.outcome.completion_status', fn ($status): bool => $status !== null);
+
+        return $queries;
+    };
+
+    $addItems(1);
+    $small = $measure(1);
+    $addItems(4);
+
+    expect($measure(5))->toBe($small);
 });

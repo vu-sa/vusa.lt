@@ -18,6 +18,7 @@ use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -95,15 +96,17 @@ class BannerController extends AdminController
         $tenants = GetTenantsForUpserts::execute($request->user(), 'banners.create.padalinys', $this->authorizer);
 
         $banner = new Banner;
-        $banner->title = $request->title;
-        $banner->is_active = $request->is_active ?? 0;
-        $banner->link_url = $request->link_url ?? '';
-        // Order is assigned by the model's creating hook, which knows about trashed
-        // banners still holding a slot.
+        $banner->title = $request->validated('title');
+        $banner->is_active = $request->validated('is_active') ?? 0;
+        $banner->link_url = $request->validated('link_url') ?? '';
         $banner->tenant_id = $tenants->first()['id'] ?? null;
-        $banner->save();
+        // Order is assigned by the model's creating hook, which knows about trashed banners still holding a slot.
 
-        $syncImage->fromValidated($banner, 'image', $request->validated(), 'image_media', $request->user());
+        DB::transaction(function () use ($banner, $request, $syncImage): void {
+            $banner->save();
+
+            $syncImage->fromValidated($banner, 'image', $request->validated(), 'image_media', $request->user());
+        });
 
         Cache::forget('banners-'.$banner->tenant_id);
 
@@ -128,12 +131,14 @@ class BannerController extends AdminController
     #[Authorize('update', 'banner')]
     public function update(UpdateBannerRequest $request, Banner $banner, SyncImageMedia $syncImage)
     {
-        $banner->title = $request->title;
-        $banner->is_active = $request->is_active;
-        $banner->link_url = $request->link_url ?? '';
-        $banner->save();
+        DB::transaction(function () use ($banner, $request, $syncImage): void {
+            $banner->title = $request->validated('title');
+            $banner->is_active = $request->validated('is_active');
+            $banner->link_url = $request->validated('link_url') ?? '';
+            $banner->save();
 
-        $syncImage->fromValidated($banner, 'image', $request->validated(), 'image_media', $request->user());
+            $syncImage->fromValidated($banner, 'image', $request->validated(), 'image_media', $request->user());
+        });
 
         Cache::forget('banners-'.$banner->tenant_id);
 

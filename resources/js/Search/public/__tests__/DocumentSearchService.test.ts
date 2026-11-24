@@ -124,7 +124,7 @@ describe('DocumentSearchService', () => {
     });
 
     it('promotes important types and pins recommendations once while retaining filters', async () => {
-      const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { ids: ['2'] } }) });
+      const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true, data: { ids: ['2'] } }) });
       vi.stubGlobal('fetch', fetch);
       service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai', 'Šablonai'], recommendationsUrl: '/api/v1/documents/recommendations' });
       const result = await service.performSearch({ ...baseFilters, query: 'įstatų', languages: ['Lithuanian'] }, 24, false, 0);
@@ -149,7 +149,7 @@ describe('DocumentSearchService', () => {
     });
 
     it('keeps default browsing newest first and includes initial recommendations', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { ids: ['2'] } }) }));
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true, data: { ids: ['2'] } }) }));
       service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai'], recommendationsUrl: '/api/v1/documents/recommendations' });
       const result = await service.performSearch(baseFilters, 24, false, 0);
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
@@ -163,7 +163,7 @@ describe('DocumentSearchService', () => {
     });
 
     it('keeps the first page pins when loading more without asking for recommendations again', async () => {
-      const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { ids: ['2'] } }) });
+      const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true, data: { ids: ['2'] } }) });
       vi.stubGlobal('fetch', fetch);
       service = new DocumentSearchService(mockClient, 'documents', { recommendationsUrl: '/api/v1/documents/recommendations' });
       await service.performSearch({ ...baseFilters, query: 'įstatų' }, 24, false, 0);
@@ -173,7 +173,7 @@ describe('DocumentSearchService', () => {
     });
 
     it('continues ordinary search if recommendations are temporarily unavailable', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) }));
       service = new DocumentSearchService(mockClient, 'documents', { recommendationsUrl: '/api/v1/documents/recommendations' });
       const result = await service.performSearch(baseFilters, 24, false, 0);
       expect(result.hits).toHaveLength(2);

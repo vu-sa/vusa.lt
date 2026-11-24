@@ -168,23 +168,26 @@ describe('per-persona visibility', function (): void {
         ]);
 
         $payload = $this->catalog->for($user);
-        expect($payload['workspaces'][0])->toEqual([
-            'key' => 'pradzia',
-            'label' => 'shell.workspaces.pradzia.title',
-            'description' => 'shell.workspaces.pradzia.description',
-            'sections' => [
-                ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.show'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'atsakomybes', 'label' => 'shell.sections.atsakomybes', 'routeName' => 'profile.roles', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.atsakomybes', 'collectionActions' => [], 'matches' => ['profile.roles'], 'startsGroup' => false, 'children' => []],
-                ['key' => 'veiklos_uzklausos', 'label' => 'shell.sections.veiklos_uzklausos', 'routeName' => 'profile.activityRequests', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.veiklos_uzklausos', 'collectionActions' => [], 'matches' => ['profile.activityRequests'], 'startsGroup' => false, 'children' => []],
-            ],
-            'createActions' => [],
-        ])
-            ->and($payload['workspaces'][1])->toEqual([
+        expect(array_column($payload['workspaces'], 'key'))->toBe(['pradzia', 'atstovavimas', 'rezervacijos', 'wiki'])
+            ->and($payload['workspaces'][0])->toEqual([
+                'key' => 'pradzia',
+                'label' => 'shell.workspaces.pradzia.title',
+                'description' => 'shell.workspaces.pradzia.description',
+                'sections' => [
+                    ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'kelias', 'label' => 'shell.sections.kelias', 'routeName' => 'learningPath.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.kelias', 'collectionActions' => [], 'matches' => ['learningPath.*', 'learningSteps.show'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'atsakomybes', 'label' => 'shell.sections.atsakomybes', 'routeName' => 'profile.roles', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.atsakomybes', 'collectionActions' => [], 'matches' => ['profile.roles'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'veiklos_uzklausos', 'label' => 'shell.sections.veiklos_uzklausos', 'routeName' => 'profile.activityRequests', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.veiklos_uzklausos', 'collectionActions' => [], 'matches' => ['profile.activityRequests'], 'startsGroup' => false, 'children' => []],
+                ],
+                'createActions' => [],
+                'experimental' => false,
+            ])
+            ->and($payload['workspaces'][3])->toEqual([
                 'key' => 'wiki',
                 'label' => 'shell.workspaces.wiki.title',
                 'description' => 'shell.workspaces.wiki.description',
+                'experimental' => true,
                 'sections' => [
                     ['key' => 'wiki', 'label' => 'shell.sections.wiki', 'routeName' => 'knowledgeBase.show', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki', 'collectionActions' => [], 'matches' => ['knowledgeBase.show', 'knowledgeSections.show'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'wiki_mine', 'label' => 'shell.sections.wiki_mine', 'routeName' => 'knowledgeBase.mine', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.wiki_mine', 'collectionActions' => [], 'matches' => ['knowledgeBase.mine'], 'startsGroup' => false, 'children' => []],
@@ -193,7 +196,7 @@ describe('per-persona visibility', function (): void {
                 ],
                 'createActions' => [],
             ])
-            ->and($payload['workspaces'][3]['createActions'])->toEqual([
+            ->and($payload['workspaces'][2]['createActions'])->toEqual([
                 ['key' => 'new_reservation', 'label' => 'shell.actions.new_reservation.title', 'description' => 'shell.actions.new_reservation.description', 'entityType' => 'reservation', 'target' => ['kind' => 'route', 'routeName' => 'reservations.create']],
             ]);
     });

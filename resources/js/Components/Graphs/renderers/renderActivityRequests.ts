@@ -17,6 +17,8 @@ export interface ParsedActivityRequest {
   institution_id: string | number;
   rowKey: string;
   fromDate: Date;
+  /** The inclusive last day, for labels; `untilDate` is the day after, for drawing. */
+  lastDate: Date;
   untilDate: Date;
   sentAt: Date | null;
   expiresAt: Date;
@@ -42,7 +44,7 @@ const CHIP_SIZE = 14;
 export function buildActivityRequestTooltipHtml(request: ParsedActivityRequest, fmtDate: Intl.DateTimeFormat): string {
   const rows = [
     `<div class="font-medium text-[12px]">${escapeHtml($t('activity_requests.campaigns.activity_confirmation'))}</div>`,
-    `<div class="opacity-80">${escapeHtml(fmtDate.format(request.fromDate))} → ${escapeHtml(fmtDate.format(request.untilDate))}</div>`,
+    `<div class="opacity-80">${escapeHtml(fmtDate.format(request.fromDate))} → ${escapeHtml(fmtDate.format(request.lastDate))}</div>`,
     `<div class="mt-1 opacity-70 text-[11px]">${escapeHtml($t('activity_requests.gantt.recipients', { count: String(request.recipients_count) }))}</div>`,
   ];
   if (request.sentAt) {
@@ -90,7 +92,7 @@ export function renderActivityRequests(ctx: ActivityRequestRenderContext): void 
     .attr('transform', d => `translate(${chipX(d) - CHIP_SIZE / 2}, ${centerY(d) - CHIP_SIZE / 2})`)
     .attr('tabindex', 0)
     .attr('role', 'img')
-    .attr('aria-label', d => `${$t('activity_requests.campaigns.activity_confirmation')}: ${fmtDate.format(d.fromDate)} – ${fmtDate.format(d.untilDate)}`);
+    .attr('aria-label', d => `${$t('activity_requests.campaigns.activity_confirmation')}: ${fmtDate.format(d.fromDate)} – ${fmtDate.format(d.lastDate)}`);
 
   chips.append('rect')
     .attr('width', CHIP_SIZE)
@@ -108,7 +110,7 @@ export function renderActivityRequests(ctx: ActivityRequestRenderContext): void 
     .attr('transform', `translate(1.5, 1.5) scale(${(CHIP_SIZE - 3) / 24})`);
 
   if (!tooltipManager) {
-    chips.append('title').text(d => `${$t('activity_requests.campaigns.activity_confirmation')}: ${fmtDate.format(d.fromDate)} – ${fmtDate.format(d.untilDate)}`);
+    chips.append('title').text(d => `${$t('activity_requests.campaigns.activity_confirmation')}: ${fmtDate.format(d.fromDate)} – ${fmtDate.format(d.lastDate)}`);
     return;
   }
 

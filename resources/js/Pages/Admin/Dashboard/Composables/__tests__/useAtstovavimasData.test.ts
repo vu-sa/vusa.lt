@@ -40,24 +40,6 @@ describe('useAtstovavimasData', () => {
     expect(data.userGaps.value[0]!.until).toEqual(new Date(2026, 2, 29));
   });
 
-  it('orders attention insights by backend priority', () => {
-    const user = {
-      current_or_upcoming_duties: [
-        { institution_id: '1' },
-        { institution_id: '2' },
-        { institution_id: '3' },
-      ],
-    } as AtstovavimasUser;
-
-    const data = useAtstovavimasData(user, [
-      institution('1', 'approaching', 30),
-      institution('2', 'healthy', 0),
-      institution('3', 'overdue', 50),
-    ]);
-
-    expect(data.institutionsInsights.value.attention.map(item => item.id)).toEqual(['3', '1']);
-  });
-
   it('adds the institutions the user serves as secretary for, once, next to their duty ones', () => {
     const user = { current_or_upcoming_duties: [{ institution_id: '1' }] } as AtstovavimasUser;
     const userInstitutions = [

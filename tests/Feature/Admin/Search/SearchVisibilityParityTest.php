@@ -55,6 +55,16 @@ function parityKeyFilter(User $user, string $collection): string
     return json_decode(substr(base64_decode($keys['collections'][$collection]['key']), 48), true, flags: JSON_THROW_ON_ERROR)['filter_by'];
 }
 
+/** As parityKeyFilter(), for a key that embeds no filter at all. */
+function parityKeyFilterOrAll(User $user, string $collection): string
+{
+    $client = new Client(['api_key' => 'test-admin-key', 'nodes' => config('scout.typesense.client-settings.nodes')]);
+    $keys = new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class))
+        ->generateScopedKeysForUser($user);
+
+    return json_decode(substr(base64_decode($keys['collections'][$collection]['key']), 48), true, flags: JSON_THROW_ON_ERROR)['filter_by'] ?? 'id:!=__no_access__';
+}
+
 /**
  * Of this test's records, the ones the filter admits — the collection outlives the rolled-back
  * database, so other tests' documents are in it too.
@@ -248,6 +258,83 @@ test('agenda search uses its own tenant read grant and keeps private items out o
 
     expect(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), [$private]))
         ->toBe([(string) $private->id]);
+});
+
+test('private agenda items follow the view policy from an already cached key, without listing ids', function (): void {
+    $institution = Institution::factory()->for($this->otherTenant)->create();
+    $institution->types()->attach($this->publicType);
+    $recent = parityMeetingOf($institution);
+    $older = parityMeetingOf($institution);
+    $older->update(['start_time' => now()->subYear()]);
+    $older->refresh()->searchable();
+    $items = AgendaItem::whereIn('meeting_id', [$recent->id, $older->id])->get();
+    $sibling = AgendaItem::factory()->for($recent)->create();
+
+    $historical = makeUser(Tenant::query()->first());
+    $historical->duties()->attach(Duty::factory()->for($institution)->create(), [
+        'start_date' => now()->subMonth()->toDateString(), 'end_date' => now()->subDays(3)->toDateString(),
+    ]);
+    $global = makeUser(Tenant::query()->first());
+    $global->givePermissionTo('agendaItems.read.*');
+    $viewers = [$this->member, $historical->refresh(), $global];
+    $filters = collect($viewers)->map(fn (User $viewer): string => parityKeyFilter($viewer, 'agenda_items'));
+
+    $items->each->update(['is_private' => true]);
+    $sibling->refresh()->searchable();
+
+    foreach ($viewers as $index => $viewer) {
+        expect(parityKeyFilter($viewer, 'agenda_items'))->toBe($filters[$index])->not->toContain((string) $items->first()->id)
+            ->and(parityAdmittedIds(AgendaItem::class, $filters[$index], $items))->toBe(parityAllowedIds($viewer, $items, 'view'))
+            ->and(parityAdmittedIds(AgendaItem::class, $filters[$index], [$sibling]))->toBe([(string) $sibling->id]);
+    }
+    expect(parityAllowedIds($this->member, $items, 'view'))->toBeEmpty()
+        ->and(parityAllowedIds($historical, $items, 'view'))->toBe([(string) $items->firstWhere('meeting_id', $recent->id)->id])
+        ->and(parityAllowedIds($global, $items, 'view'))->toHaveCount(2);
+});
+
+test('moving a meeting out of a former members term takes its private items out of their search', function (): void {
+    $institution = Institution::factory()->for($this->otherTenant)->create();
+    $meeting = parityMeetingOf($institution);
+    $item = $meeting->agendaItems->first();
+    $item->update(['is_private' => true]);
+    $this->member->duties()->attach(Duty::factory()->for($institution)->create(), [
+        'start_date' => now()->subMonth()->toDateString(), 'end_date' => now()->subDays(3)->toDateString(),
+    ]);
+    $filter = parityKeyFilter($this->member->refresh(), 'agenda_items');
+    expect(parityAdmittedIds(AgendaItem::class, $filter, [$item]))->toBe([(string) $item->id]);
+
+    $meeting->update(['start_time' => now()->subYear()]);
+
+    expect(parityAllowedIds($this->member, [$item->fresh()], 'view'))->toBeEmpty()
+        ->and(parityAdmittedIds(AgendaItem::class, $filter, [$item]))->toBeEmpty();
+});
+
+test('moving an institution to another tenant moves its private items between tenant readers', function (): void {
+    $institution = Institution::factory()->for($this->otherTenant)->create();
+    $item = parityMeetingOf($institution)->agendaItems->first();
+    $item->update(['is_private' => true]);
+    $oldReader = makeUser($this->otherTenant);
+    $oldReader->givePermissionTo('agendaItems.read.padalinys');
+    $newReader = makeUser(Tenant::query()->first());
+    $newReader->givePermissionTo('agendaItems.read.padalinys');
+    $filters = [parityKeyFilter($oldReader, 'agenda_items'), parityKeyFilter($newReader, 'agenda_items')];
+
+    $institution->update(['tenant_id' => Tenant::query()->first()->id]);
+
+    expect(parityAdmittedIds(AgendaItem::class, $filters[0], [$item]))->toBe(parityAllowedIds($oldReader, [$item->fresh()], 'view'))->toBeEmpty()
+        ->and(parityAdmittedIds(AgendaItem::class, $filters[1], [$item]))->toBe(parityAllowedIds($newReader, [$item->fresh()], 'view'))->toHaveCount(1);
+});
+
+test('a global user reader finds members between terms, whom a tenant list would hide', function (): void {
+    $reader = makeUser(Tenant::query()->first());
+    $reader->givePermissionTo('users.read.*');
+    $between = User::factory()->create();
+    $between->searchable();
+    $users = [$between, $this->member];
+    $this->member->searchable();
+
+    expect(parityAdmittedIds(User::class, parityKeyFilterOrAll($reader, 'users'), $users))
+        ->toBe(parityAllowedIds($reader, $users, 'view'))->toHaveCount(2);
 });
 
 test('authorized institution relationships are searchable without an own read grant', function (): void {

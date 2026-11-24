@@ -167,6 +167,7 @@ class GoalController extends AdminController
     #[Authorize('update', 'goal')]
     public function linkProblem(LinkGoalProblemRequest $request, Goal $goal): RedirectResponse
     {
+        // Problems are shared across tenants, so any live problem may be linked.
         $goal->problems()->syncWithoutDetaching([$request->validated('problem_id')]);
 
         return back()->with('success', __('goals.messages.problem_linked'));

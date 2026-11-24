@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\Duty;
 use App\Models\User;
 use App\Services\DutyAccessService;
-use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class DutyPolicy extends ModelPolicy
@@ -19,6 +19,27 @@ class DutyPolicy extends ModelPolicy
     public function view(User $user, Model $duty): bool
     {
         return app(DutyAccessService::class)->allowsRead($user, $duty);
+    }
+
+    #[\Override]
+    protected function tenantsFor(Model $model, string $tenantRelation): Collection
+    {
+        if ($model instanceof Duty && $model->relationLoaded('institution')) {
+            $institution = $model->institution;
+
+            if ($institution === null || $institution->trashed()) {
+                return new Collection;
+            }
+
+            // A projection without tenant_id leaves the tenant relation empty rather than absent.
+            if ($institution->relationLoaded('tenant') && array_key_exists('tenant_id', $institution->getAttributes())) {
+                $tenant = $institution->tenant;
+
+                return new Collection($tenant === null ? [] : [$tenant]);
+            }
+        }
+
+        return parent::tenantsFor($model, $tenantRelation);
     }
 
     /** Merging rewrites assignment history and permanently deletes duties, so only super admins may. */
@@ -38,19 +59,7 @@ class DutyPolicy extends ModelPolicy
             return true;
         }
 
-        // Cross-tenant: must hold duties.update.padalinys for a tenant that
-        // appears in the duty's assignableTenants list.
-        $adminTenantIds = app(ModelAuthorizer::class)
-            ->tenants($user, 'duties.update.padalinys')->pluck('id');
-
-        if ($adminTenantIds->isEmpty()) {
-            return false;
-        }
-
-        $duty->loadMissing('assignableTenants');
-        $assignableTenantIds = $duty->assignableTenants->pluck('id');
-
-        $sharedTenantIds = $adminTenantIds->intersect($assignableTenantIds);
+        $sharedTenantIds = $this->sharedAssignableTenantIds($user, $duty);
 
         if ($sharedTenantIds->isEmpty()) {
             return false;
@@ -63,5 +72,15 @@ class DutyPolicy extends ModelPolicy
         }
 
         return true;
+    }
+
+    /** @return \Illuminate\Support\Collection<int, int> */
+    public function sharedAssignableTenantIds(User $user, Duty $duty): \Illuminate\Support\Collection
+    {
+        $adminTenantIds = $this->authorizer->tenants($user, 'duties.update.padalinys')->pluck('id');
+
+        $duty->loadMissing('assignableTenants');
+
+        return $duty->assignableTenants->pluck('id')->intersect($adminTenantIds);
     }
 }

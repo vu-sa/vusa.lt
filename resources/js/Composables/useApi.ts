@@ -33,8 +33,8 @@
 
 import { computed, type Ref, type ComputedRef, unref } from 'vue';
 import { useFetch, type UseFetchReturn, type UseFetchOptions } from '@vueuse/core';
-import { usePage } from '@inertiajs/vue3';
 
+import { jsonHeaders, notifySessionExpired } from '@/Composables/apiRequest';
 import { useToasts } from '@/Composables/useToasts';
 import type {
   ApiResponse,
@@ -43,6 +43,8 @@ import type {
   isApiSuccess,
   isApiError,
 } from '@/Types/api.d';
+
+export { apiRequest, type ApiRequestOptions, type ApiResult } from '@/Composables/apiRequest';
 
 /**
  * Options for useApi composable
@@ -133,11 +135,9 @@ export function useApi<T = unknown>(
   const fetchReturn = useFetch<ApiResponse<T>>(url, {
     ...fetchOptions,
     beforeFetch({ options }) {
-      // Ensure we accept JSON and send credentials for session auth
       options.headers = {
         ...options.headers,
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
+        ...jsonHeaders(false),
       };
       options.credentials = 'same-origin';
       return { options };
@@ -155,6 +155,9 @@ export function useApi<T = unknown>(
       return ctx;
     },
     onFetchError(ctx) {
+      if (ctx.response?.status === 419) {
+        notifySessionExpired();
+      }
       // Try to parse error response
       if (typeof ctx.data === 'string') {
         try {
@@ -211,6 +214,11 @@ export function useApi<T = unknown>(
   // Wrap execute to handle toasts
   const execute = async (): Promise<void> => {
     await fetchReturn.execute();
+
+    // onFetchError already showed the session-expired toast.
+    if (fetchReturn.statusCode.value === 419) {
+      return;
+    }
 
     const rawData = unref(fetchReturn.data);
 
@@ -280,16 +288,10 @@ export function useApiMutation<T = unknown, B = unknown>(
     ...fetchOptions,
     immediate: false, // Mutations should be explicit
     beforeFetch({ options }) {
-      // Get CSRF token from meta tag (set by Laravel in the HTML head)
-      const csrfToken = usePage().props.csrf_token || '';
-
       options.method = method;
       options.headers = {
         ...options.headers,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': csrfToken,
+        ...jsonHeaders(true),
       };
       options.credentials = 'same-origin';
       if (body) {
@@ -309,6 +311,9 @@ export function useApiMutation<T = unknown, B = unknown>(
       return ctx;
     },
     onFetchError(ctx) {
+      if (ctx.response?.status === 419) {
+        notifySessionExpired();
+      }
       if (typeof ctx.data === 'string') {
         try {
           ctx.data = JSON.parse(ctx.data);
@@ -360,6 +365,11 @@ export function useApiMutation<T = unknown, B = unknown>(
 
   const execute = async (): Promise<void> => {
     await fetchReturn.execute();
+
+    // onFetchError already showed the session-expired toast.
+    if (fetchReturn.statusCode.value === 419) {
+      return;
+    }
 
     const rawData = unref(fetchReturn.data);
 

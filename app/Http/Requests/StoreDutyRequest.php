@@ -37,7 +37,7 @@ class StoreDutyRequest extends FormRequest
             'ex_officio_target_duty_ids' => 'nullable|array',
             'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties')],
             'assignable_tenants' => 'nullable|array',
-            'assignable_tenants.*.tenant_id' => 'required|integer|exists:tenants,id',
+            'assignable_tenants.*.tenant_id' => 'required|integer|distinct|exists:tenants,id',
             'assignable_tenants.*.quota' => 'nullable|integer|min:1',
             'assignable_tenants.*.user_ids' => 'nullable|array',
             'assignable_tenants.*.user_ids.*' => ['string', SoftDeleteRules::existsLive('users')],
@@ -52,7 +52,9 @@ class StoreDutyRequest extends FormRequest
             $authorizer = app(ModelAuthorizer::class);
             $hasGlobalDutyScope = $authorizer->allows($this->user(), 'duties.create.*');
 
-            $sourceTenantId = Institution::whereKey($this->input('institution_id'))->value('tenant_id');
+            $institution = $v->errors()->has('institution_id')
+                ? null : Institution::query()->with('tenant')->find($this->input('institution_id'));
+            $sourceTenantId = $institution?->tenant_id;
 
             // The institution must belong to a tenant the user may create duties in
             // (unless global scope) — otherwise an admin could create a duty inside
@@ -61,6 +63,16 @@ class StoreDutyRequest extends FormRequest
                 $allowedCreateTenantIds = $authorizer->tenants($this->user(), 'duties.create.padalinys')->pluck('id')->all();
                 if (! in_array((int) $sourceTenantId, $allowedCreateTenantIds, true)) {
                     $v->errors()->add('institution_id', __('Negalite kurti pareigybės šiame padalinyje.'));
+                }
+            }
+
+            if ($institution !== null && $v->errors()->isEmpty()
+                && ! $this->user()->can('update', (new Duty)->setRelation('institution', $institution))) {
+                foreach ($this->input('assignable_tenants') ?? [] as $index => $row) {
+                    $quota = $row['quota'] ?? null;
+                    if ($quota !== null && count(array_unique($row['user_ids'] ?? [])) > $quota) {
+                        $v->errors()->add("assignable_tenants.$index.user_ids", __('dutiables.assign.quota_exceeded', ['quota' => $quota]));
+                    }
                 }
             }
 

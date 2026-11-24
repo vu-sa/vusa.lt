@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\SerializeResourceAvailability;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ResourceAvailabilityRequest;
+use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Services\Reservations\ResourcePresenter;
+use App\Services\ResourceCapacityCalculator;
+use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 
@@ -38,33 +42,42 @@ class ResourceAvailabilityApiController extends ApiController
 
         $rangeStart = Carbon::createFromTimestampMs($start);
         $rangeEnd = Carbon::createFromTimestampMs($end);
+        $window = ResourceCapacityCalculator::databaseWindowForInstants(new TimeRange($rangeStart, $rangeEnd));
 
         $resources = Resource::query()
             ->whereIn('id', $validated['ids'])
-            ->with(['active_reservations'])
+            ->with([
+                'active_reservations' => fn (BelongsToMany $query): BelongsToMany => $query
+                    ->wherePivot('start_time', '<', $window['end'])
+                    ->wherePivot('end_time', '>', $window['start'])
+                    ->with(ResourcePresenter::RESERVATION_POLICY_RELATIONS),
+            ])
             ->get();
 
         $viewer = $request->user();
 
-        $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd, $viewer) {
+        $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd, $viewer): array {
             $overlappingReservations = $resource->active_reservations
-                ->filter(function ($reservation) use ($rangeStart, $rangeEnd) {
-                    $pivotStart = $reservation->pivot->start_time;
-                    $pivotEnd = $reservation->pivot->end_time;
+                ->filter(function (Reservation $reservation) use ($rangeStart, $rangeEnd): bool {
+                    /** @var ReservationResource $pivot */
+                    $pivot = $reservation->pivot;
+                    $pivotStart = $pivot->start_time;
+                    $pivotEnd = $pivot->end_time;
 
                     if ($pivotStart === null || $pivotEnd === null) {
                         return false;
                     }
 
+                    // The SQL window can include both local offsets near a clock change.
                     return $pivotStart->lt($rangeEnd) && $pivotEnd->gt($rangeStart);
                 })
-                ->map(fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation, $viewer))
+                ->map(fn (Reservation $reservation): array => ResourcePresenter::reservationRow($reservation, $viewer))
                 ->values()
                 ->all();
 
             return [
                 'id' => (string) $resource->id,
-                ...SerializeResourceAvailability::execute($resource, $start, $end, $viewer),
+                ...ResourcePresenter::availability($resource, $start, $end, $viewer),
                 'reservations' => $overlappingReservations,
             ];
         })->keyBy('id');

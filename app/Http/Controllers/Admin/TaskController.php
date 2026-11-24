@@ -14,6 +14,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,18 +44,21 @@ class TaskController extends AdminController
             'due_date' => $validatedData['due_date'],
         ];
 
-        // if separate_tasks is true, create separate tasks for each responsible person
         $people = $validatedData['responsible_people'] ?? [];
         $assigneeGroups = $request->boolean('separate_tasks')
             ? array_map(fn ($person): array => [$person], $people)
             : [$people];
 
-        foreach ($assigneeGroups as $assignees) {
-            $task = Task::create($taskData);
-            $task->users()->attach($assignees);
+        $assigner = $request->user();
 
-            event(new TaskCreated($task, $request->user()));
-        }
+        DB::transaction(function () use ($assigneeGroups, $taskData, $assigner): void {
+            foreach ($assigneeGroups as $assignees) {
+                $task = Task::create($taskData);
+                $task->users()->attach($assignees);
+
+                DB::afterCommit(fn () => event(new TaskCreated($task, $assigner)));
+            }
+        });
 
         return back()->with('success', $this->entityMessage('created', 'task'));
     }

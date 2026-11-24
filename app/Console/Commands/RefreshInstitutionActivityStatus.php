@@ -20,7 +20,7 @@ class RefreshInstitutionActivityStatus extends Command
     public function handle(): int
     {
         Institution::query()
-            ->with(['meetings', 'checkIns', 'types', 'duties.current_users', 'tenant'])
+            ->withSearchableRelations()
             ->chunkById(100, fn ($institutions) => $institutions->searchable());
 
         $this->info('Institution activity status re-indexed.');

@@ -16,6 +16,7 @@
  *   greenish wherever a safety band overlapped it).
  */
 import type * as d3 from 'd3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import type { VacationPeriod } from '@/Composables/useVacationPeriods';
 
@@ -157,11 +158,8 @@ export function renderVacationOverlay(ctx: VacationRenderContext): void {
     .attr('pointer-events', 'none')
     .append('title')
     .text((d) => {
-      const typeLabel = d.period.type === 'summer'
-        ? 'Summer vacation'
-        : d.period.type === 'winter'
-          ? 'Winter vacation'
-          : d.period.type === 'easter' ? 'Easter vacation' : 'Vacation';
+      const type = ['summer', 'winter', 'easter'].includes(d.period.type) ? d.period.type : 'other';
+      const typeLabel = $t(`visak.gantt.vacation.${type}`);
       return `${typeLabel}: ${d.period.start.toLocaleDateString()} - ${d.period.end.toLocaleDateString()}`;
     });
 

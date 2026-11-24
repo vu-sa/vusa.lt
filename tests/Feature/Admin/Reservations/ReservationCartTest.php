@@ -140,6 +140,11 @@ describe('cart period and availability', function (): void {
                 ->where('reservationCart.problemCount', 1)
                 ->where('reservationCart.items.0.problem', 'unavailable')
                 ->where('reservationCart.items.0.available', 1)
+                ->whereType('reservationCart.items.0.id', 'integer')
+                ->whereType('reservationCart.items.0.resource_id', 'string')
+                ->whereType('reservationCart.items.0.image_url', 'string|null')
+                ->whereType('reservationCart.expiresAt', 'string')
+                ->whereType('reservationCart.ttlDays', 'integer')
             );
     });
 

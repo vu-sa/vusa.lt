@@ -103,7 +103,7 @@ import type {
   InstitutionActivityInsight,
 } from '@/Components/Home/types';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import type { ReservationDraftSummaryData } from '@/Components/Reservations/ReservationDraftRow.vue';
+import type { ReservationCartSummary } from '@/Components/Reservations/types';
 import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import { CollectionSkeleton, OverviewStatusList } from '@/Components/Patterns';
 import { SeasonCountdown } from '@/Features/Admin/Seasons';
@@ -136,7 +136,7 @@ const props = defineProps<{
   recentlyEdited?: HomeRecentRecord[];
   registrationForms: HomeRegistrationForm[];
   /** The user's unfinished reservation, so a started one is one tap away. */
-  reservationDraft: ReservationDraftSummaryData | null;
+  reservationDraft: ReservationCartSummary | null;
   /** The week before the season: when it starts. */
   seasonCountdown?: { startsAt: string } | null;
 }>();

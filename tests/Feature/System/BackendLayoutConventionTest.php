@@ -29,7 +29,6 @@ const BACKEND_LAYOUT_REQUEST_NEEDLES = [
 const BACKEND_LAYOUT_AMBIENT_ACTOR_ALLOWLIST = [
     'app/Actions/GetAttachableTypesForDuty.php' => 1,
     'app/Actions/GetPublicEditLink.php' => 1,
-    'app/Services/AtstovavimasDashboardService.php' => 2,
     'app/Services/InstitutionPresenter.php' => 1,
     // `$viewer ?? auth()->user()` fallbacks for callers that pass no viewer.
     'app/Services/KnowledgeBasePresenter.php' => 1,

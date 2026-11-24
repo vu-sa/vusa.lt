@@ -1,13 +1,12 @@
 # VU SA Test Suite
 
-**Framework**: PestPHP with Laravel Sail  
-**Database**: SQLite in-memory testing  
-**Search**: Database driver (tests don't require Typesense connection)  
-**Coverage**: 450+ tests with comprehensive security testing
+**Framework**: Pest with Laravel Sail. **Database**: SQLite in memory. **Search**: Scout's engine is nulled unless a test calls `usesTypesense()`.
 
-## Authorization Testing Changes
+The suite has about 5,900 tests, run with `--parallel` locally and sharded across four runners in CI. This file covers commands, the environment and how the tree is organised. Patterns for writing new tests (controller skeleton, helpers, factories, performance) are in [CLAUDE.md](CLAUDE.md).
 
-Due to changes in `app/Exceptions/Handler.php`, authorization tests now behave differently:
+## Authorization status codes
+
+A refused request answers differently depending on how it arrives:
 
 ### Direct Requests (no Inertia headers)
 - **GET requests** to protected pages return `403` status code

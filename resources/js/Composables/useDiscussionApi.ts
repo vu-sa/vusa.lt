@@ -1,44 +1,20 @@
-/**
- * Imperative client for the discussion API. The endpoints serve dynamic,
- * per-comment operations (post / edit / delete / resolve / react) that don't
- * fit useApiMutation's setup-time URL binding, so this composable wraps fetch
- * with the project's standard JSON + CSRF headers and the `{ success, data }`
- * envelope.
- */
-
-import { usePage } from '@inertiajs/vue3';
-
+import { apiRequest } from '@/Composables/apiRequest';
+import type { ApiMethod } from '@/Composables/apiRequest';
 import type { CommentData, CommentDraft, DiscussionMeta, MentionableUser } from '@/Types/discussions';
 
 export function useDiscussionApi(commentableType: string, commentableId: string) {
-  const page = usePage();
-
-  async function request<T>(url: string, method: string, body?: unknown): Promise<T> {
+  async function request<T>(url: string, method: ApiMethod, body?: unknown): Promise<T> {
     return (await send<T>(url, method, body)).data;
   }
 
-  async function send<T, M = unknown>(url: string, method: string, body?: unknown): Promise<{ data: T; meta: M | null }> {
-    const csrf = (page.props.csrf_token as string | undefined) ?? '';
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': csrf,
-      },
-      credentials: 'same-origin',
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    });
-
-    const json = await response.json().catch(() => null);
-
-    if (!response.ok || !json?.success) {
-      throw new Error(json?.message ?? 'Request failed');
+  async function send<T, M = unknown>(url: string, method: ApiMethod, body?: unknown): Promise<{ data: T; meta: M | null }> {
+    const result = await apiRequest<T>(url, { method, body });
+    if (result.status === 0) throw new TypeError(result.message ?? 'Network error');
+    if (!result.ok || result.body === null) {
+      throw new Error(result.message ?? 'Request failed');
     }
 
-    return { data: json.data as T, meta: (json.meta ?? null) as M | null };
+    return { data: result.data as T, meta: result.meta as M | null };
   }
 
   const params = { commentableType, commentableId };

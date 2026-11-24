@@ -114,6 +114,10 @@ class TrashApiController extends ApiController
             $query->withCount($config['blockers']);
         }
 
+        if ($query->hasNamedScope('withSearchableRelations')) {
+            $query->scopes('withSearchableRelations');
+        }
+
         $records = $query->paginate($request->getPerPage());
 
         return $this->jsonSuccess([

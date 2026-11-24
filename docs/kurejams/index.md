@@ -54,6 +54,7 @@ diagrama tie patys žingsniai išvardyti tekstu.
 
 - [Užklausos kelias](./uzklausos-kelias) – bendra schema ir kas vyksta įrašius duomenis.
 - [Pavyzdys: renginys](./pavyzdys-renginys) – vienas renginys nuo sukūrimo Mano VU SA iki viešo puslapio.
+- [Pirmas pakeitimas](./pirmas-pakeitimas) – vienas pakeitimas nuo atšakos iki pull request ir kada jis baigtas.
 
 ## Toliau
 

@@ -20,7 +20,7 @@ class AtstovavimasStatusHistoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenant_ids' => ['required', 'array', 'min:1', 'max:100'],
+            'tenant_ids' => ['required', 'array', 'list', 'min:1', 'max:100'],
             'tenant_ids.*' => ['required', 'integer', 'distinct', 'exists:tenants,id'],
             'days' => ['nullable', 'integer', 'min:7', 'max:180'],
             'refresh' => ['nullable', 'boolean'],

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\FormOptionSource;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
@@ -51,9 +52,16 @@ class UpdateFormRequest extends FormRequest
             'form_fields.*.order' => 'integer',
             'form_fields.*.options' => 'nullable|array',
             // Everything below is persisted through FormController::FORM_FIELD_ATTRIBUTES.
-            // Without a rule, safe() strips the key — which for `id` silently disabled the
-            // "field belongs to this form" check in syncFormFields().
-            'form_fields.*.id' => 'nullable', // int for persisted rows, 'new-*' string for unsaved ones
+            // Keep the ID in validated input so the controller can check field ownership.
+            'form_fields.*.id' => ['nullable', function (string $attribute, mixed $value, Closure $fail): void {
+                if (is_string($value) && str_starts_with($value, 'new-')) {
+                    return;
+                }
+
+                if ((! is_int($value) && ! is_string($value)) || filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) === false) {
+                    $fail('validation.integer')->translate();
+                }
+            }],
             'form_fields.*.description' => 'nullable|array',
             'form_fields.*.subtype' => 'nullable|string',
             'form_fields.*.default_value' => 'nullable',

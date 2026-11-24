@@ -2,40 +2,56 @@
 
 namespace App\Actions\Dutiables;
 
-use App\Models\Pivots\Dutiable;
+use App\Models\Duty;
+use App\Models\User;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;
 
-/** Writes through each model so derived seats and permission caches follow its dates. */
 class ApplyDutiableTimelineChanges
 {
-    /**
-     * @return list<string> the ids actually written
-     */
-    public static function execute(DutiableTimelinePlan $plan): array
+    public static function execute(DutiableTimelinePlan $plan, User $actor): void
     {
-        $written = [];
+        $assignments = app(DutyAssignmentService::class);
+        $rows = collect($plan->writableChanges())->map(fn (DutiableTimelineChange $change) => $plan->rows->get($change->rowId));
+        $dutyIds = $rows->pluck('duty_id')->unique()->all();
+        $duties = Duty::query()->whereKey($dutyIds)->with('exOfficioTargetDuties')->orderBy('id')->get();
+        $affectedDuties = $duties->concat($duties->flatMap->exOfficioTargetDuties);
 
-        foreach ($plan->writableChanges() as $change) {
-            /** @var Dutiable|null $row */
-            $row = $plan->rows->get($change->rowId);
-
-            if ($row === null) {
-                continue;
-            }
-
-            self::write($row, $change);
-            $written[] = $change->rowId;
-        }
-
-        return $written;
+        $members = User::whereKey($rows->pluck('dutiable_id')->unique()->all())->get();
+        $assignments->auditMemberships($affectedDuties, $members,
+            fn () => self::writeChanges($plan, $actor, $assignments), actor: $actor);
     }
 
-    private static function write(Dutiable $row, DutiableTimelineChange $change): void
+    private static function writeChanges(DutiableTimelinePlan $plan, User $actor, DutyAssignmentService $assignments): void
     {
-        $row->fill([
-            'start_date' => $change->after['start_date'],
-            'end_date' => $change->after['end_date'],
-        ])->save();
+        $today = today()->toDateString();
+        $changes = collect($plan->writableChanges())
+            ->sortBy(fn (DutiableTimelineChange $change) => ($change->after['end_date'] ?? $today) >= $today);
+        foreach ($changes as $change) {
+            abort_unless($actor->can('manageDutiable', $plan->rows->get($change->rowId)), 403);
+        }
+
+        $changedRows = [];
+        $quotaRows = [];
+        foreach ($changes as $change) {
+            $row = $plan->rows->get($change->rowId);
+            if ($assignments->allocatesSeat($row, $change->after['end_date'], $row->tenant_id)) {
+                $quotaRows[$row->duty_id][$row->tenant_id] = $row;
+            }
+
+            $row->fill($change->after)->save();
+            $changedRows[] = $row;
+        }
+
+        // Validate the final periods so rows in the same save can move out of each other's way.
+        foreach ($changedRows as $row) {
+            $assignments->validateTermEdit($row, null, $row->end_date?->toDateString(), $row->tenant_id, 'operations');
+        }
+        foreach ($quotaRows as $tenants) {
+            foreach ($tenants as $row) {
+                $assignments->enforceTenantQuota($row->duty, $row->tenant_id, $actor, 'operations');
+            }
+        }
     }
 }

@@ -2,9 +2,8 @@
  * Shared helper functions for Gantt chart data transformations.
  * Used by UserTimelineSection and TenantTimelineSection.
  */
-import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
-
 import type {
+  AtstovavimasGap,
   AtstovavimasInstitution,
   GanttDutyMember,
   InactivePeriod,
@@ -12,6 +11,18 @@ import type {
   GanttInstitution,
   GanttInstitutionType,
 } from '../types';
+
+/** `YYYY-MM-DD` at local midnight: `new Date('YYYY-MM-DD')` would be UTC midnight, off the chart's local scale. */
+export function parseDateOnly(value: string): Date {
+  return new Date(`${value.slice(0, 10)}T00:00:00`);
+}
+
+/** The start of the day after an inclusive end date: a term ending on the 31st covers all of the 31st. */
+function dayAfter(date: Date): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + 1);
+  return next;
+}
 
 /**
  * Extract duty members from institutions for Gantt display.
@@ -21,30 +32,37 @@ export function extractDutyMembers(institutions: AtstovavimasInstitution[]): Gan
   const members: GanttDutyMember[] = [];
 
   for (const institution of institutions) {
-    const inst = institution as any;
-    for (const duty of (inst.duties ?? [])) {
-      // Use users (all members including historical) for Gantt timeline display
-      for (const user of (duty.users ?? [])) {
-        const pivot = user.pivot ?? {};
-        if (!pivot.start_date) continue;
-
-        members.push({
-          institution_id: String(institution.id),
-          duty_id: String(duty.id),
-          user: {
-            id: String(user.id),
-            name: String(user.name ?? ''),
-            profile_photo_path: user.profile_photo_path ?? null,
-            activityCategory: user.activity_category,
-          },
-          start_date: new Date(pivot.start_date),
-          end_date: pivot.end_date ? new Date(pivot.end_date) : null,
-        });
-      }
+    for (const period of (institution.membership_periods ?? [])) {
+      members.push({
+        institution_id: String(institution.id),
+        duty_id: String(period.duty_id),
+        user: {
+          id: String(period.user.id),
+          name: period.user.name,
+          profile_photo_path: period.user.profile_photo_path,
+          activityCategory: institution.member_activity_categories?.[String(period.user.id)],
+        },
+        start_date: parseDateOnly(period.start_date),
+        end_date: period.end_date ? parseDateOnly(period.end_date) : null,
+      });
     }
+
   }
 
   return members;
+}
+
+/** Check-ins as Gantt gaps; date-only values sit at local midnight, like the chart's time scale. */
+export function extractCheckInGaps(institutions: AtstovavimasInstitution[]): AtstovavimasGap[] {
+  return institutions.flatMap(institution => (institution.check_ins ?? [])
+    .filter(checkIn => checkIn?.start_date && checkIn?.end_date)
+    .map(checkIn => ({
+      institution_id: institution.id,
+      from: parseDateOnly(checkIn.start_date),
+      until: parseDateOnly(checkIn.end_date),
+      mode: 'no_meetings' as const,
+      note: checkIn.note || undefined,
+    })));
 }
 
 /**
@@ -56,10 +74,16 @@ export function calculateInactivePeriods(
   members: GanttDutyMember[],
 ): InactivePeriod[] {
   const periods: InactivePeriod[] = [];
+  const membersByInstitution = new Map<string, GanttDutyMember[]>();
+  for (const member of members) {
+    const list = membersByInstitution.get(member.institution_id) ?? [];
+    list.push(member);
+    membersByInstitution.set(member.institution_id, list);
+  }
 
   for (const institution of institutions) {
     const instId = String(institution.id);
-    const instMembers = members.filter(m => m.institution_id === instId);
+    const instMembers = membersByInstitution.get(instId) ?? [];
 
     if (instMembers.length === 0) continue;
 
@@ -71,7 +95,7 @@ export function calculateInactivePeriods(
 
     for (const member of sortedMembers) {
       const from = member.start_date;
-      const until = member.end_date ?? new Date();
+      const until = member.end_date ? dayAfter(member.end_date) : new Date();
 
       if (activePeriods.length === 0) {
         activePeriods.push({ from, until });
@@ -96,51 +120,6 @@ export function calculateInactivePeriods(
   }
 
   return periods;
-}
-
-/**
- * Extract meetings from related institutions with agenda items for tooltip display.
- * Returns formatted GanttMeeting array.
- */
-export function extractMeetingsFromInstitutions(
-  institutions: AtstovavimasInstitution[],
-): GanttMeeting[] {
-  return institutions.flatMap(inst =>
-    ((inst as any).meetings ?? []).map((m: any) => {
-      // Check authorization for agenda item visibility
-      const isAuthorized = (inst as any).authorized !== false;
-      const agendaItems = isAuthorized
-        ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => {
-            return {
-              id: String(item.id),
-              title: String(item.title ?? ''),
-              type: item.type ?? null,
-              votes: getOutcomeVotes(item),
-            };
-          })
-        : [];
-      const totalAgendaCount = isAuthorized ? (m.agenda_items ?? []).length : 0;
-
-      return {
-        id: m.id,
-        start_time: new Date(m.start_time),
-        institution_id: inst.id,
-        institution: getInstitutionDisplayName(inst),
-        completion_status: m.completion_status,
-        vote_alignment_status: m.vote_alignment_status,
-        requires_student_perspective: m.requires_student_perspective,
-        agenda_items: agendaItems,
-        agenda_items_count: totalAgendaCount,
-        authorized: isAuthorized,
-        has_report: m.has_report,
-        has_protocol: m.has_protocol,
-        has_calendar_event: m.has_calendar_event,
-        calendar_event_is_draft: m.calendar_event_is_draft,
-        // Extract meeting type for icon differentiation (in-person, remote, email)
-        type_slug: m.type ?? m.type_slug,
-      };
-    }),
-  );
 }
 
 /**

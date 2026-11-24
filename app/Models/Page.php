@@ -13,6 +13,7 @@ use App\Services\PublicUrlService;
 use App\Services\Typesense\SearchText;
 use App\Settings\SiteSettings;
 use App\Support\PublicCacheTags;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -70,6 +71,7 @@ use Spatie\Sitemap\Tags\Url;
  * @method static Builder<static>|Page newQuery()
  * @method static Builder<static>|Page onlyTrashed()
  * @method static Builder<static>|Page query()
+ * @method static Builder<static>|Page withSearchableRelations()
  * @method static Builder<static>|Page withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Page withoutTrashed()
  *
@@ -341,6 +343,12 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
         ]);
     }
 
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
+    {
+        $query->with(['tenant', 'tags', 'content.parts']);
+    }
+
     /**
      * No return type declared: matches Searchable::makeAllSearchableUsing()'s own signature
      * exactly. PublicPage re-declares `use Searchable;` on its own class body, which flattens
@@ -352,7 +360,7 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tenant', 'tags', 'content.parts']);
+        return $query->withSearchableRelations();
     }
 
     public function toSearchableArray(): array

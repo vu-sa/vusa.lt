@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Paskyra ir prieiga
-last_reviewed: 2026-11-19
+last_reviewed: 2026-11-22
 tests:
   - tests/Feature/Auth/AuthControllerTest.php
   - resources/js/Components/Institutions/__tests__/UserActivityRequestHistory.component.test.ts
@@ -129,6 +129,10 @@ užveriamas, išskyrus XL teksto dydį, kai paliekama mobilioji navigacija.
 **Atsijungti** užbaigia Mano VU SA sesiją. **Atsijungti nuo Microsoft** papildomai pradeda
 „Microsoft“ atsijungimą. Bendrame kompiuteryje rekomenduojama rinktis ir „Microsoft“ atsijungimą;
 vien naršyklės užvėrimas nėra patikimas atsijungimo veiksmas.
+
+Jei sesija baigėsi, kol puslapis buvo atvertas, išsaugoti ar kitaip pakeisti duomenų nepavyks:
+rodomas pranešimas „Sesija baigėsi“ su mygtuku **Perkrauti**. Perkrovus puslapį ir prireikus
+prisijungus iš naujo, veiksmą galima pakartoti.
 
 ### Veiklos užklausos {#veiklos-uzklausos}
 

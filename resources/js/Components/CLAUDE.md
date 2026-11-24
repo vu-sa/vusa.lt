@@ -127,7 +127,7 @@ Rules for anything added there:
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
-| A ruled grid of destinations (icon, label, description) — Visi skyriai, overview sections, quick access | `NavigationTiles` (`WorkspaceSectionTiles` for a workspace's catalog sections) | `@/Components/Patterns`, `@/Components/Overview` |
+| A ruled grid of destinations (icon, label, description) — Visi skyriai, overview sections, quick access | `NavigationTiles` (`WorkspaceSectionTiles` for a workspace's catalog sections) | `@/Components/Patterns`, `@/Components/Overview/WorkspaceSectionTiles.vue` |
 | A short list whose order the user changes (drag handle + arrows) | `SortableRowList` | `@/Components/Collection/SortableRowList.vue` |
 | A month/day date tile | `DateBadge` | `@/Components/Patterns` |
 | "Nothing here yet" / Filter empty | `EmptyState` | `@/Components/Patterns` |
@@ -183,7 +183,7 @@ tinted edit canvas with a "Redaguoji" / "Kuri naują" eyebrow, a `u-display` tit
 the shell is in **focus mode** (`useShellFocus`): the workspace picker, palette, section tabs, breadcrumbs and
 bottom nav give way to the form's own bar (back, save state, `#header-actions`, Išsaugoti), teleported into
 `ShellTopBar`; below `md` Išsaugoti sits in a bottom save bar instead. Pass an `#aside` slot for the two-column
-v0 shape: fields in the main column, settings in `FormPanel`s (`Patterns/`, with `FormToggleRow` for switch
+layout (the v0 shape) to keep fields in the main column and group settings in `FormPanel`s (`Patterns/`, with `FormToggleRow` for switch
 rows) — `PageForm.vue` and `NewsForm.vue` are the reference. The layout supplies the editor chrome from props:
 `public-url` (Peržiūrėti viešai), `activity-subject` (change history), `created-at` / `updated-at` (facts at the
 end of the aside); in the two-column shape `#danger-zone` closes the aside. Content editors share

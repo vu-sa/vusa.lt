@@ -98,6 +98,22 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('index rows match the FormPresenter shape', function (): void {
+        Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Anketa'], 'path' => ['lt' => 'anketa']]);
+
+        asUserWithInertia($this->admin)
+            ->get(route('forms.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('forms.data.0.name', ['lt' => 'Anketa', 'en' => ''])
+                ->where('forms.data.0.path', ['lt' => 'anketa', 'en' => ''])
+                ->where('forms.data.0.force_delete_blocked_reason', null)
+                ->where('forms.data.0.tenant.id', $this->tenant->id)
+                ->whereType('forms.data.0.registrations_count', 'integer')
+                ->whereType('forms.data.0.created_at', 'string')
+                ->whereType('forms.data.0.can.update', 'boolean')
+            );
+    });
+
     test('index shows forms from all tenants for super admin', function (): void {
         // Clear any existing forms to ensure clean test
         Form::query()->delete();
@@ -353,12 +369,16 @@ describe('index sorting and scoping', function (): void {
 });
 
 describe('updating form fields', function (): void {
-    test('cannot update a form field belonging to a different form', function (): void {
-        $form = Form::factory()->for($this->tenant)->create();
-        $otherForm = Form::factory()->for($this->tenant)->create();
+    test('rejecting a field from another form leaves both forms and saved responses intact', function (): void {
+        $form = Form::factory()->for($this->tenant)->create()->refresh();
+        $otherForm = Form::factory()->for($this->tenant)->create()->refresh();
+        $retainedField = FormField::factory()->for($form)->create()->refresh();
+        $omittedField = FormField::factory()->for($form)->create()->refresh();
+        $registration = Registration::factory()->for($form)->create();
+        $answer = FieldResponse::factory()->for($registration)->for($omittedField, 'formField')->create()->refresh();
         $foreignField = FormField::factory()->for($otherForm)->create([
             'label' => ['lt' => 'Svetimas', 'en' => 'Foreign'],
-        ]);
+        ])->refresh();
 
         asUser($this->admin)
             ->put(route('forms.update', $form), [
@@ -367,6 +387,16 @@ describe('updating form fields', function (): void {
                 'path' => ['lt' => 'forma', 'en' => 'form'],
                 'tenant_id' => $this->tenant->id,
                 'form_fields' => [
+                    [
+                        'id' => $retainedField->id,
+                        'type' => 'string',
+                        'label' => ['lt' => 'Pakeista', 'en' => 'Changed'],
+                    ],
+                    [
+                        'id' => 'new-field',
+                        'type' => 'string',
+                        'label' => ['lt' => 'Naujas', 'en' => 'New'],
+                    ],
                     [
                         'id' => $foreignField->id,
                         'type' => 'string',
@@ -377,9 +407,15 @@ describe('updating form fields', function (): void {
                     ],
                 ],
             ])
-            ->assertStatus(403);
+            ->assertForbidden();
 
-        expect($foreignField->fresh()->getTranslation('label', 'lt'))->toBe('Svetimas');
+        expect($form->fresh()->getAttributes())->toEqual($form->getAttributes())
+            ->and($form->formFields()->orderBy('id')->pluck('id')->all())->toBe([$retainedField->id, $omittedField->id])
+            ->and($retainedField->fresh()->getAttributes())->toEqual($retainedField->getAttributes())
+            ->and($omittedField->fresh()->getAttributes())->toEqual($omittedField->getAttributes())
+            ->and($answer->fresh()?->getAttributes())->toEqual($answer->getAttributes())
+            ->and($otherForm->fresh()->getAttributes())->toEqual($otherForm->getAttributes())
+            ->and($foreignField->fresh()->getAttributes())->toEqual($foreignField->getAttributes());
     });
 
     test('keeps the field description when the form already has registrations', function (): void {
@@ -416,8 +452,45 @@ describe('updating form fields', function (): void {
         expect($field->fresh()->getTranslation('description', 'lt'))->toBe('Įrašyk vardą');
     });
 
-    test('creates fields whose id carries the new- prefix', function (): void {
+    test('rolls back the form save and field deletion when a field write fails', function (): void {
+        $form = Form::factory()->for($this->tenant)->create()->refresh();
+        $omittedField = FormField::factory()->for($form)->create();
+        $registration = Registration::factory()->for($form)->create();
+        $answer = FieldResponse::factory()->for($registration)->for($omittedField, 'formField')->create();
+
+        FormField::creating(fn () => throw new RuntimeException('Field write failed.'));
+        $this->withoutExceptionHandling();
+
+        expect(fn () => asUser($this->admin)->put(route('forms.update', $form), [
+            'name' => ['lt' => 'Pakeista forma', 'en' => 'Changed form'],
+            'path' => $form->getTranslations('path'),
+            'tenant_id' => $this->tenant->id,
+            'form_fields' => [
+                ['id' => 'new-field', 'type' => 'string', 'label' => ['lt' => 'Naujas', 'en' => 'New']],
+            ],
+        ]))->toThrow(RuntimeException::class, 'Field write failed.')
+            ->and($form->fresh()->getAttributes())->toEqual($form->getAttributes())
+            ->and($form->formFields()->pluck('id')->all())->toBe([$omittedField->id])
+            ->and($answer->fresh())->not->toBeNull();
+    });
+
+    test('reports an invalid form field ID as a validation error', function (): void {
         $form = Form::factory()->for($this->tenant)->create();
+
+        asUser($this->admin)->putJson(route('forms.update', $form), [
+            'name' => $form->getTranslations('name'),
+            'path' => $form->getTranslations('path'),
+            'tenant_id' => $this->tenant->id,
+            'form_fields' => [
+                ['id' => ['invalid'], 'type' => 'string', 'label' => ['lt' => 'Laukas', 'en' => 'Field']],
+            ],
+        ])->assertUnprocessable()->assertJsonValidationErrors('form_fields.0.id');
+    });
+
+    test('saves form attributes and creates, updates and removes fields in one edit', function (): void {
+        $form = Form::factory()->for($this->tenant)->create();
+        $retainedField = FormField::factory()->for($form)->create();
+        $omittedField = FormField::factory()->for($form)->create();
 
         asUser($this->admin)
             ->put(route('forms.update', $form), [
@@ -426,6 +499,12 @@ describe('updating form fields', function (): void {
                 'path' => ['lt' => 'forma', 'en' => 'form'],
                 'tenant_id' => $this->tenant->id,
                 'form_fields' => [
+                    [
+                        'id' => (string) $retainedField->id,
+                        'type' => 'string',
+                        'label' => ['lt' => 'Pakeista', 'en' => 'Changed'],
+                        'order' => 2,
+                    ],
                     [
                         'id' => 'new-6a4e2c1f-0b8d-4c2e-9f11-3a5b7c9d1e2f',
                         'type' => 'string',
@@ -436,10 +515,13 @@ describe('updating form fields', function (): void {
                     ],
                 ],
             ])
-            ->assertRedirect();
+            ->assertRedirect()
+            ->assertSessionHas('success');
 
-        expect($form->formFields()->count())->toBe(1)
-            ->and($form->formFields()->first()->getTranslation('label', 'lt'))->toBe('Naujas');
+        expect($form->fresh()->getTranslations('name'))->toBe(['lt' => 'Forma', 'en' => 'Form'])
+            ->and($retainedField->fresh()->getTranslation('label', 'lt'))->toBe('Pakeista')
+            ->and($omittedField->fresh())->toBeNull()
+            ->and($form->formFields()->whereKeyNot($retainedField->id)->sole()->getTranslation('label', 'lt'))->toBe('Naujas');
     });
 });
 

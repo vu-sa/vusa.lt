@@ -29,18 +29,20 @@
 
       <TimelineGanttSkeleton v-if="!isReady" />
       <TimelineGanttChart v-else :class="active && 'min-h-0 flex-1'" :height="active ? '100%' : undefined" :fullscreen-active="active"
-        :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
+        :institutions="formattedInstitutions" :meetings="allMeetings" :gaps="allGaps"
         :show-only-with-activity="filters.showOnlyWithActivityUser.value"
         :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
         :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
         :institution-names="allInstitutionNames" :tenant-names :institution-has-public-meetings="allInstitutionHasPublicMeetings"
+        :institution-has-activity :loading-segments :meetings-loading :agenda-loader
         :institution-periodicity="allInstitutionPeriodicity"
         :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
         :show-duty-members="filters.showDutyMembersUser.value"
         :activity-requests :show-activity-requests="filters.showActivityRequestsUser.value"
         :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
-        @fullscreen="toggle" />
+        @fullscreen="toggle"
+        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
     </OverviewSection>
   </FocusModeFrame>
 </template>
@@ -53,6 +55,7 @@ import { CalendarRange } from '@lucide/vue';
 import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
+import type { GanttAgendaLoader, GanttLoadingSegment } from '@/Components/Graphs/types';
 import type {
   AtstovavimasInstitution,
   GanttMeeting,
@@ -85,6 +88,11 @@ interface Props {
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
   activityRequests?: GanttActivityRequest[];
+  /** Meetings arrive by window, so activity is read from the institution rows instead. */
+  institutionHasActivity?: Record<string, boolean>;
+  loadingSegments?: GanttLoadingSegment[];
+  agendaLoader?: GanttAgendaLoader;
+  meetingsLoading?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -112,6 +120,7 @@ onMounted(() => {
 defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
+  'range-changed': [min: Date, max: Date];
 }>();
 
 // In place rather than a modal, so dialogs opened from the chart stack above it.
@@ -144,6 +153,7 @@ const baseInstitutionPeriodicityRef = computed(() => props.institutionPeriodicit
 const {
   mergedInstitutions: formattedInstitutions,
   mergedMeetings: allMeetings,
+  mergedGaps: allGaps,
   mergedDutyMembers,
   mergedInactivePeriods,
   mergedInstitutionNames: allInstitutionNames,
@@ -152,6 +162,7 @@ const {
 } = useUserTimelineData({
   institutions: institutionsRef,
   meetings: meetingsRef,
+  gaps: toRef(props, 'gaps'),
   relatedInstitutions: relatedInstitutionsRef,
   showRelatedInstitutions: filters.showRelatedInstitutionsUser,
   baseDutyMembers: baseDutyMembersRef,

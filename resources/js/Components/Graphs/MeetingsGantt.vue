@@ -8,7 +8,7 @@
       @update:group-by="groupBy = $event" @update:sort-by="sortBy = $event" @fullscreen="emit('fullscreen', true)" />
 
     <div ref="chartArea" class="relative isolate flex w-full min-w-0 max-w-full border border-border" data-slot="meetings-gantt"
-      :style="containerHeight ? { height: containerHeight } : {}"
+      :style="containerHeight ? { height: containerHeight, maxHeight: VIEWPORT_MAX_HEIGHT } : {}"
       :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }">
       <!-- Left: sticky labels -->
       <div ref="leftLabels" class="relative isolate z-[35] shrink-0 overflow-hidden border-r border-border bg-card"
@@ -78,6 +78,7 @@
 </template>
 
 <script setup lang="ts">
+import type { GanttAgendaLoader, GanttLoadingSegment } from './types';
 import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -160,8 +161,13 @@ const props = withDefaults(defineProps<{
   showActivityStatus?: boolean;
   /** Days between expected meetings, per institution */
   institutionPeriodicity?: Record<string | number, number>;
+  /** Markers come without their agenda; the tooltip fetches it on first hover. */
+  agendaLoader?: GanttAgendaLoader;
+  /** Rows whose member history has not arrived yet: no "no members" stripes for them. */
+  membersPending?: string[];
   /** Date range being fetched, drawn as a pulsing band */
-  loadingRange?: { from: Date; until: Date } | null;
+  /** Requests in flight, each shaded on its own rows and dates. */
+  loadingSegments?: GanttLoadingSegment[];
   meetingsLoading?: boolean;
   /** In focus mode the toolbar's full-screen button reads as "exit" */
   fullscreenActive?: boolean;
@@ -188,6 +194,7 @@ const emit = defineEmits<{
   (e: 'show-legend-modal'): void;
   /** The dates on screen changed — consumers lazy-load meetings for them */
   (e: 'range-changed', min: Date, max: Date): void;
+  /** Institution ids in display order (each once) and the first and last of them on screen. */
 }>();
 
 const DAYS_AROUND_TODAY = 60;
@@ -356,8 +363,10 @@ const dragSelection = useDragSelection(rightScroll, svgEl, curXRef, layoutRows, 
 
 const openRequests = computed(() => (props.showActivityRequests ? props.activityRequests ?? [] : []).map(request => ({
   ...request,
-  fromDate: d3.timeDay.floor(new Date(request.period_start)),
-  untilDate: d3.timeDay.offset(d3.timeDay.floor(new Date(request.period_end)), 1),
+  // Date-only at local midnight; the bar runs to the end of the inclusive last day.
+  fromDate: new Date(`${request.period_start.slice(0, 10)}T00:00:00`),
+  lastDate: new Date(`${request.period_end.slice(0, 10)}T00:00:00`),
+  untilDate: d3.timeDay.offset(new Date(`${request.period_end.slice(0, 10)}T00:00:00`), 1),
 })));
 
 /** Which open requests an institution has, named for its label's mark. */
@@ -372,6 +381,17 @@ const requestLabels = computed(() => {
 });
 
 /** Meetings whose records an open "Papildyk posėdžių įrašus" request asks for. */
+/** On a short screen the chart's own scrollbars must stay on screen with it; 12rem leaves room for the shell and toolbar. */
+const VIEWPORT_MAX_HEIGHT = 'max(16rem, calc(100dvh - 12rem))';
+
+const membersPendingSet = computed(() => new Set(props.membersPending ?? []));
+
+const lastPointer = { x: 0, y: 0 };
+function trackPointer(event: PointerEvent): void {
+  lastPointer.x = event.clientX;
+  lastPointer.y = event.clientY;
+}
+
 const requestedMeetingIds = computed(() => {
   const ids = new Set<string>();
   const periods = openRequests.value.filter(request => request.campaign === 'missing_meetings');
@@ -447,6 +467,7 @@ function render(): void {
     institution_id: request.institution_id,
     rowKey: request.rowKey,
     fromDate: request.fromDate,
+    lastDate: request.lastDate,
     untilDate: request.untilDate,
     sentAt: request.sent_at ? new Date(request.sent_at) : null,
     expiresAt: new Date(request.expires_at),
@@ -523,22 +544,24 @@ function render(): void {
   };
   renderVacationBackgrounds(vacationContext);
 
-  if (props.loadingRange) {
-    const x0 = Math.max(0, x(props.loadingRange.from), visibleLeft);
-    const x1 = Math.min(innerWidth, x(props.loadingRange.until), visibleRight);
-    if (x1 > x0) {
-      g.append('g')
-        .attr('class', 'gantt-loading-rows')
-        .selectAll('rect')
-        .data(visibleInstitutionRows)
-        .enter()
-        .append('rect')
-        .attr('class', 'gantt-loading-range')
-        .attr('x', x0)
-        .attr('y', d => rowTop(d.key) + 5)
-        .attr('width', x1 - x0)
-        .attr('height', GANTT_ROW_HEIGHT - 10);
-    }
+  const loadingCells = (props.loadingSegments ?? []).flatMap((segment) => {
+    const x0 = Math.max(0, x(segment.from), visibleLeft);
+    const x1 = Math.min(innerWidth, x(segment.until), visibleRight);
+    if (x1 <= x0) return [];
+    return visibleInstitutionRows.map(row => ({ key: row.key, x0, x1 }));
+  });
+  if (loadingCells.length > 0) {
+    g.append('g')
+      .attr('class', 'gantt-loading-rows')
+      .selectAll('rect')
+      .data(loadingCells)
+      .enter()
+      .append('rect')
+      .attr('class', 'gantt-loading-range')
+      .attr('x', d => d.x0)
+      .attr('y', d => rowTop(d.key) + 5)
+      .attr('width', d => d.x1 - d.x0)
+      .attr('height', GANTT_ROW_HEIGHT - 10);
   }
 
   if (props.showDutyMembers) {
@@ -551,7 +574,9 @@ function render(): void {
       minTime: drawMin,
       maxTime: drawMax,
       ...rowGeometry,
-      rows: visibleInstitutionRows,
+      rows: props.membersPending?.length
+        ? visibleInstitutionRows.filter(row => !membersPendingSet.value.has(String(row.institutionId)))
+        : visibleInstitutionRows,
     });
   }
 
@@ -583,6 +608,7 @@ function render(): void {
     interactive: true,
     tooltipManager,
     institutionPeriodicity: props.institutionPeriodicity,
+    loadAgenda: props.agendaLoader,
     requestedMeetingIds: requestedMeetingIds.value,
   });
 
@@ -635,6 +661,9 @@ function render(): void {
 
   emit('range-changed', x.invert(Math.max(0, visibleLeft)), x.invert(visibleRight));
 
+  // Meeting responses redraw while the pointer rests on a meeting; its tooltip comes back instead of vanishing.
+  container.querySelector('g.meeting-icon:hover')?.dispatchEvent(new MouseEvent('mouseenter', { clientX: lastPointer.x, clientY: lastPointer.y }));
+
   afterRenderQueue.splice(0).forEach(callback => callback());
 }
 
@@ -642,7 +671,7 @@ watch(
   [
     parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods,
     openRequests, extraBefore, extraAfter, dayWidthPx,
-    () => props.showDutyMembers, () => props.showActivityStatus, () => props.loadingRange, () => props.institutionPeriodicity,
+    () => props.showDutyMembers, () => props.showActivityStatus, () => props.loadingSegments, () => props.membersPending, () => props.institutionPeriodicity,
   ],
   scheduleRender,
 );
@@ -670,6 +699,10 @@ onMounted(() => {
     viewport.attachViewportTracking(),
     attachKeyboardHandler(wrap.value),
     props.interactive ? dragSelection.attachDragHandler() : undefined,
+    (() => {
+      wrap.value?.addEventListener('pointermove', trackPointer, { passive: true });
+      return () => wrap.value?.removeEventListener('pointermove', trackPointer);
+    })(),
   ];
 
   // The view's position survives a reload: center date and vertical scroll, saved while scrolling.

@@ -92,6 +92,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static Builder<static>|PublicInstitution whereLocale(string $column, string $locale)
  * @method static Builder<static>|PublicInstitution whereLocales(string $column, array $locales)
  * @method static Builder<static>|PublicInstitution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|PublicInstitution withSearchableRelations()
  * @method static Builder<static>|PublicInstitution withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|PublicInstitution withoutTrashed()
  *
@@ -148,6 +149,31 @@ class PublicInstitution extends Institution
     public function shouldBeSearchable(): bool
     {
         return ! $this->trashed() && $this->is_active === 1;
+    }
+
+    #[\Override]
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'tenant',
+            'types',
+            'media',
+            'duties' => fn ($duties) => $duties->orderBy('order')->with([
+                'current_users' => fn ($users) => $users->select([
+                    'users.id',
+                    'users.name',
+                    'users.email',
+                    'users.profile_photo_path',
+                    'users.profile_photo_focal_point',
+                ]),
+            ]),
+        ]);
+    }
+
+    #[\Override]
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     /**

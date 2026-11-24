@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The people nominated to look after an institution, one roster per term (O22).
@@ -115,25 +116,25 @@ class InstitutionSecretaryController extends AdminController
         $cadence = $request->cadence();
         $userIds = collect($request->safe()->array('user_ids'))->unique()->values();
 
-        $existing = $institution->secretaryAssignments()
-            ->where('cadence_id', $cadence->id)
-            ->get();
+        DB::transaction(function () use ($institution, $cadence, $userIds): void {
+            $existing = $institution->secretaryAssignments()
+                ->where('cadence_id', $cadence->id)
+                ->get();
 
-        $existing
-            ->reject(fn (InstitutionSecretary $assignment) => $userIds->contains($assignment->user_id))
-            ->each->delete();
+            $existing
+                ->reject(fn (InstitutionSecretary $assignment) => $userIds->contains($assignment->user_id))
+                ->each->delete();
 
-        $userIds
-            ->diff($existing->pluck('user_id'))
-            ->each(fn (string $userId) => InstitutionSecretary::create([
-                'institution_id' => $institution->id,
-                'cadence_id' => $cadence->id,
-                'user_id' => $userId,
-            ]));
+            $userIds
+                ->diff($existing->pluck('user_id'))
+                ->each(fn (string $userId) => InstitutionSecretary::create([
+                    'institution_id' => $institution->id,
+                    'cadence_id' => $cadence->id,
+                    'user_id' => $userId,
+                ]));
 
-        // Hand the term's still-open tasks to whoever carries them now. Falling back
-        // when the roster is emptied is handled by ResolveTaskAssignees itself.
-        ResyncTaskAssigneesForCadence::execute($institution->fresh(), $cadence);
+            ResyncTaskAssigneesForCadence::execute($institution->fresh(), $cadence);
+        });
 
         return back()->with('success', $this->entityMessage('updated', 'institution'));
     }

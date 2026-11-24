@@ -236,6 +236,8 @@ return [
         'global_responsibility' => 'Narius į šias pareigas gali paskirti tik atsakomybių administratorius.',
         'self_responsibility' => 'Save gali paskirti tik į pareigas, kurių atsakomybes gali suteikti.',
         'already_assigned' => 'Šis narys tuo laikotarpiu jau eina šias pareigas.',
+        'finish_terms_before_retiring' => 'Pirmiau užbaik narių pareigas, tada pažymėk pareigybę nebeveikiančia.',
+        'members_updated' => 'Pareigybės nariai sėkmingai atnaujinti!',
         'quota_exceeded' => 'Padalinio kvota (:quota) viršyta.',
         'quota_tenant_not_member' => ':name nepriklauso :tenant, todėl šio padalinio administratoriai šios vietos redaguoti negalės.',
         'last_day_notice' => 'Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.',

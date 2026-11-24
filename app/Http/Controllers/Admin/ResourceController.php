@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\Media\AddImageMedia;
-use App\Actions\SerializeReservationCart;
-use App\Actions\SerializeResourceAvailability;
-use App\Actions\SerializeResourceManagers;
 use App\Enums\ResponsibilityPurpose;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreResourceRequest;
@@ -19,12 +16,16 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
+use App\Services\Reservations\ReservationPresenter;
+use App\Services\Reservations\ResourcePresenter;
+use App\Services\ResourceCapacityCalculator;
 use App\Services\ResponsibilityResolver;
 use App\Support\StagingProtection;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ResourceController extends AdminController
@@ -41,7 +42,7 @@ class ResourceController extends AdminController
     public function index()
     {
         return Inertia::render('Admin/Reservations/IndexResource', [
-            'reservationCart' => SerializeReservationCart::execute(request()->user()),
+            'reservationCart' => ReservationPresenter::cart(request()->user()),
             'mainTenantId' => Tenant::main()?->id,
             'managedTenantIds' => app(ResponsibilityResolver::class)
                 ->tenantIdsFor(request()->user(), ResponsibilityPurpose::ReservationHandling)
@@ -67,22 +68,28 @@ class ResourceController extends AdminController
     #[Authorize('create', Resource::class)]
     public function store(StoreResourceRequest $request, PostCreateRedirect $redirect)
     {
-        if ($request->validated('media') !== []) {
+        $images = $request->validated('media') ?? [];
+
+        if ($images !== []) {
             StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
 
-        $resource = new Resource;
+        $resource = DB::transaction(function () use ($request, $images): Resource {
+            $resource = new Resource;
 
-        $resource->fill($request->safe()->except('media'));
-        $resource->save();
+            $resource->fill($request->safe()->except('media'));
+            $resource->save();
 
-        $resource = $resource->fresh();
+            $resource = $resource->fresh();
 
-        foreach ($request->validated('media') as $image) {
-            app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
-        }
+            foreach ($images as $image) {
+                app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
+            }
 
-        $resource->afterImageMediaChanged('images');
+            $resource->afterImageMediaChanged('images');
+
+            return $resource;
+        });
 
         return redirect($redirect->url($request->user(), $resource, 'resources.show', 'view', 'resources.index'))
             ->with('success', $this->entityMessage('created', 'resource'));
@@ -117,10 +124,10 @@ class ResourceController extends AdminController
                 'images' => $resource->getMedia('images')->map(fn ($image) => $image->getUrl())->values(),
                 'images_media' => $resource->imageGallery('images'),
             ],
-            'availableNow' => max(0, SerializeResourceAvailability::available($resource, $now, $now->copy()->addMinute())),
+            'availableNow' => max(0, ResourceCapacityCalculator::available($resource, $now, $now->copy()->addMinute())),
             'currentLoans' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->lte($now))->map($row)->values(),
             'upcoming' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->gt($now))->take(10)->map($row)->values(),
-            'managers' => SerializeResourceManagers::execute($resource),
+            'managers' => ResourcePresenter::managers($resource),
             'history' => Inertia::defer(fn () => $resource->reservations()
                 ->with(['users', 'resources.tenant', ...Reservation::TENANT_RELATIONS])
                 ->wherePivotIn('state', ['returned', 'rejected', 'cancelled'])
@@ -129,7 +136,7 @@ class ResourceController extends AdminController
                 ->get()
                 ->map($row)
                 ->values()),
-            'reservationCart' => SerializeReservationCart::execute($user),
+            'reservationCart' => ReservationPresenter::cart($user),
             'can' => [
                 'update' => $user->can('update', $resource),
                 'delete' => $user->can('delete', $resource),
@@ -201,29 +208,29 @@ class ResourceController extends AdminController
     #[Authorize('update', 'resource')]
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
-        $hasPendingMedia = collect($request->validated('media'))
-            ->contains(fn (array $image): bool => $image['status'] === 'pending' && ($image['file'] ?? null) !== null);
+        $images = $request->validated('media');
+        $pendingImages = collect($images)
+            ->filter(fn (array $image): bool => ($image['status'] ?? null) === 'pending' && isset($image['file']));
 
-        if ($hasPendingMedia) {
+        if ($pendingImages->isNotEmpty()) {
             StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
 
-        $resource->fill($request->safe()->except('media'));
-        $resource->save();
+        DB::transaction(function () use ($request, $resource, $images, $pendingImages): void {
+            $resource->fill($request->safe()->except('media'));
+            $resource->save();
 
-        $resource->getMedia('images')
-            ->filter(fn ($image) => ! in_array($image->id, array_column($request->validated('media'), 'id')))
-            ->each(fn ($image) => $image->delete());
+            $removedImages = $images === null ? collect() : $resource->getMedia('images')
+                ->whereNotIn('id', array_column($images, 'id'));
 
-        if ($request->validated('media')) {
-            foreach ($request->validated('media') as $image) {
-                if ($image['status'] === 'pending' && $image['file']) {
-                    app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
-                }
+            foreach ($pendingImages as $image) {
+                app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
             }
-        }
 
-        $resource->afterImageMediaChanged('images');
+            $removedImages->each->delete();
+
+            $resource->afterImageMediaChanged('images');
+        });
 
         return back()
             ->with('success', $this->entityMessage('updated', 'resource'));

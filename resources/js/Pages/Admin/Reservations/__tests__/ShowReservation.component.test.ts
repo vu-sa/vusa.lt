@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
 import ShowReservation from '@/Pages/Admin/Reservations/ShowReservation.vue';
+import type { ReservationResourceState } from '@/Utils/ReservationStatus';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -97,11 +98,22 @@ const stubs = {
   },
 };
 
-const resourceFromTenant = (id: string, tenantId: string, tenantShortname: string, state = 'created') => ({
+const resourceFromTenant = (id: string, tenantId: number, tenantShortname: string, state: ReservationResourceState = 'created') => ({
   id,
   name: `Resource ${id}`,
   tenant: { id: tenantId, shortname: tenantShortname },
-  pivot: { id: `pivot-${id}`, state, quantity: 1, start_time: '2026-09-20T10:00:00Z', end_time: '2026-09-21T10:00:00Z' },
+  pivot: {
+    id: Number(id.replace(/\D/g, '')),
+    reservation_id: 'res1',
+    resource_id: id,
+    state,
+    state_properties: { tagType: 'default', description: '' },
+    quantity: 1,
+    start_time: '2026-09-20T10:00:00Z',
+    end_time: '2026-09-21T10:00:00Z',
+    returned_at: null,
+    updated_at: '2026-09-20T10:00:00Z',
+  },
 });
 
 const baseReservation = {
@@ -118,6 +130,7 @@ const baseReservation = {
 const targetFor = (resources: ReturnType<typeof resourceFromTenant>[], approvable = true) => ({
   ...baseReservation,
   created_at: baseReservation.start_time,
+  updated_at: baseReservation.start_time,
   resources: resources.map(resource => ({
     ...resource,
     pivot: { ...resource.pivot, approvable, backtrackable: false, cancellable: false },
@@ -127,7 +140,7 @@ const targetFor = (resources: ReturnType<typeof resourceFromTenant>[], approvabl
 function createWrapper(props: Record<string, unknown> = {}, resources: ReturnType<typeof resourceFromTenant>[] = []) {
   return mount(ShowReservation, {
     props: {
-      reservation: { ...baseReservation, resources },
+      reservation: { ...baseReservation, resources } as unknown as App.Entities.Reservation,
       decisionTarget: targetFor(resources),
       can: { update: true, delete: true },
       ...props,
@@ -154,7 +167,7 @@ describe('ShowReservation.vue', () => {
   });
 
   it('renders the name, the period and the resource count as the title band', () => {
-    const wrapper = createWrapper({}, [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')]);
+    const wrapper = createWrapper({}, [resourceFromTenant('r1', 1, 'VU SA MIF')]);
 
     expect(wrapper.text()).toContain('Test Reservation');
     expect(wrapper.find('[data-testid="facts"]').text()).toContain('period');
@@ -167,8 +180,8 @@ describe('ShowReservation.vue', () => {
 
   it('hides the tenant filter when every resource belongs to the same tenant', () => {
     const wrapper = createWrapper({}, [
-      resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
-      resourceFromTenant('r2', 'tenant-1', 'VU SA MIF'),
+      resourceFromTenant('r1', 1, 'VU SA MIF'),
+      resourceFromTenant('r2', 1, 'VU SA MIF'),
     ]);
 
     expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(false);
@@ -176,21 +189,21 @@ describe('ShowReservation.vue', () => {
 
   it('filters the resource list down to the selected tenant', async () => {
     const wrapper = createWrapper({}, [
-      resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
-      resourceFromTenant('r2', 'tenant-2', 'VU SA CHGF'),
-      resourceFromTenant('r3', 'tenant-2', 'VU SA CHGF'),
+      resourceFromTenant('r1', 1, 'VU SA MIF'),
+      resourceFromTenant('r2', 2, 'VU SA CHGF'),
+      resourceFromTenant('r3', 2, 'VU SA CHGF'),
     ]);
 
     expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(true);
     expect(visibleIds(wrapper)).toEqual(['r1', 'r2', 'r3']);
 
-    await wrapper.find('select[data-testid="tenant-filter"]').setValue('tenant-2');
+    await wrapper.find('select[data-testid="tenant-filter"]').setValue(2);
 
     expect(visibleIds(wrapper)).toEqual(['r2', 'r3']);
   });
 
   it('feeds the list the flagged decision target, not the record payload', () => {
-    const wrapper = createWrapper({}, [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')]);
+    const wrapper = createWrapper({}, [resourceFromTenant('r1', 1, 'VU SA MIF')]);
     const target = wrapper.findComponent({ name: 'ReservationResourceList' }).props('target') as { resources: { pivot: { approvable: boolean } }[] };
 
     expect(target.resources[0].pivot.approvable).toBe(true);
@@ -198,7 +211,7 @@ describe('ShowReservation.vue', () => {
 
   describe('actions', () => {
     it('offers adding a resource as the one primary action to someone who may update', () => {
-      const wrapper = createWrapper({}, [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')]);
+      const wrapper = createWrapper({}, [resourceFromTenant('r1', 1, 'VU SA MIF')]);
 
       expect(wrapper.find('[data-testid="primary"]').text()).toBe('Pridėti išteklių');
       expect(wrapper.find('[data-testid="overflow-add-user"]').exists()).toBe(true);
@@ -206,8 +219,8 @@ describe('ShowReservation.vue', () => {
 
     it('makes approving everything the primary action once several items wait on this user', async () => {
       const wrapper = createWrapper({}, [
-        resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
-        resourceFromTenant('r2', 'tenant-1', 'VU SA MIF'),
+        resourceFromTenant('r1', 1, 'VU SA MIF'),
+        resourceFromTenant('r2', 1, 'VU SA MIF'),
       ]);
 
       expect(wrapper.find('[data-testid="primary"]').text()).toBe('reservations.actions.approve');
@@ -220,7 +233,7 @@ describe('ShowReservation.vue', () => {
 
     it('offers no editing actions to someone who may only view', () => {
       const wrapper = createWrapper({ can: { update: false, delete: false } }, [
-        resourceFromTenant('r1', 'tenant-1', 'VU SA MIF', 'reserved'),
+        resourceFromTenant('r1', 1, 'VU SA MIF', 'reserved'),
       ]);
 
       expect(wrapper.find('[data-testid="primary"]').exists()).toBe(false);

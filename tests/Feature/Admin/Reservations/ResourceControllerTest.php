@@ -330,6 +330,20 @@ describe('show', function (): void {
             );
     });
 
+    test('managers match the ResourcePresenter shape', function (): void {
+        grantPurpose($this->resourceManager->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
+
+        asUserWithInertia($this->member)->get(route('resources.show', $this->resource))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('managers.0.id', (string) $this->resourceManager->id)
+                ->whereType('managers.0.name', 'string')
+                ->whereType('managers.0.email', 'string|null')
+                ->whereType('managers.0.phone', 'string|null')
+                ->whereType('managers.0.facebook_url', 'string|null')
+                ->whereType('managers.0.profile_photo_path', 'string|null')
+            );
+    });
+
     test('an unreturned item past its end time is flagged overdue', function (): void {
         bookResource($this->resource, $this->member, now()->subDays(3), now()->subDay(), 'lent');
 
@@ -359,6 +373,29 @@ describe('show', function (): void {
                 ->where('upcoming.0.name', $reservation->name)
                 ->where('upcoming.0.href', route('reservations.show', $reservation->id))
                 ->where('can.update', true)
+            );
+    });
+
+    test('a manager from another tenant sees availability with redacted reservation details', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $resource = Resource::factory()->for($otherTenant)->create(['capacity' => 3, 'is_reservable' => true]);
+        $owner = makeUser($otherTenant);
+        bookResource($resource, $owner, now()->subHour(), now()->addHour(), 'lent', 2);
+
+        asUserWithInertia($this->resourceManager)->get(route('resources.show', $resource))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/ShowResource')
+                ->where('resource.id', $resource->id)
+                ->where('resource.tenant.id', $otherTenant->id)
+                ->where('availableNow', 1)
+                ->where('can.update', false)
+                ->where('can.delete', false)
+                ->has('currentLoans', 1)
+                ->where('currentLoans.0.quantity', 2)
+                ->where('currentLoans.0.reservation_id', null)
+                ->where('currentLoans.0.name', null)
+                ->where('currentLoans.0.href', null)
             );
     });
 

@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v14-';
+    public const string CACHE_PREFIX = 'admin-navigation-v15-';
 
     private const int CACHE_TTL = 1800;
 
@@ -91,12 +91,12 @@ class AdminNavigationCatalog
     {
         $workspaces = array_filter([
             $this->resolveWorkspace($this->pradziaWorkspace(), $user),
-            $this->resolveWorkspace($this->wikiWorkspace(), $user),
             $this->resolveWorkspace($this->atstovavimasWorkspace(), $user),
             $this->resolveWorkspace($this->rezervacijosWorkspace(), $user),
             $this->resolveWorkspace($this->svetaineWorkspace(), $user),
             $this->resolveOrganizacijaWorkspace($user),
             $this->resolveWorkspace($this->sistemaWorkspace(), $user),
+            $this->resolveWorkspace($this->wikiWorkspace(), $user),
         ]);
 
         return ['workspaces' => array_values($workspaces)];
@@ -118,6 +118,7 @@ class AdminNavigationCatalog
             'key' => $workspace->key,
             'label' => $workspace->labelKey,
             'description' => $workspace->descriptionKey,
+            'experimental' => $workspace->experimental,
             'sections' => $this->withOverview($workspace, $sections),
             'createActions' => $this->visibleCreateActions($workspace->createActions, $user),
         ];
@@ -196,6 +197,7 @@ class AdminNavigationCatalog
             key: 'wiki',
             labelKey: 'shell.workspaces.wiki.title',
             descriptionKey: 'shell.workspaces.wiki.description',
+            experimental: true,
             sections: [
                 new Section('wiki', 'shell.sections.wiki', 'knowledgeBase.show', [], null, Visibility::always(), matches: ['knowledgeBase.show', 'knowledgeSections.show'], descriptionKey: 'shell.section_descriptions.wiki'),
                 new Section('wiki_mine', 'shell.sections.wiki_mine', 'knowledgeBase.mine', [], null, Visibility::can('viewAny', KnowledgeItem::class), matches: ['knowledgeBase.mine'], descriptionKey: 'shell.section_descriptions.wiki_mine'),

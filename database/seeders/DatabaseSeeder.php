@@ -40,8 +40,7 @@ class DatabaseSeeder extends Seeder
         $this->call(EventTypeSeeder::class);
         $this->call(MemberRegistrationFormSeeder::class);
 
-        // Generate Typesense search key if needed
-        $this->generateTypesenseSearchKey();
+        $this->generateTypesenseSearchKeys();
 
         $tenants = Tenant::all();
 
@@ -201,35 +200,29 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    /**
-     * Generate Typesense search key if not already configured
-     */
-    private function generateTypesenseSearchKey()
+    private function generateTypesenseSearchKeys(): void
     {
-        // Skip search key generation during testing
-        if (app()->environment('testing')) {
+        if (app()->environment('testing') || blank(config('scout.typesense.client-settings.api_key'))) {
             return;
         }
 
-        $adminKey = config('scout.typesense.client-settings.api_key');
-        $searchKey = config('scout.typesense.client-settings.search_only_key');
-
-        // Skip if admin key is not configured or search key already exists
-        if (empty($adminKey) || ! empty($searchKey)) {
-            return;
-        }
-
-        try {
-            // Try to generate search key using the command
-            $exitCode = Artisan::call('typesense:generate-search-key');
-
-            if ($exitCode === 0) {
-                $this->command->info('✅ Generated Typesense search-only key');
-            } else {
-                $this->command->warn('⚠️  Could not generate Typesense search key - service may not be available');
+        foreach ([
+            'search_only_key' => 'typesense:generate-search-key',
+            'admin_search_key' => 'typesense:generate-admin-search-key',
+        ] as $setting => $command) {
+            if (filled(config("scout.typesense.client-settings.{$setting}"))) {
+                continue;
             }
-        } catch (\Exception $e) {
-            $this->command->warn('⚠️  Could not generate Typesense search key: '.$e->getMessage());
+
+            try {
+                if (Artisan::call($command, ['--no-interaction' => true]) === 0) {
+                    $this->command?->info("Generated Typesense {$setting}.");
+                } else {
+                    $this->command?->warn("Could not generate Typesense {$setting}. Check that the service is available.");
+                }
+            } catch (\Exception $e) {
+                $this->command?->warn("Could not generate Typesense {$setting}. ".$e->getMessage());
+            }
         }
     }
 }

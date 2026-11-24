@@ -40,6 +40,7 @@ use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends AdminController
 {
@@ -51,7 +52,7 @@ class UserController extends AdminController
      * Display a listing of the resource.
      */
     #[Authorize('viewAny', User::class)]
-    public function index(IndexUserRequest $request)
+    public function index(IndexUserRequest $request): Response
     {
         $buildQuery = fn (bool $includeDuplicates = true) => $this->applyTanstackFilters(
             BuildUserIndexQuery::execute($request, $this->authorizer, $includeDuplicates),
@@ -71,7 +72,7 @@ class UserController extends AdminController
         $query = $buildQuery();
 
         // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request);
+        $query = $this->withForceDeleteBlockers($query, $request, ['authoredComments', 'institutionCheckIns', 'createdProblems']);
 
         $users = $query->paginate($request->getPerPage())
             ->withQueryString();
@@ -148,7 +149,7 @@ class UserController extends AdminController
      * Display the specified resource.
      */
     // Authorized in ActivityRequestHistoryRequest: the user in the route.
-    public function show(ActivityRequestHistoryRequest $request, User $user, GetUserActivityRequests $activityRequests)
+    public function show(ActivityRequestHistoryRequest $request, User $user, GetUserActivityRequests $activityRequests): Response
     {
         $loadUser = fn () => once(function () use ($user) {
             $user->loadMissing([
@@ -158,16 +159,13 @@ class UserController extends AdminController
                 'upcoming_duties' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
                 'previous_duties.institution.tenant',
                 'previous_duties.formerNames',
-                'tasks.taskable',
-                'tasks.users:id,name,email,profile_photo_path',
-                'tasks.tenants',
             ]);
             $user->append('has_password');
 
             return $user;
         });
 
-        $tasks = fn () => once(fn () => $loadUser()->tasks->sortByDesc('created_at')->values());
+        $tasks = fn () => once(fn () => $user->tasks()->withListingRelations()->get()->sortByDesc('created_at')->values());
 
         $taskStats = fn () => once(function () use ($tasks) {
             $t = $tasks();
@@ -230,13 +228,9 @@ class UserController extends AdminController
     #[Authorize('update', 'user')]
     public function update(UpdateUserRequest $request, User $user)
     {
-        // TODO: make duty attach / detach work properly
         $actor = $request->user();
-        $currentDutyIds = $user->current_duties->pluck('id');
 
-        // UpdateUserRequest already rejects an identity change the actor may not make;
-        // dropping the fields here as well means no future call path can slip one
-        // through by skipping that validator.
+        // Keep the field allowlist permission-scoped for callers that bypass request validation.
         $fields = ['facebook_url', 'phone', 'pronouns', 'show_pronouns'];
 
         if ($actor->can('updateName', $user)) {
@@ -247,25 +241,22 @@ class UserController extends AdminController
             $fields[] = 'email';
         }
 
-        $mutation = function () use ($request, $actor, $user, $currentDutyIds, $fields): void {
-            // Duties are managed on the record (Priskirti sheet), so the form no longer posts
-            // them — and absent must mean "leave alone", never "remove all".
+        $mutation = fn () => DB::transaction(function () use ($request, $actor, $user, $fields): void {
+            // The editor omits current_duties when duty assignments should stay as they are.
             if ($request->has('current_duties')) {
                 SyncUserDuties::execute(
                     $actor,
-                    new SupportCollection($request->current_duties ?? []),
-                    $currentDutyIds,
+                    new SupportCollection($request->validated('current_duties') ?? []),
+                    $user->current_duties()->wherePivotNull('tenant_id')->wherePivotNull('via_dutiable_id')->pluck('duties.id'),
                     $user,
                     $this->authorizer,
                     'users.update.padalinys'
                 );
             }
 
-            DB::transaction(function () use ($request, $user, $fields): void {
-                $user->update($request->safe()->only($fields));
-                app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $request->user());
-            });
-        };
+            $user->update($request->safe()->only($fields));
+            app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $actor);
+        });
 
         // Editing your own profile can drop the duties that grant your access.
         $couldAffectSelf = $user->is($actor);

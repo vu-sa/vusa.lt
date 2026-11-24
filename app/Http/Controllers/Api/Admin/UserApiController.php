@@ -42,7 +42,7 @@ class UserApiController extends ApiController
             ],
         );
 
-        $users = $this->withForceDeleteBlockers($query($request), $request)->paginate($request->getPerPage());
+        $users = $this->withForceDeleteBlockers($query($request), $request, ['authoredComments', 'institutionCheckIns', 'createdProblems'])->paginate($request->getPerPage());
         $this->appendForceDeleteBlockedReason($users->getCollection(), $request);
 
         return $this->jsonSuccess([

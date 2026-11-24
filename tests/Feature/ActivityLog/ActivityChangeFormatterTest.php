@@ -3,11 +3,13 @@
 use App\Models\Activity;
 use App\Models\AgendaItemNote;
 use App\Models\ContentPart;
+use App\Models\Duty;
 use App\Models\Meeting;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Role;
+use App\Models\User;
 use App\Services\ActivityChangeFormatter;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,6 +17,21 @@ use Illuminate\Support\Collection;
 use Tiptap\Editor;
 
 pest()->use(RefreshDatabase::class);
+
+test('historical duty membership activities keep their translated labels', function (string $subject, string $relation, string $label): void {
+    app()->setLocale('en');
+    $activity = activity()->performedOn($subject::factory()->create())->event('relation_updated')
+        ->withProperties(['relation' => $relation, 'attached' => [], 'detached' => []])
+        ->log('relation_updated');
+
+    app(ActivityChangeFormatter::class)->prepare(new Collection([$activity]));
+
+    expect($activity->formatted_relation_change)->toMatchArray(['relation' => $relation, 'label' => $label]);
+})->with([
+    'all-time duty members' => [Duty::class, 'users', 'members'],
+    'current duty members' => [Duty::class, 'current_users', 'members'],
+    'current user duties' => [User::class, 'current_duties', 'duties'],
+]);
 
 /**
  * Runs the formatter on a single activity and returns its formatted_changes.

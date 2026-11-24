@@ -47,6 +47,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+            // Laravel defaults new folders to 0700; the web server, a different user, could not serve uploads in them.
+            'directory_visibility' => 'public',
         ],
 
         'public' => [

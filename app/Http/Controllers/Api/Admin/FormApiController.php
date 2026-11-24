@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\BuildFormIndexQuery;
-use App\Actions\SerializeFormsForTable;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\IndexFormRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Form;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
+use App\Services\Forms\FormPresenter;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +39,7 @@ class FormApiController extends ApiController
         $forms = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
-            'items' => SerializeFormsForTable::execute($forms->getCollection(), $user, $this->registrationVisibility)->values(),
+            'items' => FormPresenter::tableRows($forms->getCollection(), $user, $this->registrationVisibility),
             'total' => $forms->total(),
             'per_page' => $forms->perPage(),
             'current_page' => $forms->currentPage(),

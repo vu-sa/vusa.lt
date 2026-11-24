@@ -5,9 +5,28 @@
     :class="['flex items-center gap-2', variant === 'hero' ? 'h-full items-end pb-7' : 'border-b border-border pb-4']"
     :data-slot="`season-countdown-${variant}`"
   >
-    <span class="flex items-center gap-2 text-sm font-bold text-foreground tabular-nums" role="timer" data-slot="season-countdown-time">
-      <FirIcon class="size-4 shrink-0 text-muted-foreground" />
-      {{ remaining }}
+    <span class="flex items-center gap-2 text-sm font-bold text-foreground tabular-nums">
+      <!-- The easter egg: touch the fir and it snows, for you alone. -->
+      <button
+        type="button"
+        :class="[
+          '-m-1 flex cursor-pointer items-center justify-center p-1 text-muted-foreground hover:text-foreground',
+          'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring',
+          'pointer-coarse:size-11 pointer-coarse:-m-3.5',
+        ]"
+        :aria-label="gusting ? $t('season_countdown.snow_stop') : $t('season_countdown.snow')"
+        data-slot="season-countdown-snow"
+        @click="toggle"
+      >
+        <!-- Greens over while it snows; with reduced motion this is all the answer the tap gets. -->
+        <FirIcon
+          :class="[
+            'size-4 shrink-0 transition-[fill,color] duration-700',
+            gusting ? 'fill-(--season-fir-light) text-foreground dark:fill-(--season-fir-edge)' : 'fill-transparent',
+          ]"
+        />
+      </button>
+      <span role="timer" data-slot="season-countdown-time">{{ remaining }}</span>
     </span>
   </div>
 </template>
@@ -18,6 +37,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 
 import { FirIcon } from '../FirIcon';
+import { useSeasonSnow } from '../useSeasonSnow';
 
 const props = withDefaults(defineProps<{
   /** When the season starts (ISO, Vilnius offset). */
@@ -31,24 +51,29 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
+const { gusting, toggle } = useSeasonSnow();
+
 const now = ref(Date.now());
+// Ticks well under a minute, so the minutes shown never lag a whole minute behind.
 useIntervalFn(() => {
   now.value = Date.now();
-}, MINUTE);
+}, 10_000);
 
-/** "4 d. 13 val.", and minutes once less than an hour is left; empty once the season has started. */
+/** "4 d. 13 val. 20 min.", rounded up to the minute; empty once the season has started. */
 const remaining = computed(() => {
   const left = Date.parse(props.startsAt) - now.value;
   if (!(left > 0)) {
     return '';
   }
-  const days = Math.floor(left / DAY);
-  const hours = Math.floor((left % DAY) / HOUR);
+  const totalMinutes = Math.ceil(left / MINUTE);
+  const days = Math.floor(totalMinutes / (DAY / MINUTE));
+  const hours = Math.floor((totalMinutes % (DAY / MINUTE)) / (HOUR / MINUTE));
+  const minutes = String(totalMinutes % (HOUR / MINUTE));
   if (days > 0) {
-    return $t('season_countdown.days_hours', { days: String(days), hours: String(hours) });
+    return $t('season_countdown.days_hours_minutes', { days: String(days), hours: String(hours), minutes });
   }
   return hours > 0
-    ? $t('season_countdown.hours', { hours: String(hours) })
-    : $t('season_countdown.minutes', { minutes: String(Math.max(1, Math.ceil((left % HOUR) / MINUTE))) });
+    ? $t('season_countdown.hours_minutes', { hours: String(hours), minutes })
+    : $t('season_countdown.minutes', { minutes });
 });
 </script>

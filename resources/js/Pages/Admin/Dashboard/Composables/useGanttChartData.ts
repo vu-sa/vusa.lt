@@ -10,11 +10,9 @@ import type {
   InactivePeriod,
 } from '../types';
 import {
+  extractCheckInGaps,
   extractDutyMembers,
   calculateInactivePeriods,
-  formatInstitutionsForGantt as formatInstitutionsForGanttHelper,
-  buildInstitutionNamesMap,
-  buildInstitutionPublicMeetingsMap,
   buildInstitutionPeriodicityMap,
   ganttInstitutionTypes,
   ganttActivityDates,
@@ -24,6 +22,8 @@ export function useGanttChartData(
   tenantInstitutionsRef: Ref<AtstovavimasInstitution[]>, // Lazy loaded tenant institutions
   availableTenants: AtstovavimasTenant[],
   tenantMeetingsRef: ComputedRef<GanttMeeting[]>, // Windowed meetings from useTenantMeetings
+  /** Rows whose member history has arrived; kept apart so a batch does not recompute every row. */
+  memberRowsRef?: Ref<AtstovavimasInstitution[]>,
 ) {
   // Use the lazy-loaded tenant institutions directly
   const tenantInstitutions = tenantInstitutionsRef;
@@ -31,28 +31,7 @@ export function useGanttChartData(
   // Meetings come from the windowed meetings store (loaded by visible date range)
   const tenantMeetings = tenantMeetingsRef;
 
-  // Tenant gaps derived from all check-ins for each institution
-  const tenantGaps = computed<AtstovavimasGap[]>(() => {
-    const institutions = tenantInstitutions.value ?? [];
-
-    return institutions.flatMap((institution) => {
-      // Get all check-ins for this institution
-      const checkIns = institution.check_ins ?? [];
-
-      // Transform each check-in to a gap
-      return checkIns.map((checkIn) => {
-        if (!checkIn?.start_date || !checkIn?.end_date) return null;
-
-        return {
-          institution_id: institution.id,
-          from: new Date(`${checkIn.start_date}T00:00:00`),
-          until: new Date(`${checkIn.end_date}T00:00:00`),
-          mode: 'no_meetings', // All check-ins represent "no meetings"
-          note: checkIn.note || undefined,
-        } as AtstovavimasGap;
-      }).filter((gap): gap is AtstovavimasGap => gap !== null);
-    });
-  });
+  const tenantGaps = computed<AtstovavimasGap[]>(() => extractCheckInGaps(tenantInstitutions.value ?? []));
 
   // Institutions keyed by id for quick lookup (tenant names etc.)
   const cachedTenantNames = computed(() => {
@@ -67,28 +46,13 @@ export function useGanttChartData(
     return names;
   });
 
-  // Institution name mappings for Gantt charts - use shared helpers
-  const getInstitutionNames = (institutions: AtstovavimasInstitution[]) => {
-    return buildInstitutionNamesMap(institutions);
-  };
-
   const getTenantNames = () => {
     return cachedTenantNames.value;
-  };
-
-  // Get public meetings lookup for institutions
-  const getInstitutionHasPublicMeetings = (institutions: AtstovavimasInstitution[]) => {
-    return buildInstitutionPublicMeetingsMap(institutions);
   };
 
   // Get meeting periodicity lookup for institutions (days between expected meetings)
   const getInstitutionPeriodicity = (institutions: AtstovavimasInstitution[]) => {
     return buildInstitutionPeriodicityMap(institutions);
-  };
-
-  // Format institutions for Gantt component - use shared helper
-  const formatInstitutionsForGantt = (institutions: AtstovavimasInstitution[]): GanttInstitution[] => {
-    return formatInstitutionsForGanttHelper(institutions);
   };
 
   // Format tenant institutions for Gantt
@@ -124,27 +88,16 @@ export function useGanttChartData(
 
   // Extract duty members from tenant institutions for Gantt display - use shared helper
   const tenantDutyMembers = computed<GanttDutyMember[]>(() => {
-    return extractDutyMembers(tenantInstitutions.value as unknown as AtstovavimasInstitution[]);
+    return extractDutyMembers((memberRowsRef ?? tenantInstitutions).value as unknown as AtstovavimasInstitution[]);
   });
 
   // Calculate inactive periods for tenant institutions - use shared helper
   const tenantInactivePeriods = computed<InactivePeriod[]>(() => {
     return calculateInactivePeriods(
-      tenantInstitutions.value as unknown as AtstovavimasInstitution[],
+      (memberRowsRef ?? tenantInstitutions).value as unknown as AtstovavimasInstitution[],
       tenantDutyMembers.value,
     );
   });
-
-  // Helper to extract duty members from user's institutions - use shared helper
-  const getDutyMembersFromInstitutions = (institutions: AtstovavimasInstitution[]): GanttDutyMember[] => {
-    return extractDutyMembers(institutions);
-  };
-
-  // Helper to calculate inactive periods from user's institutions - use shared helper
-  const getInactivePeriodsFromInstitutions = (institutions: AtstovavimasInstitution[]): InactivePeriod[] => {
-    const dutyMembers = extractDutyMembers(institutions);
-    return calculateInactivePeriods(institutions, dutyMembers);
-  };
 
   return {
     // Tenant data
@@ -159,12 +112,7 @@ export function useGanttChartData(
     tenantInactivePeriods,
 
     // Helper functions
-    getInstitutionNames,
     getTenantNames,
-    getInstitutionHasPublicMeetings,
     getInstitutionPeriodicity,
-    formatInstitutionsForGantt,
-    getDutyMembersFromInstitutions,
-    getInactivePeriodsFromInstitutions,
   };
 }

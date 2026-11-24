@@ -98,6 +98,18 @@ test('baseline institution searches omit activity status while global readers re
     }
 });
 
+test('a key that hides activity status still hides the fields every search profile excludes', function (): void {
+    $institution = Institution::factory()->for(Tenant::query()->first())->create(['is_active' => true]);
+    $keys = app(TypesenseScopedKeyService::class)->generateScopedKeysForUser(User::factory()->create());
+    $client = new Client(['api_key' => $keys['collections']['institutions']['key'], 'nodes' => config('scout.typesense.client-settings.nodes')]);
+
+    $document = $client->collections[$institution->searchableAs()]->documents->search([
+        'q' => '*', 'query_by' => 'name_lt', 'filter_by' => 'id:=`'.$institution->id.'`',
+    ])['hits'][0]['document'];
+
+    expect($document)->not->toHaveKey('activity_status')->not->toHaveKey('search_text_lt')->not->toHaveKey('search_text_en');
+});
+
 test('saving pronoun visibility updates the indexed values', function (): void {
     $user = User::factory()->create([
         'pronouns' => ['lt' => 'Jie/jų', 'en' => 'They/them'],

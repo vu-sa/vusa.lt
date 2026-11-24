@@ -23,9 +23,11 @@ use App\Services\Typesense\MeetingSearchLock;
 use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -36,8 +38,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -75,14 +75,15 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|AgendaItem newModelQuery()
+ * @method static Builder<static>|AgendaItem newQuery()
+ * @method static Builder<static>|AgendaItem query()
+ * @method static Builder<static>|AgendaItem whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|AgendaItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|AgendaItem whereLocale(string $column, string $locale)
+ * @method static Builder<static>|AgendaItem whereLocales(string $column, array $locales)
+ * @method static Builder<static>|AgendaItem whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|AgendaItem withSearchableRelations()
  *
  * @mixin \Eloquent
  */
@@ -149,10 +150,6 @@ class AgendaItem extends Pivot implements Commentable
                 if ($publicMeeting?->shouldBeSearchable()) {
                     $publicMeeting->searchableUsing()->update(new Collection([$publicMeeting]));
                 }
-            }
-
-            if ($saved && $visibilityChanged) {
-                $this->getConnection()->afterCommit(fn () => Cache::forever('agenda-privacy-version', (string) Str::uuid()));
             }
 
             return $saved;
@@ -288,6 +285,25 @@ class AgendaItem extends Pivot implements Commentable
     public function shouldBeSearchable(): bool
     {
         return $this->meeting !== null;
+    }
+
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
+    {
+        $query->with([
+            'meeting.institutions.tenant',
+            'meeting.institutions.types',
+            'votes',
+        ]);
+    }
+
+    /**
+     * @param  Builder<AgendaItem>  $query
+     * @return Builder<AgendaItem>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
     }
 
     /**

@@ -20,6 +20,8 @@
     </a>
 
     <StagingWatermark />
+    <!-- Here, not on Pradžia, so a snowfall started from the countdown keeps falling across pages. -->
+    <SeasonSnowGust v-if="snowStarted" />
     <StagingBanner v-model:dismissed="stagingDismissed" />
     <ImpersonateBanner />
 
@@ -104,6 +106,7 @@ import { useActionWindow } from '@/Composables/useActionWindow';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import StartFmPlayer from '@/Components/Shared/StartFmPlayer.vue';
 import { useStartFm } from '@/Composables/useStartFm';
+import { SeasonSnowGust, useSeasonSnow } from '@/Features/Admin/Seasons';
 import { SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 
 import SystemAnnouncement from './SystemAnnouncement.vue';
@@ -114,6 +117,7 @@ import MobileContextBar from './MobileContextBar.vue';
 import MobileBottomBar from './MobileBottomBar.vue';
 
 const radio = useStartFm();
+const { started: snowStarted } = useSeasonSnow();
 const bottomStack = ref<HTMLElement | null>(null);
 const { height: bottomHeight } = useElementSize(bottomStack, undefined, { box: 'border-box' });
 watch(bottomHeight, (height) => {

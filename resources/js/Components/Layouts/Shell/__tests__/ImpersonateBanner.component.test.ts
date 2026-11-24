@@ -1,27 +1,16 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ref } from 'vue';
 
 import ImpersonateBanner from '@/Components/Layouts/Shell/ImpersonateBanner.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { reloadDocument } from '@/Utils/reloadDocument';
 
-const { jsonMock, useFetchMock } = vi.hoisted(() => ({
-  jsonMock: vi.fn(),
-  useFetchMock: vi.fn(),
-}));
-
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Utils/reloadDocument', () => ({ reloadDocument: vi.fn() }));
-vi.mock('@vueuse/core', async (importOriginal) => {
-  const actual = await importOriginal();
 
-  return {
-    ...actual,
-    useFetch: useFetchMock,
-  };
-});
+const fetchMock = vi.fn();
+const respond = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body });
 
 const popoverStubs = {
   Popover: { template: '<div><slot /></div>' },
@@ -33,8 +22,8 @@ describe('ImpersonateBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal('route', vi.fn((name: string) => `/routes/${name}`));
-    jsonMock.mockResolvedValue({ data: ref({ success: true }), error: ref(null) });
-    useFetchMock.mockReturnValue({ json: jsonMock });
+    fetchMock.mockResolvedValue(respond({ success: true }));
+    vi.stubGlobal('fetch', fetchMock);
   });
 
   afterEach(() => {
@@ -89,11 +78,10 @@ describe('ImpersonateBanner', () => {
     await wrapper.get('[data-slot="impersonation-status"] button').trigger('click');
     await flushPromises();
 
-    expect(useFetchMock).toHaveBeenCalledWith(
+    expect(fetchMock).toHaveBeenCalledWith(
       '/routes/api.v1.admin.impersonate.stop',
       expect.objectContaining({ method: 'POST' }),
     );
-    expect(jsonMock).toHaveBeenCalled();
     expect(reloadDocument).toHaveBeenCalledOnce();
   });
 
@@ -129,21 +117,18 @@ describe('ImpersonateBanner', () => {
         impersonating: null,
       },
     }));
-    jsonMock.mockResolvedValue({
-      data: ref({
-        success: true,
-        data: [{
-          id: 'u1',
-          name: 'Ona Dabartinė',
-          email: 'ona@vusa.lt',
-          current_duties: [
-            { id: 'd1', name: 'Koordinatorė', institution: 'MIF SA' },
-            { id: 'd2', name: 'Narė', institution: null },
-          ],
-        }],
-      }),
-      error: ref(null),
-    });
+    fetchMock.mockResolvedValue(respond({
+      success: true,
+      data: [{
+        id: 'u1',
+        name: 'Ona Dabartinė',
+        email: 'ona@vusa.lt',
+        current_duties: [
+          { id: 'd1', name: 'Koordinatorė', institution: 'MIF SA' },
+          { id: 'd2', name: 'Narė', institution: null },
+        ],
+      }],
+    }));
 
     const wrapper = mount(ImpersonateBanner, { global: { stubs: popoverStubs } });
     await wrapper.get('input').setValue('Koord');
@@ -180,7 +165,7 @@ describe('ImpersonateBanner', () => {
         impersonating: { impersonator_name: 'Original Admin' },
       },
     }));
-    jsonMock.mockResolvedValue({ data: ref({ success: false, message: 'Could not return' }), error: ref(null) });
+    fetchMock.mockResolvedValue(respond({ success: false, message: 'Could not return' }, 422));
 
     const wrapper = mount(ImpersonateBanner, { global: { stubs: popoverStubs } });
     await wrapper.get('[data-slot="impersonation-status"] button').trigger('click');

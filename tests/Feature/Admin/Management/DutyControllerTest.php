@@ -20,6 +20,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\PermissionRegistrar;
 
 pest()->use(RefreshDatabase::class);
@@ -92,6 +93,51 @@ describe('authorized access', function (): void {
             ->and($this->dutyManager->can('delete', $foreign))->toBeFalse();
     })->with(['lazy' => false, 'eager' => true]);
 
+    test('a soft-deleted institution denies duty updates even when its tenant is loaded', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $duty = Duty::factory()->for($institution)->create();
+        expect($this->dutyManager->can('update', $duty))->toBeTrue();
+
+        $institution->delete();
+
+        $unloaded = $duty->fresh();
+        $loaded = $duty->fresh([
+            'institution' => fn ($query) => $query->withTrashed()->with('tenant'),
+        ]);
+
+        expect($loaded->institution->trashed())->toBeTrue()
+            ->and($loaded->institution->tenant->is($this->tenant))->toBeTrue()
+            ->and($this->dutyManager->can('update', $unloaded))->toBeFalse()
+            ->and($this->dutyManager->can('update', $loaded))->toBeFalse();
+    });
+
+    test('the page and the wizard create the same duty', function (string $routeName, int $status): void {
+        $type = DutyType::factory()->create();
+        Role::findByName('Komunikacijos koordinatorius')->attachable_types()->attach($type->id);
+        $target = Duty::factory()->for($this->dutyManagerDuty->institution)->create();
+
+        $response = asUser($this->dutyManager)->postJson(route($routeName), [
+            'name' => ['lt' => 'Bendra pareigybė', 'en' => 'Shared duty'],
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => 'none',
+            'types' => [$type->id],
+            'ex_officio_target_duty_ids' => [$target->id],
+            'assignable_tenants' => [['tenant_id' => $this->tenant->id, 'quota' => 2]],
+            'current_users' => [$this->dutyManager->id],
+        ]);
+
+        $response->assertStatus($status);
+        $created = Duty::where('name->lt', 'Bendra pareigybė')->sole();
+        expect($created->types()->pluck('duty_types.id')->all())->toBe([$type->id])
+            ->and($created->exOfficioTargetDuties()->pluck('duties.id')->all())->toBe([$target->id])
+            ->and($created->assignableTenants()->sole()->pivot->quota)->toBe(2)
+            ->and($created->current_users()->pluck('users.id')->all())->toBe([$this->dutyManager->id])
+            ->and(Activity::query()->whereMorphedTo('subject', $created)->where('event', 'relation_updated')->where('properties->relation', 'types')->exists())->toBeTrue();
+    })->with([
+        'page' => ['duties.store', 302],
+        'wizard API' => ['api.v1.admin.duties.store', 201],
+    ]);
+
     test('inline duty creation via API returns the created model', function (): void {
         $response = asUser($this->dutyManager)->postJson(route('api.v1.admin.duties.store'), [
             'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],
@@ -100,7 +146,8 @@ describe('authorized access', function (): void {
         ]);
 
         $created = Duty::where('name->lt', 'Vedlio pareigybė')->sole();
-        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.duty.id', $created->id);
+        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.duty.id', $created->id)
+            ->assertJsonPath('data.duty.institution.id', $created->institution_id)->assertJsonPath('data.duty.current_users', []);
     });
 
     test('duty manager can access duties index', function (): void {
@@ -135,7 +182,11 @@ describe('authorized access', function (): void {
         $small->assertJsonCount(3, $itemsPath);
         $large->assertJsonCount(10, $itemsPath)
             ->assertJsonPath($itemsPath.'.0.can_update', true)
-            ->assertJsonPath($itemsPath.'.0.can_delete', true);
+            ->assertJsonPath($itemsPath.'.0.can_delete', true)
+            ->assertJsonPath($itemsPath.'.0.dutiables_count', fn ($count): bool => is_int($count))
+            ->assertJsonPath($itemsPath.'.0.tenants.0.id', $this->tenant->id)
+            ->assertJsonPath($itemsPath.'.0.tenants.0.laravel_through_key', $large->json($itemsPath.'.0.institution.id'))
+            ->assertJsonMissingPath($itemsPath.'.0.force_delete_blocked_reason');
         expect($largeCount)->toBe($smallCount);
     })->with([
         'page' => ['duties.index', 'props.duties.data'],
@@ -304,7 +355,8 @@ describe('authorized access', function (): void {
             'roles' => $roleIds,
         ]);
 
-        // Then remove user1, keep user2
+        // Then remove user1 a day later, keep user2
+        $this->travel(1)->days();
         $response = asUser($actor)->put(route('duties.update', $this->dutyManagerDuty), [
             'name' => $this->dutyManagerDuty->getTranslations('name'),
             'description' => $this->dutyManagerDuty->getTranslations('description'),
@@ -755,7 +807,7 @@ describe('data quality filters', function (): void {
             'name' => ['lt' => 'Užimta pareiga', 'en' => 'Occupied Duty'],
         ]);
         $user = makeUser($this->tenant);
-        $occupiedDuty->attachAudited('users', $user->id, ['start_date' => now()->subDay()]);
+        $occupiedDuty->users()->attach($user->id, ['start_date' => now()->subDay()]);
 
         asUserWithInertia($this->dutyManager)
             ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'vacant'])]))
@@ -1186,4 +1238,86 @@ describe('ShowDuty payload contract', function (): void {
                     ->whereType('lineage.suggestedLinkDate', 'string')
                     ->whereType('responsibilities.items', 'array')));
     });
+});
+
+test('duty creation assigns the validated tenant representatives and audits its types', function (bool $api): void {
+    $admin = makeAdminUser($this->tenant);
+    $tenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+    $member = makeUser($tenant);
+    $type = DutyType::factory()->create();
+    $payload = [
+        'name' => ['lt' => 'Bendra pareigybė', 'en' => 'Shared duty'],
+        'institution_id' => $this->dutyManagerDuty->institution_id,
+        'contacts_grouping' => 'tenant',
+        'types' => [$type->id],
+        'assignable_tenants' => [['tenant_id' => $tenant->id, 'quota' => 1, 'user_ids' => [$member->id]]],
+    ];
+
+    if ($api) {
+        asUser($admin)->postJson(route('api.v1.admin.duties.store'), $payload)->assertCreated();
+    } else {
+        asUser($admin)->post(route('duties.store'), $payload)->assertSessionHasNoErrors();
+    }
+
+    $duty = Duty::where('name->lt', 'Bendra pareigybė')->sole();
+    $seat = $duty->dutiables()->sole();
+    expect($seat->dutiable_id)->toBe($member->id)
+        ->and($seat->tenant_id)->toBe($tenant->id)
+        ->and(Activity::forSubject($duty)->where('event', 'relation_updated')
+            ->where('properties->relation', 'types')->exists())->toBeTrue();
+})->with(['web' => false, 'API' => true]);
+
+test('the wizard logs one member change when a former holder returns and a current holder leaves', function (): void {
+    $duty = Duty::factory()->for($this->dutyManagerDuty->institution)->create();
+    $former = Dutiable::factory()->forDuty($duty)->ended()->create();
+    $current = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => today()->subMonth()]);
+
+    asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $duty), [
+        'user_changes' => [
+            ['user_id' => $former->dutiable_id, 'action' => 'add'],
+            ['user_id' => $current->dutiable_id, 'action' => 'remove'],
+        ],
+    ])->assertSessionHasNoErrors();
+
+    $activity = Activity::forSubject($duty)->where('event', 'relation_updated')->sole();
+    expect($activity->properties->get('relation'))->toBe('current_or_upcoming_users')
+        ->and(collect($activity->properties->get('attached'))->pluck('id')->all())->toBe([$former->dutiable_id])
+        ->and(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$current->dutiable_id]);
+});
+
+test('a duty cannot be retired and given a holder in the same update', function (bool $sharedSeat): void {
+    $duty = Duty::factory()->for($this->dutyManagerDuty->institution)->create(['is_active' => true]);
+    $member = $this->regularUser;
+    $holders = $sharedSeat
+        ? ['assignable_tenants' => [['tenant_id' => $this->tenant->id, 'quota' => 1, 'user_ids' => [$member->id]]]]
+        : ['current_users' => [$member->id]];
+
+    asUser($this->dutyManager)->patch(route('duties.update', $duty), [
+        'name' => $duty->getTranslations('name'),
+        'institution_id' => $duty->institution_id,
+        'contacts_grouping' => 'tenant',
+        'is_active' => false,
+        ...$holders,
+    ])->assertSessionHasErrors('is_active');
+
+    expect($duty->fresh()->is_active)->toBeTrue()->and($duty->dutiables()->exists())->toBeFalse();
+})->with(['home holder' => false, 'quota holder' => true]);
+
+test('retirement is rolled back if a term appears during the update', function (): void {
+    $duty = Duty::factory()->for($this->dutyManagerDuty->institution)->create(['is_active' => true]);
+    $member = $this->regularUser;
+    Duty::updated(function (Duty $updated) use ($duty, $member): void {
+        if ($updated->is($duty) && $updated->wasChanged('is_active')) {
+            Dutiable::factory()->forDuty($updated)->forUser($member)->active()->create();
+        }
+    });
+
+    asUser($this->dutyManager)->patch(route('duties.update', $duty), [
+        'name' => $duty->getTranslations('name'),
+        'institution_id' => $duty->institution_id,
+        'contacts_grouping' => 'tenant',
+        'is_active' => false,
+    ])->assertSessionHasErrors('is_active');
+
+    expect($duty->fresh()->is_active)->toBeTrue()->and($duty->dutiables()->exists())->toBeFalse();
 });

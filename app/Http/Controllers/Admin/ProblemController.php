@@ -26,6 +26,7 @@ use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -116,18 +117,22 @@ class ProblemController extends AdminController
         $institutions = $validated['institutions'] ?? [];
         unset($validated['categories'], $validated['institutions']);
 
-        $problem = Problem::create([
-            ...$validated,
-            'created_by' => auth()->id(),
-        ]);
+        $problem = DB::transaction(function () use ($validated, $categories, $institutions): Problem {
+            $problem = Problem::create([
+                ...$validated,
+                'created_by' => auth()->id(),
+            ]);
 
-        if (! empty($categories)) {
-            $problem->categories()->sync($categories);
-        }
+            if (! empty($categories)) {
+                $problem->categories()->sync($categories);
+            }
 
-        if (! empty($institutions)) {
-            $problem->institutions()->sync($institutions);
-        }
+            if (! empty($institutions)) {
+                $problem->institutions()->sync($institutions);
+            }
+
+            return $problem;
+        });
 
         return redirect($redirect->url($request->user(), $problem, 'problems.show', 'view', 'problems.index'))
             ->with('success', $this->entityMessage('created', 'problem'));
@@ -245,10 +250,12 @@ class ProblemController extends AdminController
         $institutions = $validated['institutions'] ?? [];
         unset($validated['categories'], $validated['institutions']);
 
-        $problem->update($validated);
+        DB::transaction(function () use ($problem, $validated, $categories, $institutions): void {
+            $problem->update($validated);
 
-        $problem->categories()->sync($categories);
-        $problem->institutions()->sync($institutions);
+            $problem->categories()->sync($categories);
+            $problem->institutions()->sync($institutions);
+        });
 
         return back()->with('success', $this->entityMessage('updated', 'problem'))->with('data', $problem->load(['categories', 'institutions']));
     }

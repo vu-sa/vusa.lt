@@ -1,9 +1,13 @@
 ---
 paths:
   - 'tests/**'
+  - 'database/factories/**'
 ---
 
 # Tests
+
+## Factories
+Model factories live in `database/factories/`. Follow `tests/CLAUDE.md` for pivot namespaces and bilingual fixtures.
 
 ## Search indexing is nulled by default in tests
 `TestingServiceProvider` binds Scout's `typesense` engine to `NullEngine` for every test by default — no HTTP calls, no Typesense connection needed. ~14 models hardcode Typesense in `searchableUsing()` so `SCOUT_DRIVER=database` (phpunit.xml) doesn't cover them; this was previously costing ~29ms of a ~35ms `makeUser()` fixture (measured).

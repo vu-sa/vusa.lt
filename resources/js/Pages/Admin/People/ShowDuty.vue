@@ -252,6 +252,7 @@
     :user="selectedUserForSheet"
     :study-programs="studyPrograms ?? []"
     :existing-terms
+    :delegated-seat-tenants
     :quota-tenants="quotaTenants ?? []"
     :can-assign-quota="can?.assignQuota ?? false"
   />
@@ -607,6 +608,7 @@ const props = defineProps<{
   studyPrograms?: DutyStudyProgram[];
   lineage?: DutyLineage;
   quotaTenants?: QuotaTenant[];
+  delegatedSeatTenants?: Record<string, number> | null;
   responsibilities?: DutyResponsibilitiesPayload;
   responsibilityOptions?: DutyResponsibilityOptions;
   files?: DutyFile[];
@@ -651,6 +653,8 @@ const existingTerms = computed(() => (props.duty.users ?? [])
     user_id: String(user.id),
     start_date: user.pivot?.start_date ?? null,
     end_date: user.pivot?.end_date ?? null,
+    tenant_id: user.pivot?.tenant_id ?? null,
+    via_dutiable_id: user.pivot?.via_dutiable_id ?? null,
   })));
 
 const predecessorTerms = computed(() => props.lineage?.predecessorTerms ?? []);

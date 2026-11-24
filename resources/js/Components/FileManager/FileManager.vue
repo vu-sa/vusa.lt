@@ -276,6 +276,7 @@ import {
 } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { SessionExpiredError } from '@/Composables/apiRequest';
 import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
 import { useToasts } from '@/Composables/useToasts';
 import { getFileExtension, getFileKind } from '@/Utils/fileIcons';
@@ -831,6 +832,7 @@ async function handleFileUpload(files: File[], targetPath: string = props.path) 
     }
   }
   catch (error: unknown) {
+    if (error instanceof SessionExpiredError) return;
     toasts.error(error instanceof Error ? error.message : $t('files.errors.upload_all_failed'));
   }
   finally {

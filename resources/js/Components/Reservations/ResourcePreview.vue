@@ -148,7 +148,7 @@ import { AlertTriangle, Expand } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { getSearchTranslation } from '@/Composables/useTranslatedTitle';
-import ResourceManagers, { type ResourceManagerContact } from '@/Components/Reservations/ResourceManagers.vue';
+import ResourceManagers from '@/Components/Reservations/ResourceManagers.vue';
 import { PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge } from '@/Components/Patterns';
 import ReservationResourceStateTag from '@/Components/Reservations/ReservationResourceStateTag.vue';
 import { Button } from '@/Components/ui/button';
@@ -159,20 +159,12 @@ import type { ResourceAvailability } from '@/Search/admin/Composables/useResourc
 import type { ResourceSearchResult } from '@/Search/core/types';
 import { formatDateTime } from '@/Utils/dateTime';
 
-interface ReservationRow {
-  key: number;
-  id: string | null;
-  name: string | null;
-  quantity: number;
-  state: App.Entities.ReservationResource['state'];
-  start_time: number | null;
-  end_time: number | null;
-}
+import type { ReservationAvailabilityRow, ResourceManager } from './types';
 
 interface ResourcePreviewData {
-  upcoming_reservations: ReservationRow[];
-  previous_reservations: ReservationRow[];
-  managers: ResourceManagerContact[];
+  upcoming_reservations: ReservationAvailabilityRow[];
+  previous_reservations: ReservationAvailabilityRow[];
+  managers: ResourceManager[];
 }
 
 const props = defineProps<{
@@ -214,7 +206,7 @@ function isTimeEndedActive(reservation: { end_time: number | null; state: string
 }
 
 // Search documents and the preview API both carry Unix seconds.
-function formatPeriod(reservation: ReservationRow): string {
+function formatPeriod(reservation: ReservationAvailabilityRow): string {
   return [reservation.start_time, reservation.end_time]
     .filter((time): time is number => time != null)
     .map(time => formatDateTime(time * 1000))

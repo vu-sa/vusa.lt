@@ -2,8 +2,11 @@
 
 use App\Models\Institution;
 use App\Models\Problem;
+use App\Models\ProblemCategory;
 use App\Models\Tenant;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -240,6 +243,35 @@ describe('html sanitization', function (): void {
 });
 
 describe('editing from the list', function (): void {
+    test('rolls back problem attributes and categories when the institution write fails', function (): void {
+        $problem = $this->problem->refresh();
+        $originalCategory = ProblemCategory::factory()->create();
+        $newCategory = ProblemCategory::factory()->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $problem->categories()->attach($originalCategory);
+        $institutionPivot = $problem->institutions()->getTable();
+
+        DB::listen(function (QueryExecuted $query) use ($institutionPivot): void {
+            if (str_starts_with($query->sql, 'insert') && str_contains($query->sql, $institutionPivot)) {
+                throw new RuntimeException('Institution write failed.');
+            }
+        });
+        $this->withoutExceptionHandling();
+
+        expect(fn () => asUser($this->coordinator)->patch(route('problems.update', $problem), [
+            'title' => ['lt' => 'Pakeista problema', 'en' => 'Changed problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->tenant->id,
+            'occurred_at' => now()->subWeek()->toDateString(),
+            'status' => 'in_progress',
+            'categories' => [$newCategory->id],
+            'institutions' => [$institution->id],
+        ]))->toThrow(RuntimeException::class, 'Institution write failed.')
+            ->and($problem->fresh()->getAttributes())->toEqual($problem->getAttributes())
+            ->and($problem->categories()->pluck('problem_categories.id')->all())->toBe([$originalCategory->id])
+            ->and($problem->institutions()->exists())->toBeFalse();
+    });
+
     // `problems.update.padalinys` is tenant-scoped, so the list asks per row instead of `auth.can`.
     test('offers edit only on problems the reader may edit', function (): void {
         $canUpdate = fn ($items) => collect($items)->mapWithKeys(fn ($item) => [$item['id'] => $item['can_update']]);

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildDutyIndexQuery;
-use App\Actions\Dutiables\SyncExOfficioTargets;
+use App\Actions\Duties\CreateDuty;
 use App\Actions\Duties\GetAssignableExOfficioDuties;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
@@ -27,8 +27,8 @@ use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ContactPresentationService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\DutyAccessService;
-use App\Services\DutyAssignmentService;
 use App\Services\DutyPanelPresenter;
 use App\Services\DutyPresenter;
 use App\Services\DutyResponsibilityPresenter;
@@ -43,6 +43,7 @@ use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DutyController extends AdminController
 {
@@ -54,7 +55,7 @@ class DutyController extends AdminController
      * Display a listing of the resource.
      */
     #[Authorize('viewAny', Duty::class)]
-    public function index(IndexDutyRequest $request, DutyAccessService $access)
+    public function index(IndexDutyRequest $request, DutyAccessService $access): Response
     {
         $query = $this->applyTanstackFilters(
             BuildDutyIndexQuery::execute($request, $access),
@@ -68,12 +69,11 @@ class DutyController extends AdminController
         $duties = $query->paginate($request->getPerPage())
             ->withQueryString();
 
+        $this->appendForceDeleteBlockedReason($duties->getCollection(), $request);
+
         return Inertia::render('Admin/People/IndexDuty', [
             'duties' => [
-                'data' => $duties->getCollection()->map(function ($duty) {
-                    /** @var Duty $duty */
-                    return [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => request()->user()->can('update', $duty), 'can_delete' => request()->user()->can('delete', $duty)];
-                })->values(),
+                'data' => $duties->getCollection()->map(fn (Duty $duty): array => DutyPresenter::forIndex($duty, $request->user()))->values(),
                 'meta' => [
                     'total' => $duties->total(),
                     'per_page' => $duties->perPage(),
@@ -113,25 +113,12 @@ class DutyController extends AdminController
      * Store a newly created resource in storage.
      */
     #[Authorize('create', Duty::class)]
-    public function store(StoreDutyRequest $request, PostCreateRedirect $redirect)
+    public function store(StoreDutyRequest $request, CreateDuty $create, PostCreateRedirect $redirect)
     {
-        return DB::transaction(function () use ($request, $redirect) {
-            $duty = new Duty;
+        $duty = $create->execute($request->validated(), $request->user());
 
-            $validatedData = $request->safe();
-            $duty->fill(collect($validatedData)->except('types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
-
-            $duty->syncAudited('types', $request->validated('types') ?? []);
-            SyncExOfficioTargets::execute($duty, $validatedData['ex_officio_target_duty_ids'] ?? []);
-            $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
-
-            $this->assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
-
-            $duty->load('institution', 'types', 'current_users');
-
-            return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
-                ->with('success', $this->entityMessage('created', 'duty'));
-        });
+        return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
+            ->with('success', $this->entityMessage('created', 'duty'));
     }
 
     /**
@@ -156,6 +143,7 @@ class DutyController extends AdminController
             'duty' => fn (): array => DutyPresenter::forShow($loadDuty()),
             'files' => Inertia::defer(fn () => DutyPanelPresenter::files($duty->availableFiles()->orderByDesc('file_date')->get()), 'files'),
             'can' => fn (): array => DutyPanelPresenter::abilities($duty, $user()),
+            'delegatedSeatTenants' => fn () => DutyPanelPresenter::delegatedSeatTenants($loadDuty(), $user()),
             'otherDuties' => Inertia::defer(fn () => DutyPanelPresenter::otherDuties($duty), 'dutyPanels'),
             'studyPrograms' => Inertia::defer(fn () => DutyPanelPresenter::studyPrograms($this->studyProgramsFor($duty)), 'dutyPanels'),
             'lineage' => Inertia::defer(fn () => DutyPanelPresenter::lineage($duty, $user()), 'dutyPanels'),
@@ -457,103 +445,70 @@ class DutyController extends AdminController
     {
         $validated = $request->validated();
 
-        $isOwningAdmin = $request->user()->can('update', $duty);
+        $actingTenantId = $request->actingTenantId();
 
-        // For cross-tenant admins, determine the acting tenant id.
-        // The request may explicitly pass tenant_id; otherwise infer from the admin's
-        // shared assignable tenants. Owning admins always write with tenant_id = null.
-        $actingTenantId = null;
-        if (! $isOwningAdmin) {
-            $actingTenantId = $validated['tenant_id'] ?? null;
-
-            if ($actingTenantId === null) {
-                $duty->loadMissing('assignableTenants');
-                $adminTenantIds = $this->authorizer->tenants($request->user(), 'duties.update.padalinys')->pluck('id');
-                $actingTenantId = $adminTenantIds->intersect($duty->assignableTenants->pluck('id'))->first();
+        $actor = $request->user();
+        $mutation = fn () => DB::transaction(function () use ($validated, $duty, $actingTenantId, $actor): void {
+            $this->assignments->lockDuty($duty);
+            $createdUsers = [];
+            foreach ($validated['new_users'] ?? [] as $newUserData) {
+                $user = User::create([
+                    'name' => $newUserData['name'],
+                    'email' => $newUserData['email'] ?? null,
+                    'phone' => $newUserData['phone'] ?? null,
+                ]);
+                $createdUsers[$newUserData['temp_id']] = $user;
             }
-        }
 
-        $createdUsers = [];
-
-        $mutation = function () use ($validated, $duty, $actingTenantId, &$createdUsers): void {
-            DB::transaction(function () use ($validated, $duty, $actingTenantId, &$createdUsers): void {
-                if (! empty($validated['new_users'])) {
-                    foreach ($validated['new_users'] as $newUserData) {
-                        $user = User::create([
-                            'name' => $newUserData['name'],
-                            'email' => $newUserData['email'] ?? null,
-                            'phone' => $newUserData['phone'] ?? null,
-                        ]);
-                        $createdUsers[$newUserData['temp_id']] = $user;
-                    }
-                }
-
-                foreach ($validated['user_changes'] as $change) {
+            $memberIds = collect($validated['user_changes'])->pluck('user_id')
+                ->map(fn (string $id) => $createdUsers[$id]->id ?? $id)->unique()->all();
+            $members = User::whereKey($memberIds)->get();
+            $this->assignments->auditMemberships(collect([$duty]), $members, function () use ($validated, $duty, $actingTenantId, $actor, $createdUsers): void {
+                $allocatedSeat = false;
+                foreach ($validated['user_changes'] as $index => $change) {
+                    $dateAttribute = "user_changes.$index.end_date";
                     $userId = $change['user_id'];
+                    $attributes = [
+                        'start_date' => $change['start_date'] ?? null,
+                        'end_date' => $change['end_date'] ?? null,
+                        'study_program_id' => $change['study_program_id'] ?? null,
+                    ];
 
                     if (str_starts_with($userId, 'new-')) {
-                        if (isset($createdUsers[$userId])) {
-                            $duty->attachAudited('users', $createdUsers[$userId]->id, [
-                                'start_date' => $change['start_date'] ?? now(),
-                                'end_date' => $change['end_date'] ?? null,
-                                'study_program_id' => $change['study_program_id'] ?? null,
-                                'tenant_id' => $actingTenantId,
-                            ]);
+                        if ($change['action'] !== 'add' || ! isset($createdUsers[$userId])) {
+                            continue;
                         }
+
+                        $userId = $createdUsers[$userId]->id;
+                    }
+
+                    $currentTerms = $this->assignments->manualTerms($duty->id, $userId, $actingTenantId)->notEnded();
+
+                    if ($change['action'] === 'remove') {
+                        $this->assignments->endTerms($currentTerms, $attributes['end_date'], $dateAttribute);
 
                         continue;
                     }
 
-                    if ($change['action'] === 'add') {
-                        // Look for an existing row scoped to the acting tenant.
-                        $existingPivotQuery = $duty->dutiables()->where('dutiable_id', $userId)->whereNull('via_dutiable_id');
-                        if ($actingTenantId !== null) {
-                            $existingPivotQuery->where('tenant_id', $actingTenantId);
-                        } else {
-                            $existingPivotQuery->whereNull('tenant_id');
-                        }
-                        $existingPivot = $existingPivotQuery->first();
-
-                        if ($existingPivot) {
-                            $existingPivot->update([
-                                'start_date' => $change['start_date'] ?? now(),
-                                'end_date' => $change['end_date'] ?? null,
-                                'study_program_id' => $change['study_program_id'] ?? null,
-                            ]);
-                        } else {
-                            $duty->attachAudited('users', $userId, [
-                                'start_date' => $change['start_date'] ?? now(),
-                                'end_date' => $change['end_date'] ?? null,
-                                'study_program_id' => $change['study_program_id'] ?? null,
-                                'tenant_id' => $actingTenantId,
-                            ]);
-                        }
-                    } elseif ($change['action'] === 'remove') {
-                        // End-date only the active row belonging to the acting tenant.
-                        // Ex-officio rows follow their source and are never removed here.
-                        $removeQuery = Dutiable::where('duty_id', $duty->id)
-                            ->where('dutiable_type', MorphMap::alias(User::class))
-                            ->where('dutiable_id', $userId)
-                            ->whereNull('via_dutiable_id')
-                            ->where(function ($query): void {
-                                $query->whereNull('end_date')
-                                    ->orWhereDate('end_date', '>=', today());
-                            });
-
-                        if ($actingTenantId !== null) {
-                            $removeQuery->where('tenant_id', $actingTenantId);
-                        } else {
-                            $removeQuery->whereNull('tenant_id');
-                        }
-
-                        $this->assignments->endDateDutiables($removeQuery, $change['end_date'] ?? now());
+                    if ($existingTerm = $currentTerms->orderBy('start_date')->orderBy('id')->lockForUpdate()->first()) {
+                        $edit = array_intersect_key($attributes, $change);
+                        $edit['start_date'] ??= $existingTerm->start_date->toDateString();
+                        $endDate = array_key_exists('end_date', $edit) ? $edit['end_date'] : $existingTerm->end_date?->toDateString();
+                        $this->assignments->validateTermEdit($existingTerm, $edit['start_date'], $endDate, $actingTenantId, $dateAttribute);
+                        $existingTerm->update($edit);
+                    } else {
+                        $term = $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false, dateAttribute: $dateAttribute);
+                        $allocatedSeat = $allocatedSeat || $term->end_date === null || $term->end_date->gte(today());
                     }
                 }
-            });
-        };
+
+                if ($allocatedSeat) {
+                    $this->assignments->enforceTenantQuota($duty, $actingTenantId, $actor, 'user_changes');
+                }
+            }, actor: $actor);
+        });
 
         // Removing themselves from this duty may strip the acting user's own access.
-        $actor = $request->user();
         $couldAffectSelf = ! $actor->isSuperAdmin()
             && collect($validated['user_changes'])
                 ->contains(fn ($change) => (string) $change['user_id'] === (string) $actor->id);
@@ -563,7 +518,7 @@ class DutyController extends AdminController
         }
 
         return redirect()->route('duties.show', $duty)
-            ->with('success', trans('Pareigybės nariai sėkmingai atnaujinti!'));
+            ->with('success', __('dutiables.assign.members_updated'));
     }
 
     #[Authorize('forceDelete', 'duty')]

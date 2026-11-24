@@ -7,6 +7,10 @@ paths:
 
 # Routes
 
+## Route surfaces
+`routes/web.php` serves public pages and mounts the Inertia admin routes from `routes/admin.php` under `/mano`. Admin page names omit an `admin.` prefix, as in `route('studyPrograms.index')`.
+`routes/api.php` serves the public API at `/api/v1/*` without login and the admin API at `/api/v1/admin/*` with session authentication.
+
 ## File manager routes carry their own rate limiter
 The files routes group uses `->middleware('throttle:fileManager')->withoutMiddleware('throttle:admin')`. Without the `withoutMiddleware` call the shared admin limiter still applies underneath and the file manager 429s again (one thumbnail request per visible image). New file-manager endpoints must go inside this group; the limiter itself is defined in AppServiceProvider::configureRateLimiting().
 

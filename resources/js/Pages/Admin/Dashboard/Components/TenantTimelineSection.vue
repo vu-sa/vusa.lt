@@ -59,7 +59,7 @@
           :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
           :show-activity-status="filters.showActivityStatusTenant.value"
           :activity-requests :show-activity-requests="filters.showActivityRequestsTenant.value"
-          :loading-range :meetings-loading="meetingsLoading || filters.tenantInstitutionsLoading.value"
+          :loading-segments :agenda-loader :members-pending :meetings-loading="meetingsLoading || filters.tenantInstitutionsLoading.value"
           :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
           @create-check-in="$emit('create-check-in', $event)"
           @fullscreen="toggle"
@@ -77,6 +77,7 @@ import { CalendarRange } from '@lucide/vue';
 import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
+import type { GanttAgendaLoader, GanttLoadingSegment } from '@/Components/Graphs/types';
 import type {
   GanttMeeting,
   AtstovavimasGap,
@@ -107,7 +108,10 @@ defineProps<{
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
   institutionPeriodicity?: Record<string | number, number>;
-  loadingRange?: { from: Date; until: Date } | null;
+  loadingSegments?: GanttLoadingSegment[];
+  agendaLoader?: GanttAgendaLoader;
+  /** Rows whose member history has not arrived; not drawn as having no members. */
+  membersPending?: string[];
   /** Whether meetings are being fetched (delayed ~300ms by the caller) */
   meetingsLoading?: boolean;
   /** Only decides whether the activity-ring option is offered; the figures live on the page. */

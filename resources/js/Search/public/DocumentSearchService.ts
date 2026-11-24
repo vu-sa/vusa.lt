@@ -1,3 +1,4 @@
+import { apiRequest } from '@/Composables/apiRequest';
 import type { DocumentSearchFilters, DocumentFacet, SearchError } from '@/Types/DocumentSearchTypes';
 
 interface SearchParams {
@@ -97,9 +98,8 @@ export class DocumentSearchService {
         try {
           const url = new URL(this.curation.recommendationsUrl, window.location.origin);
           url.searchParams.set('q', filters.query.trim());
-          const response = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } });
-          if (response.ok) {
-            const result = await response.json() as { data: { ids: string[] } };
+          const result = await apiRequest<{ ids: string[] }>(url.toString(), { signal: controller.signal });
+          if (result.ok && result.data) {
             recommendedIds = result.data.ids;
           }
         }

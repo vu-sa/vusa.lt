@@ -3,21 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Collection;
 
 class ReorderDutiesRequest extends FormRequest
 {
-    /**
-     * Institutions owning the duties being reordered, resolved once for both
-     * authorization and the controller.
-     *
-     * @var Collection<int, Institution>|null
-     */
-    private ?Collection $resolvedInstitutions = null;
-
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -27,13 +17,19 @@ class ReorderDutiesRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $institutions = $this->ownerInstitutions();
+        $dutyIds = collect($this->input('duties', []))->pluck('id');
 
-        if ($institutions->isEmpty()) {
+        if ($dutyIds->isEmpty() || ! $dutyIds->every(fn ($id) => is_string($id) && $id !== '')) {
             return false;
         }
 
-        return $institutions->every(fn ($institution) => $this->user()->can('update', $institution));
+        $dutyIds = $dutyIds->uniqueStrict()->values();
+        $duties = Duty::whereIn('id', $dutyIds)
+            ->with(['institution' => fn ($query) => $query->withTrashed()])
+            ->get();
+
+        return $duties->count() === $dutyIds->count()
+            && $duties->every(fn (Duty $duty) => $duty->institution !== null && $this->user()->can('update', $duty->institution));
     }
 
     /**
@@ -48,34 +44,5 @@ class ReorderDutiesRequest extends FormRequest
             'duties.*.id' => ['required', SoftDeleteRules::existsLive('duties')],
             'duties.*.order' => ['required', 'integer'],
         ];
-    }
-
-    /**
-     * Resolve the distinct institutions owning the supplied duties.
-     *
-     * @return Collection<int, Institution>
-     */
-    public function ownerInstitutions(): Collection
-    {
-        if ($this->resolvedInstitutions !== null) {
-            return $this->resolvedInstitutions;
-        }
-
-        $dutyIds = collect($this->input('duties', []))
-            ->pluck('id')
-            ->filter()
-            ->values();
-
-        if ($dutyIds->isEmpty()) {
-            return $this->resolvedInstitutions = new Collection;
-        }
-
-        return $this->resolvedInstitutions = Duty::whereIn('id', $dutyIds)
-            ->with('institution')
-            ->get()
-            ->pluck('institution')
-            ->filter()
-            ->unique('id')
-            ->values();
     }
 }

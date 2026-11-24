@@ -124,6 +124,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|Institution whereLocale(string $column, string $locale)
  * @method static Builder<static>|Institution whereLocales(string $column, array $locales)
  * @method static Builder<static>|Institution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Institution withSearchableRelations()
  * @method static Builder<static>|Institution withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Institution withoutTrashed()
  *
@@ -376,9 +377,26 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return app(EngineManager::class)->engine('typesense');
     }
 
+    public function scopeWithSearchableRelations(Builder $query): void
+    {
+        app(InstitutionActivityStatusService::class)->withSummary($query)
+            ->with(['tenant', 'duties.current_users', 'duties.users']);
+    }
+
+    /**
+     * @template TModel of Institution
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->withSearchableRelations();
+    }
+
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['duties.current_users', 'duties.users', 'types']);
+        $this->loadMissing(['tenant', 'duties.current_users', 'duties.users', 'types']);
 
         $currentUserNames = $this->duties
             ->flatMap(fn (Duty $duty) => $duty->current_users->pluck('name'))
@@ -518,12 +536,12 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         static::updated(function (Institution $institution): void {
             if ($institution->wasChanged('tenant_id')) {
                 InstitutionRelationService::flush();
-                ForgetUserAccess::execute(Dutiable::query()->current()
+                ForgetUserAccess::execute(Dutiable::query()->notEnded()
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->whereIn('duty_id', $institution->duties()->select('id'))
                     ->pluck('dutiable_id'));
             }
-            if ($institution->wasChanged('is_active')) {
+            if ($institution->wasChanged(['is_active', 'tenant_id'])) {
                 $institution->reindexDuties();
             }
         });

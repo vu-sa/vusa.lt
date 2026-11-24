@@ -204,7 +204,8 @@
     :dutiable="sheetDutiable"
     :user="sheetUser"
     :study-programs="management?.studyPrograms ?? []"
-    :taken-ids
+    :existing-terms="sheetPicker?.terms"
+    :delegated-seat-tenants="sheetPicker?.delegatedSeatTenants"
   />
 
   <RelationshipLinkSheet
@@ -416,7 +417,7 @@ watch([tabs, currentSection], () => {
 
 const optionalProps = [
   'duties', 'tasks', 'problems', 'management', 'relatedInstitutions',
-  'institutionLinks', 'files', 'activityRequests', 'assignmentTerms',
+  'institutionLinks', 'files', 'activityRequests', 'assignmentTerms', 'assignmentPicker',
 ] as const;
 
 const stopPreservingPanels = router.on('before', ({ detail: { visit } }) => {
@@ -661,11 +662,12 @@ const {
   duty: sheetDuty,
   dutiable: sheetDutiable,
   user: sheetUser,
-  takenIds,
   assign: openAssignSheet,
   editTerm: openTermSheet,
 } = useDutyAssignmentSheet({
   terms: () => props.assignmentTerms,
   needsManagement: () => props.management === undefined,
+  needsPicker: () => props.assignmentPicker === undefined,
 });
+const sheetPicker = computed(() => (sheetDuty.value ? props.assignmentPicker?.[String(sheetDuty.value.id)] : null));
 </script>

@@ -1,273 +1,266 @@
-/**
- * useTenantMeetings - Windowed meetings store for the tenant Gantt chart.
- *
- * The Gantt emits the dates on screen as it scrolls or zooms; `ensureRange()` pads them, rounds
- * to whole months and fetches what is missing in chunks of at most six months, nearest the
- * middle of the view first. Meetings are deduped by id.
- */
-import { computed, ref, shallowRef, type ComputedRef } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
+import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, type ComputedRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { useToasts } from '@/Composables/useToasts';
 import { toNaiveDateTimeString } from '@/Utils/dateTime';
+
+import type { GanttAgendaLoader, GanttLoadingSegment } from '@/Components/Graphs/types';
 
 import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
 
 /** Smallest padding fetched beyond the visible range; wide views pad a quarter of their span. */
 const MIN_BUFFER_DAYS = 30;
 const FETCH_DEBOUNCE_MS = 150;
+const CONCURRENCY = 3;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 /** One request covers at most this many months, well under the server's 24-month cap. */
-const CHUNK_MONTHS = 6;
+const DEFAULT_CHUNK_MONTHS = 6;
+const REPRESENTATIVE_ID_LIMIT = 100;
 
 interface Window {
   from: number;
   until: number;
 }
 
-function monthStart(ts: number): number {
-  const d = new Date(ts);
-  return new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+interface Task {
+  key: string;
+  window: Window;
+  institutionIds: string[] | null;
+  controller: AbortController;
 }
 
-function monthEnd(ts: number): number {
+/** Chunks sit on calendar boundaries (half-years, years), so a view always asks for the same, cacheable windows. */
+function chunkStart(ts: number, months: number): number {
   const d = new Date(ts);
-  return new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() - 1;
+  return new Date(d.getFullYear(), d.getMonth() - (d.getMonth() % months), 1).getTime();
 }
 
-function chunk(segment: Window): Window[] {
+function chunkEnd(ts: number, months: number): number {
+  const start = new Date(chunkStart(ts, months));
+  return new Date(start.getFullYear(), start.getMonth() + months, 1).getTime() - 1;
+}
+
+function chunk(segment: Window, months: number): Window[] {
   const chunks: Window[] = [];
   let { from } = segment;
   while (from <= segment.until) {
     const d = new Date(from);
-    const until = Math.min(segment.until, new Date(d.getFullYear(), d.getMonth() + CHUNK_MONTHS, 1).getTime() - 1);
+    const until = Math.min(segment.until, new Date(d.getFullYear(), d.getMonth() + months, 1).getTime() - 1);
     chunks.push({ from, until });
     from = until + 1;
   }
   return chunks;
 }
 
+interface WindowedMeetingsSource {
+  groups: () => Array<string[] | null>;
+  request: (from: string, until: string, refresh: boolean, institutionIds: string[] | null) => { url: string; params: URLSearchParams };
+  chunkMonths?: number;
+  agendaParams: () => URLSearchParams;
+}
+
+type AgendaItems = NonNullable<Awaited<ReturnType<GanttAgendaLoader>>>;
+
 export function useTenantMeetings(tenantIds: () => Array<string | number>) {
+  return useWindowedMeetings({
+    groups: () => tenantIds().length ? [null] : [],
+    request: (from, until, refresh) => {
+      const params = new URLSearchParams();
+      tenantIds().forEach(id => params.append('tenant_ids[]', String(id)));
+      params.set('from', from);
+      params.set('until', until);
+      if (refresh) params.set('refresh', '1');
+      return { url: route('api.v1.admin.visak.meetings'), params };
+    },
+    agendaParams: () => {
+      const params = new URLSearchParams();
+      tenantIds().forEach(id => params.append('tenant_ids[]', String(id)));
+      return params;
+    },
+  });
+}
+
+export function useInstitutionMeetings(institutionIds: () => Array<string | number>) {
+  return useWindowedMeetings({
+    groups: () => {
+      const ids = [...new Set(institutionIds().map(String))].sort();
+      const groups: string[][] = [];
+      for (let i = 0; i < ids.length; i += REPRESENTATIVE_ID_LIMIT) {
+        groups.push(ids.slice(i, i + REPRESENTATIVE_ID_LIMIT));
+      }
+      return groups;
+    },
+    request: (from, until, _refresh, ids) => {
+      const params = new URLSearchParams();
+      ids?.forEach(id => params.append('institution_ids[]', id));
+      params.set('from', from);
+      params.set('to', until);
+      return { url: route('api.v1.admin.atstovavimas.meetings'), params };
+    },
+    chunkMonths: 12,
+    agendaParams: () => new URLSearchParams(),
+  });
+}
+
+function useWindowedMeetings(source: WindowedMeetingsSource) {
   const toasts = useToasts();
+  const chunkMonths = source.chunkMonths ?? DEFAULT_CHUNK_MONTHS;
 
-  const meetingsById = shallowRef<Map<string, GanttMeeting>>(new Map());
-  const loadedWindows = ref<Window[]>([]);
-  const isFetching = ref(false);
-  /** Union of the windows currently being fetched (for the loading indicator). */
-  const pendingWindow = ref<Window | null>(null);
-  /** Set when the most recent fetch failed; cleared on the next successful flush. */
+  const meetingsById = shallowRef(new Map<string, GanttMeeting>());
+  const loaded = new Set<string>();
+  const failed = new Set<string>();
+  const forceRefresh = new Set<string>();
+  const inFlight = shallowRef<Task[]>([]);
+  const isFetching = computed(() => inFlight.value.length > 0);
   const lastError = ref<string | null>(null);
-
-  let pendingRange: Window | null = null;
-  let inFlight = false;
-  // Incremented on reset: in-flight responses from a previous tenant set are dropped
-  let generation = 0;
+  let range: Window | null = null;
 
   const meetings: ComputedRef<GanttMeeting[]> = computed(() =>
-    Array.from(meetingsById.value.values())
-      .sort((a, b) => a.start_time.getTime() - b.start_time.getTime()),
+    [...meetingsById.value.values()].sort((a, b) => a.start_time.getTime() - b.start_time.getTime()),
   );
+  const loadingSegments = computed<GanttLoadingSegment[]>(() => inFlight.value.map(({ window }) => ({
+    from: new Date(window.from),
+    until: new Date(window.until),
+  })));
 
-  /** Parts of [from, until] not yet covered by loaded windows. */
-  function missingSegments(from: number, until: number): Window[] {
-    let segments: Window[] = [{ from, until }];
-
-    for (const w of loadedWindows.value) {
-      const next: Window[] = [];
-      for (const s of segments) {
-        if (w.until < s.from || w.from > s.until) {
-          next.push(s);
-          continue;
-        }
-        if (w.from > s.from) {
-          next.push({ from: s.from, until: Math.min(s.until, w.from - 1) });
-        }
-        if (w.until < s.until) {
-          next.push({ from: Math.max(s.from, w.until + 1), until: s.until });
-        }
-      }
-      segments = next;
-    }
-
-    return segments;
-  }
-
-  function mergeWindows() {
-    const sorted = [...loadedWindows.value].sort((a, b) => a.from - b.from);
-    const merged: Window[] = [];
-
-    for (const w of sorted) {
-      const last = merged[merged.length - 1];
-      // Merge overlapping or adjacent (within a day) windows
-      if (last && w.from <= last.until + MS_PER_DAY) {
-        last.until = Math.max(last.until, w.until);
-      }
-      else {
-        merged.push({ ...w });
-      }
-    }
-
-    loadedWindows.value = merged;
-  }
-
-  async function fetchWindow(window: Window, refresh = false): Promise<void> {
-    const ids = tenantIds().map(String);
-    if (ids.length === 0) return;
-
-    const generationAtStart = generation;
-
-    const params = new URLSearchParams();
-    ids.forEach(id => params.append('tenant_ids[]', id));
-    params.set('from', toNaiveDateTimeString(new Date(window.from)).slice(0, 10));
-    params.set('until', toNaiveDateTimeString(new Date(window.until)).slice(0, 10));
-    if (refresh) params.set('refresh', '1');
-
-    const response = await fetch(`${route('api.v1.admin.visak.meetings')}?${params}`, {
-      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch meetings window (HTTP ${response.status})`);
-    }
-
-    const json = await response.json() as { success?: boolean; data?: AtstovavimasTenantMeeting[] };
-    if (!json?.success || !Array.isArray(json.data)) {
-      throw new Error('Unexpected meetings response shape');
-    }
-
-    // The tenant selection changed while fetching — drop the stale response
-    if (generationAtStart !== generation) return;
-
-    const map = new Map(meetingsById.value);
-    for (const meeting of json.data) {
-      map.set(String(meeting.id), {
-        ...meeting,
-        start_time: new Date(meeting.start_time),
-      });
-    }
-    meetingsById.value = map;
-
-    loadedWindows.value = [...loadedWindows.value, window];
-    mergeWindows();
-  }
-
-  async function flushPendingRange(): Promise<void> {
-    if (inFlight || !pendingRange) return;
-
-    const range = pendingRange;
-    pendingRange = null;
+  function plan() {
+    if (!range) return [];
 
     const center = (range.from + range.until) / 2;
-    const chunks = missingSegments(range.from, range.until)
-      .flatMap(chunk)
-      .sort((a, b) => Math.abs((a.from + a.until) / 2 - center) - Math.abs((b.from + b.until) / 2 - center));
-    if (chunks.length === 0) return;
+    const distance = (window: Window) => Math.abs((window.from + window.until) / 2 - center);
+    const groups = source.groups();
+    return chunk(range, chunkMonths)
+      .sort((a, b) => distance(a) - distance(b))
+      .flatMap(window => groups.map(institutionIds => ({
+        window,
+        institutionIds,
+        key: `${window.from}:${institutionIds?.join(',') ?? '*'}`,
+      })));
+  }
 
-    inFlight = true;
-    isFetching.value = true;
-    // Chunks fail independently: a transient error on one must not stop the rest from loading.
-    let failures = 0;
+  async function fetchWindow(task: Task): Promise<void> {
+    const { key, window, controller } = task;
+    const { url, params } = source.request(
+      toNaiveDateTimeString(new Date(window.from)).slice(0, 10),
+      toNaiveDateTimeString(new Date(window.until)).slice(0, 10),
+      forceRefresh.has(key),
+      task.institutionIds,
+    );
+
     try {
-      for (const window of chunks) {
-        // The view moved on while fetching; what it shows now matters more than the rest of this range.
-        if (pendingRange) break;
-        pendingWindow.value = window;
-        try {
-          await fetchWindow(window);
-          lastError.value = null;
-        }
-        catch (error) {
-          failures += 1;
-          lastError.value = error instanceof Error ? error.message : String(error);
-        }
+      const result = await apiRequest<AtstovavimasTenantMeeting[]>(`${url}?${params}`, { signal: controller.signal });
+      if (!result.ok) throw new Error(result.message ?? `Failed to fetch meetings window (HTTP ${result.status})`);
+      if (!Array.isArray(result.data)) throw new Error('Unexpected meetings response shape');
+      if (controller.signal.aborted) return;
+
+      const map = new Map(meetingsById.value);
+      for (const meeting of result.data) {
+        map.set(`${meeting.institution_id}:${meeting.id}`, { ...meeting, start_time: new Date(meeting.start_time) });
       }
+      meetingsById.value = map;
+      loaded.add(key);
+      forceRefresh.delete(key);
+    }
+    catch (error) {
+      if (controller.signal.aborted) return;
+
+      if (!lastError.value) toasts.error($t('visak.gantt.meetings_load_failed'));
+      lastError.value = error instanceof Error ? error.message : String(error);
+      failed.add(key);
     }
     finally {
-      inFlight = false;
-      isFetching.value = false;
-      pendingWindow.value = null;
-
-      if (failures > 0) {
-        toasts.error($t('visak.gantt.meetings_load_failed'));
-      }
-
-      if (pendingRange) {
-        void flushPendingRange();
+      if (!controller.signal.aborted) {
+        inFlight.value = inFlight.value.filter(t => t !== task);
+        schedule();
       }
     }
   }
 
-  const debouncedFlush = useDebounceFn(() => {
-    void flushPendingRange();
-  }, FETCH_DEBOUNCE_MS);
+  function schedule(): void {
+    const activeKeys = new Set(inFlight.value.map(task => task.key));
+    const next = plan()
+      .filter(({ key }) => !loaded.has(key) && !failed.has(key) && !activeKeys.has(key))
+      .slice(0, CONCURRENCY - inFlight.value.length)
+      .map(task => ({ ...task, controller: new AbortController() }));
+    if (!next.length) return;
 
-  /** Ensure meetings are loaded for [from, until] plus padding. Debounced; only missing months are fetched. */
-  function ensureRange(from: Date, until: Date): void {
-    const bufferMs = Math.max(MIN_BUFFER_DAYS * MS_PER_DAY, (until.getTime() - from.getTime()) / 4);
-    const window = {
-      from: monthStart(from.getTime() - bufferMs),
-      until: monthEnd(until.getTime() + bufferMs),
-    };
-
-    if (missingSegments(window.from, window.until).length === 0) return;
-
-    // Only the latest view is kept: a union with an earlier, far-away one would fetch everything in between.
-    pendingRange = window;
-    debouncedFlush();
+    inFlight.value = [...inFlight.value, ...next];
+    next.forEach(task => void fetchWindow(task));
   }
 
-  /** Re-fetch all currently loaded windows, bypassing the server cache. */
-  async function refresh(): Promise<void> {
-    debouncedFlush.cancel();
-    pendingRange = null;
-
-    isFetching.value = true;
-    pendingWindow.value = loadedWindows.value.length > 0
-      ? {
-          from: Math.min(...loadedWindows.value.map(w => w.from)),
-          until: Math.max(...loadedWindows.value.map(w => w.until)),
-        }
-      : null;
-    let failures = 0;
-    try {
-      for (const window of loadedWindows.value) {
-        try {
-          await fetchWindow(window, true);
-        }
-        catch (error) {
-          failures += 1;
-          lastError.value = error instanceof Error ? error.message : String(error);
-        }
-      }
-    }
-    finally {
-      isFetching.value = false;
-      pendingWindow.value = null;
-
-      if (failures > 0) {
-        toasts.error($t('visak.gantt.meetings_load_failed'));
-      }
-    }
+  let scheduleTimer: ReturnType<typeof setTimeout> | undefined;
+  function resume(): void {
+    clearTimeout(scheduleTimer);
+    scheduleTimer = setTimeout(schedule, FETCH_DEBOUNCE_MS);
   }
 
-  /** Drop all loaded meetings and windows (e.g. when the tenant selection changes). */
-  function reset(): void {
-    debouncedFlush.cancel();
-    pendingRange = null;
-    generation += 1;
+  function ensureRange(from: Date, until: Date, { pad = true }: { pad?: boolean } = {}): void {
+    const bufferMs = pad ? Math.max(MIN_BUFFER_DAYS * MS_PER_DAY, (until.getTime() - from.getTime()) / 4) : 0;
+    const next = { from: chunkStart(from.getTime() - bufferMs, chunkMonths), until: chunkEnd(until.getTime() + bufferMs, chunkMonths) };
+    if (next.from === range?.from && next.until === range.until) return;
+
+    range = next;
+    failed.clear();
+    lastError.value = null;
+    resume();
+  }
+
+  function retry(): void {
+    failed.clear();
+    lastError.value = null;
+    schedule();
+  }
+
+  function clear(): void {
+    clearTimeout(scheduleTimer);
+    inFlight.value.forEach(task => task.controller.abort());
+    inFlight.value = [];
     meetingsById.value = new Map();
-    loadedWindows.value = [];
+    loaded.clear();
+    failed.clear();
+    forceRefresh.clear();
+    agendas.clear();
+    lastError.value = null;
   }
 
-  return {
-    meetings,
-    isFetching,
-    pendingWindow,
-    lastError,
-    ensureRange,
-    refresh,
-    reset,
+  function refresh(): void {
+    clear();
+    for (const task of plan()) forceRefresh.add(task.key);
+    schedule();
+  }
+
+  const agendas = new Map<string, Promise<AgendaItems | null>>();
+
+  /** One request per meeting; a failure is not cached, so the next hover retries. */
+  const loadAgenda: GanttAgendaLoader = (meeting) => {
+    const key = `${meeting.institution_id}:${meeting.id}`;
+    const cached = agendas.get(key);
+    if (cached) return cached;
+
+    const url = new URL(route('api.v1.admin.atstovavimas.meetings.agenda', { meeting: meeting.id }), window.location.origin);
+    source.agendaParams().forEach((value, name) => url.searchParams.append(name, value));
+    url.searchParams.set('institution_id', String(meeting.institution_id));
+    const request = apiRequest<{ agenda_items?: AgendaItems }>(url.toString())
+      .then(({ ok, data }) => {
+        if (!ok || !Array.isArray(data?.agenda_items)) throw new Error('agenda');
+        return data.agenda_items;
+      })
+      .catch(() => {
+        if (agendas.get(key) === request) agendas.delete(key);
+        return null;
+      });
+
+    agendas.set(key, request);
+    return request;
   };
+
+  function reset({ reload = true } = {}): void {
+    clear();
+    if (reload) resume();
+  }
+
+  if (getCurrentScope()) onScopeDispose(clear);
+
+  return { meetings, isFetching, loadingSegments, lastError, ensureRange, refresh, reset, retry, loadAgenda };
 }

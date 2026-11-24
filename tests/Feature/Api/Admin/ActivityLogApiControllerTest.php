@@ -13,6 +13,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tiptap\Editor;
 
 pest()->use(RefreshDatabase::class);
@@ -248,11 +249,17 @@ test('a tenant homepage content-part edit is reachable via the tenant root feed,
     expect(collect($data)->pluck('subject.type'))->toContain('contentPart');
 });
 
-test('a relation_updated activity carries the attached/detached members and rolls up to the parent Institution', function (): void {
+test('a relation_updated activity carries the attached/detached members and rolls up to the parent Institution', function (string $relation): void {
     $duty = Duty::factory()->for($this->institution, 'institution')->create();
     $user = User::factory()->create(['name' => 'Jonas Jonaitis']);
 
-    $duty->attachAudited('users', [$user->id => ['start_date' => now()]]);
+    if ($relation !== 'current_or_upcoming_users') {
+        activity()->performedOn($duty)->event('relation_updated')->withProperties([
+            'relation' => $relation, 'attached' => [['id' => $user->id, 'label' => $user->name]], 'detached' => [],
+        ])->log('relation_updated');
+    } else {
+        $duty->attachAudited('current_or_upcoming_users', [$user->id => ['start_date' => today()]]);
+    }
 
     $data = asUser($this->admin)
         ->getJson(route('api.v1.admin.activityLog.index', ['subjectType' => 'institution', 'subjectId' => $this->institution->id]))
@@ -264,10 +271,15 @@ test('a relation_updated activity carries the attached/detached members and roll
     expect($entry)->not->toBeNull()
         ->and($entry['subject']['type'])->toBe('duty')
         ->and($entry['subject']['is_root'])->toBeFalse()
-        ->and($entry['relation_change']['relation'])->toBe('users')
+        ->and($entry['relation_change']['relation'])->toBe($relation)
+        ->and($entry['relation_change']['label'])->toBe(__('entities.common.'.$relation))
         ->and($entry['relation_change']['attached'][0]['label'])->toBe('Jonas Jonaitis')
         ->and($entry['relation_change']['detached'])->toBe([]);
-});
+})->with([
+    'legacy all-time members' => 'users',
+    'legacy current members' => 'current_users',
+    'current and upcoming members' => 'current_or_upcoming_users',
+]);
 
 test('role history returns responsibility changes and authorizes against the role', function (): void {
     $role = Role::factory()->create();
@@ -292,4 +304,51 @@ test('role history returns responsibility changes and authorizes against the rol
         ->and(collect($response->json('data'))->firstWhere('id', $edit->id)['causer']['id'])->toBe($this->admin->id);
 
     asUser($this->user)->getJson($url)->assertForbidden();
+});
+
+test('the meeting feed batches access checks for private agenda and vote entries', function (): void {
+    $addEntries = function (int $count): array {
+        $activityIds = [];
+
+        foreach (AgendaItem::factory()->for($this->meeting)->count($count)->create(['is_private' => true]) as $item) {
+            $vote = Vote::factory()->for($item, 'agendaItem')->create();
+
+            foreach ([$item, $vote] as $subject) {
+                $activityIds[] = activity()->performedOn($subject)->causedBy($this->admin)
+                    ->event('updated')->log('updated')->id;
+            }
+        }
+
+        return $activityIds;
+    };
+    $fetch = fn () => asUser($this->admin)->getJson(route('api.v1.admin.activityLog.index', [
+        'subjectType' => 'meeting',
+        'subjectId' => $this->meeting->id,
+        'event' => 'updated',
+        'causer_id' => $this->admin->id,
+        'per_page' => 50,
+    ]))->assertOk();
+
+    $measure = function (array $expectedIds) use ($fetch): int {
+        $fetch();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        try {
+            $response = $fetch();
+            $queries = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+
+        expect(collect($response->json('data'))->pluck('id')->all())->toContain(...$expectedIds);
+
+        return $queries;
+    };
+
+    $first = $addEntries(1);
+    $small = $measure($first);
+
+    expect($measure([...$first, ...$addEntries(4)]))->toBe($small);
 });

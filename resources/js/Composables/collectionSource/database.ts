@@ -3,6 +3,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
 
 import type { CollectionFacet, CollectionSortOption, CollectionChip, CollectionSource } from './types';
@@ -207,17 +208,14 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
   }
 
   async function request(url: URL): Promise<DatabaseCollectionResponse<T>> {
-    const response = await fetch(url, {
-      credentials: 'same-origin',
-      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-    });
-    const payload = await response.json() as { success: boolean; data?: DatabaseCollectionResponse<T>; message?: string };
-
-    if (!response.ok || !payload.success || !payload.data) {
-      throw new Error(payload.message ?? $t('Nepavyko įkelti sąrašo.'));
+    const result = await apiRequest<DatabaseCollectionResponse<T>>(url.toString());
+    if (result.status === 0) throw new TypeError(result.message ?? 'Network error');
+    if (result.body === null) throw new SyntaxError('Unexpected end of JSON input');
+    if (!result.ok || !result.data) {
+      throw new Error(result.message ?? $t('Nepavyko įkelti sąrašo.'));
     }
 
-    return payload.data;
+    return result.data;
   }
 
   // Two quick filter toggles start two requests; only the latest one may write its rows.

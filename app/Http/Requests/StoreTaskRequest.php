@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Rules\SoftDeleteRules;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -69,6 +70,7 @@ class StoreTaskRequest extends FormRequest
             'taskable_type' => ['required', Rule::in(Task::TASKABLE_TYPES)],
             'due_date' => 'required|date:Y-m-d',
             'responsible_people' => 'array',
+            'responsible_people.*' => ['required', 'ulid', SoftDeleteRules::existsLive('users')],
             // if responsible_people provided, separate_tasks must be included
             'separate_tasks' => 'required_if:responsible_people,!=,null',
         ];

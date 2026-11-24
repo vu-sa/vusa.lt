@@ -24,6 +24,7 @@ export default {
         items: [
           { text: 'Request lifecycle', link: '/en/developers/request-lifecycle' },
           { text: 'Example: a calendar event', link: '/en/developers/example-calendar-event' },
+          { text: 'Your first change', link: '/en/developers/first-change' },
         ]
       },
       {
