@@ -15,7 +15,7 @@ class SetDutyActive
             Institution::withTrashed()->whereKey($duty->institution_id)->lockForUpdate()->first();
             $duty->refreshForUpdate();
 
-            if (! $active && $duty->dutiables()->current()->exists()) {
+            if (! $active && $duty->dutiables()->notEnded()->exists()) {
                 throw ValidationException::withMessages([
                     'is_active' => __('dutiables.assign.finish_terms_before_retiring'),
                 ]);

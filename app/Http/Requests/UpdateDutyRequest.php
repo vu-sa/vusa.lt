@@ -5,9 +5,11 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\ValidatesDutyTypeAssignments;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Rules\WithinAuthorizedTenantScope;
 use App\Services\ModelAuthorizer;
+use App\Support\MorphMap;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -78,7 +80,7 @@ class UpdateDutyRequest extends FormRequest
             if ($this->has('is_active') && ! $this->boolean('is_active')
                 && (! empty($this->input('current_users'))
                     || collect($this->input('assignable_tenants'))->pluck('user_ids')->filter()->isNotEmpty()
-                    || $duty->dutiables()->current()->exists())) {
+                    || $duty->dutiables()->notEnded()->exists())) {
                 $v->errors()->add('is_active', __('dutiables.assign.finish_terms_before_retiring'));
             }
 

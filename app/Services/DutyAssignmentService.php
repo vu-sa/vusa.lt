@@ -145,7 +145,7 @@ class DutyAssignmentService
     /** @return Builder<Dutiable> */
     private function quotaSeats(Duty $duty): Builder
     {
-        return $duty->dutiables()->getQuery()->current()
+        return $duty->dutiables()->getQuery()->notEnded()
             ->where('dutiable_type', MorphMap::alias(User::class))->whereNotNull('tenant_id');
     }
 
@@ -226,7 +226,7 @@ class DutyAssignmentService
     {
         DB::transaction(function () use ($duty, $userIds, $tenantId, $actor, $quotaAttribute): void {
             $this->lockDuty($duty);
-            $currentUserIds = $this->manualDutyTerms($duty->id, $tenantId)->current()->lockForUpdate()->pluck('dutiable_id')->all();
+            $currentUserIds = $this->manualDutyTerms($duty->id, $tenantId)->notEnded()->lockForUpdate()->pluck('dutiable_id')->all();
             $toRemove = array_unique(array_diff($currentUserIds, $userIds));
             $toAdd = array_unique(array_diff($userIds, $currentUserIds));
 
@@ -238,7 +238,7 @@ class DutyAssignmentService
 
             $duty->auditRelationChange('current_users', function () use ($duty, $toRemove, $toAdd, $tenantId): void {
                 foreach ($toRemove as $userId) {
-                    $this->endTerms($this->manualTerms($duty->id, $userId, $tenantId)->current());
+                    $this->endTerms($this->manualTerms($duty->id, $userId, $tenantId)->notEnded());
                 }
 
                 foreach ($toAdd as $userId) {

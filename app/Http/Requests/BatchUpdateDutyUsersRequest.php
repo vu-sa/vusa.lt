@@ -139,7 +139,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             $added = $changes->where('action', 'add')->reject($endsBeforeToday)->pluck('user_id')->all();
             $freed = $changes->where('action', 'remove')
                 ->filter(fn (array $change) => ! isset($change['end_date']) || $endsBeforeToday($change)
-                    || ! $assignments->manualTerms($duty->id, $change['user_id'], $tenantId)->current()
+                    || ! $assignments->manualTerms($duty->id, $change['user_id'], $tenantId)->notEnded()
                         ->whereDate('start_date', '<=', Carbon::parse($change['end_date'])->toDateString())->exists())
                 ->pluck('user_id')->all();
 

@@ -122,7 +122,7 @@ test('an ex-officio holder can also hold a manual term in the same quota', funct
         'user_id' => $this->member->id,
     ])->assertSessionHasNoErrors();
 
-    expect($this->duty->dutiables()->where('dutiable_id', $this->member->id)->current()->count())->toBe(2);
+    expect($this->duty->dutiables()->where('dutiable_id', $this->member->id)->notEnded()->count())->toBe(2);
 });
 
 test('a batch removal does not free a seat still held ex officio', function (): void {
@@ -154,7 +154,7 @@ test('a tenant quota counts people once even when they hold multiple terms', fun
         'user_changes' => [['user_id' => $this->member->id, 'action' => 'add']],
     ])->assertSessionHasNoErrors();
 
-    expect($this->duty->dutiables()->current()->where('tenant_id', $this->tenant->id)->count())->toBe(3);
+    expect($this->duty->dutiables()->notEnded()->where('tenant_id', $this->tenant->id)->count())->toBe(3);
 });
 
 test('the duty owner can lower a quota below the current count with the holder list omitted', function (): void {
@@ -163,7 +163,7 @@ test('the duty owner can lower a quota below the current count with the holder l
     $sourceDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
     $sourceDuty->exOfficioTargetDuties()->attach($this->duty);
     Dutiable::factory()->forDuty($sourceDuty)->active()->count(2)->create();
-    expect($this->duty->dutiables()->whereNotNull('via_dutiable_id')->current()->count())->toBe(2);
+    expect($this->duty->dutiables()->whereNotNull('via_dutiable_id')->notEnded()->count())->toBe(2);
 
     asUser($this->owner)->patch(route('duties.update', $this->duty), [
         'name' => $this->duty->getTranslations('name'),
@@ -172,7 +172,7 @@ test('the duty owner can lower a quota below the current count with the holder l
         'assignable_tenants' => [['tenant_id' => $this->tenant->id, 'quota' => 1]],
     ])->assertSessionHasNoErrors();
 
-    expect($this->duty->dutiables()->current()->count())->toBe(2)
+    expect($this->duty->dutiables()->notEnded()->count())->toBe(2)
         ->and($this->duty->assignableTenants()->sole()->pivot->quota)->toBe(1);
 });
 
@@ -189,7 +189,7 @@ test('a delegated admin can reuse a seat freed in the same timeline save', funct
         ],
     ])->assertSessionHasNoErrors();
 
-    expect($this->duty->dutiables()->current()->sole()->id)->toBe($returning->id);
+    expect($this->duty->dutiables()->notEnded()->sole()->id)->toBe($returning->id);
 });
 
 test('the duty owner can resume a term beyond a full quota', function (bool $timeline): void {
@@ -221,7 +221,7 @@ test('a batch can reuse a seat when its last day was yesterday', function (): vo
     ])->assertSessionHasNoErrors();
 
     expect($seat->fresh()->end_date->toDateString())->toBe(today()->subDay()->toDateString())
-        ->and($this->duty->dutiables()->current()->sole()->dutiable_id)->toBe($this->member->id);
+        ->and($this->duty->dutiables()->notEnded()->sole()->dutiable_id)->toBe($this->member->id);
 });
 
 test('removing a temporary member cannot create a term through a full quota', function (): void {
@@ -233,7 +233,7 @@ test('removing a temporary member cannot create a term through a full quota', fu
         'new_users' => [['temp_id' => 'new-member', 'name' => 'Naujas atstovas']],
     ])->assertSessionHasNoErrors();
 
-    expect($this->duty->dutiables()->current()->count())->toBe(1);
+    expect($this->duty->dutiables()->notEnded()->count())->toBe(1);
 });
 
 test('existing term edits reject an overlap with another manual term in the same quota', function (string $surface): void {
@@ -324,7 +324,7 @@ test('the seat quota is rechecked when a place is taken during the write', funct
         ])->assertSessionHasErrors('operations'),
     };
 
-    expect($this->duty->dutiables()->current()->exists())->toBeFalse();
+    expect($this->duty->dutiables()->notEnded()->exists())->toBeFalse();
 })->with(['wizard', 'store', 'update', 'timeline']);
 
 test('a delegate cannot edit or delete a seat outside their quota', function (string $seat): void {

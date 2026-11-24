@@ -259,7 +259,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Typesense collection names and a duty-read permission key.
     'app/Services/Typesense/TypesenseCollectionConfig.php' => ["'users'" => 1, "'duties" => 2],
     // Includes past holders in key invalidation and uses scoped tenants for search.
-    'app/Services/Typesense/TypesenseScopedKeyService.php' => ['->tenants' => 1, "'tenants'" => 1, '->users' => 3, "'users'" => 2, '->duties' => 1, "'duties" => 2],
+    'app/Services/Typesense/TypesenseScopedKeyService.php' => ['->tenants' => 1, "'duties" => 1],
     // Duplicate candidates count terms across the whole record.
     'app/Services/UserSimilarityFinder.php' => ["'duties" => 1],
     // Task assignees come from task_user.

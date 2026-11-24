@@ -577,7 +577,7 @@ describe('duty assignment', function (): void {
             'current_duties' => [$duty->id],
         ])->assertSessionHasNoErrors();
 
-        expect(Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->current()->count())->toBe(1);
+        expect(Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->notEnded()->count())->toBe(1);
     });
 
     test('removing and re-adding a duty on the same day does not overlap the two terms', function (): void {

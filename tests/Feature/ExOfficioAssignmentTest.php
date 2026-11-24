@@ -168,7 +168,7 @@ test('the duty owner can assign past a quota filled by an ex-officio seat', func
         ],
     ])->assertSessionHasNoErrors();
 
-    expect($this->targetDuty->dutiables()->current()->where('tenant_id', $tenant->id)->pluck('dutiable_id'))
+    expect($this->targetDuty->dutiables()->notEnded()->where('tenant_id', $tenant->id)->pluck('dutiable_id'))
         ->toContain($member->id)->toHaveCount(2);
 });
 

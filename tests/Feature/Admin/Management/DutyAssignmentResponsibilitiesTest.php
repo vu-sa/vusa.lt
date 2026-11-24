@@ -248,7 +248,7 @@ test('resuming an own membership is allowed when its responsibilities are alread
         'user_changes' => [['user_id' => $actor->id, 'action' => 'add', 'start_date' => today()->toDateString(), 'end_date' => null]],
     ])->assertSessionHasNoErrors()->assertRedirect();
 
-    expect($duty->dutiables()->where('dutiable_id', $actor->id)->current()->exists())->toBeTrue()
+    expect($duty->dutiables()->where('dutiable_id', $actor->id)->notEnded()->exists())->toBeTrue()
         ->and($row->fresh()->end_date->lt(today()))->toBeTrue();
 });
 

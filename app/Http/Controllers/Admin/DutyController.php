@@ -481,7 +481,7 @@ class DutyController extends AdminController
                         $userId = $createdUsers[$userId]->id;
                     }
 
-                    $currentTerms = $this->assignments->manualTerms($duty->id, $userId, $actingTenantId)->current();
+                    $currentTerms = $this->assignments->manualTerms($duty->id, $userId, $actingTenantId)->notEnded();
 
                     if ($change['action'] === 'remove') {
                         $this->assignments->endTerms($currentTerms, $attributes['end_date'], $dateAttribute);

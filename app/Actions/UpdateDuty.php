@@ -79,7 +79,7 @@ class UpdateDuty
             }
 
             if (array_key_exists('is_active', $data) && ! $duty->is_active
-                && $duty->dutiables()->current()->lockForUpdate()->first(['id']) !== null) {
+                && $duty->dutiables()->notEnded()->lockForUpdate()->first(['id']) !== null) {
                 throw ValidationException::withMessages(['is_active' => __('dutiables.assign.finish_terms_before_retiring')]);
             }
         });

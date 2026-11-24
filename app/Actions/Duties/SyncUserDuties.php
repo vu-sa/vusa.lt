@@ -40,7 +40,7 @@ class SyncUserDuties
         /** @var Collection<string, Duty> $duties */
         $duties = Duty::with('institution.tenant')->whereIn('id', $touchedIds)->get()->keyBy('id');
 
-        $removedRows = $user->dutiables()->whereIn('duty_id', $removedDutyIds)->whereNull('tenant_id')->current()->get()->groupBy('duty_id');
+        $removedRows = $user->dutiables()->whereIn('duty_id', $removedDutyIds)->whereNull('tenant_id')->notEnded()->get()->groupBy('duty_id');
         $refused = $touchedIds
             ->map(fn ($dutyId) => $duties->get($dutyId))
             ->filter(fn (?Duty $duty) => ! $duty || ! $permissableTenantIds->contains($duty->institution?->tenant?->id));
@@ -69,7 +69,7 @@ class SyncUserDuties
             $assignments->lockDuties($duties->values());
             $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments): void {
                 foreach ($newDutyIds as $dutyId) {
-                    $alreadyActive = $assignments->manualTerms($dutyId, $user->id, null)->current()->exists();
+                    $alreadyActive = $assignments->manualTerms($dutyId, $user->id, null)->notEnded()->exists();
 
                     if (! $alreadyActive) {
                         try {
@@ -87,7 +87,7 @@ class SyncUserDuties
                 }
 
                 foreach ($removedDutyIds as $dutyId) {
-                    $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->current());
+                    $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->notEnded());
                 }
             });
         });
