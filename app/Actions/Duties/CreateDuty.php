@@ -5,7 +5,8 @@ namespace App\Actions\Duties;
 use App\Actions\Dutiables\SyncExOfficioTargets;
 use App\Models\Duty;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
@@ -25,7 +26,7 @@ class CreateDuty
             $duty->fill(Arr::except($data, ['types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants']))->save();
 
             $duty->syncAudited('types', $data['types'] ?? []);
-            SyncExOfficioTargets::execute($duty, $data['ex_officio_target_duty_ids'] ?? []);
+            DutyAssignmentActor::as($actor, fn () => SyncExOfficioTargets::execute($duty, $data['ex_officio_target_duty_ids'] ?? []));
             $assignableTenants = $data['assignable_tenants'] ?? [];
             $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($assignableTenants));
             $this->assignments->syncRepresentatives($duty, $data['current_users'] ?? [], actor: $actor);

@@ -253,12 +253,12 @@ test('a relation_updated activity carries the attached/detached members and roll
     $duty = Duty::factory()->for($this->institution, 'institution')->create();
     $user = User::factory()->create(['name' => 'Jonas Jonaitis']);
 
-    if ($relation === 'users') {
+    if ($relation !== 'current_or_upcoming_users') {
         activity()->performedOn($duty)->event('relation_updated')->withProperties([
-            'relation' => 'users', 'attached' => [['id' => $user->id, 'label' => $user->name]], 'detached' => [],
+            'relation' => $relation, 'attached' => [['id' => $user->id, 'label' => $user->name]], 'detached' => [],
         ])->log('relation_updated');
     } else {
-        $duty->attachAudited('current_users', [$user->id => ['start_date' => today()]]);
+        $duty->attachAudited('current_or_upcoming_users', [$user->id => ['start_date' => today()]]);
     }
 
     $data = asUser($this->admin)
@@ -275,7 +275,11 @@ test('a relation_updated activity carries the attached/detached members and roll
         ->and($entry['relation_change']['label'])->toBe(__('entities.common.'.$relation))
         ->and($entry['relation_change']['attached'][0]['label'])->toBe('Jonas Jonaitis')
         ->and($entry['relation_change']['detached'])->toBe([]);
-})->with(['legacy' => 'users', 'current' => 'current_users']);
+})->with([
+    'legacy all-time members' => 'users',
+    'legacy current members' => 'current_users',
+    'current and upcoming members' => 'current_or_upcoming_users',
+]);
 
 test('role history returns responsibility changes and authorizes against the role', function (): void {
     $role = Role::factory()->create();

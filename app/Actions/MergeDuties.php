@@ -6,7 +6,8 @@ use App\Actions\Dutiables\ReconcileExOfficioSeats;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MergeRepointer;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
@@ -48,7 +49,7 @@ class MergeDuties
      */
     public static function execute(Duty $kept, Collection $sources, ?User $actor = null): array
     {
-        return DB::transaction(function () use ($kept, $sources, $actor): array {
+        $merge = fn () => DB::transaction(function () use ($kept, $sources, $actor): array {
             $summary = ReconcileExOfficioSeats::paused(function () use ($kept, $sources, $actor): array {
                 $sourceIds = $sources->pluck('id')->all();
                 $incoming = Duty::query()->whereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey([...$sourceIds, $kept->id]))->get();
@@ -60,7 +61,7 @@ class MergeDuties
 
                 $summary = [
                     'moved_assignments' => $movedAssignments,
-                    'collapsed_assignments' => CollapseOverlappingDutiables::execute($kept),
+                    'collapsed_assignments' => CollapseOverlappingDutiables::execute($kept, $actor),
                     'moved_types' => 0,
                     'moved_roles' => 0,
                     'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
@@ -103,6 +104,8 @@ class MergeDuties
 
             return $summary;
         });
+
+        return $actor === null ? DutyAssignmentActor::system($merge) : DutyAssignmentActor::as($actor, $merge);
     }
 
     /** @return array<string, int> rows moved per table */

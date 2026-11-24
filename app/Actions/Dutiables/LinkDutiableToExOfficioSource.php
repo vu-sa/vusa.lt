@@ -3,7 +3,7 @@
 namespace App\Actions\Dutiables;
 
 use App\Models\Pivots\Dutiable;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiablePeriods;
 use App\Support\Dutiables\ExOfficioSeatDates;
 

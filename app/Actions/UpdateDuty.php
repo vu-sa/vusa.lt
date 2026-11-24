@@ -10,8 +10,9 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Rules\WithinAuthorizedTenantScope;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -70,12 +71,13 @@ class UpdateDuty
                 $this->assignments->syncRepresentatives($duty, $data['current_users'], actor: $actor);
             }
 
-            SyncExOfficioTargets::execute($duty, array_values(array_filter($data['ex_officio_target_duty_ids'] ?? [])));
+            $targetIds = array_values(array_filter($data['ex_officio_target_duty_ids'] ?? []));
+            DutyAssignmentActor::as($actor, fn () => SyncExOfficioTargets::execute($duty, $targetIds));
 
             $tenantIdsChanged = $this->syncAssignableTenants($duty, $data['assignable_tenants'] ?? [], $editableTenantIds, $actor);
 
             if ($institutionChanged || $tenantIdsChanged) {
-                ReconcileExOfficioSeats::forDuty($duty);
+                DutyAssignmentActor::as($actor, fn () => ReconcileExOfficioSeats::forDuty($duty));
             }
 
             if (array_key_exists('is_active', $data) && ! $duty->is_active
@@ -103,13 +105,14 @@ class UpdateDuty
         $removedTenantIds = array_diff($previousTenantIds, $newTenantIds);
 
         if ($removedTenantIds !== []) {
-            $duty->auditRelationChange('current_users', fn () => $this->assignments->endTerms(
+            $duty->auditRelationChange('current_or_upcoming_users', fn () => $this->assignments->endTerms(
                 Dutiable::query()
                     ->where('duty_id', $duty->id)
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->whereIn('tenant_id', $removedTenantIds)
                     ->whereNull('via_dutiable_id')
                     ->notEnded(),
+                actor: $actor,
             ));
         }
 

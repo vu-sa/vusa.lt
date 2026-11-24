@@ -27,8 +27,8 @@ use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ContactPresentationService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\DutyAccessService;
-use App\Services\DutyAssignmentService;
 use App\Services\DutyPanelPresenter;
 use App\Services\DutyPresenter;
 use App\Services\DutyResponsibilityPresenter;
@@ -36,6 +36,7 @@ use App\Services\Institutions\InstitutionQueries;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -450,19 +451,20 @@ class DutyController extends AdminController
         $actor = $request->user();
         $mutation = fn () => DB::transaction(function () use ($validated, $duty, $actingTenantId, $actor): void {
             $this->assignments->lockDuty($duty);
-            $duty->auditRelationChange('current_users', function () use ($validated, $duty, $actingTenantId, $actor): void {
-                $createdUsers = [];
-                if (! empty($validated['new_users'])) {
-                    foreach ($validated['new_users'] as $newUserData) {
-                        $user = User::create([
-                            'name' => $newUserData['name'],
-                            'email' => $newUserData['email'] ?? null,
-                            'phone' => $newUserData['phone'] ?? null,
-                        ]);
-                        $createdUsers[$newUserData['temp_id']] = $user;
-                    }
-                }
+            $createdUsers = [];
+            foreach ($validated['new_users'] ?? [] as $newUserData) {
+                $user = User::create([
+                    'name' => $newUserData['name'],
+                    'email' => $newUserData['email'] ?? null,
+                    'phone' => $newUserData['phone'] ?? null,
+                ]);
+                $createdUsers[$newUserData['temp_id']] = $user;
+            }
 
+            $memberIds = collect($validated['user_changes'])->pluck('user_id')
+                ->map(fn (string $id) => $createdUsers[$id]->id ?? $id)->unique()->all();
+            $members = User::whereKey($memberIds)->get();
+            $this->assignments->auditMemberships(collect([$duty]), $members, function () use ($validated, $duty, $actingTenantId, $actor, $createdUsers): void {
                 $allocatedSeat = false;
                 foreach ($validated['user_changes'] as $index => $change) {
                     $dateAttribute = "user_changes.$index.end_date";
@@ -484,7 +486,7 @@ class DutyController extends AdminController
                     $currentTerms = $this->assignments->manualTerms($duty->id, $userId, $actingTenantId)->notEnded();
 
                     if ($change['action'] === 'remove') {
-                        $this->assignments->endTerms($currentTerms, $attributes['end_date'], $dateAttribute);
+                        $this->assignments->endTerms($currentTerms, $attributes['end_date'], $dateAttribute, $actor);
 
                         continue;
                     }
@@ -494,9 +496,9 @@ class DutyController extends AdminController
                         $edit['start_date'] ??= $existingTerm->start_date->toDateString();
                         $endDate = array_key_exists('end_date', $edit) ? $edit['end_date'] : $existingTerm->end_date?->toDateString();
                         $this->assignments->validateTermEdit($existingTerm, $edit['start_date'], $endDate, $actingTenantId, $dateAttribute);
-                        $existingTerm->update($edit);
+                        DutyAssignmentActor::as($actor, fn () => $existingTerm->update($edit));
                     } else {
-                        $term = $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false, dateAttribute: $dateAttribute);
+                        $term = $this->assignments->startTerm($duty, $userId, $actingTenantId, $attributes, audit: false, dateAttribute: $dateAttribute, actor: $actor);
                         $allocatedSeat = $allocatedSeat || $term->end_date === null || $term->end_date->gte(today());
                     }
                 }

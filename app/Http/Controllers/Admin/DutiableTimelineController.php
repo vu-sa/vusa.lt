@@ -17,7 +17,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;

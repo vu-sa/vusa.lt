@@ -4,22 +4,24 @@ namespace App\Actions\Dutiables;
 
 use App\Models\Duty;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;
+use App\Support\Dutiables\DutyAssignmentActor;
 
 class ApplyDutiableTimelineChanges
 {
     public static function execute(DutiableTimelinePlan $plan, User $actor): void
     {
         $assignments = app(DutyAssignmentService::class);
-        $dutyIds = collect($plan->writableChanges())
-            ->map(fn (DutiableTimelineChange $change) => $plan->rows->get($change->rowId)->duty_id)
-            ->unique()->all();
+        $rows = collect($plan->writableChanges())->map(fn (DutiableTimelineChange $change) => $plan->rows->get($change->rowId));
+        $dutyIds = $rows->pluck('duty_id')->unique()->all();
         $duties = Duty::query()->whereKey($dutyIds)->with('exOfficioTargetDuties')->orderBy('id')->get();
         $affectedDuties = $duties->concat($duties->flatMap->exOfficioTargetDuties);
 
-        $assignments->auditCurrentUsers($affectedDuties, fn () => self::writeChanges($plan, $actor, $assignments));
+        $members = User::whereKey($rows->pluck('dutiable_id')->unique()->all())->get();
+        $assignments->auditMemberships($affectedDuties, $members,
+            fn () => DutyAssignmentActor::as($actor, fn () => self::writeChanges($plan, $actor, $assignments)));
     }
 
     private static function writeChanges(DutiableTimelinePlan $plan, User $actor, DutyAssignmentService $assignments): void

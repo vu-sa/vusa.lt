@@ -40,8 +40,7 @@ trait LogsRelationshipChanges
      * logging one `relation_updated` activity iff something actually changed.
      *
      * $relation must be a literal string from a fixed call site, never
-     * request input -- AuditedRelations::configFor() throws otherwise, which
-     * is what makes that a structural guarantee rather than a convention.
+     * request input -- this rejects names missing from AuditedRelations.
      */
     public function auditRelationChange(string $relation, Closure $mutation): mixed
     {

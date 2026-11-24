@@ -172,6 +172,7 @@ pagal atpažįstamą vardo galūnę. Laikotarpio parinktis išlaikyti originalų
 [Galūnių taisyklės](/organizacija/pareigybes#lytis-ir-dublikatai) taip pat taikomos paieškai ir viešiems kontaktams.
 
 Nario įrašo pakeitimų istorija peržiūrima veiklos žurnalo lange; tai nėra atskiras profilio skirtukas.
+Pridėjus būsimą pareigų laikotarpį, pakeitimas iškart matomas nario ir pareigybės veiklos žurnaluose.
 
 Per meniu **⋯** profilio viršuje pasiekiami veiksmai: **Redaguoti**, laikotarpių tvarkyklė,
 **Generuoti naują slaptažodį** (tik Superadministratoriui) ir **Ištrinti narį**.

@@ -285,7 +285,7 @@ test('reordering assignable tenants and changing quotas does not reconcile drift
     expect($seat->fresh()->getAttributes())->toBe($before);
 });
 
-test('removing a rule ends started seats today and deletes upcoming seats through the model', function (): void {
+test('removing a rule ends started seats yesterday and deletes upcoming seats through the model', function (): void {
     SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
     $source = reconcilerSource();
     $seat = $source->derivedDutiables()->sole();
@@ -303,7 +303,7 @@ test('removing a rule ends started seats today and deletes upcoming seats throug
 
     SyncExOfficioTargets::execute($this->sourceDuty, []);
 
-    expect($seat->fresh()->end_date->toDateString())->toBe('2026-10-30')
+    expect($seat->fresh()->end_date->toDateString())->toBe('2026-10-29')
         ->and($closed->fresh()->getAttributes())->toBe($snapshot)
         ->and($ended->fresh()->getAttributes())->toBe($endedSnapshot)
         ->and($this->sourceDuty->exOfficioTargetDuties()->count())->toBe(0);
@@ -312,6 +312,30 @@ test('removing a rule ends started seats today and deletes upcoming seats throug
         fn ($event) => $event->dutiableRowId === $seat->id);
     Event::assertDispatched(DutiableChanged::class,
         fn ($event) => $event->dutiableRowId === $futureSeat->id);
+});
+
+test('removing a rule withdraws seats starting today and audits the affected duty', function (): void {
+    SyncExOfficioTargets::execute($this->sourceDuty, [$this->targetDuty->id]);
+    $source = reconcilerSource(['start_date' => today()]);
+    $seat = $source->derivedDutiables()->sole();
+
+    SyncExOfficioTargets::execute($this->sourceDuty, []);
+
+    $this->assertModelMissing($seat);
+    $activity = Activity::forSubject($this->targetDuty)->forEvent('relation_updated')->sole();
+    expect($activity->properties->get('detached')[0]['id'])->toBe($this->holder->id);
+});
+
+test('system reconciliation creates a derived seat without a logged-in user', function (): void {
+    $source = reconcilerSource();
+    $role = Role::factory()->create();
+    $role->givePermissionTo('news.read.*');
+    $this->targetDuty->assignRole($role);
+    $this->sourceDuty->exOfficioTargetDuties()->attach($this->targetDuty);
+
+    ReconcileExOfficioSeats::forSource($source);
+
+    expect($source->derivedDutiables()->sole()->duty_id)->toBe($this->targetDuty->id);
 });
 
 test('editing a term after rule removal leaves its attached history alone', function (): void {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Duties;
 
 use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Models\Duty;
@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Support\Dutiables\DutiablePeriods;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Closure;
 use DateTimeInterface;
@@ -50,9 +51,9 @@ class DutyAssignmentService
     }
 
     /** @param array<string, mixed> $attributes */
-    public function startTerm(Duty $duty, string $userId, ?int $tenantId, array $attributes = [], bool $audit = true, string $dateAttribute = 'end_date'): Dutiable
+    public function startTerm(Duty $duty, string $userId, ?int $tenantId, array $attributes = [], bool $audit = true, string $dateAttribute = 'end_date', ?User $actor = null): Dutiable
     {
-        return DB::transaction(function () use ($duty, $userId, $tenantId, $attributes, $audit, $dateAttribute): Dutiable {
+        return DB::transaction(function () use ($duty, $userId, $tenantId, $attributes, $audit, $dateAttribute, $actor): Dutiable {
             $this->lockDuty($duty);
             unset($attributes['assignment_origin']);
             $attributes['start_date'] = isset($attributes['start_date'])
@@ -67,7 +68,7 @@ class DutyAssignmentService
                 throw ValidationException::withMessages(['user_id' => __('dutiables.assign.already_assigned')]);
             }
 
-            $create = fn (): Dutiable => Dutiable::create([
+            $create = fn (): Dutiable => DutyAssignmentActor::as($actor, fn () => Dutiable::create([
                 ...$attributes,
                 'end_date' => $end,
                 'duty_id' => $duty->id,
@@ -75,9 +76,9 @@ class DutyAssignmentService
                 'dutiable_id' => $userId,
                 'tenant_id' => $tenantId,
                 'via_dutiable_id' => null,
-            ]);
+            ]));
 
-            return $audit ? $duty->auditRelationChange('current_users', $create) : $create();
+            return $audit ? $this->auditMemberships(collect([$duty]), User::whereKey($userId)->get(), $create) : $create();
         });
     }
 
@@ -106,12 +107,20 @@ class DutyAssignmentService
         return $institutions;
     }
 
-    /** @param Collection<int, Duty> $duties */
-    public function auditCurrentUsers(Collection $duties, Closure $mutation): mixed
+    /**
+     * @param  Collection<int, Duty>  $duties
+     * @param  Collection<int, User>  $members
+     */
+    public function auditMemberships(Collection $duties, Collection $members, Closure $mutation): mixed
     {
         foreach ($duties->unique('id') as $duty) {
             $write = $mutation;
-            $mutation = fn () => $duty->auditRelationChange('current_users', $write);
+            $mutation = fn () => $duty->auditRelationChange('current_or_upcoming_users', $write);
+        }
+
+        foreach ($members->unique('id') as $member) {
+            $write = $mutation;
+            $mutation = fn () => $member->auditRelationChange('current_or_upcoming_duties', $write);
         }
 
         return $mutation();
@@ -206,17 +215,17 @@ class DutyAssignmentService
     }
 
     /** @param Builder<Dutiable> $query */
-    public function endTerms(Builder $query, DateTimeInterface|string|null $endDate = null, string $attribute = 'end_date'): void
+    public function endTerms(Builder $query, DateTimeInterface|string|null $endDate = null, string $attribute = 'end_date', ?User $actor = null): void
     {
         $lastDay = Carbon::parse($endDate ?? today()->subDay())->toDateString();
         $terms = $query->orderBy('id')->lockForUpdate()->get();
 
         foreach ($terms as $term) {
             if ($term->start_date->toDateString() > $lastDay) {
-                $term->delete();
+                DutyAssignmentActor::as($actor, fn () => $term->delete());
             } elseif ($term->end_date?->toDateString() !== $lastDay) {
                 $this->validateTermEdit($term, null, $lastDay, $term->tenant_id, $attribute);
-                $term->update(['end_date' => $lastDay]);
+                DutyAssignmentActor::as($actor, fn () => $term->update(['end_date' => $lastDay]));
             }
         }
     }
@@ -230,19 +239,20 @@ class DutyAssignmentService
             $toRemove = array_unique(array_diff($currentUserIds, $userIds));
             $toAdd = array_unique(array_diff($userIds, $currentUserIds));
 
-            if ($actor !== null) {
+            if (($assignmentActor = $actor ?? DutyAssignmentActor::current()) !== null) {
                 foreach ($toAdd as $userId) {
-                    AuthorizeDutyAssignment::execute($actor, $duty, (string) $userId);
+                    AuthorizeDutyAssignment::execute($assignmentActor, $duty, (string) $userId);
                 }
             }
 
-            $duty->auditRelationChange('current_users', function () use ($duty, $toRemove, $toAdd, $tenantId): void {
+            $members = User::whereKey([...$toRemove, ...$toAdd])->get();
+            $this->auditMemberships(collect([$duty]), $members, function () use ($duty, $toRemove, $toAdd, $tenantId, $actor): void {
                 foreach ($toRemove as $userId) {
-                    $this->endTerms($this->manualTerms($duty->id, $userId, $tenantId)->notEnded());
+                    $this->endTerms($this->manualTerms($duty->id, $userId, $tenantId)->notEnded(), actor: $actor);
                 }
 
                 foreach ($toAdd as $userId) {
-                    $this->startTerm($duty, $userId, $tenantId, audit: false);
+                    $this->startTerm($duty, $userId, $tenantId, audit: false, actor: $actor);
                 }
             });
 

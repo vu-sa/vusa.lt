@@ -368,8 +368,8 @@ test('removing an assignable tenant withdraws future terms and audits the depart
 
     $this->assertModelMissing($future);
     expect($started->fresh()->end_date->toDateString())->toBe(today()->subDay()->toDateString());
-    $activity = Activity::forSubject($this->duty)->forEvent('relation_updated')->where('properties->relation', 'current_users')->sole();
-    expect(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$started->dutiable_id]);
+    $activity = Activity::forSubject($this->duty)->forEvent('relation_updated')->where('properties->relation', 'current_or_upcoming_users')->sole();
+    expect(collect($activity->properties->get('detached'))->pluck('id')->all())->toEqualCanonicalizing([$started->dutiable_id, $future->dutiable_id]);
 });
 
 test('a creator without duty update permission cannot fill more than the tenant quota', function (bool $api): void {
@@ -459,7 +459,7 @@ test('editing or deleting a current assignment logs the departing member once', 
     })->assertSessionHasNoErrors();
 
     foreach ([$this->duty, $target] as $duty) {
-        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_users')->sole();
+        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_or_upcoming_users')->sole();
         expect(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$this->member->id]);
     }
 })->with(['sheet', 'delete', 'timeline']);
@@ -478,7 +478,7 @@ test('one timeline save audits all departing members once on each affected duty'
     ])->assertSessionHasNoErrors();
 
     foreach ([$this->duty, $target] as $duty) {
-        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_users')->sole();
+        $activity = Activity::forSubject($duty)->forEvent('relation_updated')->where('properties->relation', 'current_or_upcoming_users')->sole();
         expect(collect($activity->properties->get('detached'))->pluck('id')->all())
             ->toEqualCanonicalizing($terms->pluck('dutiable_id')->all());
     }

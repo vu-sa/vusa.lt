@@ -10,7 +10,7 @@ use App\Models\User;
 use App\Policies\DutyPolicy;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;

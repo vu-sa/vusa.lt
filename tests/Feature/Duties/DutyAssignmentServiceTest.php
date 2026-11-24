@@ -3,9 +3,10 @@
 use App\Events\DutiableChanged;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiablePeriods;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -14,6 +15,23 @@ use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
+
+test('starting a term uses the explicit actor’s responsibility ceiling', function (bool $withLogin): void {
+    $actor = User::factory()->create();
+    $member = User::factory()->create();
+    $duty = Duty::factory()->create();
+    $role = Role::factory()->create();
+    $role->givePermissionTo('news.read.*');
+    $duty->assignRole($role);
+
+    if ($withLogin) {
+        $this->actingAs(makeAdminUser());
+    }
+
+    expect(fn () => app(DutyAssignmentService::class)->startTerm($duty, $member->id, null, actor: $actor))
+        ->toThrow(ValidationException::class, __('dutiables.assign.global_responsibility'));
+    expect($duty->dutiables()->exists())->toBeFalse();
+})->with(['without a login' => false, 'with a different administrator logged in' => true]);
 
 test('representative removal respects inclusive end dates and allocated future starts', function (?string $endDate, string $startDate, string $expectedEndDate): void {
     $this->travelTo('2026-10-03 12:00:00');
@@ -84,7 +102,7 @@ test('duplicate representative ids create one audited membership and repeated sy
         ->and($rows->first()->tenant_id)->toBe($tenant->id);
     $activities = Activity::forSubject($duty)->where('event', 'relation_updated')->get();
     expect($activities)->toHaveCount(1)
-        ->and($activities->first()->properties->get('relation'))->toBe('current_users')
+        ->and($activities->first()->properties->get('relation'))->toBe('current_or_upcoming_users')
         ->and($activities->first()->properties->get('attached')[0]['id'])->toBe($user->id);
 });
 

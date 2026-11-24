@@ -13,7 +13,8 @@ use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
 use App\Services\ContactSearchIndexSynchronizer;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -120,7 +121,7 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
                 && ($this->end_date === null || $this->end_date->gte(today()));
             if ((! $this->exists || $this->isDirty(['duty_id', 'dutiable_id', 'dutiable_type']) || $resumes)
                 && $duty !== null && $this->dutiable_type === MorphMap::alias(User::class)
-                && ($actor = auth()->user()) !== null) {
+                && ($actor = DutyAssignmentActor::current()) !== null) {
                 AuthorizeDutyAssignment::execute($actor, $duty, (string) $this->dutiable_id);
             }
 

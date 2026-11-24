@@ -4,7 +4,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -30,11 +30,28 @@ function dutyAttachData(array $userIds): array
     return collect($userIds)->mapWithKeys(fn ($id) => [$id => ['start_date' => now()]])->all();
 }
 
+test('assigning a future term logs one membership change on the duty and the member', function (): void {
+    $user = User::factory()->create();
+    $actor = makeAdminUser($this->tenant);
+
+    asUser($actor)->post(route('duties.batchUpdateUsers', $this->duty), [
+        'user_changes' => [['user_id' => $user->id, 'action' => 'add', 'start_date' => today()->addWeek()->toDateString()]],
+    ])->assertSessionHasNoErrors();
+
+    $dutyActivity = Activity::forSubject($this->duty)->forEvent('relation_updated')->sole();
+    $userActivity = Activity::forSubject($user)->forEvent('relation_updated')->sole();
+
+    expect($dutyActivity->properties->get('relation'))->toBe('current_or_upcoming_users')
+        ->and($dutyActivity->properties->get('attached')[0]['id'])->toBe($user->id)
+        ->and($userActivity->properties->get('relation'))->toBe('current_or_upcoming_duties')
+        ->and($userActivity->properties->get('attached')[0]['id'])->toBe($this->duty->id);
+});
+
 test('attachAudited logs a relation_updated activity with the attached member', function (): void {
     $userA = User::factory()->create(['name' => 'Jonas Jonaitis']);
     $userB = User::factory()->create(['name' => 'Ona Onaitė']);
 
-    $this->duty->attachAudited('current_users', dutyAttachData([$userA->id, $userB->id]));
+    $this->duty->attachAudited('current_or_upcoming_users', dutyAttachData([$userA->id, $userB->id]));
 
     $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))
         ->where('subject_id', $this->duty->id)
@@ -51,7 +68,7 @@ test('attachAudited logs a relation_updated activity with the attached member', 
 
 test('re-syncing the same members logs no activity', function (): void {
     $user = User::factory()->create();
-    $this->duty->attachAudited('current_users', dutyAttachData([$user->id]));
+    $this->duty->attachAudited('current_or_upcoming_users', dutyAttachData([$user->id]));
 
     $before = Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->count();
 
@@ -84,7 +101,7 @@ test('a relation not in the allowlist throws instead of silently logging nothing
 test('a duty member change appears on the parent Institution activity feed via root roll-up', function (): void {
     $user = User::factory()->create();
 
-    $this->duty->attachAudited('current_users', dutyAttachData([$user->id]));
+    $this->duty->attachAudited('current_or_upcoming_users', dutyAttachData([$user->id]));
 
     $activity = Activity::where('subject_type', MorphMap::alias(Duty::class))->where('event', 'relation_updated')->latest('id')->first();
 

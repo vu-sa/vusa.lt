@@ -5,7 +5,7 @@ namespace App\Actions\Dutiables;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\CadenceMatcher;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;

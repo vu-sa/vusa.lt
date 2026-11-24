@@ -1280,7 +1280,7 @@ test('the wizard logs one member change when a former holder returns and a curre
     ])->assertSessionHasNoErrors();
 
     $activity = Activity::forSubject($duty)->where('event', 'relation_updated')->sole();
-    expect($activity->properties->get('relation'))->toBe('current_users')
+    expect($activity->properties->get('relation'))->toBe('current_or_upcoming_users')
         ->and(collect($activity->properties->get('attached'))->pluck('id')->all())->toBe([$former->dutiable_id])
         ->and(collect($activity->properties->get('detached'))->pluck('id')->all())->toBe([$current->dutiable_id]);
 });

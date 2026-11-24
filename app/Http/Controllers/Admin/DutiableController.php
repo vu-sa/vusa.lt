@@ -11,7 +11,8 @@ use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,7 +61,7 @@ class DutiableController extends AdminController
                     'additional_email', 'description',
                 ]),
                 'use_original_duty_name' => $data['use_original_duty_name'] ?? false,
-            ]);
+            ], actor: $request->user());
 
             if (! $request->choosesQuotaTenant() && ($dutiable->end_date === null || $dutiable->end_date->gte(today()))) {
                 $assignments->enforceTenantQuota($duty, $tenantId, $request->user(), 'user_id');
@@ -131,8 +132,9 @@ class DutiableController extends AdminController
             $allocatesSeat = $termChanged && $assignments->allocatesSeat($dutiable, $endDate, $tenantId);
 
             $affectedDuties = collect([$duty])->concat($duty->exOfficioTargetDuties);
-            $assignments->auditCurrentUsers($affectedDuties, function () use ($dutiable, $duty, $data, $request, $assignments, $tenantId, $attribute, $allocatesSeat): void {
-                $dutiable->fill(Arr::except($data, ['photo_media']))->save();
+            $members = collect([$dutiable->user])->filter()->values();
+            $assignments->auditMemberships($affectedDuties, $members, function () use ($dutiable, $duty, $data, $request, $assignments, $tenantId, $attribute, $allocatesSeat): void {
+                DutyAssignmentActor::as($request->user(), fn () => $dutiable->fill(Arr::except($data, ['photo_media']))->save());
                 if ($allocatesSeat) {
                     $assignments->enforceTenantQuota($duty, $tenantId, $request->user(), $attribute);
                 }
@@ -177,14 +179,16 @@ class DutiableController extends AdminController
     {
         $user = $dutiable->dutiable;
 
-        $mutation = fn () => DB::transaction(function () use ($dutiable, $assignments): void {
+        $mutation = fn () => DB::transaction(function () use ($dutiable, $assignments, $request): void {
             $duty = $dutiable->duty()->withTrashed()->firstOrFail();
             $derivedDutyIds = $dutiable->derivedDutiables()->select('duty_id');
             $affectedDuties = Duty::withTrashed()->whereIn('id', $derivedDutyIds)->get()->push($duty);
             $assignments->lockDuties($affectedDuties);
             $dutiable->refreshForUpdate();
             $this->authorize('manageDutiable', $dutiable);
-            $assignments->auditCurrentUsers($affectedDuties, fn () => $dutiable->delete());
+            $members = collect([$dutiable->user])->filter()->values();
+            $assignments->auditMemberships($affectedDuties, $members,
+                fn () => DutyAssignmentActor::as($request->user(), fn () => $dutiable->delete()));
         });
 
         if ($warning = $this->guardSelfLockout($request->user(), $this->affectsActingUser($dutiable, $request), $request, $mutation)) {

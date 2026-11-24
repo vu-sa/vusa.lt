@@ -169,14 +169,14 @@ test('target unlink clips seats inside the transaction and keeps derived members
     DB::beginTransaction();
     try {
         app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty));
-        expect($derived->fresh()->end_date->toDateString())->toBe('2026-10-03');
+        expect($derived->fresh()->end_date->toDateString())->toBe('2026-10-02');
         DB::commit();
     } catch (Throwable $exception) {
         DB::rollBack();
         throw $exception;
     }
 
-    expect($derived->fresh()->end_date->toDateString())->toBe('2026-10-03');
+    expect($derived->fresh()->end_date->toDateString())->toBe('2026-10-02');
 });
 
 test('outer rollback discards duty changes links and reconciled target seats', function (): void {

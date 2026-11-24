@@ -320,6 +320,15 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             ->withTimestamps();
     }
 
+    /** @return MorphToMany<User, $this, Dutiable, 'pivot'> */
+    public function current_or_upcoming_users(): MorphToMany
+    {
+        return $this->users()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()))
+            ->withTimestamps();
+    }
+
     public function previous_users(): MorphToMany
     {
         return $this->users()

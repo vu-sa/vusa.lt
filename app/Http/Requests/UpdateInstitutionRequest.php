@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Actions\GenerateInstitutionAlias;
 use App\Models\Tenant;
-use App\Services\InstitutionDeactivationService;
+use App\Services\Institutions\InstitutionDeactivationService;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 

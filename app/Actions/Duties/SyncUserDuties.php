@@ -6,7 +6,7 @@ use App\Actions\GetPermissableTenants;
 use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Models\Duty;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -65,15 +65,15 @@ class SyncUserDuties
 
         $assignments = app(DutyAssignmentService::class);
 
-        DB::transaction(function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments): void {
+        DB::transaction(function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments, $actor): void {
             $assignments->lockDuties($duties->values());
-            $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments): void {
+            $assignments->auditMemberships($duties->values(), collect([$user]), function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments, $actor): void {
                 foreach ($newDutyIds as $dutyId) {
                     $alreadyActive = $assignments->manualTerms($dutyId, $user->id, null)->notEnded()->exists();
 
                     if (! $alreadyActive) {
                         try {
-                            $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false);
+                            $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false, actor: $actor);
                         } catch (ValidationException $exception) {
                             $message = __('forms.helpers.institution_assignment_closed');
 
@@ -87,7 +87,7 @@ class SyncUserDuties
                 }
 
                 foreach ($removedDutyIds as $dutyId) {
-                    $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->notEnded());
+                    $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->notEnded(), actor: $actor);
                 }
             });
         });

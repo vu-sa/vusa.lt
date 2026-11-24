@@ -9,9 +9,10 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Observers\RepStatisticsObserver;
 use App\Services\ContactSearchIndexSynchronizer;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\Media\LegacyImageImporter;
 use App\Services\UserMergeDutyEmails;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MergeRepointer;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
@@ -84,7 +85,7 @@ class MergeUsers
     /** @param Collection<int, User> $sources */
     public static function execute(User $keptUser, Collection $sources, string $loginEmail, ?User $actor = null, array $dutiableEmailIds = []): void
     {
-        DB::transaction(function () use ($keptUser, $sources, $loginEmail, $actor, $dutiableEmailIds): void {
+        $merge = fn () => DB::transaction(function () use ($keptUser, $sources, $loginEmail, $actor, $dutiableEmailIds): void {
             $movedRows = collect();
             $merged = [];
             $preservedEmails = [];
@@ -114,7 +115,7 @@ class MergeUsers
                 $duty = Duty::find($dutyId);
 
                 if ($duty) {
-                    CollapseOverlappingDutiables::execute($duty);
+                    CollapseOverlappingDutiables::execute($duty, $actor);
                 }
             }
 
@@ -145,6 +146,8 @@ class MergeUsers
                 }
             });
         });
+
+        $actor === null ? DutyAssignmentActor::system($merge) : DutyAssignmentActor::as($actor, $merge);
     }
 
     /**

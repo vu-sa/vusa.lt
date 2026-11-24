@@ -7,7 +7,7 @@ use App\Models\Duty;
 use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;

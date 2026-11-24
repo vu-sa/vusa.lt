@@ -285,6 +285,9 @@ return [
         // App\Support\AuditedRelations / LogsRelationshipChanges).
         'users' => 'members',
         'current_users' => 'members',
+        'current_or_upcoming_users' => 'members',
+        'current_duties' => 'duties',
+        'current_or_upcoming_duties' => 'duties',
         'types' => 'types',
         'institutions' => 'institutions',
         'resources' => 'resources',

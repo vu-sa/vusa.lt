@@ -7,7 +7,8 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\Dutiables\ExOfficioSeatDates;
 use App\Support\MorphMap;
 use Closure;
@@ -40,7 +41,10 @@ class ReconcileExOfficioSeats
             return [];
         }
 
-        return DB::transaction(fn () => self::reconcileSource($source, $includeHistory, $targetId));
+        $reconcile = fn () => DB::transaction(fn () => self::reconcileSource($source, $includeHistory, $targetId));
+        $actor = DutyAssignmentActor::current();
+
+        return $actor === null ? DutyAssignmentActor::system($reconcile) : DutyAssignmentActor::as($actor, $reconcile);
     }
 
     private static function isRootSource(Dutiable $source): bool

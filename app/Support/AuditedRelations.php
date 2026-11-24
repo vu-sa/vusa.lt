@@ -37,8 +37,8 @@ class AuditedRelations
         ],
         Duty::class => [
             'exOfficioTargetDuties' => ['display' => 'name'],
-            // End-dating a term changes current membership while preserving its history.
-            'current_users' => ['display' => 'name'],
+            // Audit access, which starts before the term does and ends on revocation.
+            'current_or_upcoming_users' => ['display' => 'name'],
             'types' => ['display' => 'title'],
         ],
         Meeting::class => [
@@ -51,15 +51,8 @@ class AuditedRelations
             'users' => ['display' => 'name'],
             'resources' => ['display' => 'name'],
         ],
-        // Granting somebody a duty is what puts them inside a tenant, and therefore
-        // what confers authority over their record on that tenant's admins — the one
-        // action most worth being able to reconstruct afterwards.
-        //
-        // current_duties, not duties: a revocation end-dates the pivot row rather than
-        // deleting it, so `duties` membership never changes and nothing would be
-        // logged — a half-audit that reads as a complete one.
         User::class => [
-            'current_duties' => ['display' => 'name'],
+            'current_or_upcoming_duties' => ['display' => 'name'],
         ],
     ];
 

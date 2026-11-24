@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Institutions;
 
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\Duties\DutyAssignmentService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
@@ -56,11 +58,11 @@ class InstitutionDeactivationService
         $this->assertCanDeactivate($institution);
 
         // Derived rows close first so synchronous source listeners cannot overwrite their history.
-        app(DutyAssignmentService::class)->endDateDutiables(
+        DutyAssignmentActor::system(fn () => app(DutyAssignmentService::class)->endDateDutiables(
             Dutiable::whereKey($terms->modelKeys())->orderByDesc('via_dutiable_id'),
             today()->subDay(),
             institutionDeactivation: true,
-        );
+        ));
 
         return $terms->modelKeys();
     }

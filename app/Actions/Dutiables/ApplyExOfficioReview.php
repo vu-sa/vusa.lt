@@ -6,8 +6,9 @@ use App\Actions\CollapseOverlappingDutiables;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiablePeriods;
+use App\Support\Dutiables\DutyAssignmentActor;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -49,9 +50,9 @@ class ApplyExOfficioReview
                 $row = $item['row_id'] === null ? null : $rows[$item['row_id']];
                 self::authorizeItem($item, $source, $target, $row, $rows, $actor);
                 abort_unless(app(DutyAssignmentService::class)->lockExOfficioContext($source, $target), 409);
-                $suppressed = self::applyItem(
+                $suppressed = DutyAssignmentActor::as($actor, fn () => self::applyItem(
                     $item, $source, $target, $row, $rows, $actor, $data['remainder_choices'][$id] ?? 'end'
-                );
+                ));
                 self::log($row ?? $source, $actor, $item, $suppressed);
             }
         });
