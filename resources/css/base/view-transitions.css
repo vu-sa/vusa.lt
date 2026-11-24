@@ -43,15 +43,19 @@
 }
 
 /* Admin chrome persists across visits: show only its live state, so a tab marker that started
-   animating on tap is not cross-faded from a mid-animation snapshot and seen to play twice. */
+   animating on tap is not cross-faded from a mid-animation snapshot and seen to play twice.
+   The fir's snow is named too, or the named chrome would be lifted above it for every visit. */
 html[data-surface="admin"]::view-transition-old(admin-chrome),
-html[data-surface="admin"]::view-transition-old(admin-bottom-bar) {
+html[data-surface="admin"]::view-transition-old(admin-bottom-bar),
+html[data-surface="admin"]::view-transition-old(season-snow) {
   display: none;
 }
 
 html[data-surface="admin"]::view-transition-group(admin-chrome),
 html[data-surface="admin"]::view-transition-group(admin-bottom-bar),
 html[data-surface="admin"]::view-transition-new(admin-chrome),
-html[data-surface="admin"]::view-transition-new(admin-bottom-bar) {
+html[data-surface="admin"]::view-transition-new(admin-bottom-bar),
+html[data-surface="admin"]::view-transition-group(season-snow),
+html[data-surface="admin"]::view-transition-new(season-snow) {
   animation: none;
 }

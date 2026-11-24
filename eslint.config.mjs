@@ -416,6 +416,8 @@ export default tseslint.config(
           {
             target: ['Components', 'Composables', 'Constants', 'Utils', 'Types', 'Search'].map(folder => `resources/js/${folder}`),
             from: 'resources/js/Features',
+            // The season's index is its seam into the shell (lazy exports only); the rule below keeps everything else out.
+            except: ['./Admin/Seasons/index.ts'],
             message: 'Features sit above components and below pages. Move what shared code needs from a feature into Components/ or lower.',
           },
           {

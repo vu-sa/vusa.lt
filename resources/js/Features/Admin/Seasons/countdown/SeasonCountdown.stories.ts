@@ -18,10 +18,10 @@ const meta: Meta<typeof SeasonCountdown> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Pradžia's hero from md up: a fir and the days and hours left. */
+/** Pradžia's hero from md up: a fir and the days, hours and minutes left. */
 export const Hero: Story = { decorators: [() => ({ template: heroBand })] };
 export const HeroDark: Story = { decorators: [() => ({ template: heroBand })], globals: { surface: 'admin', theme: 'dark' } };
-/** The last day counts hours, the last hour minutes. */
+/** The last day drops the days, the last hour the hours. */
 export const LastDay: Story = { args: { startsAt: startsIn(5, 30) }, decorators: [() => ({ template: heroBand })] };
 export const LastHour: Story = { args: { startsAt: startsIn(0, 42) }, decorators: [() => ({ template: heroBand })] };
 
