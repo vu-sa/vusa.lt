@@ -176,11 +176,10 @@ describe('authorized access', function (): void {
             'link_url' => 'https://example.org',
             'is_active' => false,
             'image_media' => ['id' => $staged->id],
-        ]))->toThrow(RuntimeException::class, 'Banner update failed after image sync.');
-
-        expect($banner->fresh()->getAttributes())->toEqual($banner->getAttributes());
-        expect($staged->fresh()->getAttributes())->toEqual($staged->getAttributes());
-        expect($banner->fresh()->getMedia('image')->modelKeys())->toBe([$original->id]);
+        ]))->toThrow(RuntimeException::class, 'Banner update failed after image sync.')
+            ->and($banner->fresh()->getAttributes())->toEqual($banner->getAttributes())
+            ->and($staged->fresh()->getAttributes())->toEqual($staged->getAttributes())
+            ->and($banner->fresh()->getMedia('image')->modelKeys())->toBe([$original->id]);
         Storage::disk($original->disk)->assertExists($original->getPathRelativeToRoot());
     });
 

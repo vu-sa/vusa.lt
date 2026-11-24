@@ -23,6 +23,7 @@ use App\Services\Typesense\MeetingSearchLock;
 use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -74,14 +75,15 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|AgendaItem newModelQuery()
+ * @method static Builder<static>|AgendaItem newQuery()
+ * @method static Builder<static>|AgendaItem query()
+ * @method static Builder<static>|AgendaItem whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|AgendaItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|AgendaItem whereLocale(string $column, string $locale)
+ * @method static Builder<static>|AgendaItem whereLocales(string $column, array $locales)
+ * @method static Builder<static>|AgendaItem whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|AgendaItem withSearchableRelations()
  *
  * @mixin \Eloquent
  */
@@ -285,7 +287,8 @@ class AgendaItem extends Pivot implements Commentable
         return $this->meeting !== null;
     }
 
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with([
             'meeting.institutions.tenant',

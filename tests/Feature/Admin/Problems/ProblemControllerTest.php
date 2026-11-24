@@ -266,11 +266,10 @@ describe('editing from the list', function (): void {
             'status' => 'in_progress',
             'categories' => [$newCategory->id],
             'institutions' => [$institution->id],
-        ]))->toThrow(RuntimeException::class, 'Institution write failed.');
-
-        expect($problem->fresh()->getAttributes())->toEqual($problem->getAttributes());
-        expect($problem->categories()->pluck('problem_categories.id')->all())->toBe([$originalCategory->id]);
-        expect($problem->institutions()->exists())->toBeFalse();
+        ]))->toThrow(RuntimeException::class, 'Institution write failed.')
+            ->and($problem->fresh()->getAttributes())->toEqual($problem->getAttributes())
+            ->and($problem->categories()->pluck('problem_categories.id')->all())->toBe([$originalCategory->id])
+            ->and($problem->institutions()->exists())->toBeFalse();
     });
 
     // `problems.update.padalinys` is tenant-scoped, so the list asks per row instead of `auth.can`.

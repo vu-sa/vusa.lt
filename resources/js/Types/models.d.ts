@@ -532,6 +532,7 @@ declare global {
       dutiables?: Dutiable[]
       users?: User[]
       current_users?: User[]
+      current_or_upcoming_users?: User[]
       previous_users?: User[]
       responsibility_grants?: ResponsibilityGrant[]
       types?: DutyType[]
@@ -562,6 +563,7 @@ declare global {
       dutiables_count: number
       users_count: number
       current_users_count: number
+      current_or_upcoming_users_count: number
       previous_users_count: number
       responsibility_grants_count: number
       types_count: number
@@ -584,6 +586,7 @@ declare global {
       dutiables_exists: boolean
       users_exists: boolean
       current_users_exists: boolean
+      current_or_upcoming_users_exists: boolean
       previous_users_exists: boolean
       responsibility_grants_exists: boolean
       types_exists: boolean
@@ -3005,6 +3008,9 @@ declare global {
       followed_institutions?: Institution[]
       reservations?: Reservation[]
       reservation_draft?: ReservationDraft
+      authored_comments?: Comment[]
+      institution_check_ins?: InstitutionCheckIn[]
+      created_problems?: Problem[]
       learning_progress?: LearningProgress[]
       media?: Media[]
       push_subscriptions?: PushSubscription[]
@@ -3025,6 +3031,9 @@ declare global {
       secretaried_institutions_count: number
       followed_institutions_count: number
       reservations_count: number
+      authored_comments_count: number
+      institution_check_ins_count: number
+      created_problems_count: number
       learning_progress_count: number
       media_count: number
       push_subscriptions_count: number
@@ -3046,6 +3055,9 @@ declare global {
       followed_institutions_exists: boolean
       reservations_exists: boolean
       reservation_draft_exists: boolean
+      authored_comments_exists: boolean
+      institution_check_ins_exists: boolean
+      created_problems_exists: boolean
       learning_progress_exists: boolean
       media_exists: boolean
       push_subscriptions_exists: boolean

@@ -83,7 +83,6 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @method static Builder<static>|PublicInstitution active()
  * @method static Builder<static>|PublicInstitution hasActiveDuties()
- * @method static Builder<static>|PublicInstitution withSearchableRelations()
  * @method static Builder<static>|PublicInstitution newModelQuery()
  * @method static Builder<static>|PublicInstitution newQuery()
  * @method static Builder<static>|PublicInstitution onlyTrashed()
@@ -93,6 +92,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static Builder<static>|PublicInstitution whereLocale(string $column, string $locale)
  * @method static Builder<static>|PublicInstitution whereLocales(string $column, array $locales)
  * @method static Builder<static>|PublicInstitution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|PublicInstitution withSearchableRelations()
  * @method static Builder<static>|PublicInstitution withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|PublicInstitution withoutTrashed()
  *

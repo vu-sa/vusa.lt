@@ -15,6 +15,7 @@ use App\Services\Typesense\SearchText;
 use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -52,18 +53,19 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ResourceFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource reservable()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withoutTrashed()
+ * @method static Builder<static>|Resource newModelQuery()
+ * @method static Builder<static>|Resource newQuery()
+ * @method static Builder<static>|Resource onlyTrashed()
+ * @method static Builder<static>|Resource query()
+ * @method static Builder<static>|Resource reservable()
+ * @method static Builder<static>|Resource whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Resource whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Resource whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Resource whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Resource whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Resource withSearchableRelations()
+ * @method static Builder<static>|Resource withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Resource withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -118,7 +120,8 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
         });
     }
 
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with(['tenant', 'category', 'media']);
     }
@@ -282,7 +285,7 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
      * @param  array<int, string>  $exceptResources  Resource IDs to exclude from calculation
      * @param  bool  $ignoreTimeEndedActive  Ignore active reservations whose end_time has passed
      * @return array<int, array{before: int, after: int, reservation?: array<string, mixed>, start?: bool, end?: bool}>
-     *                                                                                                                     Capacity timeline keyed by timestamp (ms), sorted chronologically
+     *                                                                                                                  Capacity timeline keyed by timestamp (ms), sorted chronologically
      */
     public function getCapacityAtDateTimeRange(
         Carbon|string|int $from,

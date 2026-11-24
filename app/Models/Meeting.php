@@ -26,6 +26,7 @@ use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Support\MeetingTitle;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -82,17 +83,18 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting withoutTrashed()
+ * @method static Builder<static>|Meeting newModelQuery()
+ * @method static Builder<static>|Meeting newQuery()
+ * @method static Builder<static>|Meeting onlyTrashed()
+ * @method static Builder<static>|Meeting query()
+ * @method static Builder<static>|Meeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Meeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Meeting whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Meeting whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Meeting whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Meeting withSearchableRelations()
+ * @method static Builder<static>|Meeting withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Meeting withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -284,7 +286,8 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return MeetingSearchEngine::resolve();
     }
 
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with([
             'institutions.types',

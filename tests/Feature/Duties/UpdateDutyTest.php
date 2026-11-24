@@ -91,8 +91,8 @@ test('moving a member into a tenant quota keeps membership continuous in both lo
 
     expect($term->fresh()->end_date->toDateString())->toBe('2026-10-02')
         ->and($duty->dutiables()->notEnded()->sole()->tenant_id)->toBe($tenant->id)
-        ->and($target->dutiables()->notEnded()->sole()->dutiable_id)->toBe($member->id);
-    expect(Activity::forSubject($duty)->forEvent('relation_updated')->exists())->toBeFalse()
+        ->and($target->dutiables()->notEnded()->sole()->dutiable_id)->toBe($member->id)
+        ->and(Activity::forSubject($duty)->forEvent('relation_updated')->exists())->toBeFalse()
         ->and(Activity::forSubject($target)->forEvent('relation_updated')->count())->toBe(1)
         ->and(Activity::forSubject($member)->forEvent('relation_updated')->count())->toBe($activityCount);
 });

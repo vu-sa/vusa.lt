@@ -73,9 +73,8 @@ test('reopening an institution checks the explicit actor before recreating a pro
     $actor = makeUser($this->tenant);
 
     expect(fn () => app(UpdateInstitution::class)->execute($targetInstitution, ['is_active' => true], $actor))
-        ->toThrow(ValidationException::class, __('dutiables.assign.global_responsibility'));
-
-    expect((bool) $targetInstitution->fresh()->is_active)->toBeFalse()
+        ->toThrow(ValidationException::class, __('dutiables.assign.global_responsibility'))
+        ->and($targetInstitution->fresh()->is_active)->toBeFalsy()
         ->and($source->derivedDutiables()->notEnded()->exists())->toBeFalse();
 });
 
@@ -350,8 +349,8 @@ test('removing a rule withdraws seats starting today and audits the duty and mem
     $dutyActivity = $dutyActivities->last();
     $userActivity = $userActivities->last();
     expect($dutyActivity->properties->get('detached')[0]['id'])->toBe($this->holder->id)
-        ->and($dutyActivity->causer_id)->toBeNull();
-    expect($userActivity->properties->get('detached')[0]['id'])->toBe($this->targetDuty->id)
+        ->and($dutyActivity->causer_id)->toBeNull()
+        ->and($userActivity->properties->get('detached')[0]['id'])->toBe($this->targetDuty->id)
         ->and($userActivity->causer_id)->toBeNull();
 });
 
@@ -366,10 +365,9 @@ test('adding rules groups upcoming seats into one audit per target duty and memb
     $userActivity = Activity::forSubject($this->holder)->forEvent('relation_updated')->sole();
     expect($dutyActivity->properties->get('relation'))->toBe('current_or_upcoming_users')
         ->and(collect($dutyActivity->properties->get('attached'))->pluck('id')->sort()->values()->all())
-        ->toBe(collect([$future->dutiable_id, $other->dutiable_id])->sort()->values()->all());
-    expect($userActivity->properties->get('relation'))->toBe('current_or_upcoming_duties')
-        ->and(collect($userActivity->properties->get('attached'))->pluck('id')->sort()->values()->all())
-        ->toBe(collect([$this->targetDuty->id, $secondTarget->id])->sort()->values()->all());
+        ->toBe(collect([$future->dutiable_id, $other->dutiable_id])->sort()->values()->all())
+        ->and($userActivity->properties->get('relation'))->toBe('current_or_upcoming_duties')
+        ->and(collect($userActivity->properties->get('attached'))->pluck('id')->sort()->values()->all())->toBe(collect([$this->targetDuty->id, $secondTarget->id])->sort()->values()->all());
 });
 
 test('ending a source term audits the derived departure in the same member entry', function (): void {
@@ -381,9 +379,8 @@ test('ending a source term audits the derived departure in the same member entry
 
     expect($source->derivedDutiables()->sole()->end_date->toDateString())->toBe('2026-10-29');
     $memberActivities = Activity::forSubject($this->holder)->forEvent('relation_updated')->orderBy('id')->get();
-    expect($memberActivities)->toHaveCount(2);
-    expect(collect($memberActivities->last()->properties->get('detached'))->pluck('id')->sort()->values()->all())
-        ->toBe(collect([$this->sourceDuty->id, $this->targetDuty->id])->sort()->values()->all());
+    expect($memberActivities)->toHaveCount(2)
+        ->and(collect($memberActivities->last()->properties->get('detached'))->pluck('id')->sort()->values()->all())->toBe(collect([$this->sourceDuty->id, $this->targetDuty->id])->sort()->values()->all());
 
     $targetActivity = Activity::forSubject($this->targetDuty)->forEvent('relation_updated')->latest('id')->firstOrFail();
     expect($targetActivity->properties->get('detached')[0]['id'])->toBe($this->holder->id);

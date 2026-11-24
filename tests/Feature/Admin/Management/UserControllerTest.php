@@ -339,10 +339,9 @@ describe('authorized access', function (): void {
             'name' => $user->name,
             'phone' => '+370 987 6543',
             'current_duties' => [],
-        ]))->toThrow(RuntimeException::class, 'User write failed.');
-
-        expect($user->fresh()->getAttributes())->toEqual($user->getAttributes());
-        expect($user->dutiables()->sole()->getAttributes())->toEqual($dutiable->getAttributes());
+        ]))->toThrow(RuntimeException::class, 'User write failed.')
+            ->and($user->fresh()->getAttributes())->toEqual($user->getAttributes())
+            ->and($user->dutiables()->sole()->getAttributes())->toEqual($dutiable->getAttributes());
     });
 
     test('a former member without an email can still be saved', function (): void {

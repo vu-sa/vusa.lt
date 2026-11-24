@@ -64,6 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
  * @property-read DutyDutyType|DutySuccession|Dutiable|null $pivot
+ * @property-read Collection<int, User> $current_or_upcoming_users
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Dutiable> $dutiables
@@ -115,6 +116,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|Duty whereLocale(string $column, string $locale)
  * @method static Builder<static>|Duty whereLocales(string $column, array $locales)
  * @method static Builder<static>|Duty whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Duty withSearchableRelations()
  * @method static Builder<static>|Duty withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Duty withoutPermission($permissions)
  * @method static Builder<static>|Duty withoutRole($roles, ?string $guard = null)
@@ -167,7 +169,8 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         ];
     }
 
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with([
             'institution.tenant',

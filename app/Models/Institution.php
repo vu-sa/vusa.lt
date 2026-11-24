@@ -115,7 +115,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|Institution active()
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
  * @method static Builder<static>|Institution hasActiveDuties()
- * @method static Builder<static>|Institution withSearchableRelations()
  * @method static Builder<static>|Institution newModelQuery()
  * @method static Builder<static>|Institution newQuery()
  * @method static Builder<static>|Institution onlyTrashed()
@@ -125,6 +124,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static Builder<static>|Institution whereLocale(string $column, string $locale)
  * @method static Builder<static>|Institution whereLocales(string $column, array $locales)
  * @method static Builder<static>|Institution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Institution withSearchableRelations()
  * @method static Builder<static>|Institution withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Institution withoutTrashed()
  *

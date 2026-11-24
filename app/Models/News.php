@@ -16,6 +16,7 @@ use App\Services\Typesense\SearchText;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\Media\ImageData;
 use App\Support\PublicCacheTags;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
@@ -75,6 +76,7 @@ use Spatie\Sitemap\Tags\Url;
  * @method static Builder<static>|News newQuery()
  * @method static Builder<static>|News onlyTrashed()
  * @method static Builder<static>|News query()
+ * @method static Builder<static>|News withSearchableRelations()
  * @method static Builder<static>|News withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|News withoutTrashed()
  *
@@ -519,7 +521,8 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
             ->get();
     }
 
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with(['tags', 'content.parts', 'tenant', 'other_language_news', 'media']);
     }

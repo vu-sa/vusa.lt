@@ -223,8 +223,8 @@ describe('manual tasks', function (): void {
             ->map(fn (array $arguments) => $arguments[0]->task->id)
             ->all();
 
-        expect($taskIds)->toHaveCount($expectedCount);
-        expect($dispatchedTaskIds)->toEqualCanonicalizing($taskIds);
+        expect($taskIds)->toHaveCount($expectedCount)
+            ->and($dispatchedTaskIds)->toEqualCanonicalizing($taskIds);
     })->with([
         'one shared task' => [false, 1],
         'one task per assignee' => [true, 2],

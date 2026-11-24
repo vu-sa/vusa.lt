@@ -19,6 +19,7 @@ use App\Services\NotificationRouter;
 use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -72,7 +73,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Comment> $authoredComments
  * @property-read Collection<int, Problem> $createdProblems
- * @property-read Collection<int, InstitutionCheckIn> $institutionCheckIns
  * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Duty> $current_or_upcoming_duties
@@ -83,6 +83,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
  * @property-read mixed $has_password
+ * @property-read Collection<int, InstitutionCheckIn> $institutionCheckIns
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, LearningProgress> $learningProgress
  * @property-read MediaCollection<int, Media> $media
@@ -105,23 +106,24 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $institutions_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User permission($permissions, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User role($roles, ?string $guard = null, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User team($teams, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, ?string $guard = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTeam($teams)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
+ * @method static Builder<static>|User newModelQuery()
+ * @method static Builder<static>|User newQuery()
+ * @method static Builder<static>|User onlyTrashed()
+ * @method static Builder<static>|User permission($permissions, bool $without = false)
+ * @method static Builder<static>|User query()
+ * @method static Builder<static>|User role($roles, ?string $guard = null, bool $without = false)
+ * @method static Builder<static>|User team($teams, bool $without = false)
+ * @method static Builder<static>|User whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|User whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|User whereLocale(string $column, string $locale)
+ * @method static Builder<static>|User whereLocales(string $column, array $locales)
+ * @method static Builder<static>|User whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|User withSearchableRelations()
+ * @method static Builder<static>|User withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|User withoutPermission($permissions)
+ * @method static Builder<static>|User withoutRole($roles, ?string $guard = null)
+ * @method static Builder<static>|User withoutTeam($teams)
+ * @method static Builder<static>|User withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -205,7 +207,8 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
         return app(EngineManager::class)->engine('typesense');
     }
 
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with(['current_duties.institution.tenant', 'previous_duties', 'duties']);
     }

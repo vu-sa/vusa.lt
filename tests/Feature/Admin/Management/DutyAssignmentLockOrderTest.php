@@ -73,6 +73,6 @@ test('ex officio reconciliation locks institutions before target duties and deri
 
     expect($locks[0] ?? '')->toContain('from institutions', 'in (?, ?)', 'order by id asc')
         ->and($locks[1] ?? '')->toContain('from duties')
-        ->and($locks[2] ?? '')->toContain('from dutiables');
-    expect($target->dutiables()->where('via_dutiable_id', $source->id)->exists())->toBeTrue();
+        ->and($locks[2] ?? '')->toContain('from dutiables')
+        ->and($target->dutiables()->where('via_dutiable_id', $source->id)->exists())->toBeTrue();
 });

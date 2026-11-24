@@ -18,6 +18,7 @@ use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -69,10 +70,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable notEnded()
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable notEnded()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable overlapping(string $start, ?string $end)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
@@ -319,7 +321,8 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
     }
 
     /** Matches DutiablePeriods::overlap() returning a positive number of days. */
-    public function scopeOverlapping($query, string $start, ?string $end)
+    #[Scope]
+    protected function overlapping($query, string $start, ?string $end)
     {
         if ($end !== null && $end < $start) {
             return $query->whereRaw('1 = 0');

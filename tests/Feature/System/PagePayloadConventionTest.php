@@ -114,7 +114,7 @@ function pagePayloadLegacyActions(): array
         $lines = file($file->getPathname());
         $bodies = [];
 
-        foreach ((new ReflectionClass($class))->getMethods() as $method) {
+        foreach (new ReflectionClass($class)->getMethods() as $method) {
             // Trait methods report the using class but the trait's file and lines.
             if ($method->getDeclaringClass()->getName() === $class && $method->getFileName() === $file->getRealPath()) {
                 $bodies[$method->getName()] = pagePayloadCode(array_slice($lines, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1));
@@ -154,13 +154,13 @@ function pagePayloadCode(array $lines): string
     ));
 }
 
-it('builds new admin page payloads in presenters', function () {
+it('builds new admin page payloads in presenters', function (): void {
     $unlisted = array_values(array_diff(pagePayloadLegacyActions(), PAGE_PAYLOAD_HOLDOUTS));
 
     expect($unlisted)->toBe([], 'Build these page props in an app/Services/<Domain>/*Presenter.php with an exact @return shape (.ai/rules/payloads.md): '.implode(', ', $unlisted));
 });
 
-it('lists only holdouts that still build legacy payloads', function () {
+it('lists only holdouts that still build legacy payloads', function (): void {
     $migrated = array_values(array_diff(PAGE_PAYLOAD_HOLDOUTS, pagePayloadLegacyActions()));
 
     expect($migrated)->toBe([], 'Remove migrated actions from PAGE_PAYLOAD_HOLDOUTS: '.implode(', ', $migrated));

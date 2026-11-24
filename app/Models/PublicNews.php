@@ -52,6 +52,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews withSearchableRelations()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicNews withoutTrashed()
  *

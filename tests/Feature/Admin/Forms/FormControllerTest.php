@@ -468,9 +468,8 @@ describe('updating form fields', function (): void {
             'form_fields' => [
                 ['id' => 'new-field', 'type' => 'string', 'label' => ['lt' => 'Naujas', 'en' => 'New']],
             ],
-        ]))->toThrow(RuntimeException::class, 'Field write failed.');
-
-        expect($form->fresh()->getAttributes())->toEqual($form->getAttributes())
+        ]))->toThrow(RuntimeException::class, 'Field write failed.')
+            ->and($form->fresh()->getAttributes())->toEqual($form->getAttributes())
             ->and($form->formFields()->pluck('id')->all())->toBe([$omittedField->id])
             ->and($answer->fresh())->not->toBeNull();
     });

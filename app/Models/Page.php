@@ -13,6 +13,7 @@ use App\Services\PublicUrlService;
 use App\Services\Typesense\SearchText;
 use App\Settings\SiteSettings;
 use App\Support\PublicCacheTags;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -70,6 +71,7 @@ use Spatie\Sitemap\Tags\Url;
  * @method static Builder<static>|Page newQuery()
  * @method static Builder<static>|Page onlyTrashed()
  * @method static Builder<static>|Page query()
+ * @method static Builder<static>|Page withSearchableRelations()
  * @method static Builder<static>|Page withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Page withoutTrashed()
  *
@@ -341,7 +343,8 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
         ]);
     }
 
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with(['tenant', 'tags', 'content.parts']);
     }

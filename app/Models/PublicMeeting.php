@@ -10,6 +10,7 @@ use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -63,17 +64,18 @@ use Laravel\Scout\Searchable;
  * @property-read int|null $users_count
  * @property-read int|null $tenants_count
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting withoutTrashed()
+ * @method static Builder<static>|PublicMeeting newModelQuery()
+ * @method static Builder<static>|PublicMeeting newQuery()
+ * @method static Builder<static>|PublicMeeting onlyTrashed()
+ * @method static Builder<static>|PublicMeeting query()
+ * @method static Builder<static>|PublicMeeting whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|PublicMeeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|PublicMeeting whereLocale(string $column, string $locale)
+ * @method static Builder<static>|PublicMeeting whereLocales(string $column, array $locales)
+ * @method static Builder<static>|PublicMeeting whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|PublicMeeting withSearchableRelations()
+ * @method static Builder<static>|PublicMeeting withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|PublicMeeting withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -125,7 +127,8 @@ class PublicMeeting extends Meeting
     }
 
     #[\Override]
-    public function scopeWithSearchableRelations(Builder $query): void
+    #[Scope]
+    protected function withSearchableRelations(Builder $query): void
     {
         $query->with([
             'institutions.types',

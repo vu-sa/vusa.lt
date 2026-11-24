@@ -30,8 +30,8 @@ test('starting a term uses the explicit actor’s responsibility ceiling', funct
     }
 
     expect(fn () => app(DutyAssignmentService::class)->startTerm($duty, $member->id, null, actor: $actor))
-        ->toThrow(ValidationException::class, __('dutiables.assign.global_responsibility'));
-    expect($duty->dutiables()->exists())->toBeFalse();
+        ->toThrow(ValidationException::class, __('dutiables.assign.global_responsibility'))
+        ->and($duty->dutiables()->exists())->toBeFalse();
 })->with(['without a login' => false, 'with a different administrator logged in' => true]);
 
 test('term membership audits name the scoped actor and leave system writes anonymous', function (): void {
@@ -46,9 +46,8 @@ test('term membership audits name the scoped actor and leave system writes anony
     DutyAssignmentActor::system(fn () => $assignments->startTerm($system, $member->id, null));
 
     expect(Activity::forSubject($manual)->forEvent('relation_updated')->sole()->causer_id)->toBe($actor->id)
-        ->and(Activity::forSubject($system)->forEvent('relation_updated')->sole()->causer_id)->toBeNull();
-    expect(Activity::forSubject($member)->forEvent('relation_updated')->orderBy('id')->pluck('causer_id')->all())
-        ->toBe([$actor->id, null]);
+        ->and(Activity::forSubject($system)->forEvent('relation_updated')->sole()->causer_id)->toBeNull()
+        ->and(Activity::forSubject($member)->forEvent('relation_updated')->orderBy('id')->pluck('causer_id')->all())->toBe([$actor->id, null]);
 });
 
 test('representative removal respects inclusive end dates and allocated future starts', function (?string $endDate, string $startDate, string $expectedEndDate): void {
@@ -143,8 +142,8 @@ test('explicit end dating rejects a last day before the term starts', function (
     $term = Dutiable::factory()->active()->create(['start_date' => today()]);
 
     expect(fn () => app(DutyAssignmentService::class)->endDateDutiables(Dutiable::whereKey($term->id), today()->subDay()))
-        ->toThrow(ValidationException::class);
-    expect($term->fresh()->end_date)->toBeNull();
+        ->toThrow(ValidationException::class)
+        ->and($term->fresh()->end_date)->toBeNull();
 });
 
 test('returning representatives get a new term without overwriting their history', function (): void {
@@ -189,9 +188,8 @@ test('representative sync rolls back removals, additions and audit when a write 
     });
 
     expect(fn () => app(DutyAssignmentService::class)->syncRepresentatives($duty, [$first, $second]))
-        ->toThrow(RuntimeException::class, 'Assignment write failed');
-
-    expect($duty->dutiables()->sole()->id)->toBe($holder->id)
+        ->toThrow(RuntimeException::class, 'Assignment write failed')
+        ->and($duty->dutiables()->sole()->id)->toBe($holder->id)
         ->and($holder->fresh()->end_date)->toBeNull()
         ->and(Activity::forSubject($duty)->where('event', 'relation_updated')->exists())->toBeFalse();
 });

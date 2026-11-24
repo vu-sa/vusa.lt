@@ -48,87 +48,85 @@ function createSearchableFixtures(string $modelClass, int $count): array
     $dutyType = DutyType::factory()->create();
     $category = ResourceCategory::factory()->create();
 
-    return collect(range(1, $count))->map(function () use ($modelClass, $tenant, $institutionType, $dutyType, $category): string|int {
-        return match ($modelClass) {
-            Institution::class, PublicInstitution::class => (function () use ($tenant, $institutionType): string {
-                $institution = Institution::factory()->for($tenant)->create(['is_active' => 1]);
-                $institution->types()->attach($institutionType);
+    return collect(range(1, $count))->map(fn (): string|int => match ($modelClass) {
+        Institution::class, PublicInstitution::class => (function () use ($tenant, $institutionType): string {
+            $institution = Institution::factory()->for($tenant)->create(['is_active' => 1]);
+            $institution->types()->attach($institutionType);
 
-                $duty = Duty::factory()->for($institution)->create();
-                $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDay(), 'end_date' => null]);
-                $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDays(10), 'end_date' => now()->subDays(2)]);
+            $duty = Duty::factory()->for($institution)->create();
+            $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDay(), 'end_date' => null]);
+            $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDays(10), 'end_date' => now()->subDays(2)]);
 
-                $meeting = Meeting::factory()->create(['start_time' => now()->subDays(5)]);
-                $meeting->institutions()->attach($institution);
+            $meeting = Meeting::factory()->create(['start_time' => now()->subDays(5)]);
+            $meeting->institutions()->attach($institution);
 
-                InstitutionCheckIn::factory()->for($institution)->create([
-                    'tenant_id' => $tenant->id,
-                    'start_date' => now()->subDays(20)->toDateString(),
-                    'end_date' => now()->subDays(10)->toDateString(),
-                ]);
+            InstitutionCheckIn::factory()->for($institution)->create([
+                'tenant_id' => $tenant->id,
+                'start_date' => now()->subDays(20)->toDateString(),
+                'end_date' => now()->subDays(10)->toDateString(),
+            ]);
 
-                return $institution->id;
-            })(),
-            Duty::class => (function () use ($tenant, $dutyType): string {
-                $institution = Institution::factory()->for($tenant)->create();
-                $duty = Duty::factory()->for($institution)->create();
-                $duty->types()->attach($dutyType);
-                $duty->assignableTenants()->attach($tenant->id, ['quota' => 1]);
-                DutyName::factory()->for($duty)->create();
-                $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDay(), 'end_date' => null]);
-                $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDays(20), 'end_date' => now()->subDays(10)]);
-                $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDays(15), 'end_date' => now()->subDays(3)]);
+            return $institution->id;
+        })(),
+        Duty::class => (function () use ($tenant, $dutyType): string {
+            $institution = Institution::factory()->for($tenant)->create();
+            $duty = Duty::factory()->for($institution)->create();
+            $duty->types()->attach($dutyType);
+            $duty->assignableTenants()->attach($tenant->id, ['quota' => 1]);
+            DutyName::factory()->for($duty)->create();
+            $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDay(), 'end_date' => null]);
+            $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDays(20), 'end_date' => now()->subDays(10)]);
+            $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDays(15), 'end_date' => now()->subDays(3)]);
 
-                return $duty->id;
-            })(),
-            Meeting::class, PublicMeeting::class => (function () use ($tenant, $institutionType): string {
-                $institution = Institution::factory()->for($tenant)->create();
-                $institution->types()->attach($institutionType);
-                $duty = Duty::factory()->for($institution)->create();
-                $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDay(), 'end_date' => null]);
+            return $duty->id;
+        })(),
+        Meeting::class, PublicMeeting::class => (function () use ($tenant, $institutionType): string {
+            $institution = Institution::factory()->for($tenant)->create();
+            $institution->types()->attach($institutionType);
+            $duty = Duty::factory()->for($institution)->create();
+            $duty->users()->attach(User::factory()->create(), ['start_date' => now()->subDay(), 'end_date' => null]);
 
-                $meeting = Meeting::factory()->create(['start_time' => now()->subWeek()]);
-                $meeting->institutions()->attach($institution);
+            $meeting = Meeting::factory()->create(['start_time' => now()->subWeek()]);
+            $meeting->institutions()->attach($institution);
 
-                $item = AgendaItem::factory()->for($meeting)->voting()->create();
-                Vote::factory()->for($item, 'agendaItem')->positive()->create();
+            $item = AgendaItem::factory()->for($meeting)->voting()->create();
+            Vote::factory()->for($item, 'agendaItem')->positive()->create();
 
-                return $meeting->id;
-            })(),
-            AgendaItem::class => (function () use ($tenant, $institutionType): string {
-                $institution = Institution::factory()->for($tenant)->create();
-                $institution->types()->attach($institutionType);
-                $meeting = Meeting::factory()->create(['start_time' => now()->subWeek()]);
-                $meeting->institutions()->attach($institution);
+            return $meeting->id;
+        })(),
+        AgendaItem::class => (function () use ($tenant, $institutionType): string {
+            $institution = Institution::factory()->for($tenant)->create();
+            $institution->types()->attach($institutionType);
+            $meeting = Meeting::factory()->create(['start_time' => now()->subWeek()]);
+            $meeting->institutions()->attach($institution);
 
-                $item = AgendaItem::factory()->for($meeting)->voting()->create();
-                Vote::factory()->for($item, 'agendaItem')->positive()->create();
+            $item = AgendaItem::factory()->for($meeting)->voting()->create();
+            Vote::factory()->for($item, 'agendaItem')->positive()->create();
 
-                return $item->id;
-            })(),
-            User::class => (function () use ($tenant): string {
-                $institution = Institution::factory()->for($tenant)->create();
-                $currentDuty = Duty::factory()->for($institution)->create();
-                $previousDuty = Duty::factory()->for($institution)->create();
-                $user = User::factory()->create();
-                $user->duties()->attach($currentDuty, ['start_date' => now()->subDay(), 'end_date' => null]);
-                $user->duties()->attach($previousDuty, ['start_date' => now()->subDays(10), 'end_date' => now()->subDays(2)]);
+            return $item->id;
+        })(),
+        User::class => (function () use ($tenant): string {
+            $institution = Institution::factory()->for($tenant)->create();
+            $currentDuty = Duty::factory()->for($institution)->create();
+            $previousDuty = Duty::factory()->for($institution)->create();
+            $user = User::factory()->create();
+            $user->duties()->attach($currentDuty, ['start_date' => now()->subDay(), 'end_date' => null]);
+            $user->duties()->attach($previousDuty, ['start_date' => now()->subDays(10), 'end_date' => now()->subDays(2)]);
 
-                return $user->id;
-            })(),
-            Document::class => (function () use ($tenant): int {
-                $institution = Institution::factory()->for($tenant)->create();
-                $meeting = Meeting::factory()->create(['start_time' => now()->subWeek()]);
-                Calendar::factory()->for($tenant)->create(['meeting_id' => $meeting->id, 'is_draft' => false]);
+            return $user->id;
+        })(),
+        Document::class => (function () use ($tenant): int {
+            $institution = Institution::factory()->for($tenant)->create();
+            $meeting = Meeting::factory()->create(['start_time' => now()->subWeek()]);
+            Calendar::factory()->for($tenant)->create(['meeting_id' => $meeting->id, 'is_draft' => false]);
 
-                return Document::factory()->for($institution)->create([
-                    'meeting_id' => $meeting->id,
-                    'status' => DocumentStatus::Published,
-                    'anonymous_url' => 'https://example.com/document',
-                ])->id;
-            })(),
-            Resource::class => Resource::factory()->for($tenant)->for($category, 'category')->create()->id,
-        };
+            return Document::factory()->for($institution)->create([
+                'meeting_id' => $meeting->id,
+                'status' => DocumentStatus::Published,
+                'anonymous_url' => 'https://example.com/document',
+            ])->id;
+        })(),
+        Resource::class => Resource::factory()->for($tenant)->for($category, 'category')->create()->id,
     })->all();
 }
 
@@ -217,7 +215,7 @@ test('SyncMeetingOutcomeIndex and SyncRelationSearchIndex eager-load searchable 
     DB::enableQueryLog();
     DB::flushQueryLog();
 
-    (new SyncMeetingOutcomeIndex($meeting->id))->handle(app(MeetingSearchLock::class));
+    new SyncMeetingOutcomeIndex($meeting->id)->handle(app(MeetingSearchLock::class));
 
     $outcomeQueries = collect(DB::getQueryLog())->pluck('query');
 

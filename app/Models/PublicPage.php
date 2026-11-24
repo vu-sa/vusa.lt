@@ -54,6 +54,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage withSearchableRelations()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage withoutTrashed()
  *

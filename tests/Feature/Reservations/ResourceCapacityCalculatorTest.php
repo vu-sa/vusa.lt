@@ -60,9 +60,8 @@ test('capacity changes on the correct side of a reservation start and end', func
     reserveCapacityForTest($resource, '2026-01-15 13:00:00', '2026-01-15 15:00:00', 3);
 
     expect($calculator->calculateCapacityAtTimeArray(Carbon::parse('2026-01-15 13:00:00')))
-        ->toBe(['before' => 10, 'after' => 7]);
-    expect($calculator->calculateCapacityAtTimeArray(Carbon::parse('2026-01-15 15:00:00')))
-        ->toBe(['before' => 7, 'after' => 10]);
+        ->toBe(['before' => 10, 'after' => 7])
+        ->and($calculator->calculateCapacityAtTimeArray(Carbon::parse('2026-01-15 15:00:00')))->toBe(['before' => 7, 'after' => 10]);
 });
 
 test('adjacent reservations each count on their own side of the shared boundary', function (): void {
@@ -82,9 +81,8 @@ test('capacity counts each active state in strict mode and ignores it once elaps
     $time = Carbon::parse('2026-01-15 10:00:00');
 
     expect($calculator->calculateCapacityAtTimeArray($time, ignoreTimeEndedActive: false))
-        ->toBe(['before' => $strictCapacity, 'after' => $strictCapacity]);
-    expect($calculator->calculateCapacityAtTimeArray($time, ignoreTimeEndedActive: true))
-        ->toBe(['before' => 10, 'after' => 10]);
+        ->toBe(['before' => $strictCapacity, 'after' => $strictCapacity])
+        ->and($calculator->calculateCapacityAtTimeArray($time, ignoreTimeEndedActive: true))->toBe(['before' => 10, 'after' => 10]);
 })->with([
     'created' => ['created', 7],
     'reserved' => ['reserved', 7],
@@ -105,13 +103,10 @@ test('reservation exceptions apply to listed resources and a pivot exception rem
     $time = Carbon::parse('2026-01-15 15:30:00');
 
     expect($calculator->calculateCapacityAtTimeArray($time, exceptReservations: [$reservation->id]))
-        ->toBe(['before' => 4, 'after' => 4]);
-    expect($calculator->calculateCapacityAtTimeArray($time, exceptResources: [$resource->id]))
-        ->toBe(['before' => 4, 'after' => 4]);
-    expect($calculator->calculateCapacityAtTimeArray($time, exceptReservations: [$reservation->id], exceptResources: [$resource->id]))
-        ->toBe(['before' => 9, 'after' => 9]);
-    expect($calculator->calculateCapacityAtTimeArray($time, excludedReservationResourceId: $excludedPivot->id))
-        ->toBe(['before' => 6, 'after' => 6]);
+        ->toBe(['before' => 4, 'after' => 4])
+        ->and($calculator->calculateCapacityAtTimeArray($time, exceptResources: [$resource->id]))->toBe(['before' => 4, 'after' => 4])
+        ->and($calculator->calculateCapacityAtTimeArray($time, exceptReservations: [$reservation->id], exceptResources: [$resource->id]))->toBe(['before' => 9, 'after' => 9])
+        ->and($calculator->calculateCapacityAtTimeArray($time, excludedReservationResourceId: $excludedPivot->id))->toBe(['before' => 6, 'after' => 6]);
 
     $range = new TimeRange('2026-01-15 12:00:00', '2026-01-15 19:00:00');
     $timeline = $calculator->getCapacityTimeline($range, exceptReservations: [$reservation->id], exceptResources: [$resource->id]);
@@ -194,10 +189,10 @@ test('the timeline sums overlapping quantities and keeps reservation details in 
 
     $timeline = $calculator->getCapacityTimeline($range, ignoreTimeEndedActive: $ignoreTimeEndedActive);
 
-    expect(array_keys($timeline))->toBe(array_keys($expected));
-    expect($timeline)->toEqual($expected);
-    expect($calculator->findLowestCapacity($timeline))->toBe($capacityDuringOverlap);
-    expect($calculator->findTimeEndedActiveReservations($range)->modelKeys())->toBe([$elapsed->id]);
+    expect(array_keys($timeline))->toBe(array_keys($expected))
+        ->and($timeline)->toEqual($expected)
+        ->and($calculator->findLowestCapacity($timeline))->toBe($capacityDuringOverlap)
+        ->and($calculator->findTimeEndedActiveReservations($range)->modelKeys())->toBe([$elapsed->id]);
 })->with([
     'strict' => [false, 7, 3],
     'flexible' => [true, 10, 6],
@@ -216,8 +211,8 @@ test('the resource clamps its timeline to the requested range and takes the mini
     expect($timeline)->toBe([
         $start->getTimestampMs() => ['before' => 2, 'after' => 8],
         $end->getTimestampMs() => ['before' => 8, 'after' => 7],
-    ]);
-    expect($resource->lowestCapacityAtDateTimeRange($timeline))->toBe(7);
+    ])
+        ->and($resource->lowestCapacityAtDateTimeRange($timeline))->toBe(7);
 });
 
 test('timeline query count stays constant from one reservation to six', function (): void {
@@ -254,8 +249,8 @@ test('timeline query count stays constant from one reservation to six', function
         );
     }
 
-    expect($smallCount)->toBe(1);
-    expect($queryCount(14))->toBe($smallCount);
+    expect($smallCount)->toBe(1)
+        ->and($queryCount(14))->toBe($smallCount);
 });
 
 test('a UTC range keeps SQL second precision and counts local pivots at interior points', function (): void {
@@ -272,9 +267,9 @@ test('a UTC range keeps SQL second precision and counts local pivots at interior
 
         $timeline = $calculator->getCapacityTimeline($range);
 
-        expect(array_keys($timeline))->toBe([$range->getStartTimestampMs(), $interior, $range->getEndTimestampMs()]);
-        expect($timeline[$interior])->toMatchArray(['before' => 5, 'after' => 7, 'end' => true]);
-        expect($timeline[$range->getEndTimestampMs()])->toBe(['before' => 10, 'after' => 8]);
+        expect(array_keys($timeline))->toBe([$range->getStartTimestampMs(), $interior, $range->getEndTimestampMs()])
+            ->and($timeline[$interior])->toMatchArray(['before' => 5, 'after' => 7, 'end' => true])
+            ->and($timeline[$range->getEndTimestampMs()])->toBe(['before' => 10, 'after' => 8]);
     } finally {
         date_default_timezone_set($originalTimezone);
     }

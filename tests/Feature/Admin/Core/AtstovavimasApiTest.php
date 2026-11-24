@@ -77,8 +77,8 @@ describe('representative meetings window', function (): void {
                 'has_calendar_event' => true,
                 'calendar_event_is_draft' => true,
                 'agenda_items_count' => 5,
-            ]);
-        expect($meetings[$relatedMeeting->id]['institution_id'])->toBe($this->institution->id);
+            ])
+            ->and($meetings[$relatedMeeting->id]['institution_id'])->toBe($this->institution->id);
 
         asUser($rep)->getJson(route('api.v1.admin.atstovavimas.meetings.agenda', [
             'meeting' => $meeting->id,
@@ -977,21 +977,23 @@ describe('padaliniai gantt', function (): void {
 
         $periods = collect($data['institutions'][$this->ownInstitution->id]['periods'])->keyBy('user_id');
         $publicPeriods = collect($data['institutions'][$this->publicInstitution->id]['periods'])->keyBy('user_id');
-        expect($data['users'][$former->id])->toBe(['name' => $former->name, 'profile_photo_path' => $former->profile_photo_path]);
-        expect($periods[$this->rep->id])->toBe([
-            'user_id' => $this->rep->id,
-            'duty_id' => $duty->id,
-            'start_date' => $duty->pivot->start_date->toDateString(),
-            'end_date' => null,
-        ])->and($periods[$former->id])->toBe([
-            'user_id' => $former->id,
-            'duty_id' => $duty->id,
-            ...$term,
-        ])->and($publicPeriods[$former->id])->toBe([
-            'user_id' => $former->id,
-            'duty_id' => $publicDuty->id,
-            ...$term,
-        ]);
+        expect($data['users'][$former->id])->toBe(['name' => $former->name, 'profile_photo_path' => $former->profile_photo_path])
+            ->and($periods[$this->rep->id])->toBe([
+                'user_id' => $this->rep->id,
+                'duty_id' => $duty->id,
+                'start_date' => $duty->pivot->start_date->toDateString(),
+                'end_date' => null,
+            ])
+            ->and($periods[$former->id])->toBe([
+                'user_id' => $former->id,
+                'duty_id' => $duty->id,
+                ...$term,
+            ])
+            ->and($publicPeriods[$former->id])->toBe([
+                'user_id' => $former->id,
+                'duty_id' => $publicDuty->id,
+                ...$term,
+            ]);
     });
 
     test('a Gantt subset returns requested accessible institutions and drops stale or forbidden IDs', function (string $routeName, string $institutionKey): void {
