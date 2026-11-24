@@ -115,7 +115,7 @@ it('shows a padalinys coordinator who needs them on the Atstovai page and opens 
     waitForInertiaRender($page, '[data-testid=tenant-rep-metrics-table]');
     docsScreenshot($page, 'visak-atstovu-rodikliai');
 
-    $page->click('[data-slot=representative-all] [data-rep] a');
+    $page->click('[data-slot=representative-all] [data-rep] a[href*="/atstovavimas/atstovai/"] >> nth=0');
     waitForInertiaRender($page, '[data-slot=record-facts]');
     expectNoRawVisakKeys($page);
     expectVisakPageFits($page, 'record-facts');
