@@ -1,5 +1,5 @@
 <template>
-  <Popover v-if="expandable && (users.length || showWhenEmpty)" v-model:open="open">
+  <Popover v-if="clickable !== false && expandable && (users.length || showWhenEmpty)" v-model:open="open">
     <PopoverTrigger as-child>
       <button
         type="button"
@@ -64,21 +64,22 @@
       :class="[avatarWrapperClass, index > 0 ? '-ml-2 [&_[data-slot=avatar]]:ring-2 [&_[data-slot=avatar]]:ring-background' : '']"
       :style="{ zIndex: visibleUsers.length - index }"
     >
-      <UserPopover :user :size="avatarSize" :clickable="clickable === false ? false : undefined">
+      <UserAvatar v-if="clickable === false" :user :size="avatarSize" />
+      <UserPopover v-else :user :size="avatarSize">
         <template v-if="$slots['user-additional-info']" #additional-info>
           <slot name="user-additional-info" :user />
         </template>
       </UserPopover>
     </div>
 
-    <div v-if="hasMoreUsers" class="relative -ml-2 flex items-center" :class="avatarWrapperClass" :style="{ zIndex: 0 }">
+    <div v-if="hasMoreUsers && clickable !== false" class="relative z-0 -ml-2 flex items-center pointer-coarse:ml-0">
       <Popover v-model:open="open">
         <PopoverTrigger as-child>
           <button
             type="button"
             data-slot="users-avatar-group-overflow"
-            class="inline-flex items-center leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            :aria-label="$t('Other users')"
+            class="inline-flex items-center justify-center leading-none pointer-coarse:min-h-11 pointer-coarse:min-w-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            :aria-label="`${$t('Other users')} (+${remainingCount})`"
           >
             <Avatar :size="avatarSize" interactive class="ring-2 ring-background">
               <AvatarFallback class="font-medium" :class="textSizeClass">
@@ -113,6 +114,11 @@
         </PopoverContent>
       </Popover>
     </div>
+    <Avatar v-else-if="hasMoreUsers" :size="avatarSize" class="-ml-2 ring-2 ring-background">
+      <AvatarFallback class="font-medium" :class="textSizeClass">
+        +{{ remainingCount }}
+      </AvatarFallback>
+    </Avatar>
   </div>
 </template>
 
@@ -137,7 +143,7 @@ const props = withDefaults(defineProps<{
   limitByScreen?: boolean;
   /** Render the whole group as a click trigger listing every user. */
   expandable?: boolean;
-  /** Explicit opt-out from user profile linking; cannot force links. */
+  /** Set to false to render a static group. */
   clickable?: boolean;
   showWhenEmpty?: boolean;
   hideAvatarsOnMobile?: boolean;
@@ -163,7 +169,7 @@ defineSlots<{
 
 const open = defineModel<boolean>('open', { default: false });
 
-const { hrefFor } = useUserLink(undefined, { disabled: () => props.clickable === false });
+const { hrefFor } = useUserLink();
 
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isSmallerThanSm = breakpoints.smaller('sm');

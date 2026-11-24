@@ -68,7 +68,7 @@ import { createMockPage } from '@/tests/helpers/createMockPage';
 import { usePage } from '@inertiajs/vue3';
 
 vi.mocked(usePage).mockReturnValue(
-  createMockPage({ app: { path: '/mano/forms/create' } })
+  createMockPage({ app: { path: 'mano/forms/create' } })
 );
 ```
 

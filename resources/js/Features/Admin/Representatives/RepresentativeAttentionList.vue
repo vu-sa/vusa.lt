@@ -9,7 +9,7 @@
   >
     <ul class="divide-y divide-border/60">
       <li v-for="rep in visible" :key="rep.id" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-3" :data-rep="rep.id">
-        <UserAvatar :user="{ name: rep.name, profile_photo_path: rep.photo }" :size="36" class="shrink-0" />
+        <UserPopover :user="{ id: rep.id, name: rep.name, email: rep.email, profile_photo_path: rep.photo }" :size="36" class="shrink-0" />
         <span class="min-w-0 flex-1 basis-48">
           <Link :href="route('representatives.show', rep.id)" class="block text-pretty font-bold hover:text-brand">
             {{ rep.name }}
@@ -46,7 +46,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { List, Mail, UserRoundSearch } from '@lucide/vue';
 import { computed } from 'vue';
 
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 

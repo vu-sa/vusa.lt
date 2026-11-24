@@ -18,28 +18,28 @@ const makeUsers = (n: number, overrides: Record<string, unknown> = {}): App.Enti
   })) as unknown as App.Entities.User[];
 
 const adminPage = () => createMockPage({
-  app: { path: '/mano/institutions/123' },
+  app: { path: 'mano/institutions/123' },
   auth: {
     can: {
-      'users.read.padalinys': true,
+      index: { user: true },
     },
   },
 });
 
 const publicPage = () => createMockPage({
-  app: { path: '/lt/naujienos' },
+  app: { path: 'lt/naujienos' },
   auth: {
     can: {
-      'users.read.padalinys': true,
+      index: { user: true },
     },
   },
 });
 
 const adminPageWithoutPermission = () => createMockPage({
-  app: { path: '/mano/institutions/123' },
+  app: { path: 'mano/institutions/123' },
   auth: {
     can: {
-      'users.read.padalinys': false,
+      index: { user: false },
     },
   },
 });
@@ -84,7 +84,7 @@ describe('UsersAvatarGroup', () => {
     expect(links[0]?.attributes('href')).toContain('users.show');
   });
 
-  it('does not link visible avatars without permission, outside admin, or with clickable=false', () => {
+  it('does not link visible avatars without permission or outside admin', () => {
     vi.mocked(usePage).mockReturnValue(adminPageWithoutPermission());
     expect(mount(UsersAvatarGroup, {
       props: { users: makeUsers(2), max: 4, clickable: true },
@@ -96,12 +96,21 @@ describe('UsersAvatarGroup', () => {
       props: { users: makeUsers(2), max: 4, clickable: true },
       global: { stubs: { ...commonStubs, ...hoverCardStubs } },
     }).findAll('[data-testid="inertia-link"]')).toHaveLength(0);
+  });
 
+  it.each([false, true])('renders a static group when clickable is false (expandable: %s)', (expandable) => {
     vi.mocked(usePage).mockReturnValue(adminPage());
-    expect(mount(UsersAvatarGroup, {
-      props: { users: makeUsers(2), max: 4, clickable: false },
-      global: { stubs: { ...commonStubs, ...hoverCardStubs } },
-    }).findAll('[data-testid="inertia-link"]')).toHaveLength(0);
+
+    const wrapper = mount(UsersAvatarGroup, {
+      props: { users: makeUsers(6), max: 3, clickable: false, expandable },
+      global: { stubs: { ...commonStubs, ...popoverStubs, ...hoverCardStubs } },
+    });
+
+    expect(wrapper.findAll('a, button')).toHaveLength(0);
+    expect(wrapper.findAllComponents(UserPopover)).toHaveLength(0);
+    expect(wrapper.findAll('[data-slot="avatar"]')).toHaveLength(4);
+    expect(wrapper.text()).toContain('+3');
+    expect(wrapper.find('.popover-content').exists()).toBe(false);
   });
 
   it('opens a click popover on +N with overflow rows linked by the rule and no nested hover cards', () => {
@@ -112,7 +121,10 @@ describe('UsersAvatarGroup', () => {
       global: { stubs: { ...commonStubs, ...popoverStubs, ...hoverCardStubs } },
     });
 
-    expect(wrapper.find('button[data-slot="users-avatar-group-overflow"]').text()).toContain('+2');
+    const trigger = wrapper.get('button[data-slot="users-avatar-group-overflow"]');
+    expect(trigger.text()).toContain('+2');
+    expect(trigger.attributes('aria-label')).toBe('Other users (+2)');
+    expect(trigger.classes()).toEqual(expect.arrayContaining(['pointer-coarse:min-h-11', 'pointer-coarse:min-w-11', 'justify-center']));
     const content = wrapper.get('.popover-content');
     expect(content.text()).toContain('User 5');
     expect(content.text()).toContain('User 6');

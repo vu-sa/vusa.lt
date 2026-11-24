@@ -11,28 +11,28 @@ import UserPopover, { type PopoverUser } from '../UserPopover.vue';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const adminPage = () => createMockPage({
-  app: { path: '/mano/users' },
+  app: { path: 'mano/users' },
   auth: {
     can: {
-      'users.read.padalinys': true,
+      index: { user: true },
     },
   },
 });
 
 const publicPage = () => createMockPage({
-  app: { path: '/lt/naujienos' },
+  app: { path: 'lt/naujienos' },
   auth: {
     can: {
-      'users.read.padalinys': true,
+      index: { user: true },
     },
   },
 });
 
 const adminPageWithoutPermission = () => createMockPage({
-  app: { path: '/mano/users' },
+  app: { path: 'mano/users' },
   auth: {
     can: {
-      'users.read.padalinys': false,
+      index: { user: false },
     },
   },
 });

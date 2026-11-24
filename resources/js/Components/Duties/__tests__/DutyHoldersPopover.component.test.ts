@@ -50,10 +50,10 @@ describe('DutyHoldersPopover', () => {
     expect(wrapper.emitted('assign')).toHaveLength(1);
   });
 
-  it('links holder rows only when in admin context with users.read.padalinys permission', () => {
+  it('links holder rows only when in admin context with user index access', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      app: { path: '/mano/institutions/1' },
-      auth: { can: { 'users.read.padalinys': true } },
+      app: { path: 'mano/institutions/1' },
+      auth: { can: { index: { user: true } } },
     }));
 
     const permitted = mount(DutyHoldersPopover, {
@@ -64,8 +64,8 @@ describe('DutyHoldersPopover', () => {
     expect(permitted.get('[data-testid="inertia-link"]').attributes('href')).toContain('users.show');
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      app: { path: '/mano/institutions/1' },
-      auth: { can: { 'users.read.padalinys': false } },
+      app: { path: 'mano/institutions/1' },
+      auth: { can: { index: { user: false } } },
     }));
 
     const denied = mount(DutyHoldersPopover, {

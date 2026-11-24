@@ -23,7 +23,7 @@
       <li v-for="rep in shown" :key="rep.id" class="py-3" :data-rep="rep.id">
         <CollectionRow>
           <template #lead>
-            <UserPopover :user="{ name: rep.name, profile_photo_path: rep.photo }" :size="36" />
+            <UserPopover :user="{ id: rep.id, name: rep.name, email: rep.email, profile_photo_path: rep.photo }" :size="36" />
           </template>
           <Link :href="route('representatives.show', rep.id)" class="flex min-h-11 flex-col gap-2 focus-visible:outline-2 focus-visible:outline-ring md:flex-row md:items-center md:gap-6">
             <span class="min-w-0 flex-1">

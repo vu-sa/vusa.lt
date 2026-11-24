@@ -60,8 +60,8 @@ describe('DutyHolderCard', () => {
 
   it('links the card in admin context with permission and opts the nested UserPopover out', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      app: { path: '/mano/duties/1' },
-      auth: { can: { 'users.read.padalinys': true } },
+      app: { path: 'mano/duties/1' },
+      auth: { can: { index: { user: true } } },
     }));
 
     const wrapper = mount(DutyHolderCard, {
@@ -77,8 +77,8 @@ describe('DutyHolderCard', () => {
 
   it('renders a non-link container without user view permission', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      app: { path: '/mano/duties/1' },
-      auth: { can: { 'users.read.padalinys': false } },
+      app: { path: 'mano/duties/1' },
+      auth: { can: { index: { user: false } } },
     }));
 
     const wrapper = mount(DutyHolderCard, {

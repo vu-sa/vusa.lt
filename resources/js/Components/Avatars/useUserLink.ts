@@ -11,15 +11,13 @@ export interface UseUserLinkOptions {
   disabled?: MaybeRefOrGetter<boolean>;
 }
 
-/** Whether the viewer can open admin user profiles in the current surface. */
 export function useCanLinkUsers(): ComputedRef<boolean> {
   const page = usePage();
   const isAdminContext = useIsAdminContext();
 
-  return computed(() => isAdminContext.value && Boolean((page.props.auth?.can as Record<string, unknown> | undefined)?.['users.read.padalinys']));
+  return computed(() => isAdminContext.value && Boolean(page.props.auth?.can?.index?.user));
 }
 
-/** Single linking rule for user profiles: admin context, `users.read.padalinys` permission, and a user id. */
 export function useUserLink(
   user?: MaybeRefOrGetter<LinkableUser | null | undefined>,
   options: UseUserLinkOptions = {},
