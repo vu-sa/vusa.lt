@@ -137,8 +137,9 @@ test('the catalog covers notification types with email and documents the push-on
             expect($keys)->toContain($type->value);
         }
     }
-    $represented = collect(app(MailPreviewSamples::class)->notifications())->map(fn ($notification) => $notification->type()->value)->all();
-    expect($represented)->toEqualCanonicalizing(array_map(fn ($type) => $type->value, MailPreviewCatalog::NOTIFICATION_TYPES));
+    foreach (app(MailPreviewSamples::class)->notificationFactories() as $key => $factory) {
+        expect($factory()->type()->value)->toBe($key);
+    }
 });
 
 test('real queue previews retain stale activity rows and all other recipients without dispatching anything', function (): void {
@@ -172,7 +173,9 @@ test('a rendering failure is reported and returns the small fallback page', func
     Exceptions::fake();
     $exception = new RuntimeException('Broken preview');
     $samples = Mockery::mock(MailPreviewSamples::class);
-    $samples->shouldReceive('notifications')->once()->andThrow($exception);
+    $samples->shouldReceive('notificationFactories')->once()->andReturn([
+        'welcome' => fn () => throw $exception,
+    ]);
     $catalog = new MailPreviewCatalog($samples, app(MailPreviewRenderer::class));
 
     $rendered = $catalog->render('welcome');

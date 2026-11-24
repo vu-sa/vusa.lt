@@ -2,8 +2,6 @@
 
 namespace App\Tasks\Handlers;
 
-use App\Actions\ResolveTaskAssignees;
-use App\Actions\ResyncTaskAssigneesForCadence;
 use App\Enums\AgendaItemType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -13,7 +11,9 @@ use App\Services\MeetingCompletionService;
 use App\Support\MorphMap;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\MeetingAgendaTaskRoster;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Handles Agenda Completion tasks with progress tracking for meeting agenda items.
@@ -170,42 +170,27 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         return $this->countCompletedItems($meeting) < $meeting->agendaItems()->count();
     }
 
-    /**
-     * Reopen a completed task if conditions require it.
-     *
-     * Reopening revives a roster that was snapshotted whenever the task was last open, so
-     * the assignees are resolved again on the way back: a term staffed with secretaries
-     * after the task completed would otherwise mail its whole membership on the next
-     * auto-completion. Silent, like {@see ResyncTaskAssigneesForCadence} — the
-     * task is the same one, only its holders changed.
-     */
     public function reopenIfNeeded(Meeting $meeting): void
     {
-        $completedTask = Task::query()
-            ->where('taskable_type', MorphMap::alias(Meeting::class))
-            ->where('taskable_id', $meeting->getKey())
-            ->where('action_type', ActionType::AgendaCompletion)
-            ->whereNotNull('completed_at')
-            ->first();
+        DB::transaction(function () use ($meeting): void {
+            $completedTask = Task::query()
+                ->where('taskable_type', MorphMap::alias(Meeting::class))
+                ->where('taskable_id', $meeting->getKey())
+                ->where('action_type', ActionType::AgendaCompletion)
+                ->whereNotNull('completed_at')
+                ->lockForUpdate()
+                ->first();
 
-        if (! $completedTask) {
-            return;
-        }
-
-        if ($this->shouldReopenTask($meeting)) {
-            $completedTask->completed_at = null;
-            $completedTask->save();
-
-            $assignees = ResolveTaskAssignees::forMeeting($meeting);
-
-            // An empty resolution means the body has nobody to hand it to; leaving the
-            // stale list beats leaving the task unassigned.
-            if ($assignees->isNotEmpty()) {
-                $completedTask->users()->sync($assignees->pluck('id'));
+            if (! $completedTask || ! $this->shouldReopenTask($meeting)) {
+                return;
             }
 
+            $completedTask->completed_at = null;
+
+            // Keep a holder on the reopened task when nobody can take it over.
+            MeetingAgendaTaskRoster::refresh($completedTask, $meeting, keepExistingWhenEmpty: true);
             $this->syncTotalItems($completedTask, $meeting);
-        }
+        });
     }
 
     protected function syncTotalItems(Task $task, Meeting $meeting): Task

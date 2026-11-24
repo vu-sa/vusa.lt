@@ -93,7 +93,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Direct role users and role duties intersected with the actor's current duties.
     'app/Actions/Responsibilities/GrantableResponsibilities.php' => ["'users'" => 1, "'duties" => 3],
     // Writes date-scoped assignees to task_user.
-    'app/Actions/ResyncTaskAssigneesForCadence.php' => ['->users' => 2],
+    'app/Actions/ResyncTaskAssigneesForCadence.php' => ['->users' => 1],
     // Eager-loads explicit task assignees from task_user.
     'app/Actions/Schedulable/TaskNotifier.php' => ["'users'" => 1],
     // Reservation participants and the actor's resource-management tenant scope.
@@ -265,7 +265,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Duplicate candidates count terms across the whole record.
     'app/Services/UserSimilarityFinder.php' => ["'duties" => 1],
     // Task assignees come from task_user.
-    'app/Tasks/Handlers/AgendaCompletionTaskHandler.php' => ['->users' => 1, "'users'" => 1],
+    'app/Tasks/Handlers/AgendaCompletionTaskHandler.php' => ["'users'" => 1],
     // Task assignees come from task_user.
     'app/Tasks/Handlers/AgendaCreationTaskHandler.php' => ["'users'" => 1],
     // Explicit task input assignees and the task_user relation.
@@ -280,6 +280,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Tasks/Handlers/PickupTaskHandler.php' => ["'users'" => 1],
     // Task assignees come from task_user.
     'app/Tasks/Handlers/ReturnTaskHandler.php' => ["'users'" => 1],
+    // Refreshes the saved meeting agenda roster in task_user.
+    'app/Tasks/MeetingAgendaTaskRoster.php' => ['->users' => 1, "'users'" => 1],
     // Task assignees come from task_user.
     'app/Tasks/Synchronizers/ReservationReviewTaskSynchronizer.php' => ['->users' => 3, "'users'" => 1],
     // Syncs reservation participants from reservation_user to task assignees in task_user.

@@ -2,36 +2,13 @@
 
 This directory contains the task management system for the application. Tasks are workflow items that can be assigned to users and either manually completed or auto-completed by system events.
 
-## Directory Structure
+## Task types and meeting lifecycle
 
-```
-app/Tasks/
-├── DTOs/
-│   └── CreateTaskData.php      # Type-safe data transfer object for task creation
-├── Enums/
-│   └── ActionType.php          # Enum defining task types (Manual, Approval, Pickup, Return)
-├── Handlers/
-│   ├── TaskHandler.php         # Interface for task handlers
-│   ├── BaseTaskHandler.php     # Base class with common functionality
-│   ├── ManualTaskHandler.php   # Handles manually completable tasks
-│   ├── ApprovalTaskHandler.php # Handles approval workflow tasks
-│   ├── PickupTaskHandler.php   # Handles pickup tasks with progress tracking
-│   └── ReturnTaskHandler.php   # Handles return tasks with progress tracking
-├── Subscribers/
-│   ├── ApprovalTaskSubscriber.php      # Listens for approval events
-│   └── ReservationTaskSubscriber.php   # Listens for reservation state changes
-└── Synchronizers/
-    └── ReservationTaskSynchronizer.php # Rebuilds reservation pickup/return tasks from resource states
-```
+[ActionType](Enums/ActionType.php) lists the supported task types and their completion rules.
 
-## Task Types (ActionType)
-
-| Type | Description | Completion |
-|------|-------------|------------|
-| `Manual` | Standard user tasks | User marks complete |
-| `Approval` | Approval workflow tasks | Auto-completes on approval decision |
-| `Pickup` | Resource pickup tracking | Auto-completes when all resources picked up |
-| `Return` | Resource return tracking | Auto-completes when all resources returned |
+- [MeetingTaskSubscriber](Subscribers/MeetingTaskSubscriber.php) assigns agenda tasks on meeting creation, restoration and agenda changes. [RepopulateTasks](../Console/Commands/RepopulateTasks.php) resolves the same meeting-date roster when rebuilding tasks.
+- [AgendaCompletionTaskHandler](Handlers/AgendaCompletionTaskHandler.php) refreshes the stored roster when reopening a task. [Cadence](../Models/Cadence.php) and secretary roster edits reach the same refresh through [ResyncTaskAssigneesForCadence](../Actions/ResyncTaskAssigneesForCadence.php).
+- [ResolveTaskAssignees](../Actions/ResolveTaskAssignees.php) picks the roster at the meeting date. [ResolveTaskAudience](../Actions/ResolveTaskAudience.php) filters that stored roster for delivery.
 
 ## Usage
 

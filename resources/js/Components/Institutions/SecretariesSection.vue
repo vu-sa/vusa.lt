@@ -95,8 +95,7 @@ import { UserPlus, X } from '@lucide/vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { ROW_ITEM_CLASS, ROW_LIST_BOX_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { SectionHeaderAction } from '@/Components/Patterns';
-import MultiCollectionSelectDialog from '@/Components/Pickers/MultiCollectionSelectDialog.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
+import { MultiCollectionSelectDialog, normalizeHit, type NormalizedSearchHit } from '@/Components/Pickers';
 
 import type { SecretaryRoster, SecretaryUser } from './secretaryTypes';
 import { useSecretaryRoster } from './useSecretaryRoster';

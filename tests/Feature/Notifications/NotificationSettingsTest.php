@@ -1,12 +1,20 @@
 <?php
 
+use App\Actions\GetMeetingOverseers;
 use App\Enums\EmailDelivery;
 use App\Enums\NotificationType;
 use App\Enums\ResponsibilityPurpose;
+use App\Models\Cadence;
+use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\InstitutionSecretary;
+use App\Models\Meeting;
 use App\Models\ResponsibilityGrant;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Notifications\NotificationAudience;
+use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -27,6 +35,73 @@ describe('which notifications a user sees', function (): void {
 
         expect($types)->toContain('task_reminder', 'meeting_reminder', 'meeting_created', 'comment_mention', 'followed_institution_activity')
             ->not->toContain('meeting_agenda_completed', 'approval_requested', 'member_registration', 'institution_activity_not_mine', 'support_request_created', 'welcome', 'test_push');
+    });
+
+    test('an ordinary user has an explicit policy for every notification type', function (): void {
+        $audience = app(NotificationAudience::class);
+
+        foreach (NotificationType::cases() as $type) {
+            expect($audience->canReceive($this->user, $type))->toBeBool();
+        }
+
+        expect($audience->canReceive($this->user, NotificationType::ReservationDraftItemTaken))->toBeTrue();
+    });
+
+    test('meeting overseers from coordination grants and visibility roles can configure oversight notices', function (): void {
+        $institution = Institution::factory()->for(Tenant::query()->first())->create();
+        $meeting = Meeting::factory()->hasAttached($institution)->create();
+        $tenantRole = Role::factory()->create();
+        $globalRole = Role::factory()->create();
+        $settings = Mockery::mock(AtstovavimasSettings::class)->makePartial();
+        $settings->shouldReceive('getTenantVisibilityRoleIds')->andReturn(collect([$tenantRole->id]));
+        $settings->shouldReceive('getGlobalVisibilityRoleIds')->andReturn(collect([$globalRole->id]));
+        app()->instance(AtstovavimasSettings::class, $settings);
+
+        $coordinationDuty = Duty::factory()->for($institution)->create();
+        grantPurpose($coordinationDuty, ResponsibilityPurpose::StudentRepCoordination);
+        $coordinator = User::factory()->create();
+        $coordinator->duties()->attach($coordinationDuty, ['start_date' => today()]);
+
+        $visibilityDuty = Duty::factory()->for($institution)->create();
+        $visibilityDuty->assignRole($tenantRole);
+        $tenantOverseer = User::factory()->create();
+        $tenantOverseer->duties()->attach($visibilityDuty, ['start_date' => today()]);
+        $globalOverseer = User::factory()->create()->assignRole($globalRole);
+
+        $overseers = GetMeetingOverseers::execute($meeting)->pluck('id');
+        foreach ([$coordinator, $tenantOverseer, $globalOverseer] as $user) {
+            expect($overseers)->toContain($user->id)
+                ->and(settingsTypesFor($user))->toContain('meeting_created', 'meeting_agenda_completed');
+        }
+    });
+
+    test('secretary settings follow the effective term today while meeting oversight uses the meeting date', function (): void {
+        $this->travelTo(now()->setDate(2032, 8, 15));
+        $institution = Institution::factory()->for(Tenant::query()->first())->create();
+        $shared = Cadence::factory()->forYear(2032)->create();
+        $current = Cadence::factory()->forYear(2032)->for($institution)->create();
+        $past = Cadence::factory()->forYear(2031)->for($institution)->create();
+        $currentSecretary = User::factory()->create();
+        $historicalSecretary = User::factory()->create();
+        $sharedNominee = User::factory()->create();
+
+        foreach ([[$current, $currentSecretary], [$past, $historicalSecretary], [$shared, $sharedNominee]] as [$cadence, $user]) {
+            InstitutionSecretary::create([
+                'institution_id' => $institution->id,
+                'cadence_id' => $cadence->id,
+                'user_id' => $user->id,
+            ]);
+        }
+
+        $currentMeeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
+        $pastMeeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->subYear()]);
+
+        expect(GetMeetingOverseers::execute($currentMeeting)->pluck('id'))->toContain($currentSecretary->id)
+            ->not->toContain($sharedNominee->id)
+            ->and(settingsTypesFor($currentSecretary))->toContain('meeting_created', 'meeting_agenda_completed')
+            ->and(settingsTypesFor($sharedNominee))->not->toContain('meeting_created', 'meeting_agenda_completed')
+            ->and(GetMeetingOverseers::execute($pastMeeting)->pluck('id'))->toContain($historicalSecretary->id)
+            ->and(settingsTypesFor($historicalSecretary))->not->toContain('meeting_created', 'meeting_agenda_completed');
     });
 
     test('a resource manager also sees approval requests', function (): void {

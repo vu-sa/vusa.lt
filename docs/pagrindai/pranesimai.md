@@ -126,6 +126,8 @@ Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.
 - **Tavo pranešimų nustatymai**: pasiekiami profilio meniu viršuje dešinėje pasirinkus
   **Pranešimų nustatymai** (`/mano/profile/notifications`). Čia galima keisti kiekvienos skilties el. pašto ir
   pranešimų į įrenginį parinktis, suvestinės dažnumą bei valdyti susietus įrenginius.
+  Sekretoriaus pranešimų apie posėdžius parinktys rodomos pagal institucijoje šiandien taikomą kadenciją.
+  Siunčiant pranešimus apie posėdį sekretorius parenkamas pagal posėdžio datą.
 
 <DocScreenshot name="notification-preferences" alt="Pranešimų nustatymai: kiekvienam pranešimui pasirenkamas laiškas iškart, suvestinė arba be laiško ir push, šone laikinas išjungimas ir el. pašto adresai" caption="Pranešimų nustatymai: kiekvienai pranešimų rūšiai – laiškas, suvestinė ar išjungta; šone – nutildymas ir adresai." />
 
