@@ -154,7 +154,7 @@ import { Input } from '@/Components/ui/input';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import CollectionSelectContent from '@/Components/Pickers/CollectionSelectContent.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { TenantType } from '@/Types/enums';
 
 export interface TenantInstitution {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2534,
+  "total": 2529,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -503,10 +503,7 @@
     "resources/js/Components/Patterns/__tests__/NavigationTiles.component.test.ts | TS2532 | Object is possibly 'undefined'.": 3,
     "resources/js/Components/Pickers/InlineSearchField.vue | TS2322 | Type 'number | undefined' is not assignable to type 'string'.": 1,
     "resources/js/Components/Pickers/InlineSearchField.vue | TS2322 | Type 'number' is not assignable to type 'string'.": 1,
-    "resources/js/Components/Pickers/MultiCollectionSelectContent.vue | TS2345 | Argument of type 'SearchCollectionKey' is not assignable to parameter of type 'AdminCollection'.": 1,
-    "resources/js/Components/Pickers/MultiCollectionSelectContent.vue | TS2345 | Argument of type '{ hits: NormalizedSearchHit[]; isLoading: boolean; hasSearched: boolean; error: string | null; emptyMessage: string; selectable: true; multiple: boolean; selectedIds: Set<...>; disabledIds: Set<...> | undefined; onToggleSelect: any; }' is not assignable to parameter of type '{ readonly hits: NormalizedSearchHit[]; readonly selectedHit: NormalizedSearchHit | null; readonly isLoading?: boolean | undefined; ... 11 more ...; readonly onToggleSelect?: ((hit: NormalizedSearchHit) => any) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<...>'.": 1,
     "resources/js/Components/Pickers/ResourceSelectContent.vue | TS2353 | Object literal may only specify known properties, and 'tone' does not exist in type 'StatusPresentation'.": 1,
-    "resources/js/Components/Pickers/__tests__/MultiCollectionSelectContent.component.test.ts | TS2322 | Type 'string[]' is not assignable to type 'AdminCollection[]'.": 1,
     "resources/js/Components/Pickers/__tests__/SearchSelectDialog.component.test.ts | TS2532 | Object is possibly 'undefined'.": 5,
     "resources/js/Components/Public/AgendaOutcomeIndicators.vue | TS2345 | Argument of type 'App.Entities.AgendaItem' is not assignable to parameter of type 'import(\"resources/js/Composables/useAgendaItemStyling\").AgendaItem'.": 1,
     "resources/js/Components/Public/Calendar/EventCard.vue | TS2345 | Argument of type 'LocaleEnum' is not assignable to parameter of type 'ModelEnum'.": 1,
@@ -837,7 +834,7 @@
     "resources/js/Components/ui/upload/MediaUpload.vue | TS2345 | Argument of type '{ id: string; name: string; size: number; type: string; url?: string | undefined; file?: { readonly lastModified: number; readonly name: string; readonly webkitRelativePath: string; readonly size: number; ... 5 more ...; text: () => Promise<...>; } | undefined; status: \"error\" | ... 2 more ... | \"uploading\"; progres...' is not assignable to parameter of type 'UploadFile'.": 1,
     "resources/js/Composables/ContentService.ts | TS2769 | No overload matches this call.": 2,
     "resources/js/Composables/__tests__/useAdminSearch.test.ts | TS2488 | Type 'any[] | undefined' must have a '[Symbol.iterator]()' method that returns an iterator.": 1,
-    "resources/js/Composables/__tests__/useAdminSearch.test.ts | TS2532 | Object is possibly 'undefined'.": 9,
+    "resources/js/Composables/__tests__/useAdminSearch.test.ts | TS2532 | Object is possibly 'undefined'.": 7,
     "resources/js/Composables/__tests__/useCalendarSearch.test.ts | TS2532 | Object is possibly 'undefined'.": 1,
     "resources/js/Composables/__tests__/useCollectionSource.test.ts | TS2532 | Object is possibly 'undefined'.": 3,
     "resources/js/Composables/__tests__/useContentEditor.component.test.ts | TS2739 | Type '{ id: number; url: string; thumb: string; srcset: null; focal_point: null; alt: null; author: string; }' is missing the following properties from type 'ImageData': width, height": 1,

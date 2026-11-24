@@ -9,6 +9,7 @@ tests:
   - resources/js/Search/core/__tests__/useBaseSearch.test.ts
   - tests/Feature/Profile/UIPreferencesTest.php
   - resources/js/Composables/__tests__/useAdminSearch.test.ts
+  - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Search/admin/Composables/__tests__/useAdminCollectionSearch.initial.test.ts
   - tests/Feature/Api/Admin/RecordAbilitiesApiControllerTest.php
   - resources/js/Utils/__tests__/dateTime.test.ts
@@ -125,7 +126,7 @@ Joje pateikiamos prieinamos skiltys, veiksmai ir įrašų paieška. Žvaigždute
 naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone paieška pasiekiama iš navigacijos.
 Puslapio prisegimas ir neseniai lankytų puslapių atnaujinimas išsaugomi nepriklausomai vienas nuo kito.
 
-Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., Narys, Pareigybė, Naujiena). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
+Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., narys, pareigybė, naujiena ar darbotvarkės punktas). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
 
 <ChangelogNote date="2026-10-02" title="Paieška turinyje ir aiškesni filtrai">

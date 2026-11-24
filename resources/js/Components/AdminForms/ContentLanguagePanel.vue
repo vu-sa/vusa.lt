@@ -110,7 +110,7 @@ import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { CollectionSelectDialog } from '@/Components/Pickers';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';

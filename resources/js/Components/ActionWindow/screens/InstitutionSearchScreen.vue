@@ -68,7 +68,7 @@ import SearchHitCardText from '@/Components/Search/SearchHitCardText.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData } from '@/Composables/useActionWindowData';
 import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

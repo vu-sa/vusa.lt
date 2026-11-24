@@ -125,7 +125,7 @@ import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { Switch } from '@/Components/ui/switch';
 import { InstitutionTypeLinkScope } from '@/Types/enums';
 import { InlineCollectionSelect } from '@/Components/Pickers';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';
 

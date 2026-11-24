@@ -31,18 +31,14 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { AdminSearchCollectionId, NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import SearchSelectDialog from './SearchSelectDialog.vue';
 import MultiCollectionSelectContent from './MultiCollectionSelectContent.vue';
 
 withDefaults(defineProps<{
   open: boolean;
-  /** Which collections a search hits and which of the results are offered — everything
-   * outside this list is filtered out, since the underlying search spans every
-   * collection the user can access. */
-  collections: AdminCollection[];
+  collections: AdminSearchCollectionId[];
   title: string;
   multiple?: boolean;
   description?: string;

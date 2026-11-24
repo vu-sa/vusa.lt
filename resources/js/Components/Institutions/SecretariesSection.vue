@@ -96,7 +96,7 @@ import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { ROW_ITEM_CLASS, ROW_LIST_BOX_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { SectionHeaderAction } from '@/Components/Patterns';
 import MultiCollectionSelectDialog from '@/Components/Pickers/MultiCollectionSelectDialog.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import type { SecretaryRoster, SecretaryUser } from './secretaryTypes';
 import { useSecretaryRoster } from './useSecretaryRoster';

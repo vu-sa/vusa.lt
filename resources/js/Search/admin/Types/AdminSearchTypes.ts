@@ -1,5 +1,5 @@
 /**
- * Available admin collections for search
+ * Collections with dedicated single-collection facet configuration
  */
 export type AdminCollection
   = | 'meetings'

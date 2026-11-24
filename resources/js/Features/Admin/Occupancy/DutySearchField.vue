@@ -25,7 +25,8 @@ import { computed, ref, watch } from 'vue';
 
 import InlineSearchField from '@/Components/Pickers/InlineSearchField.vue';
 import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
-import { normalizeHit, type MapperContext, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
+import type { MapperContext } from '@/Search/admin/Utils/searchHitMappers';
 
 /** What the sheet needs from a `duties` search document. */
 export interface DutyHit {

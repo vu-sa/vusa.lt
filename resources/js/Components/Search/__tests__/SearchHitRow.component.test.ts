@@ -4,7 +4,7 @@ import { ChevronRight } from '@lucide/vue';
 
 import { deletedMemberStatus } from '@/Constants/statusIcons';
 import { documentWithMatch } from '@/Search/core/matches';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import SearchHitRow from '../SearchHitRow.vue';
 

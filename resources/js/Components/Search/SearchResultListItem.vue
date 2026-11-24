@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { Check } from '@lucide/vue';
 
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import SearchHitRow from './SearchHitRow.vue';
 

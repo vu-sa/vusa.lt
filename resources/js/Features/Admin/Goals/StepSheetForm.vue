@@ -133,7 +133,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import MultiCollectionSelectDialog from '@/Components/Pickers/MultiCollectionSelectDialog.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
 import type { GoalStep, LinkOption, StepParent, Translated } from './types';
@@ -210,7 +210,7 @@ watch(() => [props.step, props.open] as const, ([step, isOpen]) => {
   performerHits.value = people.map(person => normalizeHit('users', { id: person.id, name: person.name }));
 
   if (step?.agenda_item) {
-    referenceHit.value = normalizeHit('agendaItems', { id: step.agenda_item.id, title: step.agenda_item.title });
+    referenceHit.value = normalizeHit('agenda_items', { id: step.agenda_item.id, title: step.agenda_item.title });
   }
   else if (step?.document) {
     referenceHit.value = normalizeHit('documents', { id: step.document.id, title: step.document.title });
@@ -231,7 +231,7 @@ const referenceLabel = computed(() => {
 function setReference(hit: NormalizedSearchHit | null): void {
   referenceHit.value = hit;
   hiddenReference.value = false;
-  form.agenda_item_id = hit?.collection === 'agendaItems' ? hit.recordId : null;
+  form.agenda_item_id = hit?.collection === 'agenda_items' ? hit.recordId : null;
   form.document_id = hit?.collection === 'documents' ? Number(hit.recordId) : null;
 }
 

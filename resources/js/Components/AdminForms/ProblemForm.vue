@@ -238,7 +238,7 @@ import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { CollectionSelectDialog } from '@/Components/Pickers';
 import UserSearchField, { type MemberHit } from '@/Components/Pickers/UserSearchField.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate, todayIso } from '@/Utils/dateTime';

@@ -106,7 +106,7 @@ import { EmptyState, SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Spinner } from '@/Components/ui/spinner';
 import CollectionSelectDialog from '@/Components/Pickers/CollectionSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import FilePicker from '@/Components/Files/Sharepoint/FilePicker.vue';
 import { isPickerAvailable, pickedDocuments, type Item } from '@/Components/Files/Sharepoint/picker';
 import { safeHref } from '@/Utils/safeHref';

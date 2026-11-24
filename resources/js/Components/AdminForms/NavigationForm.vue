@@ -350,7 +350,7 @@ import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import { useApiMutation } from '@/Composables/useApi';
 import { bannerStatuses } from '@/Constants/statusIcons';
 import { MultiCollectionSelectDialog } from '@/Components/Pickers';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { safeHref } from '@/Utils/safeHref';
 
 interface TopicOption {

@@ -60,7 +60,7 @@ import { Button } from '@/Components/ui/button';
 import { useApi } from '@/Composables/useApi';
 import SearchResultList from '@/Components/Search/SearchResultList.vue';
 import SearchSelectDialog from '@/Components/Pickers/SearchSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 const props = defineProps<{
   meetingId: string;

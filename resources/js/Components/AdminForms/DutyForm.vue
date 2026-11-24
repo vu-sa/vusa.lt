@@ -458,7 +458,7 @@ import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.v
 import { useDuplicateDutyCheck } from '@/Components/AdminForms/useDuplicateDutyCheck';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

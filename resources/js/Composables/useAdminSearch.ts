@@ -1,14 +1,12 @@
 import { ref, computed, watch } from 'vue';
 
 import { useAdminSearchSession } from '@/Search/admin/searchSession';
-import { buildAdminSearchParams, ADMIN_SEARCH_FALLBACKS } from '@/Search/admin/Config/collectionSearchConfig';
+import { buildAdminSearchParams } from '@/Search/admin/Config/collectionSearchConfig';
 import { documentWithMatch, type HighlightedHit } from '@/Search/core/matches';
 import { facetSearches, mergeDisjunctiveFacets } from '@/Search/core/facets';
 import { ErrorUtils } from '@/Search/core/services/SearchErrorUtils';
-import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
+import { buildProfileParams } from '@/Search/core/profiles';
 import type { MultiSearchResults } from '@/Search/core/types';
-
-export type { MultiSearchResults } from '@/Search/core/types';
 
 /**
  * Admin Search Types
@@ -341,38 +339,11 @@ export const useAdminSearch = () => {
    * Only searches collections the user has access to. Returns empty results
    * for inaccessible collections without throwing errors.
    */
-  const multiSearch = async (
+  const multiSearch = async <Collection extends string>(
     query: string,
-    options: {
-      meetingsLimit?: number;
-      agendaItemsLimit?: number;
-      newsLimit?: number;
-      pagesLimit?: number;
-      calendarLimit?: number;
-      institutionsLimit?: number;
-      documentsLimit?: number;
-      resourcesLimit?: number;
-      dutiesLimit?: number;
-      usersLimit?: number;
-      _retryCount?: number; // Internal retry counter
-    } = {},
-  ): Promise<MultiSearchResults> => {
-    const {
-      meetingsLimit = 5,
-      agendaItemsLimit = 5,
-      newsLimit = 5,
-      pagesLimit = 5,
-      calendarLimit = 5,
-      institutionsLimit = 5,
-      documentsLimit = 5,
-      resourcesLimit = 5,
-      dutiesLimit = 5,
-      usersLimit = 5,
-      _retryCount = 0,
-    } = options;
-
-    const emptyResults = (): MultiSearchResults => createEmptyMultiSearchResults();
-
+    collections: readonly { id: Collection; limit: number }[],
+    retryCount = 0,
+  ): Promise<MultiSearchResults<Collection>> => {
     // Check rate limit before doing anything
     if (isRateLimited.value) {
       throw new Error('Too many requests. Please wait a moment.');
@@ -392,55 +363,39 @@ export const useAdminSearch = () => {
       throw new Error(configError.value || 'No search configuration available');
     }
 
-    // Cancel any in-flight search
-    if (searchAbortController) {
-      searchAbortController.abort();
-    }
-    searchAbortController = new AbortController();
-    const { signal } = searchAbortController;
-
-    // If user has no access to any collections, return empty results immediately
-    if (!hasAnyAccess.value) {
-      return emptyResults();
-    }
-
-    const node = config.value.nodes?.[0];
-    if (!node) {
-      throw new Error('No Typesense nodes configured');
-    }
-
-    const baseUrl = `${node.protocol}://${node.host}:${node.port}`;
+    searchAbortController?.abort();
 
     const requestConfig = config.value;
-    const generation = session.generation.value;
-    const limits: Record<string, number> = {
-      meetings: meetingsLimit, agenda_items: agendaItemsLimit, news: newsLimit,
-      pages: pagesLimit, calendar: calendarLimit, institutions: institutionsLimit,
-      documents: documentsLimit, resources: resourcesLimit, duties: dutiesLimit, users: usersLimit,
-    };
     const searches: Array<Record<string, unknown>> = [];
-    const searchOrder: string[] = [];
-    for (const collection of Object.keys(ADMIN_SEARCH_FALLBACKS)) {
-      const entry = requestConfig.collections[collection];
-      if (!entry?.hasAccess || !entry.key) continue;
-      searches.push(buildAdminSearchParams(collection, requestConfig, {
+    const searchOrder: Collection[] = [];
+    for (const { id, limit } of collections) {
+      const entry = requestConfig.collections[id];
+      const profile = requestConfig.searchProfiles?.[id];
+      if (!entry?.hasAccess || !entry.key || !profile) continue;
+
+      searches.push({
+        ...buildProfileParams(profile, { q: query || '*' }, requestConfig.searchLocale),
         'collection': entry.name,
-        'q': query || '*',
-        'per_page': limits[collection],
+        'per_page': limit,
         'x-typesense-api-key': entry.key,
-      }));
-      searchOrder.push(collection);
+      });
+      searchOrder.push(id);
     }
 
-    // If no collections are accessible, return empty results
-    if (searches.length === 0) {
-      return emptyResults();
-    }
+    if (searches.length === 0) return {};
+
+    const node = requestConfig.nodes?.[0];
+    if (!node) throw new Error('No Typesense nodes configured');
+
+    const baseUrl = `${node.protocol}://${node.host}:${node.port}`;
+    const generation = session.generation.value;
+    searchAbortController = new AbortController();
+    const { signal } = searchAbortController;
 
     try {
       // Use the dedicated header key for multi_search endpoint authentication
       // Individual searches use their own collection-scoped keys via x-typesense-api-key
-      const headerApiKey = config.value.headerKey;
+      const headerApiKey = requestConfig.headerKey;
       if (!headerApiKey) {
         throw new Error('No header API key available for search');
       }
@@ -458,12 +413,12 @@ export const useAdminSearch = () => {
       session.assertCurrent(generation);
       if (!response.ok) {
         // Handle 401 - expired or invalid key (retry once only)
-        if (response.status === 401 && _retryCount < 1) {
+        if (response.status === 401 && retryCount < 1) {
           console.warn('Search authentication failed, refreshing keys...');
           await refreshConfig();
           // Retry once after refreshing with incremented retry count
           if (config.value) {
-            return multiSearch(query, { ...options, _retryCount: _retryCount + 1 });
+            return multiSearch(query, collections, retryCount + 1);
           }
         }
 
@@ -496,7 +451,7 @@ export const useAdminSearch = () => {
       session.assertCurrent(generation);
 
       // Initialize empty results
-      const results: MultiSearchResults = emptyResults();
+      const results: MultiSearchResults<Collection> = {};
 
       // Map results back to their collections based on search order
       searchOrder.forEach((collectionKey, index) => {
@@ -506,7 +461,6 @@ export const useAdminSearch = () => {
           return;
         }
 
-        const key = collectionKey as keyof Omit<MultiSearchResults, 'counts'>;
         // The int64 score exceeds JS's safe-integer range; keep it as a string for BigInt comparison.
         const hits = searchResult?.hits?.map(
           (hit: {
@@ -521,8 +475,10 @@ export const useAdminSearch = () => {
             _tokens_matched: hit.text_match_info?.tokens_matched ?? 0,
           }),
         ) || [];
-        (results[key] as unknown[]) = hits;
-        results.counts[key] = typeof searchResult?.found === 'number' ? searchResult.found : hits.length;
+        results[collectionKey] = {
+          hits,
+          found: typeof searchResult?.found === 'number' ? searchResult.found : hits.length,
+        };
       });
 
       return results;
@@ -530,11 +486,11 @@ export const useAdminSearch = () => {
     catch (error: unknown) {
       // Don't throw for aborted requests (user typed new query)
       if (ErrorUtils.isAbortError(error)) {
-        return emptyResults();
+        return {};
       }
       // Use ErrorUtils for consistent error handling
       const searchError = ErrorUtils.fromError(error, 'multi-search');
-      throw new Error(searchError.userMessage);
+      throw new Error(searchError.userMessage, { cause: error });
     }
     finally {
       if (searchAbortController?.signal === signal) searchAbortController = null;
@@ -686,7 +642,7 @@ export const useAdminSearch = () => {
       }
       // Re-throw with consistent error handling
       const searchError = ErrorUtils.fromError(error, 'faceted-search');
-      throw new Error(searchError.userMessage);
+      throw new Error(searchError.userMessage, { cause: error });
     }
     finally {
       if (searchAbortController?.signal === signal) searchAbortController = null;

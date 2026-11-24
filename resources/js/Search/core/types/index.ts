@@ -346,6 +346,7 @@ export interface InstitutionSearchResult {
   current_user_names?: string[];
   duty_names?: string[];
   type_ids?: number[];
+  created_at?: number;
   is_active?: boolean;
 }
 
@@ -472,23 +473,7 @@ export interface UserSearchResult {
   term_end_dates?: string[];
 }
 
-/**
- * Multi-search results container (admin search)
- */
-export interface MultiSearchResults {
-  meetings: MeetingSearchResult[];
-  agendaItems: AgendaItemSearchResult[];
-  news: NewsSearchResult[];
-  pages: PageSearchResult[];
-  calendar: CalendarSearchResult[];
-  institutions: InstitutionSearchResult[];
-  documents: DocumentSearchResult[];
-  resources: ResourceSearchResult[];
-  duties: DutySearchResult[];
-  users: UserSearchResult[];
-  /**
-   * Total hit count per result key (Typesense `found`), regardless of the
-   * per-collection limit applied. Used to drive tab count badges.
-   */
-  counts: Record<keyof Omit<MultiSearchResults, 'counts'>, number>;
-}
+export type MultiSearchResults<Collection extends string> = Partial<Record<Collection, {
+  hits: Record<string, unknown>[];
+  found: number;
+}>>;

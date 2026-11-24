@@ -76,7 +76,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarClock, X } from '@lucide/vue';
 
 import { CollectionSelectDialog } from '@/Components/Pickers';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

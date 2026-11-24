@@ -5,7 +5,7 @@ import { defineComponent, nextTick } from 'vue';
 
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
 import UserSearchField from '@/Components/Pickers/UserSearchField.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 import { commonStubs } from '@/tests/stubs';
 

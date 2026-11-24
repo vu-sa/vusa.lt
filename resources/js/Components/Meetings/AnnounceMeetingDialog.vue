@@ -63,7 +63,7 @@ import { DialogDescription } from 'reka-ui';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import CollectionSelectDialog from '@/Components/Pickers/CollectionSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 const props = defineProps<{
   open: boolean;
