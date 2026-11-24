@@ -335,11 +335,12 @@ suskirstytas į skirtukus:
    - *Būsimi nariai*: nariai, kurių pareigos prasidės ateityje (rodoma, tik jei tokių yra).
    - *Laikotarpių istorija*: pasibaigę laikotarpiai – kas ir kada šias pareigas ėjo anksčiau,
      įskaitant [pirmtakės](#istorija) narius. Jei tuo metu pareigybė vadinosi kitaip, rodomas tas pavadinimas.
+   - Turint prieigą prie narių, vardas narių sąraše yra nuoroda į nario puslapį.
    - Mygtukas **Priskirti** atidaro nario priskyrimo formą. Prie kiekvieno nario rasi
      **Redaguoti**, o prie dabartinių – ir **Užbaigti pareigas**.
 2. **Apie pareigybę**:
    - Pareigybės aprašymas.
-   - Kitos tos pačios institucijos pareigybės ir kiek narių jas eina.
+   - Kitos tos pačios institucijos pareigybės ir kiek narių jas eina. Paspaudus eilutę, taip pat ir ties **+N** žyma, atveriamas tos pareigybės puslapis.
    - *Pareigybės istorija*: datuota laiko juosta – pervadinimai, pirmtakės ir pareigybės, perėmusios šios darbą
      (žr. [Istorija](#istorija)). Mygtukas **Susieti ankstesnę pareigybę** leidžia pasirinkti ir nebeveikiančias pareigybes.
 3. **Atsakomybės**:

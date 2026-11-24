@@ -1,58 +1,82 @@
 import { mount } from '@vue/test-utils';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
+import type { AvatarSize } from '@/Components/ui/avatar';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { commonStubs } from '@/tests/stubs';
 
-import UserPopover from '../UserPopover.vue';
+import UserPopover, { type PopoverUser } from '../UserPopover.vue';
 
-const adminPage = createMockPage({
-  app: { path: '/mano/users' },
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+const adminPage = () => createMockPage({
+  app: { path: 'mano/users' },
   auth: {
     can: {
-      'users.read.padalinys': true,
+      index: { user: true },
     },
   },
 });
 
-const publicPage = createMockPage({
-  app: { path: '/lt/naujienos' },
+const publicPage = () => createMockPage({
+  app: { path: 'lt/naujienos' },
   auth: {
     can: {
-      'users.read.padalinys': true,
+      index: { user: true },
     },
   },
 });
 
-const adminPageWithoutPermission = createMockPage({
-  app: { path: '/mano/users' },
+const adminPageWithoutPermission = () => createMockPage({
+  app: { path: 'mano/users' },
   auth: {
     can: {
-      'users.read.padalinys': false,
+      index: { user: false },
     },
   },
 });
 
-const makeUser = (overrides: Record<string, unknown> = {}) => ({
+const makeUser = (overrides: Partial<PopoverUser> = {}): PopoverUser => ({
   id: 'u1',
   name: 'Jonas Jonaitis',
   ...overrides,
 });
 
 const hoverCardStubs = {
-  HoverCard: { template: '<div><slot /></div>' },
+  ...commonStubs,
+  HoverCard: { template: '<div data-stub="hover-card"><slot /></div>' },
   HoverCardTrigger: { template: '<div data-stub="hover-card-trigger"><slot /></div>' },
   HoverCardContent: { template: '<div data-stub="hover-card-content"><slot /></div>' },
 };
 
 const avatarStub = { props: ['user', 'size', 'interactive'], template: '<span class="user-avatar" />' };
 
+interface MountPopoverProps {
+  user?: PopoverUser;
+  showName?: boolean;
+  size?: number | AvatarSize;
+  clickable?: boolean;
+}
+
+const mountPopover = (props: MountPopoverProps = {}, extraStubs: Record<string, unknown> = { UserAvatar: avatarStub }) => mount(UserPopover, {
+  props: { user: makeUser(), ...props },
+  global: {
+    stubs: {
+      ...hoverCardStubs,
+      ISimpleIconsFacebook: { template: '<span />' },
+      ...extraStubs,
+    },
+  },
+});
+
 describe('UserPopover', () => {
+  beforeEach(() => {
+    vi.mocked(usePage).mockReturnValue(createMockPage());
+  });
+
   it.each([false, true])('renders compact avatars with readable initials (showName: %s)', (showName) => {
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser(), size: 'xxs', showName, clickable: false },
-      global: { stubs: hoverCardStubs },
-    });
+    const wrapper = mountPopover({ size: 'xxs', showName, clickable: false }, {});
 
     const avatar = wrapper.find('[data-slot="avatar"]');
     expect(avatar.classes()).toContain('size-5');
@@ -63,21 +87,10 @@ describe('UserPopover', () => {
     }
   });
 
-  it('renders the avatar trigger as a link in admin context with permission', () => {
-    vi.mocked(usePage).mockReturnValue(adminPage);
+  it('renders the avatar trigger as a link in admin context with permission and id', () => {
+    vi.mocked(usePage).mockReturnValue(adminPage());
 
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser() },
-      global: {
-        stubs: {
-          ...hoverCardStubs,
-          UserAvatar: avatarStub,
-          IFluentMail20Regular: { template: '<span />' },
-          IFluentPhone20Regular: { template: '<span />' },
-          ISimpleIconsFacebook: { template: '<span />' },
-        },
-      },
-    });
+    const wrapper = mountPopover({});
 
     const link = wrapper.find('[data-testid="inertia-link"]');
     expect(link.exists()).toBe(true);
@@ -85,21 +98,10 @@ describe('UserPopover', () => {
     expect(link.find('.user-avatar').exists()).toBe(true);
   });
 
-  it('renders the name trigger as a link in admin context with permission', () => {
-    vi.mocked(usePage).mockReturnValue(adminPage);
+  it('renders the name trigger as a link in admin context with permission and id', () => {
+    vi.mocked(usePage).mockReturnValue(adminPage());
 
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser(), showName: true },
-      global: {
-        stubs: {
-          ...hoverCardStubs,
-          UserAvatar: avatarStub,
-          IFluentMail20Regular: { template: '<span />' },
-          IFluentPhone20Regular: { template: '<span />' },
-          ISimpleIconsFacebook: { template: '<span />' },
-        },
-      },
-    });
+    const wrapper = mountPopover({ showName: true });
 
     const link = wrapper.find('[data-testid="inertia-link"]');
     expect(link.exists()).toBe(true);
@@ -108,100 +110,43 @@ describe('UserPopover', () => {
   });
 
   it('does not render a link outside the admin context', () => {
-    vi.mocked(usePage).mockReturnValue(publicPage);
+    vi.mocked(usePage).mockReturnValue(publicPage());
 
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser() },
-      global: {
-        stubs: {
-          ...hoverCardStubs,
-          UserAvatar: avatarStub,
-          IFluentMail20Regular: { template: '<span />' },
-          IFluentPhone20Regular: { template: '<span />' },
-          ISimpleIconsFacebook: { template: '<span />' },
-        },
-      },
-    });
+    const wrapper = mountPopover({});
 
     expect(wrapper.find('[data-testid="inertia-link"]').exists()).toBe(false);
     expect(wrapper.find('[data-stub="hover-card-trigger"] div').exists()).toBe(true);
   });
 
   it('does not render a link without user view permission', () => {
-    vi.mocked(usePage).mockReturnValue(adminPageWithoutPermission);
+    vi.mocked(usePage).mockReturnValue(adminPageWithoutPermission());
 
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser() },
-      global: {
-        stubs: {
-          ...hoverCardStubs,
-          UserAvatar: avatarStub,
-          IFluentMail20Regular: { template: '<span />' },
-          IFluentPhone20Regular: { template: '<span />' },
-          ISimpleIconsFacebook: { template: '<span />' },
-        },
-      },
-    });
+    const wrapper = mountPopover({});
 
     expect(wrapper.find('[data-testid="inertia-link"]').exists()).toBe(false);
   });
 
   it('does not render a link when the user has no id', () => {
-    vi.mocked(usePage).mockReturnValue(adminPage);
+    vi.mocked(usePage).mockReturnValue(adminPage());
 
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser({ id: undefined }) },
-      global: {
-        stubs: {
-          ...hoverCardStubs,
-          UserAvatar: avatarStub,
-          IFluentMail20Regular: { template: '<span />' },
-          IFluentPhone20Regular: { template: '<span />' },
-          ISimpleIconsFacebook: { template: '<span />' },
-        },
-      },
-    });
+    const wrapper = mountPopover({ user: makeUser({ id: undefined }) });
 
     expect(wrapper.find('[data-testid="inertia-link"]').exists()).toBe(false);
   });
 
-  it('can be forced non-clickable in admin context', () => {
-    vi.mocked(usePage).mockReturnValue(adminPage);
+  it('allows explicit opt-out with clickable=false in admin context', () => {
+    vi.mocked(usePage).mockReturnValue(adminPage());
 
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser(), clickable: false },
-      global: {
-        stubs: {
-          ...hoverCardStubs,
-          UserAvatar: avatarStub,
-          IFluentMail20Regular: { template: '<span />' },
-          IFluentPhone20Regular: { template: '<span />' },
-          ISimpleIconsFacebook: { template: '<span />' },
-        },
-      },
-    });
+    const wrapper = mountPopover({ clickable: false });
 
     expect(wrapper.find('[data-testid="inertia-link"]').exists()).toBe(false);
   });
 
-  it('can be forced clickable outside admin context', () => {
-    vi.mocked(usePage).mockReturnValue(publicPage);
+  it('does not force linking when clickable=true outside admin context or without permission', () => {
+    vi.mocked(usePage).mockReturnValue(publicPage());
+    expect(mountPopover({ clickable: true }).find('[data-testid="inertia-link"]').exists()).toBe(false);
 
-    const wrapper = mount(UserPopover, {
-      props: { user: makeUser(), clickable: true },
-      global: {
-        stubs: {
-          ...hoverCardStubs,
-          UserAvatar: avatarStub,
-          IFluentMail20Regular: { template: '<span />' },
-          IFluentPhone20Regular: { template: '<span />' },
-          ISimpleIconsFacebook: { template: '<span />' },
-        },
-      },
-    });
-
-    const link = wrapper.find('[data-testid="inertia-link"]');
-    expect(link.exists()).toBe(true);
-    expect(link.attributes('href')).toContain('users.show');
+    vi.mocked(usePage).mockReturnValue(adminPageWithoutPermission());
+    expect(mountPopover({ clickable: true }).find('[data-testid="inertia-link"]').exists()).toBe(false);
   });
 });

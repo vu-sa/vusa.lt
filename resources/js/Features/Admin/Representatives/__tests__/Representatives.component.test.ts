@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { InstitutionActivityStatus } from '@/Types/enums';
 
@@ -31,6 +32,24 @@ function rep(id: string, overrides: Partial<RepRow> = {}, reason: RepAttentionRe
 }
 
 const ids = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('[data-rep]').map(row => row.attributes('data-rep'));
+
+it.each([
+  ['the full list', RepresentativeList],
+  ['the attention list', RepresentativeAttentionList],
+] as const)('shows a profile avatar beside the representative link in %s', (_, List) => {
+  const representative = rep('rep-1', {}, 'inactive');
+  vi.mocked(usePage).mockReturnValue(createMockPage({
+    app: { path: 'mano/dashboard/atstovavimas/atstovai' },
+    auth: { can: { index: { user: true } } },
+  }));
+
+  const wrapper = mount(List, { props: { reps: [representative] } });
+  const row = wrapper.get('[data-rep="rep-1"]');
+
+  expect(row.getComponent(UserPopover).props('user')).toMatchObject({ id: 'rep-1', email: 'rep-1@vusa.lt' });
+  expect(row.get('a[href^="/mocked-route/representatives.show"]').text()).toContain(representative.name);
+  expect(row.get('a[href^="/mocked-route/users.show"]').element.parentElement?.closest('a')).toBeNull();
+});
 
 describe('RepresentativeAttentionList', () => {
   it('shows five reps with their reason and a way to the rest', async () => {

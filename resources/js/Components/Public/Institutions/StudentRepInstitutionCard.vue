@@ -37,7 +37,7 @@
               class="flex size-full items-center justify-center font-mono text-xs font-bold text-muted-foreground"
               aria-hidden="true"
             >
-              {{ initials(person.name) }}
+              {{ initials(person.name) || '?' }}
             </span>
           </span>
           <span class="min-w-0 flex-1">
@@ -70,6 +70,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+
+import { initials } from '@/Utils/String';
 
 import InstitutionCardArrow from './InstitutionCardArrow.vue';
 import InstitutionCardDescription from './InstitutionCardDescription.vue';
@@ -139,11 +141,4 @@ const representatives = computed<Representative[]>(() => {
 
 const shownRepresentatives = computed(() => representatives.value.slice(0, SHOWN_REPRESENTATIVES));
 const hiddenCount = computed(() => Math.max(0, representatives.value.length - SHOWN_REPRESENTATIVES));
-
-const initials = (name: string) => {
-  const parts = name.split(' ').filter(Boolean);
-  return parts.length >= 2
-    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    : (parts[0]?.substring(0, 2).toUpperCase() ?? '?');
-};
 </script>

@@ -3,7 +3,7 @@
     <HoverCardTrigger as-child>
       <template v-if="!showName">
         <Link
-          v-if="shouldRenderLink"
+          v-if="shouldRenderLink && profileUrl"
           :href="profileUrl"
           v-bind="$attrs"
           class="inline-flex items-center leading-none"
@@ -12,7 +12,7 @@
           <UserAvatar
             :user
             :size="avatarSize"
-            :interactive="true"
+            interactive
           />
         </Link>
         <div
@@ -24,18 +24,18 @@
           <UserAvatar
             :user
             :size="avatarSize"
-            :interactive="true"
+            interactive
           />
         </div>
       </template>
       <template v-else>
         <Link
-          v-if="shouldRenderLink"
+          v-if="shouldRenderLink && profileUrl"
           :href="profileUrl"
           v-bind="$attrs"
           class="group inline-flex items-center gap-2 px-1 py-0.5 transition-colors hover:bg-accent"
         >
-          <UserAvatar :user :size="avatarSize" :interactive="true" />
+          <UserAvatar :user :size="avatarSize" interactive />
           <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
             {{ user.name }}
           </span>
@@ -45,7 +45,7 @@
           v-bind="$attrs"
           class="group inline-flex items-center gap-2 px-1 py-0.5 transition-colors hover:bg-accent"
         >
-          <UserAvatar :user :size="avatarSize" :interactive="true" />
+          <UserAvatar :user :size="avatarSize" interactive />
           <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
             {{ user.name }}
           </span>
@@ -70,7 +70,7 @@
           v-else
           class="flex h-full w-full items-center justify-center bg-muted"
         >
-          <span class="text-2xl font-bold text-muted-foreground">{{ initials }}</span>
+          <span class="text-2xl font-bold text-muted-foreground">{{ initials(user.name) }}</span>
         </div>
       </div>
 
@@ -122,22 +122,25 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { Mail, Phone } from '@lucide/vue';
 
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { useApi } from '@/Composables/useApi';
 import type { ImageData } from '@/Types/media';
-import { useIsAdminContext } from '@/Composables/useIsAdminContext';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { avatarSizeClasses, mapPixelToSize, type AvatarSize } from '@/Components/ui/avatar';
 import { safeHref } from '@/Utils/safeHref';
+import { initials } from '@/Utils/String';
 
 import UserAvatar, { type AvatarUser } from './UserAvatar.vue';
+import { useUserLink } from './useUserLink';
 
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
-interface PopoverUser extends AvatarUser {
+defineOptions({ inheritAttrs: false });
+
+export interface PopoverUser extends AvatarUser {
   email?: string | null;
   phone?: string | null;
   facebook_url?: string | null;
@@ -150,37 +153,17 @@ const props = withDefaults(defineProps<{
   showName?: boolean;
   size?: number | AvatarSize;
   user: PopoverUser;
-  /** Whether the avatar/name should link to the admin user profile page.
-   *  Defaults to true when rendered inside `/mano/*` and the user has view permission. */
+  /** Explicit opt-out from user profile linking; cannot force links. */
   clickable?: boolean;
 }>(), {
   clickable: undefined,
 });
 
-const page = usePage();
-const isAdminContext = useIsAdminContext();
+const { canLink: shouldRenderLink, canLinkUsers, href: profileUrl } = useUserLink(
+  () => props.user,
+  { disabled: () => props.clickable === false },
+);
 
-const canViewUserProfile = computed(() => {
-  return !!page.props.auth?.can?.['users.read.padalinys'];
-});
-
-const shouldRenderLink = computed(() => {
-  if (props.clickable === false) {
-    return false;
-  }
-
-  if (props.clickable === true) {
-    return !!props.user?.id;
-  }
-
-  return isAdminContext.value && !!props.user?.id && canViewUserProfile.value;
-});
-
-const profileUrl = computed(() => {
-  return route('users.show', props.user.id);
-});
-
-// Support both pixel values (backward compat) and size variant names
 const avatarSize = computed<AvatarSize>(() => {
   if (typeof props.size === 'string') {
     return props.size as AvatarSize;
@@ -188,7 +171,6 @@ const avatarSize = computed<AvatarSize>(() => {
   return mapPixelToSize(props.size);
 });
 
-// Text size for the name label when showName is true
 const nameTextClass = computed(() => {
   const sizeMap: Record<AvatarSize, string> = {
     xxs: 'text-xs',
@@ -209,7 +191,7 @@ const photoEndpoint = computed(() => props.user.id ? route('api.v1.admin.users.p
 const { data: preview, execute: fetchPhoto, isFetching: photoFetching } = useApi<{ image: ImageData | null }>(photoEndpoint, { immediate: false, showErrorToast: false });
 let fetchedPhotoFor: string | number | null = null;
 async function loadPhoto(open: boolean) {
-  if (!open || !isAdminContext.value || !canViewUserProfile.value || !props.user.id || photoFetching.value || fetchedPhotoFor === props.user.id) return;
+  if (!open || !canLinkUsers.value || !props.user.id || photoFetching.value || fetchedPhotoFor === props.user.id) return;
   fetchedPhotoFor = props.user.id;
   await fetchPhoto();
 }
@@ -228,14 +210,6 @@ watch(() => photo.value, () => {
 
 // Keep the face in frame for the taller photo (mirrors ContactWithPhoto.vue).
 const focalPoint = computed(() => props.user.profile_photo_focal_point ?? '50% 30%');
-
-const initials = computed(() => {
-  const { name } = props.user;
-  if (!name || typeof name !== 'string') return '';
-  const words = name.trim().split(/\s+/);
-  if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
-  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
-});
 
 const pronounsLabel = computed(() => {
   const p = props.user.pronouns;

@@ -41,10 +41,9 @@ const defaultPageProps = {
       ],
     },
     can: {
+      index: {},
       create: { meeting: true, document: true },
-      read: { meeting: true, document: true },
-      update: { meeting: true, document: true },
-      delete: { meeting: true, document: true },
+      forceDelete: {},
     },
   },
   tenants: [
@@ -86,7 +85,7 @@ const defaultPageProps = {
  * import { usePage } from '@inertiajs/vue3';
  *
  * vi.mocked(usePage).mockReturnValue(
- *   createMockPage({ app: { path: '/mano/forms/create' } })
+ *   createMockPage({ app: { path: 'mano/forms/create' } })
  * );
  */
 export function createMockPage(overrides: Record<string, any> = {}): any {

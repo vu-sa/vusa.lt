@@ -249,7 +249,7 @@
                         :alt="user.name"
                         class="size-full object-cover"
                       >
-                      <span v-else>{{ user.name?.charAt(0) }}</span>
+                      <span v-else>{{ initials(user.name) }}</span>
                     </div>
                     <div
                       v-if="duty.current_users.length > 3"
@@ -311,6 +311,7 @@ import { useDuplicateDutyCheck } from '@/Components/AdminForms/useDuplicateDutyC
 import { DutyIcon, InstitutionIcon } from '@/Components/icons';
 import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import { initials } from '@/Utils/String';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const dutyTypesRef = inject<ComputedRef<App.Entities.DutyType[]> | App.Entities.DutyType[]>('dutyTypes', []);

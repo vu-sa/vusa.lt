@@ -100,6 +100,8 @@ Sąraše galima ieškoti pagal vardą ar instituciją, atsirinkti instituciją i
 dėmesio, per 7 d., per 30 d., seniau, niekada, būsimi). Eilutėje matyti atstovo institucijos, kada
 jis prisijungė (per 7 d., per 30 d., seniau ar niekada), kiek savo institucijų posėdžių per 90 dienų užfiksavo pats ir, jei
 esi jo koordinatorius, būtinų žingsnių pažanga. Rodoma po 50 atstovų; daugiau – **Rodyti daugiau**.
+Šiame ir dėmesio sąraše užvedus žymeklį ant nuotraukos rodoma atstovo kontaktų kortelė.
+Turint prieigą prie narių, nuotrauka veda į nario puslapį, o vardas atveria atstovo puslapį.
 
 ### Atstovo puslapis {#atstovo-puslapis}
 
