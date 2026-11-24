@@ -6,6 +6,7 @@ use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 test('same-second collisions preserve every file and its readable name', function (): void {
@@ -85,4 +86,15 @@ test('a lock timeout does not write a file', function (): void {
     expect(fn () => app(FileUploadWriter::class)->write('public/files/reports', 'report.txt', 'contents'))
         ->toThrow(LockTimeoutException::class);
     $disk->assertMissing('public/files/reports/report.txt');
+});
+
+test('upload folders the default disk creates are readable by the web server', function (): void {
+    $root = storage_path('framework/testing/directory-visibility-'.uniqid());
+    $disk = Storage::build([...config('filesystems.disks.local'), 'root' => $root]);
+
+    $disk->put('public/files/content/2026/11/photo.webp', 'image');
+
+    expect(substr(sprintf('%o', fileperms($root.'/public/files/content/2026/11')), -4))->toBe('0755');
+
+    File::deleteDirectory($root);
 });
