@@ -244,6 +244,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/NotificationRouter.php' => ["'duties" => 1],
     // ModelAuthorizer supplies tenants for the requested permission.
     'app/Services/PermissionService.php' => ['->tenants' => 1],
+    // Permission resource keys used for matrix grouping and scope labels.
+    'app/Services/Permissions/PermissionMatrixPresenter.php' => ["'users'" => 1, "'duties" => 2],
     // Role duties come from the responsibility projection.
     'app/Services/Permissions/ResponsibilityPermissionGaps.php' => ['->duties' => 1],
     // Institution duty catalog and a count of duties with current holders.

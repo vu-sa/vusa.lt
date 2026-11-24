@@ -8,8 +8,9 @@ export interface CatalogResource {
   model: string | null;
   area: string;
   abilities: Partial<Record<PermissionAbility, PermissionScope[]>>;
-  /** What every member may already do here without any responsibility. */
+  /** Access available here without a responsibility. */
   baseline: string | null;
+  baselineLabels: Partial<Record<PermissionAbility, string>> | null;
   baselineSegments?: { text: string; strong: boolean }[];
   scopeLabels?: Partial<Record<PermissionScope, string>>;
   scopeDescriptions?: Partial<Record<PermissionAbility, Partial<Record<PermissionScope, string>>>>;
@@ -20,6 +21,6 @@ export interface CatalogResource {
 export interface PermissionCatalog {
   areas: string[];
   resources: CatalogResource[];
-  /** Names every member already holds, so no responsibility may. */
+  /** Permission names replaced by baseline access. */
   retired: string[];
 }

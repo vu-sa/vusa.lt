@@ -34,7 +34,6 @@ final class PermissionCatalog
      */
     private const array OWN_RELATIONS = [
         'duties' => 'duties',
-        'dutiables' => 'dutiables',
         'meetings' => 'meetings',
         'documents' => 'documents',
     ];

@@ -287,12 +287,8 @@ describe('per-persona visibility', function (): void {
         expect(array_column($workspaces, 'key'))->toBe(AdminNavigationCatalog::WORKSPACE_KEYS)
             ->and($frontend['areas'])->toBe(array_column($workspaces, 'key'));
 
-        $matrixOrderByArea = collect($frontend['resources'])
-            ->groupBy('area')
-            ->map(fn (Collection $resources) => $resources->filter(fn (array $r): bool => $r['model'] !== null)->pluck('model')->values()->all());
-
-        // Documents appear in Svetainė as a secondary link; their primary workspace in the matrix is ViSAK.
-        $secondaryEntries = ['svetaine:document'];
+        $matrixRows = collect($frontend['resources'])->whereNotNull('model')->keyBy('model');
+        $secondaryEntries = ['atstovavimas:task', 'svetaine:document'];
 
         foreach ($workspaces as $workspace) {
             $navModels = collect($workspace['sections'])
@@ -300,13 +296,16 @@ describe('per-persona visibility', function (): void {
                 ->filter()
                 ->unique()
                 ->reject(fn (string $model): bool => in_array("{$workspace['key']}:{$model}", $secondaryEntries, true))
-                ->filter(fn (string $model): bool => in_array($model, $matrixOrderByArea[$workspace['key']] ?? [], true))
+                ->filter(fn (string $model): bool => $matrixRows->has($model))
                 ->values()
                 ->all();
 
-            $matrixSubset = array_values(array_intersect($matrixOrderByArea[$workspace['key']] ?? [], $navModels));
+            $matrixSubset = $matrixRows->where('area', $workspace['key'])
+                ->only($navModels)
+                ->keys()
+                ->all();
 
-            expect($matrixSubset)->toBe($navModels, "Workspace [{$workspace['key']}] matrix order drifted from navigation");
+            expect($matrixSubset)->toBe($navModels, "Workspace [{$workspace['key']}] matrix placement or order drifted from navigation");
         }
     });
 

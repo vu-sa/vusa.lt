@@ -81,6 +81,9 @@ test('combinations that grant nothing are not offered', function (string $name):
     'members already read their meetings' => 'meetings.read.own',
     'permissions are only listed' => 'permissions.update.*',
     'tenants are super-admin only' => 'tenants.read.*',
+    'duty term read has no own scope' => 'dutiables.read.own',
+    'duty term update has no own scope' => 'dutiables.update.own',
+    'duty term delete has no own scope' => 'dutiables.delete.own',
     'goals own is not implemented in GoalPolicy' => 'goals.update.own',
     'goals reading belongs to every pilot member' => 'goals.read.padalinys',
     'goals reading everywhere belongs to every pilot member' => 'goals.read.*',
@@ -103,7 +106,6 @@ test('own is offered only on the resources whose meaning the catalog spells out'
 
     expect($withOwn)->toEqualCanonicalizing([
         'documents.create.own', 'documents.read.own', 'documents.update.own', 'documents.delete.own',
-        'dutiables.read.own', 'dutiables.update.own', 'dutiables.delete.own',
         'duties.update.own',
         'meetings.create.own', 'meetings.update.own', 'meetings.delete.own',
     ]);
@@ -167,6 +169,14 @@ test('goals reading is baseline while writes stay tenant-scoped', function (): v
         ->and(PermissionCatalog::abilities()['goals'])->not->toHaveKey('read')
         ->and(BaselineAccess::RESOURCES)->toContain('goals');
 });
+
+test('goals read has a pilot-specific baseline label', function (string $locale, string $label): void {
+    app()->setLocale($locale);
+    $resources = collect(PermissionMatrixPresenter::toFrontend()['resources'])->keyBy('key');
+
+    expect($resources['goals']['baselineLabels'])->toBe(['read' => $label])
+        ->and($resources['meetings']['baselineLabels'])->toBeNull();
+})->with([['lt', 'Piloto dalyviai'], ['en', 'Pilot members']]);
 
 test('meeting scope explanations and highlighted duty dates are translated without HTML', function (string $locale): void {
     app()->setLocale($locale);

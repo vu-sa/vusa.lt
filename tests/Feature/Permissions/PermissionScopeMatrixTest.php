@@ -11,7 +11,7 @@
  * - news         — a plain single-tenant model, the common case
  * - resources    — a single-tenant model whose role also holds a `*`-scoped read
  * - duties       — `own` resolves against the duty itself, not a relation
- * - dutiables / meetings / documents — `own` resolves via their catalog Duty relation
+ * - meetings / documents — `own` resolves via their catalog Duty relation
  * - tags         — globally scoped: no tenant relation at all, so the padalinys branch
  *                  must deny explicitly rather than throw
  */
@@ -217,20 +217,29 @@ describe('own scope', function (): void {
             ->and(Gate::forUser($actor)->allows('update', $siblingDuty))->toBeFalse();
     });
 
-    test('dutiables: grants a term on the granting duty and excludes a sibling duty\'s term', function (): void {
+    test('duty terms: a legacy own grant alone enables neither term management nor quota selection', function (): void {
         $actor = actorGranted($this->tenantA, ['dutiables.update.own']);
+        $duty = $actor->duties()->firstOrFail();
+        $term = Dutiable::query()->where('duty_id', $duty->id)->firstOrFail();
+        $gate = Gate::forUser($actor);
 
-        $ownDuty = $actor->duties()->first();
-        $siblingDuty = Duty::factory()->for(Institution::factory()->for($this->tenantA))->create();
-        $colleague = User::factory()->create();
-        $siblingDuty->users()->attach($colleague, ['start_date' => now()->subMonth()]);
-
-        $ownTerm = Dutiable::query()->where('duty_id', $ownDuty->id)->firstOrFail();
-        $siblingTerm = Dutiable::query()->where('duty_id', $siblingDuty->id)->firstOrFail();
-
-        expect(Gate::forUser($actor)->allows('update', $ownTerm))->toBeTrue()
-            ->and(Gate::forUser($actor)->allows('update', $siblingTerm))->toBeFalse();
+        expect($gate->allows('manageDutiable', $term))->toBeFalse()
+            ->and($gate->allows('assignQuota', [Dutiable::class, $duty]))->toBeFalse();
     });
+
+    test('duty terms: term management and quota selection require separate grants', function (string $scope, bool $canAssignQuota): void {
+        $actor = actorGranted($this->tenantA, ['duties.update.own', "dutiables.update.{$scope}"]);
+        $duty = $actor->duties()->firstOrFail();
+        $term = Dutiable::query()->where('duty_id', $duty->id)->firstOrFail();
+        $gate = Gate::forUser($actor);
+
+        expect($gate->allows('manageDutiable', $term))->toBeTrue()
+            ->and($gate->allows('assignQuota', [Dutiable::class, $duty]))->toBe($canAssignQuota);
+    })->with([
+        'legacy own' => ['own', false],
+        'unit-wide' => ['padalinys', true],
+        'global' => ['*', true],
+    ]);
 
     test('meetings: grants own institution meetings outside the term and excludes a sibling institution\'s', function (): void {
         $actor = actorGranted($this->tenantA, ['meetings.update.own', 'meetings.create.own']);

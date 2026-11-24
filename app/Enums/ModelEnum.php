@@ -127,6 +127,7 @@ enum ModelEnum: string
             self::BANNER,
             self::CALENDAR,
             self::COMMENT,
+            self::DUTIABLE,
             self::FILE,
             self::FORM,
             self::GOAL,
@@ -146,7 +147,6 @@ enum ModelEnum: string
             self::USER => ['padalinys', '*'],
 
             self::DOCUMENT,
-            self::DUTIABLE,
             self::DUTY,
             self::MEETING => ['own', 'padalinys', '*'],
         };

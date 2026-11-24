@@ -89,12 +89,13 @@ return [
     ],
 
     'matrix' => [
-        'intro' => 'For each action, choose where it applies: own records, the whole padalinys or everywhere. Locked actions every member already has.',
+        'intro' => 'For each action, choose where it applies: own records, the whole padalinys or everywhere. Locked actions are available without a responsibility. The matrix shows who can use them.',
         'search' => 'Search areas',
         'only_granted' => 'Granted only',
         'nothing_found' => 'No such areas.',
         'resource' => 'Area',
         'everyone' => 'Every member',
+        'pilot_members' => 'Pilot members',
         'not_applicable' => 'Not applicable',
         'discard' => 'Discard',
         'changes' => ':added added, :removed removed|:added added, :removed removed',

@@ -1,7 +1,7 @@
 <template>
   <span v-if="!scopes.length && retired.length" class="inline-flex min-h-8 items-center gap-1 text-xs text-muted-foreground" data-testid="cell-baseline">
     <Lock class="size-3" aria-hidden="true" />
-    {{ $t('responsibilities.matrix.everyone') }}
+    {{ resource.baselineLabels?.[ability] ?? $t('responsibilities.matrix.everyone') }}
   </span>
   <span v-else-if="!scopes.length" class="inline-flex min-h-8 items-center text-xs text-muted-foreground/60" :aria-label="$t('responsibilities.matrix.not_applicable')">
     –
@@ -43,7 +43,7 @@ const props = defineProps<{
   ability: PermissionAbility;
   value: PermissionScope | null;
   changed?: boolean;
-  /** Scopes every member already has here. */
+  /** Scopes covered by baseline access. */
   retired: PermissionScope[];
   readonly?: boolean;
 }>();
