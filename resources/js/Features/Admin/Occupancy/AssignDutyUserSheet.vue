@@ -393,7 +393,7 @@ import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApi } from '@/Composables/useApi';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate, todayIso } from '@/Utils/dateTime';
-import type { AssignmentDuty, AssignmentUser, AssignmentTerm } from '@/Types/DutyAssignment';
+import type { AssignmentDuty, AssignmentTerm, AssignmentUser, ExistingTerm } from '@/Types/DutyAssignment';
 import { isCuratorDuty, termStatus } from '@/Utils/occupancy';
 
 import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
@@ -415,12 +415,6 @@ export interface QuotaTenant {
   occupied: number;
 }
 
-/** A term already on the duty, to tell who holds it during the chosen dates. */
-export interface ExistingTerm {
-  user_id: string;
-  start_date?: string | null;
-  end_date?: string | null;
-}
 interface DescriptionText {
   lt: string;
   en: string;
@@ -440,10 +434,8 @@ const props = withDefaults(defineProps<{
   user?: AssignmentUser | MemberHit | null;
   /** Offered programmes; narrowed to the chosen duty's tenant when the duty is picked in the sheet. */
   studyPrograms?: { id: string; name: unknown; tenant_id?: number | null }[];
-  /** Members who already hold the duty right now; used when `existingTerms` is not given. */
-  takenIds?: string[];
-  /** Every term on the duty, so only people holding it during the chosen dates are blocked. */
-  existingTerms?: ExistingTerm[] | null;
+  existingTerms?: ExistingTerm[];
+  delegatedSeatTenants?: Record<string, number> | null;
   /** Padaliniai the seat may count toward; the picker shows only with `canAssignQuota`. */
   quotaTenants?: QuotaTenant[];
   canAssignQuota?: boolean;
@@ -452,8 +444,8 @@ const props = withDefaults(defineProps<{
   dutiable: null,
   user: null,
   studyPrograms: () => [],
-  takenIds: () => [],
-  existingTerms: null,
+  existingTerms: () => [],
+  delegatedSeatTenants: null,
   quotaTenants: () => [],
   canAssignQuota: false,
 });
@@ -699,18 +691,24 @@ const cadenceHint = computed(() => {
     : $t('Visa kadencija: :start – :end.', { start: cadence.start_date, end: cadence.end_date });
 });
 
-/** Someone already holding the duty during these dates cannot get a second, overlapping term. */
 const takenInRange = computed(() => {
-  if (!props.existingTerms) {
-    return props.takenIds;
-  }
-
   const start = form.start_date || todayIso();
   const end = form.end_date;
+  const selectedTenant = form.tenant_id ? Number(form.tenant_id) : null;
 
   return props.existingTerms
-    .filter(term => (!end || String(term.start_date ?? '').slice(0, 10) <= end)
-      && (!term.end_date || String(term.end_date).slice(0, 10) >= start))
+    .filter((term) => {
+      const tenant = !showQuotaTenant.value && props.delegatedSeatTenants
+        ? props.delegatedSeatTenants[term.user_id]
+        : selectedTenant;
+
+      const termStart = term.start_date?.slice(0, 10) ?? '';
+      const termEnd = term.end_date?.slice(0, 10);
+
+      return !term.via_dutiable_id && (term.tenant_id ?? null) === tenant
+        && (!end || termStart <= end)
+        && (!termEnd || (termEnd >= termStart && termEnd >= start));
+    })
     .map(term => term.user_id);
 });
 

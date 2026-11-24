@@ -44,7 +44,7 @@ takes the user explicitly (`services.md`).
 ## Move on touch
 When you edit a top-level `app/Services/*.php` that belongs to a domain (Duties, Institutions,
 Meetings, Files, Sharepoint), move it into that domain's folder in the same change, and fix any rule glob naming its old path
-(`tests/Feature/System/RuleGlobsTest.php` fails on a glob matching no file).
+(`tests/Feature/System/RuleReferencesTest.php` fails on a glob matching no file).
 
 "Resource" names `App\Models\Resource`, API resources and the first permission segment; don't use
 it for a folder.

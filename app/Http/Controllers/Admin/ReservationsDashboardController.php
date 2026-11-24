@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\SerializeReservationCart;
-use App\Actions\SerializeReservationsForTable;
 use App\Http\Controllers\AdminController;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\Reservations\ReservationPresenter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +34,7 @@ class ReservationsDashboardController extends AdminController
         // Counts are aggregates and stay on the first paint; the two lists are the secondary group.
         return Inertia::render('Admin/Dashboard/ShowReservations', [
             'managesResources' => $managedTenantIds->isNotEmpty(),
-            'reservationCart' => SerializeReservationCart::execute($user),
+            'reservationCart' => ReservationPresenter::cart($user),
             'counts' => [
                 'waitingForMe' => $this->administered($managedTenantIds, ['created'])->count(),
                 'lentOut' => $this->administered($managedTenantIds, ['lent'])->count(),
@@ -43,13 +42,17 @@ class ReservationsDashboardController extends AdminController
                 'mine' => $this->mine($user, self::IN_FLIGHT)->count(),
                 'myOverdue' => $this->mine($user, self::IN_FLIGHT, overdue: true)->count(),
             ],
-            'waitingForMe' => Inertia::defer(fn (): array => $this->serialize(
-                $this->administered($managedTenantIds, ['created'])->orderBy('start_time'),
+            'waitingForMe' => Inertia::defer(fn () => ReservationPresenter::tableRows(
+                $this->administered($managedTenantIds, ['created'])->orderBy('start_time')
+                    ->with(ReservationPresenter::EAGER_LOADS)->take(self::LIST_SIZE)->get(),
                 $user,
+                $this->authorizer,
             ), 'secondary'),
-            'myUpcoming' => Inertia::defer(fn (): array => $this->serialize(
-                $this->mine($user, self::IN_FLIGHT)->orderBy('start_time'),
+            'myUpcoming' => Inertia::defer(fn () => ReservationPresenter::tableRows(
+                $this->mine($user, self::IN_FLIGHT)->orderBy('start_time')
+                    ->with(ReservationPresenter::EAGER_LOADS)->take(self::LIST_SIZE)->get(),
                 $user,
+                $this->authorizer,
             ), 'secondary'),
         ]);
     }
@@ -88,18 +91,5 @@ class ReservationsDashboardController extends AdminController
                     $resources->where('reservation_resource.end_time', '<', now());
                 }
             });
-    }
-
-    /**
-     * @param  Builder<Reservation>  $query
-     * @return list<array<string, mixed>>
-     */
-    private function serialize(Builder $query, User $user): array
-    {
-        return SerializeReservationsForTable::execute(
-            $query->with(SerializeReservationsForTable::EAGER_LOADS)->take(self::LIST_SIZE)->get(),
-            $user,
-            $this->authorizer,
-        );
     }
 }

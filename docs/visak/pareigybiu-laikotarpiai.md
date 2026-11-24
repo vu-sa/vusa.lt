@@ -1,12 +1,13 @@
 ---
 doc_status: reviewed
 title: Laikotarpių tvarkyklė
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-24
 tests:
   - tests/Feature/Admin/People/DutiableTimelineControllerTest.php
   - tests/Feature/Admin/People/DutiableDiagnosticsTest.php
   - tests/Feature/Duties/ExOfficioReconcilerTest.php
   - tests/Feature/Admin/Management/DutiableControllerTest.php
+  - tests/Feature/Admin/Management/DelegatedDutyTermsTest.php
   - tests/Feature/Api/Admin/DutiableTimelineApiControllerTest.php
   - tests/Feature/Api/Admin/DutiableTimelinePreviewTest.php
   - tests/Feature/CrossTenantDutyTest.php
@@ -224,6 +225,9 @@ Kai yra neišsaugotų pakeitimų, įrankių juostoje rodomas jų skaičius ir tr
 Mygtukai **Lygiuoti**, **Užbaigti**, **Taikyti datas** ir **Taikyti pažymėtus** visada pirmiausia
 parodo peržiūrą.
 
+Išsaugant datos negali sukurti persidengiančių rankinių laikotarpių tam pačiam žmogui toje pačioje
+pareigybėje ir pagal to paties padalinio kvotą. Jei taisai du tokius laikotarpius, gali juos išsaugoti kartu.
+
 ## Kas ką gali {#teises}
 
 | Rolė | Atidaryti tvarkyklę | Keisti laikotarpius |
@@ -236,7 +240,7 @@ parodo peržiūrą.
 
 - Institucija rodoma tik tada, kai tavo rolė leidžia ją matyti.
 - Jei pareigybė leidžia į ją skirti ir kitų padalinių narius, tų padalinių koordinatoriai gali
-  keisti **savo padalinio narių** laikotarpius joje.
+  keisti **savo padalinio kvotai priskirtus** laikotarpius, jei narys turi pareigų tame padalinyje.
 - Įrašai, kurių keisti negali, rodomi, bet jų tempti negalima, o skydelyje nurodoma „Šio įrašo keisti
   negali“. Jei tarp keičiamų įrašų yra bent vienas, kurio keisti negali, visas pakeitimų rinkinys
   atmetamas.
@@ -299,9 +303,12 @@ Kiekvienam pagrindinių pareigų laikotarpiui, pagal kiekvieną pareigybės form
 | Pridedamas ar keičiamas pagrindinių pareigų laikotarpis | Prijungtas laikotarpis sukuriamas arba atnaujinamas tuo pačiu išsaugojimu. |
 | Ištrinamas pagrindinių pareigų laikotarpis | Ištrinami ir prijungti laikotarpiai. |
 | Pareigybei pridedamas ryšys | Dabartiniams ir būsimiems laikotarpiams sukuriami prijungti laikotarpiai su pagrindinių pareigų datomis. Praeities laikotarpius pridėk per **Tikrinti ex officio**. |
-| Pašalinamas ryšys | Prasidėję prijungti laikotarpiai baigiasi tą dieną, neprasidėję ištrinami. Toliau jie nebesikeičia. Tą patį ryšį pridėjus iš naujo, laikotarpis vėl seka pagrindines pareigas, todėl pertrauka istorijoje nelieka. |
+| Pašalinamas ryšys | Prijungtos pareigos baigiasi iš karto. Anksčiau prasidėjusių laikotarpių paskutinė pareigų diena yra vakar, o šiandien ar vėliau turėję prasidėti laikotarpiai atšaukiami. Pasibaigę laikotarpiai toliau nebesikeičia. Tą patį ryšį pridėjus iš naujo, laikotarpis vėl seka pagrindines pareigas, todėl pertrauka istorijoje nelieka. |
 
-Pašalinus ryšį, laikotarpis lieka pažymėtas kaip *ex officio* ir užrakintas. Jei žmogus šias pareigas eina toliau arba laikotarpį reikia ištrinti, laikotarpių tvarkyklėje pasirink jį ir spausk **Atsieti nuo pareigų**. Datos lieka tokios pačios, o laikotarpis tampa savarankiškas, todėl jį galima keisti ar ištrinti. Kol ryšys yra, atsieti negalima: pirmiausia jį pašalink pareigybės formoje.
+Kai *ex officio* ryšys suteikia ar panaikina nario pareigas, pakeitimas matomas nario ir susietos
+pareigybės veiklos žurnaluose.
+
+Pašalinus ryšį, pasibaigęs laikotarpis lieka pažymėtas kaip *ex officio* ir užrakintas. Jei žmogus šias pareigas eina toliau arba laikotarpį reikia ištrinti, laikotarpių tvarkyklėje pasirink jį ir spausk **Atsieti nuo pareigų**. Datos lieka tokios pačios, o laikotarpis tampa savarankiškas, todėl jį galima keisti ar ištrinti. Kol ryšys yra, atsieti negalima: pirmiausia jį pašalink pareigybės formoje.
 
 Institucijos uždarymo metu pasibaigę laikotarpiai nekeičiami. Vėl atidarius instituciją, *ex officio* laikotarpis tęsiamas nuo atidarymo dienos, o uždarymo metas neatkuriamas.
 

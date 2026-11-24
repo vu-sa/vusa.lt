@@ -34,7 +34,11 @@ beforeEach(function (): void {
         'duty_id' => $this->dutyManagerDuty->id,
         'dutiable_id' => $this->regularUser->id,
         'dutiable_type' => MorphMap::alias(User::class),
-        'start_date' => now()->subDay(),
+        'start_date' => today()->subDay(),
+        'end_date' => null,
+        'study_program_id' => null,
+        'additional_photo' => null,
+        'additional_photo_focal_point' => null,
         'additional_email' => null,
     ]);
 });
@@ -95,15 +99,40 @@ test('can clear additional_email by sending null', function (): void {
     expect($this->dutiable->additional_email)->toBeNull();
 });
 
-test('cannot update dutiable without additional_email field', function (): void {
+test('an unchanged period does not block metadata edits on a legacy term', function (bool $inverted): void {
+    $start = today()->subMonth();
+    $end = $inverted ? $start->copy()->subDay() : null;
+    $this->dutiable->update(['start_date' => $start, 'end_date' => $end]);
+
+    if (! $inverted) {
+        Dutiable::factory()->forDuty($this->dutyManagerDuty)->forUser($this->regularUser)
+            ->active()->create(['start_date' => $start]);
+    }
+
+    $originalDates = $this->dutiable->fresh()->getRawOriginal();
+
+    asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
+        'additional_email' => 'metadata@example.com',
+        'start_date' => $start->toDateString(),
+        'end_date' => $end?->toDateString(),
+    ])->assertSessionHasNoErrors();
+
+    $term = $this->dutiable->refresh();
+    expect($term->additional_email)->toBe('metadata@example.com')
+        ->and($term->getRawOriginal('start_date'))->toBe($originalDates['start_date'])
+        ->and($term->getRawOriginal('end_date'))->toBe($originalDates['end_date']);
+})->with(['overlapping dates' => false, 'inverted dates' => true]);
+
+test('updating term dates does not require an additional email', function (): void {
     $response = asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
         'start_date' => now()->format('Y-m-d'),
     ]);
 
-    $response->assertRedirect();
+    $response->assertRedirect()->assertSessionHasNoErrors();
 
     $this->dutiable->refresh();
-    expect($this->dutiable->additional_email)->toBeNull();
+    expect($this->dutiable->additional_email)->toBeNull()
+        ->and($this->dutiable->start_date->toDateString())->toBe(today()->toDateString());
 });
 
 test('update request authorizes using dutiable duty relation', function (): void {

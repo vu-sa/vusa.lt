@@ -6,29 +6,24 @@ use App\Enums\CRUDEnum;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Support\MorphMap;
 
 class DutiablePolicy extends ModelPolicy
 {
-    /**
-     * Whether the user can manage (edit/delete) this specific Dutiable row.
-     *
-     * Delegates to DutyPolicy::managePeople, which handles both owning-tenant
-     * and cross-tenant assignable-tenant authorization.
-     */
     public function manageDutiable(User $user, Dutiable $dutiable): bool
     {
         $duty = $dutiable->duty;
-
-        if (! $duty) {
+        if ($duty === null) {
             return false;
         }
 
-        $targetUser = $dutiable->dutiable_type === MorphMap::alias(User::class)
-            ? $dutiable->user
-            : null;
+        $policy = app(DutyPolicy::class);
+        if ($policy->update($user, $duty)) {
+            return true;
+        }
 
-        return app(DutyPolicy::class)->managePeople($user, $duty, $targetUser);
+        return $dutiable->tenant_id !== null
+            && $policy->sharedAssignableTenantIds($user, $duty)->contains($dutiable->tenant_id)
+            && $dutiable->user?->current_or_upcoming_tenants()->where('tenants.id', $dutiable->tenant_id)->exists();
     }
 
     /**

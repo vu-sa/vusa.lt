@@ -32,14 +32,7 @@ import { computed } from 'vue';
 
 import { formatReservationPeriod } from './reservationPeriod';
 
-/** `SerializeReservationCart::summary()`, or the full cart, which carries the same fields. */
-export interface ReservationDraftSummaryData {
-  name: string | null;
-  count: number;
-  start_time: number | null;
-  end_time: number | null;
-  problemCount?: number;
-}
+import type { ReservationDraftSummaryData } from './types';
 
 const props = defineProps<{
   draft: ReservationDraftSummaryData;

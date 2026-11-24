@@ -69,6 +69,14 @@ describe('unresolved rules', () => {
     expect(daysUnresolved(returnedLate, NOW)).toBe(0);
   });
 
+  it('does not treat an item without dates as overdue', () => {
+    const undated = pivot({ state: 'reserved', start_time: null, end_time: null });
+
+    expect(isPivotUnresolved(undated, NOW)).toBe(false);
+    expect(daysUnresolved(undated, NOW)).toBe(0);
+    expect(isPivotPickupOverdue(undated, NOW)).toBe(false);
+  });
+
   it('does not treat a lent item still within its period as unresolved', () => {
     expect(isPivotUnresolved(pivot({ state: 'lent' }), NOW)).toBe(false);
   });

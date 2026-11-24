@@ -35,6 +35,7 @@ use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -86,6 +87,24 @@ describe('reorderDuties', function (): void {
         ])->assertStatus(403);
 
         expect($otherDuty->fresh()->order)->toBe(1);
+    });
+
+    test('leaves every order unchanged when a duty belongs to a trashed institution in another tenant', function (): void {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create(['order' => 1]);
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $trashedInstitution = Institution::factory()->for($otherTenant)->create();
+        $foreignDuty = Duty::factory()->for($trashedInstitution)->create(['order' => 2]);
+        $trashedInstitution->delete();
+
+        asUser($this->admin)->post(route('institutions.reorderDuties'), [
+            'duties' => [
+                ['id' => $duty->id, 'order' => 5],
+                ['id' => $foreignDuty->id, 'order' => 6],
+            ],
+        ])->assertForbidden();
+
+        expect($duty->fresh()->order)->toBe(1)
+            ->and($foreignDuty->fresh()->order)->toBe(2);
     });
 });
 
@@ -760,8 +779,28 @@ describe('authorized access', function (): void {
         ]);
 
         $created = Institution::where('name->lt', 'Vedlio institucija')->sole();
-        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.institution.id', $created->id);
+        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.institution.id', $created->id)
+            ->assertJsonPath('data.institution.tenant.shortname', $this->tenant->shortname);
     });
+
+    test('the page and the wizard create the same institution', function (string $routeName, int $status): void {
+        $type = InstitutionType::factory()->create();
+
+        asUser($this->admin)->postJson(route($routeName), [
+            'name' => ['lt' => 'Bendra institucija', 'en' => 'Shared institution'],
+            'tenant_id' => $this->tenant->id,
+            'types' => [$type->id],
+            'image_media' => null,
+            'logo_media' => null,
+        ])->assertStatus($status);
+
+        $created = Institution::where('name->lt', 'Bendra institucija')->sole();
+        expect($created->types()->pluck('institution_types.id')->all())->toBe([$type->id])
+            ->and(Activity::query()->whereMorphedTo('subject', $created)->where('event', 'relation_updated')->where('properties->relation', 'types')->exists())->toBeTrue();
+    })->with([
+        'page' => ['institutions.store', 302],
+        'wizard API' => ['api.v1.admin.institutions.store', 201],
+    ]);
 
     test('can store institution', function (): void {
         $institutionData = [

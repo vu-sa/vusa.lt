@@ -18,7 +18,8 @@ import { ShoppingBasket } from '@lucide/vue';
 
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
-import ReservationDraftRow, { type ReservationDraftSummaryData } from './ReservationDraftRow.vue';
+import ReservationDraftRow from './ReservationDraftRow.vue';
+import type { ReservationDraftSummaryData } from './types';
 
 withDefaults(defineProps<{
   draft: ReservationDraftSummaryData;

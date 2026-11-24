@@ -793,6 +793,36 @@ describe('navigation ordering functionality', function (): void {
         expect($navWithoutAttributes->extra_attributes['column'])->toBe(2);
     });
 
+    test('updateOrder refuses a child from another root without changing any positions', function (): void {
+        $otherRoot = $this->navigation;
+        $otherChild = Navigation::factory()->create([
+            'parent_id' => $otherRoot->id,
+            'order' => 3,
+            'extra_attributes' => ['column' => 3],
+        ]);
+        $positions = fn () => Navigation::withTrashed()->orderBy('id')->get()
+            ->mapWithKeys(fn (Navigation $item) => [$item->id => [
+                'parent_id' => $item->parent_id,
+                'order' => $item->order,
+                'column' => $item->extra_attributes['column'] ?? null,
+            ]])->all();
+        $before = $positions();
+
+        asUser($this->admin)->post(route('navigation.updateOrder'), [
+            'navigation' => [
+                [
+                    'id' => $this->parentNav->id,
+                    'links' => [
+                        [],
+                        [['id' => $this->childNav1->id], ['id' => $otherChild->id]],
+                    ],
+                ],
+            ],
+        ])->assertForbidden();
+
+        expect($positions())->toBe($before);
+    });
+
     test('updateOrder rejects more than 3 columns', function (): void {
         asUser($this->admin)
             ->post(route('navigation.updateOrder'), [

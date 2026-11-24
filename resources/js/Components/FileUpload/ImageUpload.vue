@@ -282,7 +282,6 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 import { trans } from 'laravel-vue-i18n';
 import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from '@lucide/vue';
 import { toast } from 'vue-sonner';
@@ -290,6 +289,7 @@ import { toast } from 'vue-sonner';
 const FocalPointPicker = defineAsyncComponent(() => import('@/Components/ui/upload/FocalPointPicker.vue'));
 const ImageCropper = defineAsyncComponent(() => import('@/Components/ui/upload/ImageCropper.vue'));
 
+import { apiRequest, SessionExpiredError } from '@/Composables/apiRequest';
 import Upload from '@/Components/ui/upload/Upload.vue';
 import UploadDropzone from '@/Components/ui/upload/UploadDropzone.vue';
 import type { UploadFile } from '@/Components/ui/upload/variants';
@@ -576,26 +576,20 @@ async function uploadFileToServer(uploadFile: UploadFile) {
   formData.append('image', uploadFile.file);
 
   try {
-    const response = await fetch(route('api.v1.admin.pendingUploads.store'), {
+    const result = await apiRequest<ImageData>(route('api.v1.admin.pendingUploads.store'), {
       method: 'POST',
       signal: controller.signal,
-      headers: {
-        'X-CSRF-TOKEN': usePage().props.csrf_token as string,
-        'Accept': 'application/json',
-      },
       body: formData,
     });
 
-    if (!response.ok) {
-      const body = await response.json().catch(() => null) as { message?: string } | null;
-      failureMessage = body?.message ?? failureMessage;
+    if (disposed || controller.signal.aborted) return;
+    if (result.status === 419) throw new SessionExpiredError();
+    if (!result.ok || !result.data) {
+      if (result.status !== 0) failureMessage = result.message ?? failureMessage;
       throw new Error(failureMessage);
     }
 
-    const data = await response.json();
-    if (disposed || controller.signal.aborted) return;
-
-    const staged = data.data as ImageData;
+    const staged = result.data;
     stagedImages.set(uploadFile.id, { ...staged, focal_point: currentFocalPoint.value });
 
     uploadFile.url = staged.url;
@@ -604,11 +598,11 @@ async function uploadFileToServer(uploadFile: UploadFile) {
 
     updateModels();
   }
-  catch {
+  catch (error) {
     if (disposed || controller.signal.aborted) return;
     uploadFile.status = 'error';
     uploadFile.error = failureMessage;
-    toast.error(uploadFile.error);
+    if (!(error instanceof SessionExpiredError)) toast.error(uploadFile.error);
   }
   finally {
     if (uploadController === controller) uploadController = null;

@@ -8,6 +8,9 @@ class SearchProfiles
 {
     public const VERSION = 2;
 
+    /** Scoped keys that hide more fields repeat these: an embedded exclude_fields replaces the client's. */
+    public const EXCLUDED_FIELDS = 'body,search_text_lt,search_text_en';
+
     public static function cacheKey(string $collection): string
     {
         return 'typesense:search-profile:'.config('scout.prefix').$collection;
@@ -53,7 +56,7 @@ class SearchProfiles
                 $params['drop_tokens_threshold'] = 0;
             }
             $params['prefix'] = true;
-            $params['exclude_fields'] = 'body,search_text_lt,search_text_en';
+            $params['exclude_fields'] = self::EXCLUDED_FIELDS;
             $params['highlight_fields'] = implode(',', $fields);
             $params['highlight_start_tag'] = '⟦';
             $params['highlight_end_tag'] = '⟧';

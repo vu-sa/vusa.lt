@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Formos ir registracijos
-last_reviewed: 2026-11-05
+last_reviewed: 2026-11-22
 tests:
   - tests/Feature/Admin/Forms/FormControllerTest.php
   - tests/Feature/Admin/Forms/FormAccessTest.php
@@ -152,6 +152,7 @@ Atidarius formos redagavimą per **Redaguoti formą** (`/mano/forms/{id}/edit`):
 
 - **Laukų tvarkos keitimas**: spausk **Keisti tvarką** ir vilk laukus į norimą poziciją.
 - **Laukų atnaujinimas**: paspaudus lauko galima patikslinti jo pavadinimą ar paaiškinimą.
+- Formos duomenys ir laukai išsaugomi kartu. Jei pakeitimų išsaugoti nepavyksta, anksčiau išsaugota forma, jos laukai ir atsakymai išlieka.
 - Jei forma jau turi registracijų, formos viršuje rodomas informacinis pranešimas, kad laukų pridėti ar šalinti nebegalima.
 
 ### Registracijų ir atsakymų peržiūra {#registracijos}

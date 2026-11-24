@@ -6,7 +6,7 @@ use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GenerateInstitutionAlias;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetUserTenantShortnames;
-use App\Actions\Media\SyncImageMedia;
+use App\Actions\Institutions\CreateInstitution;
 use App\Actions\UpdateInstitution;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\ActivityRequests\ActivityRequestHistoryRequest;
@@ -25,8 +25,8 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\PublicUrl;
 use App\Services\InstitutionActivityStatusService;
-use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionPresenter;
+use App\Services\Institutions\InstitutionDeactivationService;
 use App\Services\KnowledgeBasePresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -89,16 +90,9 @@ class InstitutionController extends AdminController
      * Store a newly created resource in storage.
      */
     #[Authorize('create', Institution::class)]
-    public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
+    public function store(StoreInstitutionRequest $request, CreateInstitution $create, PostCreateRedirect $redirect)
     {
-        $institution = new Institution;
-
-        $institution->fill($request->safe()->except('types', 'image_media', 'logo_media'))->save();
-        $this->syncImages($institution, $request->validated(), $syncImage);
-
-        $institution->syncAudited('types', $request->types);
-
-        $institution->load('tenant:id,shortname', 'types');
+        $institution = $create->execute($request->validated(), $request->user());
 
         return redirect($redirect->url($request->user(), $institution, 'institutions.show', 'viewSummary', 'institutions.index'))
             ->with('success', $this->entityMessage('created', 'institution'));
@@ -182,6 +176,8 @@ class InstitutionController extends AdminController
             'management' => Inertia::optional(fn () => $request->user()->can('update', $institution)
                 ? InstitutionPresenter::management($institution) : null),
             'assignmentTerms' => Inertia::optional(fn () => $request->user()->can('update', $institution) ? InstitutionPresenter::assignmentTerms($institution) : []),
+            'assignmentPicker' => Inertia::optional(fn () => $request->user()->can('update', $institution)
+                ? InstitutionPresenter::assignmentPicker($institution, $request->user()) : []),
             'subscription' => fn () => InstitutionPresenter::subscription($institution, $request->user()),
             'knowledgePages' => Inertia::defer(fn () => KnowledgeBasePresenter::forInstitution($institution, app()->getLocale()), 'knowledge'),
         ]);
@@ -222,15 +218,6 @@ class InstitutionController extends AdminController
         $update->execute($institution, $request->validated(), $request->user());
 
         return back()->with('success', $this->entityMessage('updated', 'institution'));
-    }
-
-    /**
-     * @param  array<string, mixed>  $validated
-     */
-    private function syncImages(Institution $institution, array $validated, SyncImageMedia $syncImage): void
-    {
-        $syncImage->fromValidated($institution, 'image', $validated, 'image_media', auth()->user());
-        $syncImage->fromValidated($institution, 'logo', $validated, 'logo_media', auth()->user());
     }
 
     /**
@@ -287,16 +274,18 @@ class InstitutionController extends AdminController
     {
         $duties = collect($request->validated('duties'));
 
-        $dutyModels = Duty::whereIn('id', $duties->pluck('id'))->get()->keyBy('id');
+        DB::transaction(function () use ($duties): void {
+            $dutyModels = Duty::whereIn('id', $duties->pluck('id'))->get()->keyBy('id');
 
-        foreach ($duties as $duty) {
-            $dutyModel = $dutyModels->get($duty['id']);
+            foreach ($duties as $duty) {
+                $dutyModel = $dutyModels->get($duty['id']);
 
-            if ($dutyModel) {
-                $dutyModel->order = $duty['order'];
-                $dutyModel->save();
+                if ($dutyModel) {
+                    $dutyModel->order = $duty['order'];
+                    $dutyModel->save();
+                }
             }
-        }
+        });
 
         return back()->with('success', __('messages.duty.order_updated'));
     }

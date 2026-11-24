@@ -11,7 +11,10 @@ const mockFetch = vi.fn();
 beforeEach(() => {
   localStorage.clear();
   mockFetch.mockReset();
-  vi.stubGlobal('fetch', mockFetch);
+  // FileUploadArea loads its allowed types on mount; answer that apart from the upload queue.
+  vi.stubGlobal('fetch', (url: string, init?: RequestInit) => (String(url).includes('files.allowedTypes')
+    ? Promise.resolve(jsonResponse(true, { success: true, data: { extensions: ['pdf', 'jpg', 'png', 'webp'], accept: '*', maxSizeMB: 50 } }))
+    : mockFetch(url, init)));
 });
 
 afterEach(() => {

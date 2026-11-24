@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\Institutions\CreateInstitution;
 use App\Actions\UpdateInstitution;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\UpdateRecordActivityRequest;
@@ -9,8 +10,8 @@ use App\Http\Requests\StoreInstitutionRequest;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
-use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionRelationService;
+use App\Services\Institutions\InstitutionDeactivationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Facades\Gate;
@@ -91,18 +92,10 @@ class InstitutionApiController extends ApiController
     }
 
     #[Authorize('create', Institution::class)]
-    public function store(StoreInstitutionRequest $request): JsonResponse
+    public function store(StoreInstitutionRequest $request, CreateInstitution $create): JsonResponse
     {
-        $institution = new Institution;
-
-        $institution->fill($request->safe()->except('types'))->save();
-
-        $institution->syncAudited('types', $request->types);
-
-        $institution->load('tenant:id,shortname', 'types');
-
         return $this->jsonCreated([
-            'institution' => $institution,
+            'institution' => $create->execute($request->validated(), $request->user()),
         ], $this->entityMessage('created', 'institution'));
     }
 }

@@ -10,7 +10,9 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Rules\WithinAuthorizedTenantScope;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
+use App\Services\ModelAuthorizer;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -30,8 +32,10 @@ class UpdateDuty
     public function execute(Duty $duty, array $data, ?User $actor = null): void
     {
         DB::transaction(function () use ($duty, $data, $actor): void {
-            Institution::withTrashed()->whereIn('id', [$duty->institution_id, $data['institution_id']])
-                ->orderBy('id')->lockForUpdate()->get();
+            $relatedDuties = Duty::query()->whereKey($data['ex_officio_target_duty_ids'] ?? [])
+                ->orWhereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey($duty->id))->get();
+            $this->assignments->lockDuties($relatedDuties->push($duty), [$data['institution_id']]);
+            $duty->refreshForUpdate();
             $institutionChanged = $duty->institution_id !== $data['institution_id'];
             if ($institutionChanged && $actor === null) {
                 throw ValidationException::withMessages(['institution_id' => __('validation.outside_tenant_scope')]);
@@ -42,6 +46,12 @@ class UpdateDuty
                     ...($institutionChanged ? [new WithinAuthorizedTenantScope(Institution::class, 'duties.update.padalinys', $actor)] : []),
                 ],
             ])->validate();
+
+            $authorizer = app(ModelAuthorizer::class);
+            $editableTenantIds = $actor !== null && ! $authorizer->allows($actor, 'duties.update.*')
+                ? $authorizer->tenants($actor, 'duties.update.padalinys')->modelKeys()
+                : null;
+
             $duty->update(Arr::only($data, ['name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'is_active']));
 
             if (array_key_exists('former_names', $data)) {
@@ -57,42 +67,67 @@ class UpdateDuty
                 ...$duty->types()->onlyTrashed()->pluck('duty_types.id')->all(),
             ]);
 
-            if (isset($data['current_users'])) {
-                $this->assignments->syncRepresentatives($duty, $data['current_users'], actor: $actor);
-            }
-
-            SyncExOfficioTargets::execute($duty, array_values(array_filter($data['ex_officio_target_duty_ids'] ?? [])));
-
-            $previousTenantIds = $duty->assignableTenants()->pluck('tenants.id')->all();
-            $assignableTenantsInput = $data['assignable_tenants'] ?? [];
-            $newTenantIds = array_column($assignableTenantsInput, 'tenant_id');
-            $tenantIdsChanged = array_diff($previousTenantIds, $newTenantIds) !== []
-                || array_diff($newTenantIds, $previousTenantIds) !== [];
-
-            foreach (array_diff($previousTenantIds, $newTenantIds) as $tenantId) {
-                $this->assignments->endDateDutiables(
-                    Dutiable::query()
-                        ->where('duty_id', $duty->id)
-                        ->where('dutiable_type', MorphMap::alias(User::class))
-                        ->where('tenant_id', $tenantId)
-                        ->whereNull('via_dutiable_id')
-                        ->current(),
-                    now()->subDay()
-                );
-            }
-
-            $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($assignableTenantsInput));
-
-            // The duty form sends only tenant and quota; a missing list must not read as "remove everyone".
-            foreach ($assignableTenantsInput as $row) {
-                if (array_key_exists('user_ids', $row)) {
-                    $this->assignments->syncRepresentatives($duty, $row['user_ids'] ?? [], (int) $row['tenant_id'], $actor);
-                }
-            }
-            if ($institutionChanged || $tenantIdsChanged) {
-                ReconcileExOfficioSeats::forDuty($duty);
-            }
+            DutyAssignmentActor::as($actor, fn () => $this->assignments->batchMembershipAudits(
+                fn () => $this->syncMemberships($duty, $data, $editableTenantIds, $actor, $institutionChanged),
+            ));
         });
+    }
+
+    private function syncMemberships(Duty $duty, array $data, ?array $editableTenantIds, ?User $actor, bool $institutionChanged): void
+    {
+        if (isset($data['current_users'])) {
+            $this->assignments->syncRepresentatives($duty, $data['current_users'], actor: $actor);
+        }
+
+        $targetIds = array_values(array_filter($data['ex_officio_target_duty_ids'] ?? []));
+        SyncExOfficioTargets::execute($duty, $targetIds);
+
+        $tenantIdsChanged = $this->syncAssignableTenants($duty, $data['assignable_tenants'] ?? [], $editableTenantIds, $actor);
+
+        if ($institutionChanged || $tenantIdsChanged) {
+            ReconcileExOfficioSeats::forDuty($duty);
+        }
+
+        if (array_key_exists('is_active', $data) && ! $duty->is_active
+            && $duty->dutiables()->notEnded()->lockForUpdate()->first(['id']) !== null) {
+            throw ValidationException::withMessages(['is_active' => __('dutiables.assign.finish_terms_before_retiring')]);
+        }
+    }
+
+    /**
+     * @param  list<array{tenant_id: int|string, quota?: int|string|null, user_ids?: list<string>|null}>  $rows
+     * @param  list<int>|null  $editableTenantIds
+     */
+    private function syncAssignableTenants(Duty $duty, array $rows, ?array $editableTenantIds, ?User $actor): bool
+    {
+        $assignableTenants = $duty->assignableTenants();
+        $previousTenantIds = $assignableTenants->pluck('tenants.id')->all();
+
+        if ($editableTenantIds !== null) {
+            $previousTenantIds = array_intersect($previousTenantIds, $editableTenantIds);
+            $rows = array_values(array_filter($rows, fn (array $row) => in_array((int) $row['tenant_id'], $editableTenantIds, true)));
+        }
+
+        $newTenantIds = array_column($rows, 'tenant_id');
+        $removedTenantIds = array_diff($previousTenantIds, $newTenantIds);
+
+        if ($removedTenantIds !== []) {
+            $terms = Dutiable::query()
+                ->where('duty_id', $duty->id)
+                ->where('dutiable_type', MorphMap::alias(User::class))
+                ->whereIn('tenant_id', $removedTenantIds)
+                ->whereNull('via_dutiable_id')
+                ->notEnded();
+            $members = User::whereKey($terms->pluck('dutiable_id')->unique()->all())->get();
+            $this->assignments->auditMemberships(collect([$duty]), $members, fn () => $this->assignments->endTerms($terms));
+        }
+
+        $assignableTenants->detach($removedTenantIds);
+        $assignableTenants->syncWithoutDetaching($this->assignments->buildAssignableTenantsSync($rows));
+
+        $this->assignments->syncTenantRepresentatives($duty, $rows, $actor);
+
+        return $removedTenantIds !== [] || array_diff($newTenantIds, $previousTenantIds) !== [];
     }
 
     /**

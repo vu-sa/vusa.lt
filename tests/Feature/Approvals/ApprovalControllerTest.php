@@ -485,4 +485,19 @@ describe('ApprovalController@resolve', function (): void {
         expect($pivot->state->getValue())->toBe('returned')
             ->and($pivot->approvals()->count())->toBe(0);
     });
+
+    test('leaves all resources untouched when any resource in the batch is forbidden', function () use ($pivotIn): void {
+        $allowed = $pivotIn($this->resource, 'created');
+        $forbidden = $pivotIn($this->foreignResource, 'created');
+
+        asUser($this->resourceManager)->post(route('approvals.resolve'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_ids' => [(string) $allowed->id, (string) $forbidden->id],
+        ])->assertForbidden();
+
+        foreach ([$allowed, $forbidden] as $pivot) {
+            expect($pivot->fresh()->state->getValue())->toBe('created')
+                ->and($pivot->approvals()->count())->toBe(0);
+        }
+    });
 });

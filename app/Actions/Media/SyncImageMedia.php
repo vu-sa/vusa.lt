@@ -39,6 +39,7 @@ class SyncImageMedia
 
         if ($changed) {
             DB::afterCommit(function () use ($owner, $collection): void {
+                $owner->unsetRelation('media');
                 $owner->refreshImageCache($collection);
                 $owner->afterImageMediaChanged($collection);
             });

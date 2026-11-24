@@ -6,6 +6,15 @@ paths:
 
 # App
 
+## Cache and sessions
+Use Redis for caching and sessions. Target a cache hit ratio above 80%.
+
+## Bulk updates rewrite `updated_at`
+Many timestamp columns are `ON UPDATE current_timestamp()`, so even a `DB::table()->update()` in a command, action or seeder changes them. Keep them with `'updated_at' => DB::raw('updated_at')`; details in `.ai/rules/migrations.md`.
+
+## Build URLs with the URL helpers
+Use `route()` or `tenantRoute()` for internal links. To change an existing URL, use `Uri::of($url)->withHost(...)->withQuery(...)` so parsing and encoding stay with Laravel.
+
 ## Authorization reads go through ModelAuthorizer's permission-scoped API
 Policies, controllers, form requests and services must resolve authorization with
 `$authorizer->scope($user, $permission)` (or `allows()` / `tenants()` / `duties()`), never from
@@ -20,5 +29,9 @@ ambient state on the service. See `.ai/rules/services.md`, "ModelAuthorizer has 
 ## Never detach() a relation backed by the dutiables pivot
 BelongsToMany::detach() writes through newPivotQuery()->delete() — a raw query-builder delete. No model events fire, even with ->using(Dutiable::class), so DutiableChanged (the only trigger for HandleDutiableChange's permission-cache reset) and the ex-officio cascade in Dutiable::booted() both silently skip. Delete dutiable rows through the model layer instead: $user->dutiables()->get()->each->delete() (see UserController::forceDelete). Guarded by tests/Feature/System/DutiableDetachConventionTest.php, which forbids duties()->detach(/users()->detach( under app/ (comment-stripped; exemptions for RoleTypeObserver and Reservation — their relations are not on the dutiables pivot). Issue #623.
 
+Use `DutyAssignmentService::startTerm()` and `DutyAssignmentService::endTerms()` as the only entry points for starting and ending manual terms.
+Use `Dutiable::scopeOverlapping()` for new manual terms and `DutyAssignmentService::validateTermEdit()` when changing dates or tenant on an existing row, locking institutions before duties before dutiable rows.
+Use `DutyAssignmentService::exceedsTenantQuota()` as the only tenant seat counter for quota enforcement.
+
 ## Ex officio seats
-A root term has one attached seat per target rule, mirroring its dates and resolved tenant synchronously through `ReconcileExOfficioSeats`. Seats never grant further seats. Rules are changed through `SyncExOfficioTargets`: removing a rule ends started seats today and deletes upcoming seats through the model; subsequent sync ignores that target, and such a seat stays locked until `DetachExOfficioSeat` releases it, which is refused while the rule exists. Ended history is created only by explicit review. Institution-closed rows are immutable, and reopened seats resume after closure without backdating.
+A root term has one attached seat per target rule, mirroring its dates and resolved tenant synchronously through `ReconcileExOfficioSeats`. Seats never grant further seats. Rules are changed through `SyncExOfficioTargets`: removing a rule ends seats immediately, making yesterday the last day for earlier starts and withdrawing seats starting today or later. Subsequent sync ignores that target, and ended seats stay locked until `DetachExOfficioSeat` releases them, which is refused while the rule exists. Ended history is created only by explicit review. Institution-closed rows are immutable, and reopened seats resume after closure without backdating.

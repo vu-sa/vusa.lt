@@ -45,7 +45,7 @@ function reservation(id: string, name: string): DashboardReservation {
 }
 
 const mountPage = (props: Record<string, unknown>) => mount(ShowReservations, {
-  props: { managesResources: true, counts, waitingForMe: [], myUpcoming: [], ...props },
+  props: { managesResources: true, reservationCart: null, counts, waitingForMe: [], myUpcoming: [], ...props },
   global: { stubs: { ...commonStubs } },
 });
 

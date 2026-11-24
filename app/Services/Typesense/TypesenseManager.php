@@ -31,7 +31,7 @@ class TypesenseManager
         // Never expose the admin API key to the frontend.
         // The search_only_key must be a dedicated key generated via `artisan typesense:generate-search-key`,
         // restricted to documents:search on public collections only.
-        if (empty($searchOnlyKey) || $searchOnlyKey === $typesenseConfig['api_key']) {
+        if (blank($searchOnlyKey) || $searchOnlyKey === $typesenseConfig['api_key']) {
             return [];
         }
 
@@ -126,7 +126,7 @@ class TypesenseManager
      */
     public static function getAdminFrontendConfig(User $user): array
     {
-        if (! self::isConfigured()) {
+        if (! TypesenseScopedKeyService::isConfigured()) {
             return [];
         }
 

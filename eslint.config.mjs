@@ -521,6 +521,39 @@ export default tseslint.config(
     },
   },
 
+  // One HTTP convention (AGENTS.md "Routes & API"); blocking via eslint.boundaries.config.mjs.
+  {
+    files: ['resources/js/**/*.{vue,ts,tsx,js,jsx}'],
+    ignores: [
+      '**/__tests__/**', '**/*.{test,spec,stories}.{ts,tsx,js,jsx}', 'resources/js/tests/**', 'resources/js/mocks/**',
+      'resources/js/Composables/apiRequest.ts',
+      'resources/js/Composables/useApi.ts',
+      // Typesense, external Iconify, a static docs file and XHR upload progress.
+      'resources/js/Composables/useAdminSearch.ts',
+      'resources/js/Composables/usePublicMultiSearch.ts',
+      'resources/js/Search/core/services/SearchClientFactory.ts',
+      'resources/js/Components/AdminForms/FluentIconSelect.vue',
+      'resources/js/Composables/useDocsUpdateIndicator.ts',
+      'resources/js/Components/ui/upload/Upload.vue',
+    ],
+    rules: {
+      'no-restricted-globals': ['error',
+        { name: 'fetch', message: 'Use apiRequest / useApi from @/Composables/useApi (AGENTS.md "Routes & API").' },
+        { name: 'XMLHttpRequest', message: 'Use apiRequest / useApi from @/Composables/useApi (AGENTS.md "Routes & API").' },
+      ],
+      'no-restricted-syntax': ['error',
+        {
+          selector: 'ImportDeclaration[source.value=\'@vueuse/core\'] > ImportSpecifier[imported.name=\'useFetch\']',
+          message: 'Use useApi / apiRequest from @/Composables/useApi (AGENTS.md "Routes & API").',
+        },
+        {
+          selector: 'MemberExpression[object.name=/^(window|globalThis|self)$/][property.name=/^(fetch|XMLHttpRequest)$/]',
+          message: 'Use apiRequest / useApi from @/Composables/useApi (AGENTS.md "Routes & API").',
+        },
+      ],
+    },
+  },
+
   // Size signals, the frontend counterpart of phpmd: warnings to split on touch, never a block.
   {
     files: ['resources/js/**/*.{vue,ts}'],

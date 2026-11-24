@@ -29,7 +29,7 @@ class GenerateTypesenseAdminSearchKey extends Command
 
             // Check if we already have an admin search key
             $existingKey = config('scout.typesense.client-settings.admin_search_key');
-            if (! empty($existingKey)) {
+            if (filled($existingKey)) {
                 $this->info('✅ Admin search-only key already exists in .env file');
                 $this->info('🔑 Key: '.substr($existingKey, 0, 8).'...'.substr($existingKey, -4));
 

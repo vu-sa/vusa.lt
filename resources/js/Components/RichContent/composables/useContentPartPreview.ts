@@ -1,25 +1,8 @@
-/**
- * Client for the admin content-part preview endpoint
- * (`api.v1.admin.contentParts.preview`) — resolves unsaved `link-list`/`event-list`
- * blocks through the exact same resolver public rendering uses, so the editor
- * preview and the published page can't diverge into two implementations.
- *
- * Debounced, batched (one request for every resolvable block on the page rather
- * than one per block), memoised per request shape, and superseded requests are
- * aborted rather than raced.
- *
- * `debouncedFetchPreview` resolves a *superseded* call's promise to `undefined`,
- * not `{}` — a plain `useDebounceFn` wrap (`rejectOnCancel` defaults to false), so a
- * call cancelled by a newer one within the 400ms window never reaches `fetchPreview`
- * at all. Every caller must guard `if (resolved) { ... }` before using the result
- * rather than assign it unconditionally — skipping the assignment preserves
- * already-shown data until the call that actually wins the debounce resolves, instead
- * of crashing on `undefined` or flashing an incorrect empty state. See
- * `RCFullscreenEditor.vue`/`useLiveBlockPreview.ts` for the reference guard.
- */
 import { inject, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
+
+import { apiRequest } from '@/Composables/apiRequest';
 
 import { CONTENT_EDITOR_CONTEXT } from '../contentEditorContext';
 
@@ -73,28 +56,16 @@ export function useContentPartPreview(tenantId: () => number | null | undefined,
     error.value = null;
 
     try {
-      const csrf = (page.props.csrf_token as string | undefined) ?? '';
-
-      const response = await fetch(route('api.v1.admin.contentParts.preview'), {
+      const result = await apiRequest<{ resolved?: PreviewResolvedMap }>(route('api.v1.admin.contentParts.preview'), {
         method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': csrf,
-        },
-        credentials: 'same-origin',
         signal: ownController.signal,
-        body: JSON.stringify({ tenant_id: id, locale: getContext()?.locale ?? page.props.app?.locale, ...getContext(), parts }),
+        body: { tenant_id: id, locale: getContext()?.locale ?? page.props.app?.locale, ...getContext(), parts },
       });
-
-      const json = await response.json().catch(() => null);
-
-      if (!response.ok || !json?.success) {
-        throw new Error(json?.message ?? 'Content part preview request failed');
+      if (!result.ok || result.body === null) {
+        throw new Error(result.message ?? 'Content part preview request failed');
       }
 
-      const resolved = (json.data?.resolved ?? {}) as PreviewResolvedMap;
+      const resolved = result.data?.resolved ?? {};
       cache.set(cacheKey, resolved);
 
       return resolved;
@@ -115,6 +86,7 @@ export function useContentPartPreview(tenantId: () => number | null | undefined,
     }
   }
 
+  // A superseded call resolves to undefined so the caller can keep the current preview.
   const debouncedFetchPreview = useDebounceFn(fetchPreview, 400);
 
   return { pending, error, fetchPreview, debouncedFetchPreview };

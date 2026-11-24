@@ -28,7 +28,8 @@ beforeEach(function (): void {
     $this->manager->duties()->first()->assignRole($role);
     $institution = Institution::factory()->for($this->tenant)->create();
     $this->sourceDuty = Duty::factory()->for($institution)->create();
-    $this->targetDuty = Duty::factory()->for($institution)->create();
+    // A random jobTitle() can contain another ("Psychologist" in "School Psychologist"), which made the notice-content assertions flaky.
+    $this->targetDuty = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Ex officio tikslinė pareigybė', 'en' => 'Ex officio target duty']]);
     $this->sourceDuty->exOfficioTargetDuties()->attach($this->targetDuty);
     $this->holder = User::factory()->create();
     $this->source = reviewFixture([

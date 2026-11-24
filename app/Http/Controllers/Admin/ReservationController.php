@@ -6,9 +6,6 @@ use App\Actions\ApplyReservationIndexFilters;
 use App\Actions\EnsureReservationCapacity;
 use App\Actions\LoadReservationResourceApprovals;
 use App\Actions\NotifyAffectedReservationDrafts;
-use App\Actions\SerializeReservationCart;
-use App\Actions\SerializeReservationsForTable;
-use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\AddReservationUsersRequest;
 use App\Http\Requests\IndexReservationRequest;
@@ -19,6 +16,8 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\Reservations\ReservationPresenter;
+use App\Services\Reservations\ResourcePresenter;
 use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
 use Illuminate\Routing\Attributes\Controllers\Authorize;
@@ -43,7 +42,7 @@ class ReservationController extends AdminController
     public function index(IndexReservationRequest $request)
     {
         $reservations = fn () => once(function () use ($request) {
-            $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
+            $query = Reservation::query()->with(ReservationPresenter::EAGER_LOADS);
 
             $query = ApplyReservationIndexFilters::execute($query, $request, $request->user(), $this->authorizer);
 
@@ -66,7 +65,7 @@ class ReservationController extends AdminController
 
         return Inertia::render('Admin/Reservations/IndexReservation', [
             'reservations' => fn () => [
-                'data' => SerializeReservationsForTable::execute($reservations()->getCollection(), $request->user(), $this->authorizer),
+                'data' => ReservationPresenter::tableRows($reservations()->getCollection(), $request->user(), $this->authorizer),
                 'meta' => [
                     'total' => $reservations()->total(),
                     'per_page' => $reservations()->perPage(),
@@ -79,7 +78,7 @@ class ReservationController extends AdminController
             'filters' => $request->getFilters(...),
             'sorting' => $request->getSorting(...),
             'managesResources' => fn () => $managesResources(),
-            'reservationCart' => fn () => SerializeReservationCart::execute($request->user()),
+            'reservationCart' => fn () => ReservationPresenter::cart($request->user()),
             'onlyOwn' => fn () => ! $request->user()->can('viewAny', Reservation::class),
         ]);
     }
@@ -92,7 +91,7 @@ class ReservationController extends AdminController
         $this->authorize('create', [Reservation::class, $this->authorizer]);
 
         return Inertia::render('Admin/Reservations/CreateReservation', [
-            'reservationCart' => SerializeReservationCart::execute(request()->user()),
+            'reservationCart' => ReservationPresenter::cart(request()->user()),
             'defaultDateTimeRange' => [
                 'start' => (int) now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
                 'end' => (int) now()->setTimeFromTimeString('17:00')->addDays(5)->format('Uv'),
@@ -174,7 +173,7 @@ class ReservationController extends AdminController
 
                     return [
                         ...$resource->toArray(),
-                        'managers' => SerializeResourceManagers::execute($resource),
+                        'managers' => ResourcePresenter::managers($resource),
                         'pivot' => $resource->pivot->append('approvable')->toArray(),
                         'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
                         // Per resource: `resources.update.padalinys` is tenant-scoped, so one flag would be wrong.
@@ -184,7 +183,7 @@ class ReservationController extends AdminController
             ],
             // The same payload the collection page reads, so a row's approve / reject / backtrack /
             // cancel flags cannot disagree with the list the user came from.
-            'decisionTarget' => SerializeReservationsForTable::execute([$reservation], $user, $this->authorizer)[0],
+            'decisionTarget' => ReservationPresenter::tableRows([$reservation], $user, $this->authorizer)[0],
             'can' => [
                 'update' => $user->can('update', $reservation),
                 'delete' => $user->can('delete', $reservation),

@@ -118,7 +118,7 @@ class BuildDutiableTimeline
         }
 
         if (! $includeEnded) {
-            $query->current();
+            $query->notEnded();
         }
 
         return $query->orderBy('start_date')->get();

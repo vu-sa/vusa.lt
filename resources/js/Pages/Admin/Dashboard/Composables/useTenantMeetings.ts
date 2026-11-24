@@ -1,6 +1,7 @@
 import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, type ComputedRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { useToasts } from '@/Composables/useToasts';
 import { toNaiveDateTimeString } from '@/Utils/dateTime';
 
@@ -148,19 +149,13 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
     );
 
     try {
-      const response = await fetch(`${url}?${params}`, {
-        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'same-origin',
-        signal: controller.signal,
-      });
-      if (!response.ok) throw new Error(`Failed to fetch meetings window (HTTP ${response.status})`);
-
-      const json = await response.json() as { success?: boolean; data?: AtstovavimasTenantMeeting[] };
-      if (!json.success || !Array.isArray(json.data)) throw new Error('Unexpected meetings response shape');
+      const result = await apiRequest<AtstovavimasTenantMeeting[]>(`${url}?${params}`, { signal: controller.signal });
+      if (!result.ok) throw new Error(result.message ?? `Failed to fetch meetings window (HTTP ${result.status})`);
+      if (!Array.isArray(result.data)) throw new Error('Unexpected meetings response shape');
       if (controller.signal.aborted) return;
 
       const map = new Map(meetingsById.value);
-      for (const meeting of json.data) {
+      for (const meeting of result.data) {
         map.set(`${meeting.institution_id}:${meeting.id}`, { ...meeting, start_time: new Date(meeting.start_time) });
       }
       meetingsById.value = map;
@@ -246,14 +241,10 @@ function useWindowedMeetings(source: WindowedMeetingsSource) {
     const url = new URL(route('api.v1.admin.atstovavimas.meetings.agenda', { meeting: meeting.id }), window.location.origin);
     source.agendaParams().forEach((value, name) => url.searchParams.append(name, value));
     url.searchParams.set('institution_id', String(meeting.institution_id));
-    const request = fetch(url, {
-      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin',
-    })
-      .then(async (response) => {
-        const json = response.ok ? await response.json() as { success?: boolean; data?: { agenda_items?: AgendaItems } } : null;
-        if (!json?.success || !Array.isArray(json.data?.agenda_items)) throw new Error('agenda');
-        return json.data.agenda_items;
+    const request = apiRequest<{ agenda_items?: AgendaItems }>(url.toString())
+      .then(({ ok, data }) => {
+        if (!ok || !Array.isArray(data?.agenda_items)) throw new Error('agenda');
+        return data.agenda_items;
       })
       .catch(() => {
         if (agendas.get(key) === request) agendas.delete(key);

@@ -5,10 +5,9 @@ namespace App\Actions\Duties;
 use App\Actions\GetPermissableTenants;
 use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Models\Duty;
-use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\Duties\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
-use App\Support\MorphMap;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -41,6 +40,7 @@ class SyncUserDuties
         /** @var Collection<string, Duty> $duties */
         $duties = Duty::with('institution.tenant')->whereIn('id', $touchedIds)->get()->keyBy('id');
 
+        $removedRows = $user->dutiables()->whereIn('duty_id', $removedDutyIds)->whereNull('tenant_id')->notEnded()->get()->groupBy('duty_id');
         $refused = $touchedIds
             ->map(fn ($dutyId) => $duties->get($dutyId))
             ->filter(fn (?Duty $duty) => ! $duty || ! $permissableTenantIds->contains($duty->institution?->tenant?->id));
@@ -57,44 +57,39 @@ class SyncUserDuties
             AuthorizeDutyAssignment::execute($actor, $duties->get($dutyId), (string) $user->id);
         }
 
-        foreach ($removedDutyIds as $dutyId) {
-            $rows = Dutiable::query()->where('duty_id', $dutyId)
-                ->where('dutiable_type', MorphMap::alias(User::class))->where('dutiable_id', $user->id)->current()->get();
-            if ($rows->isNotEmpty() && $rows->whereNull('via_dutiable_id')->isEmpty()) {
+        foreach ($removedRows as $rows) {
+            if ($rows->whereNull('via_dutiable_id')->isEmpty()) {
                 throw ValidationException::withMessages(['current_duties' => __('users.derived_duty_removal')]);
             }
         }
 
-        // Log duty changes as a single relation_updated activity on the user.
-        DB::transaction(fn () => $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user): void {
-            foreach ($newDutyIds as $dutyId) {
-                // Prevent duplicate active duty rows from concurrent saves.
-                $alreadyActive = Dutiable::query()
-                    ->where('duty_id', $dutyId)
-                    ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->where('dutiable_id', $user->id)
-                    ->whereNull('via_dutiable_id')
-                    ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', today()))
-                    ->exists();
+        $assignments = app(DutyAssignmentService::class);
 
-                if (! $alreadyActive) {
-                    $user->duties()->attach($duties->get($dutyId), ['start_date' => now()->subDay()]);
+        DB::transaction(function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments, $actor): void {
+            $assignments->lockDuties($duties->values());
+            $assignments->auditMemberships($duties->values(), collect([$user]), function () use ($newDutyIds, $removedDutyIds, $duties, $user, $assignments): void {
+                foreach ($newDutyIds as $dutyId) {
+                    $alreadyActive = $assignments->manualTerms($dutyId, $user->id, null)->notEnded()->exists();
+
+                    if (! $alreadyActive) {
+                        try {
+                            $assignments->startTerm($duties[$dutyId], $user->id, null, audit: false);
+                        } catch (ValidationException $exception) {
+                            $message = __('forms.helpers.institution_assignment_closed');
+
+                            if (in_array($message, $exception->errors()['end_date'] ?? [], true)) {
+                                throw ValidationException::withMessages(['current_duties' => $message]);
+                            }
+
+                            throw $exception;
+                        }
+                    }
                 }
-            }
 
-            foreach ($removedDutyIds as $dutyId) {
-                // updateExistingPivot() can match a historical row instead of the active term.
-                Dutiable::where('duty_id', $dutyId)
-                    ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->where('dutiable_id', $user->id)
-                    ->whereNull('via_dutiable_id')
-                    ->where(function ($query): void {
-                        $query->whereNull('end_date')
-                            ->orWhereDate('end_date', '>=', today());
-                    })
-                    ->get()
-                    ->each(fn (Dutiable $dutiable) => $dutiable->update(['end_date' => now()->subDay()]));
-            }
-        }));
+                foreach ($removedDutyIds as $dutyId) {
+                    $assignments->endTerms($assignments->manualTerms($dutyId, $user->id, null)->notEnded());
+                }
+            }, actor: $actor);
+        });
     }
 }

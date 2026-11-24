@@ -81,21 +81,19 @@ class CalendarController extends AdminController
     {
         $calendar = new Calendar;
 
-        // safe(), not except(): on a FormRequest, $request->except() returns raw input minus the
-        // named keys, so anything unvalidated would be mass-assigned straight through fill().
-        // `tags` isn't a column — fill() would try to write it as one — so it's excluded here
-        // and synced through the relation below instead.
-        $calendar = $calendar->fill($request->safe()->except(['images', 'main_image_media', 'tags']));
+        $calendar->fill($request->safe()->except(['images', 'main_image_media', 'tags']));
         $calendar->event_type_id = $request->validated('event_type_id');
 
-        $calendar->save();
+        DB::transaction(function () use ($calendar, $request, $syncImage): void {
+            $calendar->save();
 
-        $calendar->tags()->sync($request->validated('tags') ?? []);
+            $calendar->tags()->sync($request->validated('tags') ?? []);
 
-        $syncImage->fromValidated($calendar, 'main_image', $request->validated(), 'main_image_media', $request->user());
-        HandleModelMediaUploads::execute($calendar, $request, [
-            'images' => ['collection' => 'images', 'single' => false],
-        ]);
+            $syncImage->fromValidated($calendar, 'main_image', $request->validated(), 'main_image_media', $request->user());
+            HandleModelMediaUploads::execute($calendar, $request, [
+                'images' => ['collection' => 'images', 'single' => false],
+            ]);
+        });
 
         return redirect($redirect->url($request->user(), $calendar, 'calendar.edit', 'update', 'calendar.index'))
             ->with('success', $this->entityMessage('created', 'calendar'));

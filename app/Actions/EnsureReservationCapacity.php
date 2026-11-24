@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Resource;
+use App\Services\ResourceCapacityCalculator;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 
@@ -37,7 +38,7 @@ class EnsureReservationCapacity
                 continue;
             }
 
-            $available = max(0, SerializeResourceAvailability::available($resource, $start, $end, $excludedReservationResourceId));
+            $available = max(0, ResourceCapacityCalculator::available($resource, $start, $end, $excludedReservationResourceId));
 
             if ((int) $line['quantity'] > $available) {
                 $errors["resources.{$index}.quantity"] = __('reservations.cart.capacity_exceeded', [

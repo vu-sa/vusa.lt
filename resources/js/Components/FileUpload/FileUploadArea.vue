@@ -106,11 +106,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { useHttp } from '@inertiajs/vue3';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { Button } from '@/Components/ui/button';
 import { formatFileSize, getFileIcon } from '@/Utils/fileIcons';
-import type { ApiSuccessResponse } from '@/Types/api.d';
 
 interface AllowedFileTypes {
   extensions: string[];
@@ -144,7 +143,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<File[]>([]);
 const isDragOver = ref(false);
 const allowedTypes = ref<AllowedFileTypes | null>(null);
-const http = useHttp({});
+const loadingAllowedTypes = ref(false);
 
 // Computed accept string for file input
 const acceptString = computed(() => {
@@ -163,7 +162,7 @@ const formattedExtensions = computed(() => {
   if (props.forceAccept && props.extensions && props.extensions.length > 0) {
     return props.extensions.join(', ').toUpperCase();
   }
-  if (http.processing) {
+  if (loadingAllowedTypes.value) {
     return 'Kraunama...';
   }
   if (allowedTypes.value) {
@@ -172,33 +171,26 @@ const formattedExtensions = computed(() => {
   return 'Visi formatai';
 });
 
-// Fetch allowed file types on component mount
-onMounted(() => {
-  // Skip fetching if caller forces accept/extensions
+onMounted(async () => {
   if (props.forceAccept) return;
 
-  http.get(
-    route('api.v1.admin.files.allowedTypes'),
-    {
-      onSuccess: (data) => {
-        // useHttp hands back the raw body, and every API controller wraps its payload in
-        // `{success, data}` (ApiResponses). Reading it unwrapped left `extensions`
-        // undefined and threw out of formattedExtensions mid-render.
-        const envelope = data as ApiSuccessResponse<AllowedFileTypes> | AllowedFileTypes | null;
-        const payload = (envelope as ApiSuccessResponse<AllowedFileTypes>)?.data ?? envelope;
-
-        if (Array.isArray((payload as AllowedFileTypes)?.extensions)) {
-          allowedTypes.value = payload as AllowedFileTypes;
-        }
-      },
-      onHttpException: (response) => {
-        console.warn('Could not fetch allowed file types:', response);
-      },
-      onNetworkError: (error) => {
-        console.warn('Could not fetch allowed file types:', error);
-      },
-    },
-  );
+  loadingAllowedTypes.value = true;
+  try {
+    const result = await apiRequest<AllowedFileTypes>(route('api.v1.admin.files.allowedTypes'));
+    if (!result.ok || result.body === null) {
+      console.warn('Could not fetch allowed file types:', result);
+      return;
+    }
+    if (result.data && Array.isArray(result.data.extensions)) {
+      allowedTypes.value = result.data;
+    }
+  }
+  catch (error) {
+    console.warn('Could not fetch allowed file types:', error);
+  }
+  finally {
+    loadingAllowedTypes.value = false;
+  }
 });
 
 function handleDrop(event: DragEvent) {

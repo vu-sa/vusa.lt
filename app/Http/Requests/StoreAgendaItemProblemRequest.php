@@ -25,6 +25,7 @@ class StoreAgendaItemProblemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Problems are shared across tenants, so any live problem may be linked.
             'problem_id' => ['required', 'string', SoftDeleteRules::existsLive('problems')],
         ];
     }

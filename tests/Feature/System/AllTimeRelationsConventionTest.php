@@ -50,14 +50,14 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Actions/Dutiables/FindSuspectExOfficioDutiables.php' => ["'duties" => 2],
     // Duty ID qualifier on the ex officio target query.
     'app/Actions/Dutiables/PlanExOfficioReview.php' => ["'duties" => 1],
-    // Institution duty catalog and duty ID qualifiers for ex officio rules.
-    'app/Actions/Dutiables/ReconcileExOfficioSeats.php' => ['->duties' => 1, "'duties" => 2],
+    // Institution duty catalog and duty ID qualifier for ex officio targets.
+    'app/Actions/Dutiables/ReconcileExOfficioSeats.php' => ['->duties' => 1, "'duties" => 1],
     // Lineage includes holders' terms that began before the handover.
     'app/Actions/Duties/BuildDutyLineage.php' => ['->users' => 1, "'users'" => 1, "'duties" => 2],
     // Duty creation and update scopes restrict selectable ex officio targets.
     'app/Actions/Duties/GetAssignableExOfficioDuties.php' => ['->tenants' => 1, "'duties" => 3],
-    // Assignment error payload and duty attach.
-    'app/Actions/Duties/SyncUserDuties.php' => ['->duties' => 1, "'duties" => 1],
+    // Assignment error payload names the refused duties.
+    'app/Actions/Duties/SyncUserDuties.php' => ["'duties" => 1],
     // Merge candidates show tenants and counts from all terms.
     'app/Actions/FindMergeableUserDuplicates.php' => ['->tenants' => 1, "'tenants'" => 1, '->duties' => 1, "'duties" => 1],
     // Responsibility resolver duties are loaded with current holders.
@@ -97,11 +97,11 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Eager-loads explicit task assignees from task_user.
     'app/Actions/Schedulable/TaskNotifier.php' => ["'users'" => 1],
     // Reservation participants and the actor's resource-management tenant scope.
-    'app/Actions/SerializeReservationsForTable.php' => ['->tenants' => 1, '->users' => 2, "'users'" => 1],
+    'app/Services/Reservations/ReservationPresenter.php' => ['->tenants' => 1, '->users' => 2, "'users'" => 1],
     // Eager-loads explicit reservation participants for the view policy.
-    'app/Actions/SerializeResourceAvailability.php' => ["'users'" => 1],
-    // Permission key for validating an institution change.
-    'app/Actions/UpdateDuty.php' => ["'duties" => 1],
+    'app/Services/Reservations/ResourcePresenter.php' => ["'users'" => 1],
+    // Duty permission keys and ModelAuthorizer::tenants() for the editable assignable tenants.
+    'app/Actions/UpdateDuty.php' => ['->tenants' => 1, "'duties" => 3],
     // Tenant catalog and the shared prop backed by current_or_upcoming_tenants().
     'app/Http/Middleware/HandleInertiaRequests.php' => ["'tenants'" => 2],
     // Reservation participants payload field.
@@ -140,8 +140,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Http/Requests/ReorderDutiesRequest.php' => ["'duties" => 5],
     // Tenant filter payload field.
     'app/Http/Requests/ShowRepresentativesRequest.php' => ["'tenants'" => 1],
-    // ModelAuthorizer tenant scope, duty permission key, and duty and user table validation.
-    'app/Http/Requests/StoreDutiableRequest.php' => ['->tenants' => 1, "'users'" => 2, "'duties" => 2],
+    // Duty and user table validation.
+    'app/Http/Requests/StoreDutiableRequest.php' => ["'users'" => 2, "'duties" => 1],
     // ModelAuthorizer tenant scope, duty permission keys, and duty and user table validation.
     'app/Http/Requests/StoreDutyRequest.php' => ['->tenants' => 2, "'users'" => 1, "'duties" => 4],
     // Duty permission keys for the responsibility's authorized scope.
@@ -150,14 +150,16 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Http/Requests/StoreRoleGrantRequest.php' => ["'duties" => 1],
     // User table used to validate the people involved in a support request.
     'app/Http/Requests/StoreSupportRequestRequest.php' => ["'users'" => 1],
+    // User table validation for task assignees.
+    'app/Http/Requests/StoreTaskRequest.php' => ["'users'" => 1],
     // User and duty tables used to validate new user attributes.
     'app/Http/Requests/StoreUserRequest.php' => ["'users'" => 1, "'duties" => 1],
     // User table used to validate changes to the people involved in a support request.
     'app/Http/Requests/SyncSupportRequestInvolvedUsersRequest.php' => ["'users'" => 1],
     // DutyType catalog duties, the duty ID column, and the Duty tenant relation.
     'app/Http/Requests/SyncTypeModelsRequest.php' => ["'tenants'" => 1, '->duties' => 1, "'duties" => 2],
-    // Duty permission keys and duty and user table validation.
-    'app/Http/Requests/UpdateDutyRequest.php' => ["'users'" => 1, "'duties" => 3],
+    // Duty permission keys, duty and user table validation and ModelAuthorizer::tenants() for locked seats.
+    'app/Http/Requests/UpdateDutyRequest.php' => ['->tenants' => 1, "'users'" => 1, "'duties" => 4],
     // User table used to validate nominated secretaries.
     'app/Http/Requests/UpdateInstitutionSecretariesRequest.php' => ["'users'" => 1],
     // Translation placeholder for blocked tenants and validation against the user and duty tables.
@@ -204,10 +206,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/ContactSearchIndexSynchronizer.php' => ['->users' => 1, '->duties' => 1],
     // Duty record, list and search intentionally include duties the actor has held.
     'app/Services/DutyAccessService.php' => ['->tenants' => 1, "'tenants'" => 1, '->users' => 1, "'users'" => 1, '->duties' => 1, "'duties" => 5],
-    // Audited insert of new assignment rows into dutiables.
-    'app/Services/DutyAssignmentService.php' => ["'users'" => 1],
-    // Sibling duties load only current holders.
-    'app/Services/DutyPanelPresenter.php' => ['->duties' => 1],
+    // Siblings show current holders, and the assignment picker resolves quota eligibility for holders from every selectable period.
+    'app/Services/DutyPanelPresenter.php' => ['->duties' => 1, '->users' => 1],
     // Duty record shows every term, and duty rows include the home tenant.
     'app/Services/DutyPresenter.php' => ['->tenants' => 1, "'tenants'" => 3, '->users' => 1, "'users'" => 1],
     // Duty-update permission key and its resolved tenant options.
@@ -220,8 +220,8 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     'app/Services/FormAccessService.php' => ['->tenants' => 1],
     // Registration options check vacancies through duties.current_users.
     'app/Services/FormOptionResolver.php' => ["'duties" => 1],
-    // Institution duty counts and duty lists with current holders.
-    'app/Services/InstitutionPresenter.php' => ['->duties' => 4, "'duties" => 3],
+    // Institution duty catalog, current-holder displays, and the assignment picker's historical and upcoming periods.
+    'app/Services/InstitutionPresenter.php' => ['->duties' => 5, "'duties" => 3, '->users' => 1],
     // Related institutions load term history for the Gantt and join the tenant table for graph edges.
     'app/Services/InstitutionRelationService.php' => ["'tenants'" => 1, "'duties" => 2],
     // Term history feeds Gantt coverage.
@@ -259,7 +259,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Typesense collection names and a duty-read permission key.
     'app/Services/Typesense/TypesenseCollectionConfig.php' => ["'users'" => 1, "'duties" => 2],
     // Includes past holders in key invalidation and uses scoped tenants for search.
-    'app/Services/Typesense/TypesenseScopedKeyService.php' => ['->tenants' => 1, "'tenants'" => 1, '->users' => 3, "'users'" => 2, '->duties' => 1, "'duties" => 2],
+    'app/Services/Typesense/TypesenseScopedKeyService.php' => ['->tenants' => 1, "'duties" => 1],
     // Duplicate candidates count terms across the whole record.
     'app/Services/UserSimilarityFinder.php' => ["'duties" => 1],
     // Task assignees come from task_user.

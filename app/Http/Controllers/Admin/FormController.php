@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildFormIndexQuery;
 use App\Actions\GetTenantsForUpserts;
-use App\Actions\SerializeFormsForTable;
 use App\Enums\FormOptionSource;
 use App\Exports\FormRegistrationsExport;
 use App\Http\Controllers\AdminController;
@@ -18,6 +17,7 @@ use App\Models\FormField;
 use App\Models\Institution;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
+use App\Services\Forms\FormPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
@@ -26,6 +26,8 @@ use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -101,7 +103,7 @@ class FormController extends AdminController
 
         return Inertia::render('Admin/Forms/IndexForm', [
             'forms' => [
-                'data' => SerializeFormsForTable::execute($forms->getCollection(), $user, $this->registrationVisibility),
+                'data' => FormPresenter::tableRows($forms->getCollection(), $user, $this->registrationVisibility),
                 'meta' => [
                     'total' => $forms->total(),
                     'per_page' => $forms->perPage(),
@@ -159,13 +161,14 @@ class FormController extends AdminController
 
         $form->fill($request->safe()->only('name', 'description', 'path', 'publish_time'));
 
-        $form->tenant()->associate($request->tenant_id);
+        $form->tenant()->associate($request->validated('tenant_id'));
 
-        $form->save();
+        DB::transaction(function () use ($form, $request): void {
+            $form->save();
 
-        // Then, update or create the remaining form fields
-        collect($request->safe()->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
-            $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
+            collect($request->safe()->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
+                $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
+            });
         });
 
         return redirect($redirect->url($request->user(), $form, 'forms.show', 'view', 'forms.index'))
@@ -259,37 +262,44 @@ class FormController extends AdminController
      * Update the specified resource in storage.
      */
     #[Authorize('update', 'form')]
-    public function update(UpdateFormRequest $request, Form $form)
+    public function update(UpdateFormRequest $request, Form $form): RedirectResponse
     {
-        $form->update($request->safe()->only('name', 'description', 'path', 'publish_time'));
+        DB::transaction(function () use ($request, $form): void {
+            $lockedForm = Form::query()->lockForUpdate()->findOrFail($form->id);
+            // The form may have moved to another tenant since route authorization.
+            Gate::forUser($request->user())->authorize('update', $lockedForm);
 
-        $form->tenant()->associate($request->tenant_id);
-
-        $form->save();
-
-        // Update form fields
-        // First, compare which form fields were removed
-        $form->formFields->whereNotIn('id', collect($request->form_fields)->pluck('id'))->each->delete();
-
-        collect($request->safe()->only('form_fields')['form_fields'] ?? [])->each(function ($formField) use ($form): void {
-            $attributes = collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all();
-
-            // The frontend prefixes ids of not-yet-persisted fields with 'new-'.
-            if (self::isNewFormFieldId($formField['id'] ?? null)) {
-                $form->formFields()->create($attributes);
-
-                return;
-            }
-
-            // Resolve through the relation so a crafted payload cannot reach another form's fields.
-            $formFieldFromDb = $form->formFields()->find($formField['id']);
-
-            abort_if($formFieldFromDb === null, 403, 'Form field does not belong to this form.');
-
-            $formFieldFromDb->update($attributes);
+            $this->saveFormAndFields($lockedForm, $request);
         });
 
         return redirect()->back()->with('success', $this->entityMessage('updated', 'form'));
+    }
+
+    private function saveFormAndFields(Form $form, UpdateFormRequest $request): void
+    {
+        $submittedFields = collect($request->validated('form_fields', []));
+        $submittedIds = $submittedFields->pluck('id')->reject(self::isNewFormFieldId(...))->map(fn (int|string $id): int => (int) $id);
+        $existingFields = $form->formFields()->lockForUpdate()->get()->keyBy('id');
+
+        abort_if($submittedIds->diff($existingFields->keys())->isNotEmpty(), 403, 'Form field does not belong to this form.');
+
+        $form->fill($request->safe()->only('name', 'description', 'path', 'publish_time'));
+        $form->tenant()->associate($request->validated('tenant_id'));
+        $form->save();
+
+        $existingFields->except($submittedIds->all())->each->delete();
+
+        foreach ($submittedFields as $field) {
+            $attributes = collect($field)->only(self::FORM_FIELD_ATTRIBUTES)->all();
+
+            if (self::isNewFormFieldId($field['id'] ?? null)) {
+                $form->formFields()->create($attributes);
+
+                continue;
+            }
+
+            $existingFields->get((int) $field['id'])->update($attributes);
+        }
     }
 
     /**

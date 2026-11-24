@@ -1,5 +1,7 @@
 import { ref } from 'vue';
 
+import { apiRequest } from '@/Composables/apiRequest';
+
 /**
  * Academic vacation periods, served by the backend
  * (`App\Services\AcademicCalendarService`), which is also the source used when
@@ -43,17 +45,12 @@ async function fetchYears(fromYear: number, toYear: number): Promise<void> {
     to_year: toYear,
   });
 
-  const response = await fetch(url, {
-    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to load vacation periods (${response.status})`);
+  const result = await apiRequest<VacationPeriodPayload[]>(url);
+  if (result.status === 0) throw new TypeError(result.message ?? 'Network error');
+  if (!result.ok && (result.status < 200 || result.status >= 300)) {
+    throw new Error(`Failed to load vacation periods (${result.status})`);
   }
-
-  const body: { success: boolean; data?: VacationPeriodPayload[] } = await response.json();
-
-  if (!body.success || !body.data) {
+  if (!result.data) {
     throw new Error('Failed to load vacation periods');
   }
 
@@ -62,7 +59,7 @@ async function fetchYears(fromYear: number, toYear: number): Promise<void> {
     periodsByYear.set(year, []);
   }
 
-  for (const payload of body.data) {
+  for (const payload of result.data) {
     const period: VacationPeriod = {
       start: new Date(`${payload.start}T00:00:00`),
       end: new Date(`${payload.end}T00:00:00`),

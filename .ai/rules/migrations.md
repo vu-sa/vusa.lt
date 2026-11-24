@@ -6,6 +6,9 @@ paths:
 
 # Migrations
 
+## Preserve the existing schema when changing a column
+Inspect the schema with Boost's `database-schema` or `vendor/bin/sail artisan db:table <table>`. Use Boost's `database-query` for read-only data checks. Restate every existing column modifier you intend to keep when changing a column, since omitted modifiers are dropped.
+
 ## Two-release changes: mark the scaffolding, remove it behind a guard
 When a change needs a transition (backfill + read fallback, old and new keys side by side, a legacy upload mode), ship it in two releases. Mark every transitional piece, in app code, frontend and migrations alike, with a one-line `Transitional(<slug>): remove when <condition>` comment, so `grep -rn 'Transitional(<slug>)'` lists everything the second release deletes.
 - The condition is a production state you can check (a `--status` command or a query), never a date.

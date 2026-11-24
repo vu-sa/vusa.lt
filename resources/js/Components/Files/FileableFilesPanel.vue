@@ -111,11 +111,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { router, useHttp } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { useClipboard, useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleDashed, FolderOpen, Upload } from '@lucide/vue';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { ROW_LIST_BOXED_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { ConfirmDialog, FillActionButton, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 import StagingNote from '@/Components/StagingNote.vue';
@@ -148,7 +149,6 @@ const props = withDefaults(defineProps<{
 });
 
 const toasts = useToasts();
-const http = useHttp({});
 
 const uploadOpen = ref(false);
 const presetType = ref<FileableFileType | null>(null);
@@ -183,23 +183,21 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
 
 const { copy: copyUrl } = useClipboard({ legacy: true });
 
-const copyLink = (file: FileableFileItem) => {
-  http.post(route('fileableFiles.publicLink', file.id), {
-    onSuccess: async (data) => {
-      const url = (data as { url?: string } | null)?.url;
-      try {
-        await copyUrl(url ?? '');
-        toasts.success($t('common.link_copied'));
-      }
-      catch {
-        toasts.error($t('common.link_copy_failed'));
-      }
-    },
-    onHttpException: (response) => {
-      toasts.error((response.data as { message?: string } | undefined)?.message ?? $t('common.link_copy_failed'));
-    },
-    onNetworkError: () => toasts.error($t('common.link_copy_failed')),
-  });
+const copyLink = async (file: FileableFileItem) => {
+  try {
+    const result = await apiRequest<{ url?: string }>(route('fileableFiles.publicLink', file.id), { method: 'POST' });
+    if (!result.ok) {
+      if (result.status === 419) return;
+      toasts.error((result.status === 0 ? null : result.message) ?? $t('common.link_copy_failed'));
+      return;
+    }
+
+    await copyUrl(result.data?.url ?? '');
+    toasts.success($t('common.link_copied'));
+  }
+  catch {
+    toasts.error($t('common.link_copy_failed'));
+  }
 };
 
 const deleteFile = () => {

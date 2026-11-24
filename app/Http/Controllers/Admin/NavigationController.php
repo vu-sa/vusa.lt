@@ -16,6 +16,7 @@ use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class NavigationController extends AdminController
@@ -160,35 +161,49 @@ class NavigationController extends AdminController
     // Authorized in ReorderNavigationRequest: global navigation editing permission.
     public function updateOrder(ReorderNavigationRequest $request)
     {
-        // Navigation is a globally-scoped model (see NavigationPolicy /
-        // HasCommonChecks::commonChecker) — it has no tenant relation, so `update` is
-        // granted only via the blanket `navigation.update.all` permission and does not
-        // vary per row. One check up front is equivalent to the old per-row loop.
+        // The update permission applies globally to navigation.
         $this->authorize('update', new Navigation);
 
-        $data = $request->validated();
+        $roots = $request->validated('navigation');
 
-        foreach ($data['navigation'] as $rootOrder => $root) {
-            // ->save() (not a query-builder update()) so the model's `saved` hook fires
-            // and clears the public navigation cache.
-            $rootNavigation = Navigation::findOrFail($root['id']);
-            $rootNavigation->order = $rootOrder;
-            $rootNavigation->save();
+        DB::transaction(function () use ($roots): void {
+            $positions = [];
 
-            foreach (($root['links'] ?? []) as $columnIndex => $columnItems) {
-                $column = $columnIndex + 1;
+            foreach ($roots as $rootOrder => $root) {
+                $rootNavigation = Navigation::query()->lockForUpdate()->findOrFail($root['id']);
+                abort_unless((int) $rootNavigation->parent_id === 0, 403);
 
-                foreach ($columnItems as $childOrder => $child) {
-                    $childNavigation = Navigation::findOrFail($child['id']);
-                    $extraAttributes = $childNavigation->extra_attributes ?? [];
-                    $extraAttributes['column'] = $column;
+                $positions[] = [$rootNavigation, $rootOrder, null];
+                $children = Navigation::query()
+                    ->whereKey($rootNavigation->descendantIds())
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
 
-                    $childNavigation->order = $childOrder;
-                    $childNavigation->extra_attributes = $extraAttributes;
-                    $childNavigation->save();
+                foreach ($root['links'] ?? [] as $columnIndex => $columnItems) {
+                    foreach ($columnItems as $childOrder => $child) {
+                        $childNavigation = $children->get($child['id']);
+                        abort_if($childNavigation === null, 403);
+
+                        $positions[] = [$childNavigation, $childOrder, $columnIndex + 1];
+                    }
                 }
             }
-        }
+
+            foreach ($positions as [$navigation, $order, $column]) {
+                $navigation->order = $order;
+
+                if ($column !== null) {
+                    $extraAttributes = $navigation->extra_attributes ?? [];
+                    $extraAttributes['column'] = $column;
+                    $navigation->extra_attributes = $extraAttributes;
+                }
+
+                $navigation->save();
+            }
+
+            DB::afterCommit(NavigationService::clearCache(...));
+        });
 
         return back()->with('success', __('messages.navigation.order_updated'));
     }

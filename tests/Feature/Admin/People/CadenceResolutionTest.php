@@ -108,7 +108,7 @@ describe('dutiable scopes', function (): void {
             'end_date' => null,
         ]);
 
-        $current = Dutiable::query()->current()->pluck('id');
+        $current = Dutiable::query()->notEnded()->pluck('id');
         $activeToday = Dutiable::query()->activeOn()->pluck('id');
 
         // current() is seat-allocation semantics: a future start already holds the seat.

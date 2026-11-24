@@ -6,6 +6,10 @@ paths:
 
 # Changelog
 
+## User-facing changes ship in LT and EN
+Update `docs/changelog/v3.md` and `docs/en/changelog/v3.md` for user-facing changes. Skip internal dependencies and refactors without visible effects.
+Use ⭐ for features, ✨ for improvements and 🔧 for fixes. A new major gets both `vN.md` files and sidebar entries in `docs/.vitepress/lt.ts` and `docs/.vitepress/en.ts`. The admin Updates link follows the current major.
+
 ## Entries are dated, never numbered
 Entries carry the release date and no number: minor numbers meant nothing to readers and every parallel branch claimed the same next one. No renumbering or explicit anchor. Majors (`vN.md`) stay as eras: only the entry that launched one carries `{#vN}`, and its sections may use `{#vN-topic}` anchors. Guide text says „Iki 2026-10-26“ or „Nuo v3“, never a minor number.
 

@@ -4,11 +4,11 @@ namespace App\Actions\Dutiables;
 
 use App\Actions\CollapseOverlappingDutiables;
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
-use App\Services\DutyAssignmentService;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\Dutiables\DutiablePeriods;
+use App\Support\Dutiables\DutyAssignmentActor;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -30,13 +30,9 @@ class ApplyExOfficioReview
                 ->whereKey($targetIds)
                 ->orWhereHas('exOfficioTargetDuties', fn ($query) => $query->whereKey($targetIds))
                 ->orderBy('id')
-                ->lockForUpdate()
                 ->get();
-            Institution::withTrashed()
-                ->whereKey($duties->pluck('institution_id'))
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get();
+            $assignments = app(DutyAssignmentService::class);
+            $assignments->lockDuties($duties);
             $rows = Dutiable::query()
                 ->with(['duty.institution', 'user'])
                 ->whereIn('duty_id', $duties->modelKeys())
@@ -48,18 +44,20 @@ class ApplyExOfficioReview
             abort_unless(hash_equals($plan['fingerprint'], $data['fingerprint']), 409);
             $items = collect($plan['items'])->keyBy('id');
             self::validateSelection($items, $rows, $data);
-            foreach ($data['item_ids'] as $id) {
-                $item = $items[$id];
-                $source = $rows[$item['source_id']];
-                $target = $duties->find($item['target_duty_id']);
-                $row = $item['row_id'] === null ? null : $rows[$item['row_id']];
-                self::authorizeItem($item, $source, $target, $row, $rows, $actor);
-                abort_unless(app(DutyAssignmentService::class)->lockExOfficioContext($source, $target), 409);
-                $suppressed = self::applyItem(
-                    $item, $source, $target, $row, $rows, $actor, $data['remainder_choices'][$id] ?? 'end'
-                );
-                self::log($row ?? $source, $actor, $item, $suppressed);
-            }
+            $assignments->batchMembershipAudits(function () use ($assignments, $duties, $rows, $items, $actor, $data): void {
+                foreach ($data['item_ids'] as $id) {
+                    $item = $items[$id];
+                    $source = $rows[$item['source_id']];
+                    $target = $duties->find($item['target_duty_id']);
+                    $row = $item['row_id'] === null ? null : $rows[$item['row_id']];
+                    self::authorizeItem($item, $source, $target, $row, $rows, $actor);
+                    abort_unless($assignments->lockExOfficioContext($source, $target), 409);
+                    $suppressed = DutyAssignmentActor::as($actor, fn () => self::applyItem(
+                        $item, $source, $target, $row, $rows, $actor, $data['remainder_choices'][$id] ?? 'end'
+                    ));
+                    self::log($row ?? $source, $actor, $item, $suppressed);
+                }
+            });
         });
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\Responsibilities\AuthorizeDutyAssignment;
+use App\Models\Duty;
 use App\Models\User;
 use App\Rules\SoftDeleteRules;
 use App\Support\UserMergeGuard;
@@ -90,12 +92,29 @@ class MergeUsersRequest extends FormRequest
                         $reason = __('users.merge.direct_roles', ['name' => $source->name]);
                     }
 
+                    if ($reason === null && $this->hasUnassignableTerms($source, $keptUser)) {
+                        $reason = __('users.merge.unassignable_duties', ['name' => $source->name]);
+                    }
+
                     if ($reason !== null) {
                         $validator->errors()->add("source_user_ids.{$index}", $reason);
                     }
                 }
             },
         ];
+    }
+
+    private function hasUnassignableTerms(User $source, User $kept): bool
+    {
+        $actor = $this->user();
+        if ($actor->isSuperAdmin()) {
+            return false;
+        }
+
+        $dutyIds = $source->dutiables()->whereNull('via_dutiable_id')->notEnded()->select('duty_id');
+
+        return Duty::withTrashed()->whereIn('id', $dutyIds)->get()
+            ->contains(fn (Duty $duty): bool => ! AuthorizeDutyAssignment::allows($actor, $duty, $kept->id));
     }
 
     public function keptUser(): ?User

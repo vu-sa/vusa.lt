@@ -170,6 +170,63 @@ describe('batch update users', function (): void {
             ->and($pivot->pivot->end_date->toDateString())->toBe($endDate);
     });
 
+    test('re-adding a former holder starts a new term and keeps the old one', function (): void {
+        $former = makeUser($this->tenant);
+        $this->duty->users()->attach($former->id, ['start_date' => '2022-09-01', 'end_date' => '2023-08-31']);
+        $start = now()->toDateString();
+
+        asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [['user_id' => $former->id, 'action' => 'add', 'start_date' => $start]],
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $terms = $this->duty->dutiables()->where('dutiable_id', $former->id)->orderBy('start_date')->get();
+
+        expect($terms)->toHaveCount(2)
+            ->and($terms[0]->start_date->toDateString())->toBe('2022-09-01')
+            ->and($terms[0]->end_date->toDateString())->toBe('2023-08-31')
+            ->and($terms[1]->start_date->toDateString())->toBe($start)
+            ->and($terms[1]->end_date)->toBeNull();
+    });
+
+    test('removing without an end date ends the term yesterday', function (): void {
+        $holder = makeUser($this->tenant);
+        $this->duty->users()->attach($holder->id, ['start_date' => now()->subMonth()]);
+
+        asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [['user_id' => $holder->id, 'action' => 'remove']],
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        expect($this->duty->dutiables()->where('dutiable_id', $holder->id)->sole()->end_date->toDateString())
+            ->toBe(today()->subDay()->toDateString());
+    });
+
+    test('removing an upcoming holder without an end date withdraws the term', function (): void {
+        $upcoming = makeUser($this->tenant);
+        $this->duty->users()->attach($upcoming->id, ['start_date' => now()->addMonth()]);
+
+        asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [['user_id' => $upcoming->id, 'action' => 'remove']],
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        expect($this->duty->dutiables()->where('dutiable_id', $upcoming->id)->exists())->toBeFalse();
+    });
+
+    test('changing a current holder without dates keeps the term dates', function (): void {
+        $holder = makeUser($this->tenant);
+        $this->duty->users()->attach($holder->id, ['start_date' => '2025-09-01', 'end_date' => now()->addYear()->toDateString()]);
+        $program = StudyProgram::factory()->create();
+
+        asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
+            'user_changes' => [['user_id' => $holder->id, 'action' => 'add', 'study_program_id' => $program->id]],
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $term = $this->duty->dutiables()->where('dutiable_id', $holder->id)->sole();
+
+        expect($term->start_date->toDateString())->toBe('2025-09-01')
+            ->and($term->end_date->toDateString())->toBe(now()->addYear()->toDateString())
+            ->and($term->study_program_id)->toBe($program->id);
+    });
+
     test('can add multiple users in single batch', function (): void {
         $user1 = makeUser($this->tenant);
         $user2 = makeUser($this->tenant);

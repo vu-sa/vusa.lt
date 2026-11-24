@@ -1,21 +1,10 @@
 import { usePage } from '@inertiajs/vue3';
-import { useFetch } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 // eslint-disable-next-line no-restricted-imports -- builds Y-m-d query params from local dates, not display text
 import { format, subDays, addDays } from 'date-fns';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import type { NewsItem } from '@/Types/contentParts';
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  meta?: {
-    date_from?: string;
-    date_to?: string;
-    max_range_days?: number;
-  };
-}
 
 interface CalendarEvent {
   id: number;
@@ -36,10 +25,24 @@ export function useNewsFetch() {
     tenant: page.props.tenant?.alias,
   })}?lang=${page.props.app.locale}`;
 
-  const { data, error, isFetching } = useFetch(endpoint).json<ApiResponse<NewsItem[]>>();
+  const data = shallowRef<NewsItem[]>([]);
+  const newsItems = computed(() => data.value);
+  const isFetching = ref(true);
+  const error = ref<string | null>(null);
 
-  // Extract data from standardized API response
-  const newsItems = computed(() => data.value?.success ? data.value.data : []);
+  void apiRequest<NewsItem[]>(endpoint)
+    .then((result) => {
+      if (result.ok) {
+        data.value = result.data ?? [];
+      }
+      else {
+        error.value = result.message ?? `HTTP ${result.status}`;
+      }
+    })
+    .catch((cause: unknown) => {
+      error.value = cause instanceof Error ? cause.message || cause.name : 'Failed to fetch news';
+    })
+    .finally(() => { isFetching.value = false; });
 
   return {
     news: newsItems,
@@ -140,22 +143,20 @@ export function useCalendarFetch(options?: { allTenants?: boolean; skipInitialFe
     const endpoint = buildEndpoint(from, to);
 
     try {
-      const response = await fetch(endpoint);
+      const result = await apiRequest<CalendarEvent[]>(endpoint);
 
-      if (response.status === 429) {
-        // Rate limited - don't throw, just log and skip
+      if (result.status === 429) {
         console.warn('Calendar API rate limited, will retry on next navigation');
         return;
       }
+      if (!result.ok) throw new Error(result.message ?? `HTTP ${result.status}`);
 
-      const result = await response.json() as ApiResponse<CalendarEvent[]>;
-
-      if (result.success && Array.isArray(result.data)) {
+      if (Array.isArray(result.data)) {
         mergeEvents(result.data);
 
-        // Update max range from API response
-        if (result.meta?.max_range_days) {
-          maxRangeDays.value = result.meta.max_range_days;
+        const maxRange = result.meta?.max_range_days;
+        if (typeof maxRange === 'number' && maxRange) {
+          maxRangeDays.value = maxRange;
         }
       }
     }

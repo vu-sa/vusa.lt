@@ -214,6 +214,9 @@ pakeitimai neišsaugomi ir forma parodo klaidą. Galima rezervuoti ir kitų pada
 | Atšaukti paskutinį veiksmą | – | – | ✓, tik savo padalinio daiktus |
 | Ištrinti rezervaciją | – | ✓, kol nė vienas daiktas nepatvirtintas | – |
 
+Užbaigiant kelis pasirinktus išteklius vienu veiksmu, visų jų būsenos išlieka, jei bent vieno ištekliaus
+negalima atverti dėl teisių.
+
 Teikėjai savo rezervaciją mato visada. Kiti ją mato pagal padalinio teises: rezervacija priklauso
 jos daiktų padaliniams ir padaliniams, kuriuose teikėjai šiuo metu eina (ar netrukus pradės eiti)
 pareigas. Padalinio, kuriame teikėjas pareigas ėjo tik anksčiau, administratoriai jos nebemato.

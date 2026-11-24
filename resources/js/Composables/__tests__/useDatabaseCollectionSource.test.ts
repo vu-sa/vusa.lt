@@ -232,13 +232,16 @@ describe('useDatabaseCollectionSource facet counts', () => {
   it('restores the pages the URL says were loaded', async () => {
     window.history.replaceState({}, '', '/mano/reservations?pages=3');
     let generation = 0;
-    const fetchMock = vi.fn().mockImplementation(async (url: URL) => ({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: { items: [{ id: `${generation}:${url.searchParams.get('page')}` }], total: 3, per_page: 1, current_page: Number(url.searchParams.get('page')), last_page: 3 },
-      }),
-    }));
+    const fetchMock = vi.fn().mockImplementation(async (requested: string) => {
+      const page = new URL(requested, window.location.origin).searchParams.get('page');
+      return {
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { items: [{ id: `${generation}:${page}` }], total: 3, per_page: 1, current_page: Number(page), last_page: 3 },
+        }),
+      };
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     const scope = effectScope();

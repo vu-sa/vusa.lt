@@ -249,11 +249,17 @@ test('a tenant homepage content-part edit is reachable via the tenant root feed,
     expect(collect($data)->pluck('subject.type'))->toContain('contentPart');
 });
 
-test('a relation_updated activity carries the attached/detached members and rolls up to the parent Institution', function (): void {
+test('a relation_updated activity carries the attached/detached members and rolls up to the parent Institution', function (string $relation): void {
     $duty = Duty::factory()->for($this->institution, 'institution')->create();
     $user = User::factory()->create(['name' => 'Jonas Jonaitis']);
 
-    $duty->attachAudited('users', [$user->id => ['start_date' => now()]]);
+    if ($relation !== 'current_or_upcoming_users') {
+        activity()->performedOn($duty)->event('relation_updated')->withProperties([
+            'relation' => $relation, 'attached' => [['id' => $user->id, 'label' => $user->name]], 'detached' => [],
+        ])->log('relation_updated');
+    } else {
+        $duty->attachAudited('current_or_upcoming_users', [$user->id => ['start_date' => today()]]);
+    }
 
     $data = asUser($this->admin)
         ->getJson(route('api.v1.admin.activityLog.index', ['subjectType' => 'institution', 'subjectId' => $this->institution->id]))
@@ -265,10 +271,15 @@ test('a relation_updated activity carries the attached/detached members and roll
     expect($entry)->not->toBeNull()
         ->and($entry['subject']['type'])->toBe('duty')
         ->and($entry['subject']['is_root'])->toBeFalse()
-        ->and($entry['relation_change']['relation'])->toBe('users')
+        ->and($entry['relation_change']['relation'])->toBe($relation)
+        ->and($entry['relation_change']['label'])->toBe(__('entities.common.'.$relation))
         ->and($entry['relation_change']['attached'][0]['label'])->toBe('Jonas Jonaitis')
         ->and($entry['relation_change']['detached'])->toBe([]);
-});
+})->with([
+    'legacy all-time members' => 'users',
+    'legacy current members' => 'current_users',
+    'current and upcoming members' => 'current_or_upcoming_users',
+]);
 
 test('role history returns responsibility changes and authorizes against the role', function (): void {
     $role = Role::factory()->create();

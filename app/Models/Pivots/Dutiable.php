@@ -7,13 +7,14 @@ use App\Actions\Responsibilities\AuthorizeDutyAssignment;
 use App\Contracts\ImageMediaOwner;
 use App\Events\DutiableChanged;
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\Duties\DutyAssignmentService;
+use App\Support\Dutiables\DutyAssignmentActor;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -68,7 +69,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $tenants_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable activeOn(?string $date = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable current()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable notEnded()
  * @method static \Database\Factories\Pivots\DutiableFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable newQuery()
@@ -113,14 +114,14 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
     {
         return DB::transaction(function () use ($options): bool {
             $duty = Duty::withTrashed()->find($this->duty_id);
-            $institution = $duty ? Institution::withTrashed()->lockForUpdate()->find($duty->institution_id) : null;
+            $institution = $duty === null ? null : app(DutyAssignmentService::class)->lockDuty($duty)->get($duty->institution_id);
             $stored = $this->exists ? self::query()->lockForUpdate()->find($this->id) : null;
 
             $resumes = $stored?->end_date?->lt(today())
                 && ($this->end_date === null || $this->end_date->gte(today()));
             if ((! $this->exists || $this->isDirty(['duty_id', 'dutiable_id', 'dutiable_type']) || $resumes)
                 && $duty !== null && $this->dutiable_type === MorphMap::alias(User::class)
-                && ($actor = auth()->user()) !== null) {
+                && ($actor = DutyAssignmentActor::current()) !== null) {
                 AuthorizeDutyAssignment::execute($actor, $duty, (string) $this->dutiable_id);
             }
 
@@ -230,7 +231,16 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
                 return;
             }
 
-            $dutiable->derivedDutiables()->get()->each->delete();
+            $seats = $dutiable->derivedDutiables()->get();
+            if ($seats->isEmpty()) {
+                return;
+            }
+
+            app(DutyAssignmentService::class)->auditMemberships(
+                Duty::withTrashed()->whereKey($seats->pluck('duty_id')->unique()->all())->get(),
+                collect([$dutiable->user])->filter(),
+                fn () => $seats->each->delete(),
+            );
         });
     }
 
@@ -300,16 +310,29 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
     }
 
     /**
-     * Non-ended terms match User::current_or_upcoming_duties() and quota checks.
-     * A seat is allocated even before the term starts.
+     * Terms that have not ended, including ones yet to start: seats, quotas and permissions,
+     * like User::current_or_upcoming_duties(). Use {@see scopeActiveOn()} for who holds a seat on a date.
      */
-    public function scopeCurrent($query)
+    public function scopeNotEnded($query)
     {
         return $query->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', now()->toDateString()));
     }
 
+    /** Matches DutiablePeriods::overlap() returning a positive number of days. */
+    public function scopeOverlapping($query, string $start, ?string $end)
+    {
+        if ($end !== null && $end < $start) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere(fn ($q) => $q
+                ->whereDate('end_date', '>=', DB::raw('date(start_date)'))->whereDate('end_date', '>=', $start)))
+            ->when($end !== null, fn ($q) => $q->whereDate('start_date', '<=', $end));
+    }
+
     /**
-     * Rows genuinely in force on the given date. Unlike {@see scopeCurrent()} this also
+     * Rows genuinely in force on the given date. Unlike {@see scopeNotEnded()} this also
      * requires the term to have begun, which is what point-in-time questions
      * (who held this seat in March?) need.
      */

@@ -11,6 +11,7 @@ use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Duties\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,21 +37,15 @@ class DutiableController extends AdminController
             && (string) $dutiable->dutiable_id === (string) $request->user()->id;
     }
 
-    /**
-     * Assign a member to a duty (Decision O21: the record page's Priskirti sheet).
-     *
-     * Goes through Dutiable::create() rather than the users() relation so the
-     * description reaches the model's sanitizing setter; the audit wrapper keeps the
-     * activity log identical to the wizard's attach.
-     */
     // Authorized in StoreDutiableRequest: the duty and member named in the body.
-    public function store(StoreDutiableRequest $request, SyncImageMedia $syncImage): RedirectResponse
+    public function store(StoreDutiableRequest $request, SyncImageMedia $syncImage, DutyAssignmentService $assignments): RedirectResponse
     {
         $data = $request->safe();
         $duty = Duty::query()->findOrFail($data['duty_id']);
         $tenantId = $request->delegatedTenantId();
 
-        DB::transaction(function () use ($request, $data, $duty, $tenantId, $syncImage): void {
+        $userId = DB::transaction(function () use ($request, $data, $duty, $tenantId, $syncImage, $assignments): string {
+            $assignments->lockDuty($duty);
             $userId = $request->isCreatingMember()
                 ? User::create([
                     'name' => $data['new_user']['name'],
@@ -59,21 +54,24 @@ class DutiableController extends AdminController
                 ])->id
                 : $data['user_id'];
 
-            $dutiable = $duty->auditRelationChange('users', fn () => Dutiable::create([
+            $dutiable = $assignments->startTerm($duty, $userId, $tenantId, [
                 ...$data->only([
-                    'duty_id', 'start_date', 'end_date', 'study_program_id', 'study_program_note',
+                    'start_date', 'end_date', 'study_program_id', 'study_program_note',
                     'additional_email', 'description',
                 ]),
-                'dutiable_id' => $userId,
-                'dutiable_type' => MorphMap::alias(User::class),
-                'tenant_id' => $tenantId,
                 'use_original_duty_name' => $data['use_original_duty_name'] ?? false,
-            ]));
+            ], actor: $request->user());
+
+            if (! $request->choosesQuotaTenant() && ($dutiable->end_date === null || $dutiable->end_date->gte(today()))) {
+                $assignments->enforceTenantQuota($duty, $tenantId, $request->user(), 'user_id');
+            }
 
             $syncImage->fromValidated($dutiable, 'photo', $request->validated(), 'photo_media', $request->user());
+
+            return $userId;
         });
 
-        return $this->savedResponse('created', $duty, $tenantId, $request->validated('user_id'));
+        return $this->savedResponse('created', $tenantId, $userId);
     }
 
     /**
@@ -93,20 +91,56 @@ class DutiableController extends AdminController
      * TODO: this will not work for contacts
      */
     #[Authorize('manageDutiable', 'dutiable')]
-    public function update(Dutiable $dutiable, UpdateDutiableRequest $request)
+    public function update(Dutiable $dutiable, UpdateDutiableRequest $request, DutyAssignmentService $assignments)
     {
-        $data = $request->validated();
+        $mutation = fn () => DB::transaction(function () use ($dutiable, $request, $assignments): void {
+            $duty = $dutiable->duty()->withTrashed()->firstOrFail();
+            $assignments->lockDuty($duty);
+            $dutiable->refreshForUpdate();
+            $this->authorize('manageDutiable', $dutiable);
 
-        // Derived (ex-officio) rows have their dates mirrored from the source;
-        // do not allow manual overrides.
-        if (! is_null($dutiable->via_dutiable_id)) {
-            unset($data['start_date'], $data['end_date'], $data['tenant_id']);
-        }
+            $data = $request->validated();
+            $storedStart = $dutiable->start_date->toDateString();
+            $storedEnd = $dutiable->end_date?->toDateString();
+            $storedTenant = $dutiable->tenant_id;
 
-        $mutation = function () use ($dutiable, $data, $request): void {
-            $dutiable->fill(Arr::except($data, ['photo_media']))->save();
-            app(SyncImageMedia::class)->fromValidated($dutiable, 'photo', $data, 'photo_media', $request->user());
-        };
+            if ($dutiable->via_dutiable_id !== null) {
+                unset($data['start_date'], $data['end_date'], $data['tenant_id']);
+            } else {
+                if (isset($data['tenant_id'])) {
+                    $data['tenant_id'] = (int) $data['tenant_id'];
+                }
+                if (($data['start_date'] ?? $storedStart) === $storedStart) {
+                    unset($data['start_date']);
+                }
+                if (array_key_exists('end_date', $data) && $data['end_date'] === $storedEnd) {
+                    unset($data['end_date']);
+                }
+                if (array_key_exists('tenant_id', $data) && $data['tenant_id'] === $storedTenant) {
+                    unset($data['tenant_id']);
+                }
+            }
+
+            $endDate = array_key_exists('end_date', $data) ? $data['end_date'] : $storedEnd;
+            $tenantId = array_key_exists('tenant_id', $data) ? $data['tenant_id'] : $storedTenant;
+            $attribute = array_key_exists('tenant_id', $data) ? 'tenant_id' : 'end_date';
+            $termChanged = Arr::hasAny($data, ['start_date', 'end_date', 'tenant_id']);
+            if ($termChanged) {
+                $assignments->validateTermEdit($dutiable, $data['start_date'] ?? null, $endDate, $tenantId, $attribute);
+            }
+            $allocatesSeat = $termChanged && $assignments->allocatesSeat($dutiable, $endDate, $tenantId);
+
+            $affectedDuties = collect([$duty])->concat($duty->exOfficioTargetDuties);
+            $members = collect([$dutiable->user])->filter()->values();
+            $assignments->auditMemberships($affectedDuties, $members, function () use ($dutiable, $duty, $data, $request, $assignments, $tenantId, $attribute, $allocatesSeat): void {
+                $dutiable->fill(Arr::except($data, ['photo_media']))->save();
+                if ($allocatesSeat) {
+                    $assignments->enforceTenantQuota($duty, $tenantId, $request->user(), $attribute);
+                }
+
+                app(SyncImageMedia::class)->fromValidated($dutiable, 'photo', $data, 'photo_media', $request->user());
+            }, actor: $request->user());
+        });
 
         $couldAffectSelf = $this->affectsActingUser($dutiable, $request);
 
@@ -114,17 +148,17 @@ class DutiableController extends AdminController
             return $warning;
         }
 
-        return $this->savedResponse('updated', $dutiable->duty, $dutiable->tenant_id, $dutiable->dutiable_id);
+        return $this->savedResponse('updated', $dutiable->tenant_id, $dutiable->dutiable_id);
     }
 
     /**
      * A padalinys's admins cannot edit a quota seat if its member has no non-ended term
      * in that padalinys (DutyPolicy::managePeople).
      */
-    private function savedResponse(string $action, Duty $duty, ?int $tenantId, ?string $userId): RedirectResponse
+    private function savedResponse(string $action, ?int $tenantId, string $userId): RedirectResponse
     {
         $response = back()->with('success', $this->entityMessage($action, 'dutiable'));
-        $member = $tenantId !== null && $userId !== null ? User::query()->find($userId) : null;
+        $member = $tenantId !== null ? User::query()->find($userId) : null;
 
         if ($member === null || $member->current_or_upcoming_tenants()->where('tenants.id', $tenantId)->exists()) {
             return $response;
@@ -140,11 +174,21 @@ class DutiableController extends AdminController
      * Remove the specified resource from storage.
      */
     #[Authorize('manageDutiable', 'dutiable')]
-    public function destroy(DestroyDutiableRequest $request, Dutiable $dutiable)
+    public function destroy(DestroyDutiableRequest $request, Dutiable $dutiable, DutyAssignmentService $assignments)
     {
         $user = $dutiable->dutiable;
 
-        $mutation = fn () => $dutiable->delete();
+        $mutation = fn () => DB::transaction(function () use ($dutiable, $assignments, $request): void {
+            $duty = $dutiable->duty()->withTrashed()->firstOrFail();
+            $derivedDutyIds = $dutiable->derivedDutiables()->select('duty_id');
+            $affectedDuties = Duty::withTrashed()->whereIn('id', $derivedDutyIds)->get()->push($duty);
+            $assignments->lockDuties($affectedDuties);
+            $dutiable->refreshForUpdate();
+            $this->authorize('manageDutiable', $dutiable);
+            $members = collect([$dutiable->user])->filter()->values();
+            $assignments->auditMemberships($affectedDuties, $members,
+                fn () => $dutiable->delete(), actor: $request->user());
+        });
 
         if ($warning = $this->guardSelfLockout($request->user(), $this->affectsActingUser($dutiable, $request), $request, $mutation)) {
             return $warning;

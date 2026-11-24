@@ -536,12 +536,12 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         static::updated(function (Institution $institution): void {
             if ($institution->wasChanged('tenant_id')) {
                 InstitutionRelationService::flush();
-                ForgetUserAccess::execute(Dutiable::query()->current()
+                ForgetUserAccess::execute(Dutiable::query()->notEnded()
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->whereIn('duty_id', $institution->duties()->select('id'))
                     ->pluck('dutiable_id'));
             }
-            if ($institution->wasChanged('is_active')) {
+            if ($institution->wasChanged(['is_active', 'tenant_id'])) {
                 $institution->reindexDuties();
             }
         });

@@ -64,6 +64,24 @@ describe('index', function (): void {
             ->assertJsonMissingPath('props.reservations')
             ->assertJsonMissingPath('props.activeReservations');
     });
+
+    test('rows match the ReservationPresenter shape', function (): void {
+        asUserWithInertia($this->reservationManager)->get(route('reservations.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reservations.data.0.id', $this->reservation->id)
+                ->whereType('reservations.data.0.name', 'string')
+                ->whereType('reservations.data.0.start_time', 'string')
+                ->whereType('reservations.data.0.users.0.id', 'string')
+                ->whereType('reservations.data.0.users.0.profile_photo_path', 'string|null')
+                ->whereType('reservations.data.0.resources.0.tenant.id', 'integer')
+                ->whereType('reservations.data.0.resources.0.pivot.id', 'integer')
+                ->whereType('reservations.data.0.resources.0.pivot.quantity', 'integer')
+                ->whereType('reservations.data.0.resources.0.pivot.state', 'string')
+                ->whereType('reservations.data.0.resources.0.pivot.returned_at', 'string|null')
+                ->where('reservations.data.0.resources.0.pivot.approvable', false)
+                ->where('reservations.data.0.resources.0.pivot.cancellable', true)
+            );
+    });
 });
 
 describe('database collection API', function (): void {
@@ -313,7 +331,7 @@ describe('auth: reservation manager', function (): void {
         );
     });
 
-    // The record page's row actions read the same flags as the collection page (SerializeReservationsForTable),
+    // The record page's row actions read the same flags as the collection page (ReservationPresenter::tableRows()),
     // so a row can never offer what the server would refuse.
     test('the record carries the flagged decision target and per-record permissions', function (): void {
         $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));

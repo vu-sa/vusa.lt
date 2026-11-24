@@ -125,7 +125,7 @@ class DutiableFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'start_date' => $this->faker->dateTimeBetween('-1 year', 'now'),
+                'start_date' => $this->faker->dateTimeBetween('-1 year', '-1 day'),
                 'end_date' => null,
             ];
         });

@@ -6,10 +6,6 @@
  * HandleInertiaRequests as auth.user.ui_preferences). Provide/inject pattern,
  * following useCommandPalette.ts.
  *
- * Writes are side-effects, not navigations, so they go through a plain
- * `fetch` (the endpoints return 204) — using Inertia's router here would
- * break, since Inertia rejects non-Inertia responses.
- *
  * @example
  * // In AdminLayout.vue (provider):
  * const ui = createUIPreferencesProvider()
@@ -25,6 +21,7 @@ import {
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { safeHref } from '@/Utils/safeHref';
 import { resolveActive, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import type { RecentItem } from '@/Composables/useCommandPalette';
@@ -135,28 +132,11 @@ function mapStoredPages(stored: StoredPageLike[], workspaces: AdminWorkspace[]):
   return items;
 }
 
-function csrfToken(): string {
-  return ((usePage().props as { csrf_token?: string }).csrf_token) ?? '';
-}
-
-/** Fire-and-forget JSON write to a 204 endpoint (no Inertia navigation). */
 function persist(routeName: string, body: Record<string, unknown>): void {
   if (typeof window === 'undefined') {
     return;
   }
-  void fetch(route(routeName), {
-    method: 'PATCH',
-    credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRF-TOKEN': csrfToken(),
-    },
-    body: JSON.stringify(body),
-  }).catch(() => {
-    // Best-effort: a failed preference write should never disrupt the UI.
-  });
+  void apiRequest(route(routeName), { method: 'PATCH', body }).catch(() => {});
 }
 
 /**

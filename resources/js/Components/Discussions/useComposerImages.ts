@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { apiRequest, SessionExpiredError } from '@/Composables/apiRequest';
 import { useToasts } from '@/Composables/useToasts';
 import type { ImageData } from '@/Types/media';
 
@@ -27,19 +27,19 @@ export function useComposerImages() {
     const formData = new FormData();
     formData.append('image', file);
     try {
-      const response = await fetch(route('api.v1.admin.pendingUploads.store'), {
+      const result = await apiRequest<ImageData>(route('api.v1.admin.pendingUploads.store'), {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': (usePage().props.csrf_token as string | undefined) ?? '', 'Accept': 'application/json' },
-        credentials: 'same-origin',
         body: formData,
       });
-      const json = await response.json().catch(() => null) as { data?: ImageData; message?: string } | null;
-      if (!response.ok || !json?.data) throw new Error(json?.message ?? $t('forms.image_upload.failed'));
+      if (result.status === 419) throw new SessionExpiredError();
+      if (!result.ok || !result.data) throw new Error(result.message ?? $t('forms.image_upload.failed'));
       const current = images.value.find(candidate => candidate.key === image.key);
-      if (current) current.uploaded = json.data;
+      if (current) current.uploaded = result.data;
     }
     catch (error) {
-      toasts.error((error as Error).message);
+      if (!(error instanceof SessionExpiredError)) {
+        toasts.error(error instanceof Error ? error.message : $t('forms.image_upload.failed'));
+      }
       remove(image.key);
     }
   }

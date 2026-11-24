@@ -92,7 +92,7 @@ usePage.mockImplementation(() => ({
 }));
 ```
 
-**Always import the full filename** — `@/mocks/inertia.storybook`, never `@/mocks/inertia`.
+**Always import the full filename**: `@/mocks/inertia.storybook`, never `@/mocks/inertia`. <!-- ref-ignore -->
 
 ## Story patterns
 
@@ -132,7 +132,7 @@ Clear mocks between stories: `beforeEach(() => vi.clearAllMocks())`.
 
 - **Checkbox**: bind via `v-model` / `model-value`, never `v-model:checked`.
 - **Top-level `await` in components**: stalls the story. Accept data as a prop with a fallback fetch in `onMounted` instead.
-- **"Failed to resolve import '@/mocks/...'"**: aliases in `.storybook/main.ts` must match `vite.config.mts` exactly.
+- **"Failed to resolve import '@/mocks/…'"**: aliases in `.storybook/main.ts` must match `vite.config.mts` exactly.
 - **"Tests failing with undefined globals"**: use `globalThis.route = route`, not `global.route`.
 - **Browser tests not running**: install Playwright browsers with `npx playwright install`.
 

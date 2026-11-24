@@ -79,6 +79,7 @@ import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import {
@@ -167,9 +168,10 @@ const search = () => {
         source_ids: props.records.map(record => record.id),
         query: query.value.trim(),
       });
-      const response = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
-      const body = await response.json() as { data?: MergeRecord[] };
-      if (generation === searchGeneration) candidates.value = body.data ?? [];
+      const { data, body, message, status } = await apiRequest<MergeRecord[]>(url);
+      if (status === 0) throw new TypeError(message ?? 'Network error');
+      if (body === null) throw new SyntaxError('Unexpected end of JSON input');
+      if (generation === searchGeneration) candidates.value = data ?? [];
     }
     finally {
       if (generation === searchGeneration) isSearching.value = false;

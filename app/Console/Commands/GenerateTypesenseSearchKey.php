@@ -29,7 +29,7 @@ class GenerateTypesenseSearchKey extends Command
 
             // Check if we already have a search-only key
             $existingKey = config('scout.typesense.client-settings.search_only_key');
-            if (! empty($existingKey) && $existingKey !== $adminKey) {
+            if (filled($existingKey) && $existingKey !== $adminKey) {
                 $this->info('✅ Search-only key already exists in .env file');
                 $this->info('🔑 Key: '.substr($existingKey, 0, 8).'...'.substr($existingKey, -4));
 

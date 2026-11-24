@@ -320,6 +320,15 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             ->withTimestamps();
     }
 
+    /** @return MorphToMany<User, $this, Dutiable, 'pivot'> */
+    public function current_or_upcoming_users(): MorphToMany
+    {
+        return $this->users()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()))
+            ->withTimestamps();
+    }
+
     public function previous_users(): MorphToMany
     {
         return $this->users()
@@ -530,7 +539,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     protected static function booted()
     {
         static::saving(function (Duty $duty): void {
-            if ($duty->exists && $duty->isDirty('institution_id') && $duty->dutiables()->current()->exists()
+            if ($duty->exists && $duty->isDirty('institution_id') && $duty->dutiables()->notEnded()->exists()
                 && ! Institution::withTrashed()->find($duty->institution_id)?->is_active) {
                 throw ValidationException::withMessages([
                     'institution_id' => __('forms.helpers.institution_assignment_closed'),

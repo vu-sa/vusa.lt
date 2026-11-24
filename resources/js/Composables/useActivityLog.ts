@@ -1,18 +1,9 @@
-/**
- * Imperative client for the activity-log API (GET api.v1.admin.activityLog.index).
- * Mirrors useDiscussionApi's fetch + CSRF + `{ success, data }` envelope pattern,
- * with cursor-based "load more" state layered on top since the feed is an
- * infinite-scroll list rather than a single fetch-once resource.
- */
-
 import { ref, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import type { ActivityEntry, ActivityLogCursor, ActivityLogFilters } from '@/Types/activityLog';
 
 export function useActivityLog(subjectType: string, subjectId: string) {
-  const page = usePage();
-
   const entries = ref<ActivityEntry[]>([]);
   const loading = ref(false);
   const loadingMore = ref(false);
@@ -36,9 +27,7 @@ export function useActivityLog(subjectType: string, subjectId: string) {
     knownSubjectTypes.value = new Set([...knownSubjectTypes.value, ...list.map(entry => entry.subject.type)]);
   }
 
-  async function request(cursorParam?: string | null): Promise<{ data: ActivityEntry[]; meta: { cursor: ActivityLogCursor } }> {
-    const csrf = (page.props.csrf_token as string | undefined) ?? '';
-
+  async function request(cursorParam?: string | null): Promise<{ data: ActivityEntry[]; cursor: ActivityLogCursor }> {
     const query = new URLSearchParams();
     if (filters.value.scope) query.set('scope', filters.value.scope);
     if (filters.value.event) query.set('event', filters.value.event);
@@ -49,22 +38,13 @@ export function useActivityLog(subjectType: string, subjectId: string) {
     const url = route('api.v1.admin.activityLog.index', { subjectType, subjectId })
       + (query.toString() ? `?${query.toString()}` : '');
 
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': csrf,
-      },
-      credentials: 'same-origin',
-    });
-
-    const json = await response.json().catch(() => null);
-
-    if (!response.ok || !json?.success) {
-      throw new Error(json?.message ?? 'Request failed');
+    const result = await apiRequest<ActivityEntry[]>(url);
+    if (result.status === 0) throw new TypeError(result.message ?? 'Network error');
+    if (!result.ok || !result.data || !result.meta?.cursor) {
+      throw new Error(result.message ?? 'Request failed');
     }
 
-    return json;
+    return { data: result.data, cursor: result.meta.cursor as ActivityLogCursor };
   }
 
   async function load(): Promise<void> {
@@ -72,9 +52,9 @@ export function useActivityLog(subjectType: string, subjectId: string) {
     error.value = null;
 
     try {
-      const { data, meta } = await request();
+      const { data, cursor: nextCursor } = await request();
       entries.value = data;
-      cursor.value = meta.cursor;
+      cursor.value = nextCursor;
       hasLoadedOnce.value = true;
       recordSubjectTypes(data);
     }
@@ -93,9 +73,9 @@ export function useActivityLog(subjectType: string, subjectId: string) {
     error.value = null;
 
     try {
-      const { data, meta } = await request(cursor.value.next);
+      const { data, cursor: nextCursor } = await request(cursor.value.next);
       entries.value = [...entries.value, ...data];
-      cursor.value = meta.cursor;
+      cursor.value = nextCursor;
       recordSubjectTypes(data);
     }
     catch (e) {

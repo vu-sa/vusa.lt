@@ -25,7 +25,7 @@ class CheckExOfficioIntegrity
             ->orderBy('id')->each(function (Dutiable $source) use (&$findings): void {
                 array_push($findings, ...self::findingsForSource($source));
             });
-        Dutiable::query()->whereNotNull('via_dutiable_id')->current()->with('viaDutiable.duty.exOfficioTargetDuties')->orderBy('id')
+        Dutiable::query()->whereNotNull('via_dutiable_id')->notEnded()->with('viaDutiable.duty.exOfficioTargetDuties')->orderBy('id')
             ->each(function (Dutiable $seat) use (&$findings): void {
                 if ($seat->viaDutiable?->via_dutiable_id !== null
                     && $seat->viaDutiable->duty?->exOfficioTargetDuties->contains('id', $seat->duty_id)) {

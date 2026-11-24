@@ -141,7 +141,7 @@ import ReservationResourceChips from '@/Components/Reservations/ReservationResou
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import { reservationRowActions } from '@/Components/Reservations/reservationRowActions';
-import type { ReservationDecision } from '@/Components/Reservations/types';
+import type { ReservationDecision, ReservationTableRow } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import ReservationPeriod from '@/Components/Reservations/ReservationPeriod.vue';
 import ReservationStateSummary from '@/Components/Reservations/ReservationStateSummary.vue';
@@ -168,7 +168,10 @@ const actionsFor = (reservation: DashboardReservation) => {
 };
 
 const props = defineProps<{
-  reservations: { data: DashboardReservation[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
+  reservations: {
+    data: ReservationTableRow[];
+    meta: { total: number; per_page: number; current_page: number; last_page: number; from: number | null; to: number | null };
+  };
   managesResources?: boolean;
   /** No list permission: every row is already the user's own, so "Mano rezervacijos" filters nothing. */
   onlyOwn?: boolean;
@@ -201,7 +204,7 @@ const facets = computed<DatabaseFacetDefinition[]>(() => [
   { field: 'overdue', label: $t('Terminas'), single: true, values: [{ value: '1', label: $t('Vėluoja grąžinti') }] },
 ]);
 
-const source = useDatabaseCollectionSource<DashboardReservation & { updated_at?: string }>({
+const source = useDatabaseCollectionSource<ReservationTableRow>({
   endpoint: route('api.v1.admin.reservations.index'),
   initial: {
     items: props.reservations.data,

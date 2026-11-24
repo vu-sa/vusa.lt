@@ -54,8 +54,8 @@ export type StatusFilter = ReservationRowStatus | 'all' | 'active';
 
 export interface ReservationPivot {
   id: number | string;
-  start_time: string;
-  end_time: string;
+  start_time: string | null;
+  end_time: string | null;
   returned_at: string | null;
   /** Fallback for returned_at, which is only stamped on items returned since that was added. */
   updated_at: string;
@@ -70,11 +70,31 @@ export interface ReservationPivot {
   cancellable: boolean;
 }
 
+interface ReservationAvailabilityPeriod {
+  key: number;
+  quantity: number;
+  state: ReservationResourceState;
+  start_time: number | null;
+  end_time: number | null;
+}
+
+/** The viewer may only see the period and quantity of another reservation. */
+export type ReservationAvailabilityRow
+  = | (ReservationAvailabilityPeriod & { id: string; name: string })
+    | (ReservationAvailabilityPeriod & { id: null; name: null });
+
 export interface ReservationResource {
   id: string;
   name: string;
-  tenant: { id: string; shortname: string } | null;
+  tenant: { id: string | number; shortname: string } | null;
   pivot: ReservationPivot;
+}
+
+export interface ReservationParticipant {
+  id: string;
+  name: string;
+  email: string | null;
+  profile_photo_path: string | null;
 }
 
 export interface DashboardReservation {
@@ -84,7 +104,7 @@ export interface DashboardReservation {
   start_time: string;
   end_time: string;
   created_at: string;
-  users: App.Entities.User[];
+  users: ReservationParticipant[];
   resources: ReservationResource[];
 }
 
@@ -105,7 +125,8 @@ type PickupCheckable = Pick<ReservationPivot, 'state' | 'start_time'>;
  * The reservation is still open in the system even though its window is over.
  */
 export function isPivotUnresolved(pivot: ReturnCheckable, now: Date = new Date()): boolean {
-  if (!['created', 'reserved', 'lent'].includes(pivot.state)) {
+  // An item without an end time has no deadline to miss, as on the server.
+  if (!['created', 'reserved', 'lent'].includes(pivot.state) || pivot.end_time === null) {
     return false;
   }
 
@@ -114,11 +135,11 @@ export function isPivotUnresolved(pivot: ReturnCheckable, now: Date = new Date()
 
 /** A reserved item that was never picked up by its start time. */
 export function isPivotPickupOverdue(pivot: PickupCheckable, now: Date = new Date()): boolean {
-  return pivot.state === 'reserved' && new Date(pivot.start_time) < now;
+  return pivot.state === 'reserved' && pivot.start_time !== null && new Date(pivot.start_time) < now;
 }
 
 export function daysUnresolved(pivot: ReturnCheckable, now: Date = new Date()): number {
-  if (!isPivotUnresolved(pivot, now)) {
+  if (!isPivotUnresolved(pivot, now) || pivot.end_time === null) {
     return 0;
   }
 

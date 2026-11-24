@@ -3,6 +3,7 @@
 use App\Actions\ResolveTaskAssignees;
 use App\Actions\Schedulable\TaskNotifier;
 use App\Enums\ResponsibilityPurpose;
+use App\Events\TaskCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -17,6 +18,8 @@ use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\ApprovalTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
 pest()->use(RefreshDatabase::class);
@@ -196,6 +199,37 @@ describe('task reminder intervals', function (): void {
 });
 
 describe('manual tasks', function (): void {
+    test('dispatches TaskCreated once per saved task after commit', function (bool $separateTasks, int $expectedCount): void {
+        $admin = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->institution->tenant);
+        $assignees = User::factory()->count(2)->create();
+        $taskableType = MorphMap::alias(User::class);
+        Event::fake([TaskCreated::class]);
+
+        DB::transaction(function () use ($admin, $assignees, $taskableType, $separateTasks): void {
+            asUser($admin)->post(route('tasks.store'), [
+                'name' => 'Sutvarkyti dokumentus',
+                'taskable_type' => $taskableType,
+                'taskable_id' => $admin->id,
+                'due_date' => now()->addWeek()->getTimestampMs(),
+                'responsible_people' => $assignees->modelKeys(),
+                'separate_tasks' => $separateTasks,
+            ])->assertRedirect()->assertSessionHasNoErrors();
+
+            Event::assertNotDispatched(TaskCreated::class);
+        });
+
+        $taskIds = Task::query()->where('taskable_type', $taskableType)->where('taskable_id', $admin->id)->pluck('id')->all();
+        $dispatchedTaskIds = Event::dispatched(TaskCreated::class)
+            ->map(fn (array $arguments) => $arguments[0]->task->id)
+            ->all();
+
+        expect($taskIds)->toHaveCount($expectedCount);
+        expect($dispatchedTaskIds)->toEqualCanonicalizing($taskIds);
+    })->with([
+        'one shared task' => [false, 1],
+        'one task per assignee' => [true, 2],
+    ]);
+
     test('creating a task by hand tells its assignees, and names who assigned it', function (): void {
         $admin = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->institution->tenant);
         $assignee = User::factory()->create();

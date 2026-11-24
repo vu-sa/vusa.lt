@@ -326,6 +326,25 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('rolls back duty changes when the user write fails', function (): void {
+        $user = makeUser($this->tenant)->refresh();
+        $dutiable = $user->dutiables()->sole();
+
+        User::updating(fn (User $updating) => $updating->is($user)
+            ? throw new RuntimeException('User write failed.')
+            : null);
+        $this->withoutExceptionHandling();
+
+        expect(fn () => asUser($this->admin)->put(route('users.update', $user), [
+            'name' => $user->name,
+            'phone' => '+370 987 6543',
+            'current_duties' => [],
+        ]))->toThrow(RuntimeException::class, 'User write failed.');
+
+        expect($user->fresh()->getAttributes())->toEqual($user->getAttributes());
+        expect($user->dutiables()->sole()->getAttributes())->toEqual($dutiable->getAttributes());
+    });
+
     test('a former member without an email can still be saved', function (): void {
         $user = makeUser($this->tenant);
         $user->update(['email' => null]);
@@ -520,6 +539,76 @@ describe('duty assignment', function (): void {
             ->count();
 
         expect($activeCount)->toBe(1);
+    });
+
+    test('removing a duty on the user form leaves a cross-tenant seat of that duty alone', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $otherTenant = Tenant::factory()->create();
+        $duty->assignableTenants()->attach($otherTenant->id, ['quota' => 1]);
+
+        $target->duties()->attach($duty->id, ['start_date' => now()->subMonth()]);
+        $seat = Dutiable::factory()->create([
+            'duty_id' => $duty->id, 'dutiable_id' => $target->id, 'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => $otherTenant->id, 'start_date' => now()->subMonth(), 'end_date' => null,
+        ]);
+
+        SyncUserDuties::execute($this->admin, new Collection, new Collection([$duty->id]), $target, app(ModelAuthorizer::class), 'users.update.all');
+
+        $homeRow = Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->sole();
+
+        expect($homeRow->end_date->toDateString())->toBe(today()->subDay()->toDateString())
+            ->and($seat->fresh()->end_date)->toBeNull();
+    });
+
+    test('a cross-tenant seat does not count as already holding the duty on the user form', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $otherTenant = Tenant::factory()->create();
+        $duty->assignableTenants()->attach($otherTenant->id, ['quota' => 1]);
+        Dutiable::factory()->create([
+            'duty_id' => $duty->id, 'dutiable_id' => $target->id, 'dutiable_type' => MorphMap::alias(User::class),
+            'tenant_id' => $otherTenant->id, 'start_date' => now()->subMonth(), 'end_date' => null,
+        ]);
+
+        asUser($this->admin)->put(route('users.update', $target), [
+            'name' => $target->name,
+            'email' => $target->email,
+            'current_duties' => [$duty->id],
+        ])->assertSessionHasNoErrors();
+
+        expect(Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereNull('tenant_id')->notEnded()->count())->toBe(1);
+    });
+
+    test('removing and re-adding a duty on the same day does not overlap the two terms', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $target->duties()->attach($duty->id, ['start_date' => now()->subMonth()]);
+        $sync = fn (array $now, array $before) => SyncUserDuties::execute($this->admin, new Collection($now), new Collection($before), $target, app(ModelAuthorizer::class), 'users.update.all');
+
+        $sync([], [$duty->id]);
+        $sync([$duty->id], []);
+
+        $terms = Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->orderBy('start_date')->get();
+
+        expect($terms)->toHaveCount(2)
+            ->and($terms[1]->start_date->gt($terms[0]->end_date))->toBeTrue();
+    });
+
+    test('a term added on the user form starts after an institution closure ended the previous one', function (): void {
+        $target = User::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $closed = Dutiable::factory()->create([
+            'duty_id' => $duty->id, 'dutiable_id' => $target->id, 'dutiable_type' => MorphMap::alias(User::class),
+            'start_date' => now()->subYear(), 'end_date' => null,
+        ]);
+        $closed->forceFill(['end_date' => today()->subDay(), 'ended_by_institution_deactivation' => true])->save();
+
+        SyncUserDuties::execute($this->admin, new Collection([$duty->id]), new Collection, $target, app(ModelAuthorizer::class), 'users.update.all');
+
+        $new = Dutiable::where('duty_id', $duty->id)->where('dutiable_id', $target->id)->whereKeyNot($closed->id)->sole();
+
+        expect($new->start_date->toDateString())->toBe(today()->toDateString());
     });
 });
 
@@ -766,3 +855,29 @@ test('user trash lists blocker reasons without adding queries per row', function
     'page' => ['users.index', 'props.users.data'],
     'API' => ['api.v1.admin.users.index', 'data.items'],
 ]);
+
+test('an empty home duty list leaves delegated seats untouched', function (): void {
+    $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+    $other = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+    $duty->assignableTenants()->attach($other, ['quota' => 1]);
+    $seat = Dutiable::factory()->forDuty($duty)->forTenant($other)->active()->create();
+    $user = $seat->user;
+
+    asUser(makeAdminUser($this->tenant))->patch(route('users.update', $user), [
+        'name' => $user->name, 'email' => $user->email, 'current_duties' => [],
+    ])->assertSessionHasNoErrors();
+
+    expect($seat->fresh()->end_date)->toBeNull();
+});
+
+test('the user form places a closed institution assignment error on the duties field', function (): void {
+    $duty = Duty::factory()->for(Institution::factory()->for($this->tenant)->state(['is_active' => false]))->create();
+    $user = User::factory()->create();
+
+    asUser(makeAdminUser($this->tenant))->patch(route('users.update', $user), [
+        'name' => $user->name, 'email' => $user->email, 'current_duties' => [$duty->id],
+    ])->assertSessionHasErrors(['current_duties' => __('forms.helpers.institution_assignment_closed')])
+        ->assertSessionDoesntHaveErrors('end_date');
+
+    expect($duty->dutiables()->exists())->toBeFalse();
+});
