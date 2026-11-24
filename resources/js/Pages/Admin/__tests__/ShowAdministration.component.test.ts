@@ -17,6 +17,7 @@ function workspace(overrides: Record<string, unknown>) {
     key: 'organizacija',
     label: 'shell.workspaces.organizacija.title',
     description: 'shell.workspaces.organizacija.description',
+    experimental: false,
     sections: [],
     createActions: [],
     ...overrides,

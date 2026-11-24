@@ -16,6 +16,7 @@ export const workspace = (key: string, sections: AdminSection[], createActions: 
   key,
   label: `shell.workspaces.${key}.title`,
   description: `shell.workspaces.${key}.description`,
+  experimental: false,
   sections,
   createActions,
 });

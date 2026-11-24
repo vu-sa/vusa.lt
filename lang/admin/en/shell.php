@@ -43,6 +43,7 @@ return [
     'chrome' => [
         'product' => 'Mano VU SA',
         'workspaces' => 'Workspaces',
+        'experimental' => 'Experimental',
         'sections_nav' => 'Workspace pages',
         'more_sections' => 'More',
         'all_clear' => 'All clear',

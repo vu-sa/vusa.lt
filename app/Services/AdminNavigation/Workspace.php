@@ -21,6 +21,7 @@ final readonly class Workspace
      *                                  when at least one other section is visible, so "any section
      *                                  below" lives in one place instead of a second gate that
      *                                  would have to be kept in step with the list.
+     * @param  bool  $experimental  Tags the workspace as experimental wherever it is listed.
      */
     public function __construct(
         public string $key,
@@ -29,5 +30,6 @@ final readonly class Workspace
         public array $sections,
         public array $createActions = [],
         public ?Section $overview = null,
+        public bool $experimental = false,
     ) {}
 }

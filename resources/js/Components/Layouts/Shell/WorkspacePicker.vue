@@ -50,7 +50,10 @@
             >
               <component :is="workspaceIcon(workspace.key)" class="mt-0.5 size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand group-focus-visible:text-brand" />
               <span class="min-w-0">
-                <span class="block text-xs font-bold uppercase tracking-wide transition-colors group-hover:text-brand group-focus-visible:text-brand">{{ $t(workspace.label) }}</span>
+                <span class="flex flex-wrap items-center gap-2">
+                  <span class="text-xs font-bold uppercase tracking-wide transition-colors group-hover:text-brand group-focus-visible:text-brand">{{ $t(workspace.label) }}</span>
+                  <Badge v-if="workspace.experimental" variant="outline" class="text-[11px]" data-testid="workspace-experimental">{{ $t('shell.chrome.experimental') }}</Badge>
+                </span>
                 <span class="block text-sm text-muted-foreground">{{ $t(workspace.description) }}</span>
               </span>
               <TaskCountBadge v-if="workspace.key === 'pradzia'" class="ml-auto mt-0.5" />
@@ -106,6 +109,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, ChevronDown } from '@lucide/vue';
 import { computed } from 'vue';
 
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';

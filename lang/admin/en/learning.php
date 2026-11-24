@@ -118,6 +118,7 @@ return [
         'self_learning_hint' => 'Tick it once you know it',
         'articles' => 'Wiki entries',
         'lead' => 'Who is who at VU SR and the university – terms, institutions, documents and how they connect.',
+        'experimental_note' => 'The Wiki is experimental: content is still being added, and the Wiki itself may change.',
         'search_label' => 'Search the wiki',
         'search_placeholder' => 'Search for a term, abbreviation or document',
         'results' => '{1} :count result|[2,*] :count results',

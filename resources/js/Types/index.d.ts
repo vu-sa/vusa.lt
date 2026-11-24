@@ -86,6 +86,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
       key: string;
       label: string;
       description: string;
+      experimental: boolean;
       sections: Array<{
         key: string;
         label: string;

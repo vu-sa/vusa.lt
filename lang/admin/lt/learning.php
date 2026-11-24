@@ -118,6 +118,7 @@ return [
         'self_learning_hint' => 'Pažymėk, kai išmoksi',
         'articles' => 'Wiki įrašai',
         'lead' => 'Kas yra kas VU SA ir universitete – sąvokos, institucijos, dokumentai ir kaip jie susiję.',
+        'experimental_note' => 'Wiki – eksperimentinė funkcija: turinys dar pildomas, o pati Wiki gali keistis.',
         'search_label' => 'Ieškoti wiki',
         'search_placeholder' => 'Ieškok sąvokos, trumpinio ar dokumento',
         'results' => '{1} :count rezultatas|[2,9] :count rezultatai|[10,*] :count rezultatų',

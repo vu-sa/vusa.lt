@@ -53,6 +53,15 @@ describe('WorkspacePicker', () => {
     }
   });
 
+  it('tags only experimental workspaces', () => {
+    const wiki = { ...rezervacijos, key: 'wiki', label: 'shell.workspaces.wiki.title', experimental: true };
+    const tags = mountPicker({ workspaces: [pradzia, wiki] }).findAll('[data-testid="workspace-experimental"]');
+
+    expect(tags).toHaveLength(1);
+    expect(tags[0].text()).toBe('shell.chrome.experimental');
+    expect(tags[0].element.closest('a')?.textContent).toContain('shell.workspaces.wiki.title');
+  });
+
   it('marks the current workspace with a brand rule and lists its sections beneath it', () => {
     const wrapper = mountPicker();
     const links = wrapper.findAll('a');

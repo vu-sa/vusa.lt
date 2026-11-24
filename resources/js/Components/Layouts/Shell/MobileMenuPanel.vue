@@ -44,6 +44,7 @@
                 <span class="flex items-center gap-2">
                   <component :is="workspaceIcon(workspace.key)" class="size-4 shrink-0 text-brand" aria-hidden="true" />
                   {{ $t(workspace.label) }}
+                  <Badge v-if="workspace.experimental" variant="outline" class="text-[11px] font-medium">{{ $t('shell.chrome.experimental') }}</Badge>
                 </span>
                 <Plus :class="['size-5 shrink-0 text-brand transition-transform duration-200', expandedWorkspaceKey === workspace.key && 'rotate-45']" aria-hidden="true" />
               </button>
@@ -243,6 +244,7 @@ import {
 } from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import {

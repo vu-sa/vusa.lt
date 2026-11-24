@@ -1,5 +1,5 @@
 <template>
-  <OverviewPage :title="$t('learning.pages.knowledge')" :lead="$t('learning.wiki.lead')">
+  <OverviewPage :title="$t('learning.pages.knowledge')" :lead="`${$t('learning.wiki.lead')} ${$t('learning.wiki.experimental_note')}`">
     <template #actions>
       <WikiProgressSummary :done="counted.filter(entry => done.has(entry.id)).length" :total="counted.length" />
     </template>
