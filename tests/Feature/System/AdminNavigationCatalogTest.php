@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\ModelAuthorizer;
 use App\Services\Permissions\PermissionMapBuilder;
+use App\Services\Permissions\PermissionMatrixPresenter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -272,11 +273,41 @@ describe('per-persona visibility', function (): void {
             'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph', 'wiki_biblioteka'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
-            'sistema' => ['apzvalga', 'tipai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'konferencijos', 'kelio_zingsniai', 'formos'],
             'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'instituciju_tipai', 'pareigybiu_tipai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'laisku_perziura', 'pagalbos_uzklausos'],
         ]);
+    });
+
+    test('permission matrix workspace order and resource placement follow the admin navigation catalog', function (): void {
+        $this->tenant->update(['goals_enabled' => true]);
+        $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
+        $frontend = PermissionMatrixPresenter::toFrontend();
+
+        expect(array_column($workspaces, 'key'))->toBe(AdminNavigationCatalog::WORKSPACE_KEYS)
+            ->and($frontend['areas'])->toBe(array_column($workspaces, 'key'));
+
+        $matrixOrderByArea = collect($frontend['resources'])
+            ->groupBy('area')
+            ->map(fn (Collection $resources) => $resources->filter(fn (array $r): bool => $r['model'] !== null)->pluck('model')->values()->all());
+
+        // Documents appear in Svetainė as a secondary link; their primary workspace in the matrix is ViSAK.
+        $secondaryEntries = ['svetaine:document'];
+
+        foreach ($workspaces as $workspace) {
+            $navModels = collect($workspace['sections'])
+                ->pluck('entityType')
+                ->filter()
+                ->unique()
+                ->reject(fn (string $model): bool => in_array("{$workspace['key']}:{$model}", $secondaryEntries, true))
+                ->filter(fn (string $model): bool => in_array($model, $matrixOrderByArea[$workspace['key']] ?? [], true))
+                ->values()
+                ->all();
+
+            $matrixSubset = array_values(array_intersect($matrixOrderByArea[$workspace['key']] ?? [], $navModels));
+
+            expect($matrixSubset)->toBe($navModels, "Workspace [{$workspace['key']}] matrix order drifted from navigation");
+        }
     });
 
     test('Mano kelias has no children and step management lives in Organizacija', function (): void {

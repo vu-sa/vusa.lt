@@ -7,52 +7,11 @@ use App\Enums\ModelEnum;
 use Illuminate\Support\Str;
 
 /**
- * Every permission a responsibility can hold. The seeder, the permission editor and
- * `permissions:audit` all read it, so a new model's permissions cannot go missing in one of them.
+ * Every permission a responsibility can hold. The seeder, `permissions:sync`, `permissions:audit`,
+ * validation and `PermissionMatrixPresenter` all read it so grantable permissions stay in one place.
  */
 final class PermissionCatalog
 {
-    /** Admin workspaces (AdminNavigationCatalog keys), in the order the editor lists them. */
-    public const array AREAS = ['pradzia', 'wiki', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema'];
-
-    /** Resource => workspace. Listed in the order the admin navigation shows them; the editor sorts by it. */
-    private const array RESOURCE_AREAS = [
-        'tasks' => 'pradzia',
-        'comments' => 'pradzia',
-        'knowledgeItems' => 'wiki',
-        'institutions' => 'atstovavimas',
-        'meetings' => 'atstovavimas',
-        'agendaItems' => 'atstovavimas',
-        'documents' => 'atstovavimas',
-        'problems' => 'atstovavimas',
-        'goals' => 'atstovavimas',
-        'reservations' => 'rezervacijos',
-        'resources' => 'rezervacijos',
-        'pages' => 'svetaine',
-        'news' => 'svetaine',
-        'calendars' => 'svetaine',
-        'banners' => 'svetaine',
-        'navigations' => 'svetaine',
-        'quickLinks' => 'svetaine',
-        'eventTypes' => 'svetaine',
-        'tags' => 'svetaine',
-        'files' => 'svetaine',
-        'studySets' => 'svetaine',
-        'users' => 'organizacija',
-        'duties' => 'organizacija',
-        'dutiables' => 'organizacija',
-        'studyPrograms' => 'organizacija',
-        'mailingLists' => 'organizacija',
-        'learningSteps' => 'organizacija',
-        'forms' => 'organizacija',
-        'roles' => 'sistema',
-        'permissions' => 'sistema',
-        'institutionTypes' => 'sistema',
-        'dutyTypes' => 'sistema',
-        'relationships' => 'sistema',
-        'settings' => 'sistema',
-    ];
-
     /** Capabilities that guard a part of the app rather than one model's records. */
     private const array STANDALONE = [
         'settings' => ['read' => ['*'], 'update' => ['*']],
@@ -64,23 +23,20 @@ final class PermissionCatalog
      */
     private const array SKIPPED = ['reservationResources', 'tenants'];
 
-    /** Checked by a policy that only super admins pass; the name may exist but is never seeded or swept. */
-    private const array RESERVED = ['supportRequests'];
+    /** Checked by a policy that only super admins pass; never seeded, grantable or swept. */
+    public const array RESERVED = ['supportRequests'];
 
     /**
-     * What `own` means, per resource: the Duty relation that lists the records a holder may act on
-     * (`duties` = the granting duties themselves) and the editor's label for the cell. A resource
-     * missing here has no `own` scope, so adding a relation to Duty never grants anything.
-     * Tasks, reservations and users stay out: members already manage their own, and the Duty
-     * relations of those names reach former holders' or colleagues' records.
+     * Duty relation behind each resource's `own` scope (`duties` = the granting duties themselves).
+     * Every entry must name a live relation on Duty; resources absent here have no `own` scope.
+     *
+     * @var array<string, string>
      */
-    private const array OWN_SCOPES = [
-        'duties' => ['relation' => 'duties', 'label' => 'access.own_duties'],
-        'dutiables' => ['relation' => 'dutiables', 'label' => 'access.own_duties'],
-        'meetings' => ['relation' => 'meetings', 'label' => 'access.own_institutions'],
-        'documents' => ['relation' => 'documents', 'label' => 'access.own_institution_documents'],
-        // Reserved for a member's personal goals; no relation yet, so it matches nothing.
-        'goals' => ['relation' => null, 'label' => null],
+    private const array OWN_RELATIONS = [
+        'duties' => 'duties',
+        'dutiables' => 'dutiables',
+        'meetings' => 'meetings',
+        'documents' => 'documents',
     ];
 
     /**
@@ -93,6 +49,8 @@ final class PermissionCatalog
         'permissions.create.*', 'permissions.update.*', 'permissions.delete.*',
         // Deleting the duty you hold makes no sense.
         'duties.delete.own',
+        // Institution link policies govern writes only; reading follows the institution or type page.
+        'relationships.read.*',
     ];
 
     /** Resources whose `create` is also granted at `own`. */
@@ -187,53 +145,7 @@ final class PermissionCatalog
      */
     public static function ownRelation(string $resource): ?string
     {
-        return self::OWN_SCOPES[$resource]['relation'] ?? null;
-    }
-
-    public static function areaOf(string $resource): string
-    {
-        return self::RESOURCE_AREAS[$resource] ?? 'sistema';
-    }
-
-    /**
-     * The editor's payload: resources grouped by area, with what every member may already do.
-     *
-     * @return array{
-     *     areas: list<string>,
-     *     resources: list<array{key: string, model: string|null, area: string, abilities: array<string, list<string>>, baseline: string|null, softDeletes: bool}>,
-     *     retired: list<string>,
-     * }
-     */
-    public static function toFrontend(): array
-    {
-        $baseline = BaselineAccess::descriptions();
-        $areaOrder = array_flip(self::AREAS);
-        $resourceOrder = array_flip(array_keys(self::RESOURCE_AREAS));
-
-        $resources = collect(self::abilities())
-            ->map(fn (array $abilities, string $resource): array => [
-                'key' => $resource,
-                'model' => self::modelValueFor($resource),
-                'area' => self::areaOf($resource),
-                'abilities' => $abilities,
-                'baseline' => $baseline[$resource] ?? null,
-                'baselineSegments' => BaselineAccess::segments($resource),
-                'scopeLabels' => isset(self::OWN_SCOPES[$resource]['label']) ? ['own' => __(self::OWN_SCOPES[$resource]['label'])] : [],
-                'scopeDescriptions' => in_array($resource, ['meetings', 'agendaItems'], true) ? __("access.permission_scopes.{$resource}") : [],
-                'softDeletes' => ModelEnum::isSoftDeletable($resource),
-            ])
-            ->sortBy(fn (array $resource): array => [
-                $areaOrder[$resource['area']] ?? PHP_INT_MAX,
-                $resourceOrder[$resource['key']] ?? PHP_INT_MAX,
-            ])
-            ->values()
-            ->all();
-
-        return [
-            'areas' => self::AREAS,
-            'resources' => $resources,
-            'retired' => BaselineAccess::retiredPermissionNames(),
-        ];
+        return self::OWN_RELATIONS[$resource] ?? null;
     }
 
     /**
@@ -255,7 +167,7 @@ final class PermissionCatalog
     {
         $scopes = ModelEnum::getAllowedScopes($resource);
 
-        if (! array_key_exists($resource, self::OWN_SCOPES)) {
+        if (! array_key_exists($resource, self::OWN_RELATIONS)) {
             $scopes = array_diff($scopes, ['own']);
         }
 
@@ -271,16 +183,5 @@ final class PermissionCatalog
         }
 
         return array_values($scopes);
-    }
-
-    private static function modelValueFor(string $resource): ?string
-    {
-        foreach (ModelEnum::cases() as $case) {
-            if (Str::plural($case->label()) === $resource) {
-                return $case->value;
-            }
-        }
-
-        return null;
     }
 }

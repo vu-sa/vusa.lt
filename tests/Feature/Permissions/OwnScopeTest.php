@@ -1,7 +1,7 @@
 <?php
 
 /**
- * `own` reaches only what `PermissionCatalog::OWN_SCOPES` names. It used to follow any Duty relation
+ * `own` reaches only what `PermissionCatalog::ownRelation()` names. It used to follow any Duty relation
  * named like the resource, so a stored `reservations.update.own` reached, through Duty::reservations(),
  * the reservations of everyone who ever held the duty.
  */

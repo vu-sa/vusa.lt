@@ -1,7 +1,10 @@
 <?php
 
+use App\Enums\ModelEnum;
 use App\Models\Duty;
 use App\Policies\ModelPolicy;
+use App\Services\AdminNavigation\AdminNavigationCatalog;
+use App\Services\Permissions\PermissionMatrixPresenter;
 use App\Support\Permissions\BaselineAccess;
 use App\Support\Permissions\PermissionCatalog;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -51,10 +54,16 @@ test('baseline permissions are never grantable', function (): void {
     }
 });
 
-test('every resource belongs to a known area', function (): void {
-    foreach (PermissionCatalog::toFrontend()['resources'] as $resource) {
-        expect(PermissionCatalog::AREAS)->toContain($resource['area']);
+test('every grantable resource has an explicit area in a known workspace', function (): void {
+    foreach (array_keys(PermissionCatalog::abilities()) as $resource) {
+        expect(PermissionMatrixPresenter::RESOURCE_AREAS)->toHaveKey($resource);
     }
+
+    foreach (PermissionMatrixPresenter::toFrontend()['resources'] as $resource) {
+        expect(AdminNavigationCatalog::WORKSPACE_KEYS)->toContain($resource['area']);
+    }
+
+    expect(PermissionMatrixPresenter::toFrontend()['areas'])->toBe(AdminNavigationCatalog::WORKSPACE_KEYS);
 });
 
 test('combinations that grant nothing are not offered', function (string $name): void {
@@ -72,11 +81,19 @@ test('combinations that grant nothing are not offered', function (string $name):
     'members already read their meetings' => 'meetings.read.own',
     'permissions are only listed' => 'permissions.update.*',
     'tenants are super-admin only' => 'tenants.read.*',
+    'goals own is not implemented in GoalPolicy' => 'goals.update.own',
+    'goals reading belongs to every pilot member' => 'goals.read.padalinys',
+    'goals reading everywhere belongs to every pilot member' => 'goals.read.*',
+    'relationships policy only checks writes' => 'relationships.read.*',
 ]);
+
+test('unknown resources do not fail open to all scopes', function (): void {
+    expect(ModelEnum::getAllowedScopes('unknownResources'))->toBe([]);
+});
 
 test('what is still offered at own', function (string $name): void {
     expect(PermissionCatalog::isGrantable($name))->toBeTrue();
-})->with(['meetings.create.own', 'meetings.update.own', 'documents.create.own', 'documents.update.own', 'duties.update.own', 'goals.update.own', 'settings.read.*']);
+})->with(['meetings.create.own', 'meetings.update.own', 'documents.create.own', 'documents.update.own', 'duties.update.own', 'settings.read.*']);
 
 test('own is offered only on the resources whose meaning the catalog spells out', function (): void {
     $withOwn = collect(PermissionCatalog::names())
@@ -88,20 +105,72 @@ test('own is offered only on the resources whose meaning the catalog spells out'
         'documents.create.own', 'documents.read.own', 'documents.update.own', 'documents.delete.own',
         'dutiables.read.own', 'dutiables.update.own', 'dutiables.delete.own',
         'duties.update.own',
-        'goals.read.own', 'goals.update.own', 'goals.delete.own',
         'meetings.create.own', 'meetings.update.own', 'meetings.delete.own',
     ]);
 });
 
-test('every own relation the catalog names exists on Duty', function (string $resource): void {
-    $relation = PermissionCatalog::ownRelation($resource);
+test('every grantable own resource names a live Duty relation and an editor label', function (): void {
+    $resourcesWithOwn = collect(PermissionCatalog::abilities())
+        ->filter(fn (array $abilities): bool => collect($abilities)->flatten()->contains('own'))
+        ->keys()
+        ->values();
 
-    expect($relation === 'duties' || (new Duty)->{$relation}() instanceof Relation)->toBeTrue();
-})->with(['duties', 'dutiables', 'meetings', 'documents']);
+    expect($resourcesWithOwn)->not->toBeEmpty();
+
+    $frontendByKey = collect(PermissionMatrixPresenter::toFrontend()['resources'])->keyBy('key');
+
+    foreach ($resourcesWithOwn as $resource) {
+        $relation = PermissionCatalog::ownRelation($resource);
+
+        expect($relation)->toBeString()->not->toBeEmpty("{$resource} offers own without a Duty relation");
+        expect($relation === 'duties' || (new Duty)->{$relation}() instanceof Relation)
+            ->toBeTrue("{$resource} names missing Duty relation [{$relation}]");
+        expect($frontendByKey[$resource]['scopeLabels']['own'] ?? null)
+            ->toBeString()
+            ->not->toBeEmpty("{$resource} offers own without an editor scope label")
+            ->not->toStartWith('access.');
+    }
+});
+
+test('every padalinys-scoped resource resolves tenants on its model or via a custom policy', function (): void {
+    $customTenantResolvers = ['files', 'comments', 'learningSteps'];
+
+    $padalinysResources = collect(PermissionCatalog::abilities())
+        ->filter(fn (array $abilities): bool => collect($abilities)->flatten()->contains('padalinys'))
+        ->keys()
+        ->reject(fn (string $resource): bool => in_array($resource, $customTenantResolvers, true));
+
+    foreach ($padalinysResources as $resource) {
+        $modelClass = ModelEnum::getModelClass($resource);
+
+        expect($modelClass)->not->toBeNull("{$resource} offers padalinys without a model or custom resolver");
+
+        $hasTenantPath = method_exists($modelClass, 'owningTenants')
+            || method_exists($modelClass, 'tenants')
+            || method_exists($modelClass, 'tenant');
+
+        expect($hasTenantPath)->toBeTrue("{$resource} ({$modelClass}) offers padalinys without a tenant relation");
+    }
+});
+
+test('reserved resources are never grantable', function (): void {
+    foreach (PermissionCatalog::RESERVED as $resource) {
+        expect(array_keys(PermissionCatalog::abilities()))->not->toContain($resource)
+            ->and(PermissionCatalog::isGrantable("{$resource}.read.*"))->toBeFalse();
+    }
+});
+
+test('goals reading is baseline while writes stay tenant-scoped', function (): void {
+    expect(PermissionCatalog::abilities()['goals']['create'])->toBe(['padalinys', '*'])
+        ->and(PermissionCatalog::abilities()['goals']['update'])->toBe(['padalinys', '*'])
+        ->and(PermissionCatalog::abilities()['goals']['delete'])->toBe(['padalinys', '*'])
+        ->and(PermissionCatalog::abilities()['goals'])->not->toHaveKey('read')
+        ->and(BaselineAccess::RESOURCES)->toContain('goals');
+});
 
 test('meeting scope explanations and highlighted duty dates are translated without HTML', function (string $locale): void {
     app()->setLocale($locale);
-    $meeting = collect(PermissionCatalog::toFrontend()['resources'])->firstWhere('key', 'meetings');
+    $meeting = collect(PermissionMatrixPresenter::toFrontend()['resources'])->firstWhere('key', 'meetings');
 
     expect(implode('', array_column($meeting['baselineSegments'], 'text')))->toBe($meeting['baseline'])
         ->and($meeting['baselineSegments'][1]['strong'])->toBeTrue()
@@ -111,17 +180,18 @@ test('meeting scope explanations and highlighted duty dates are translated witho
 })->with(['lt', 'en']);
 
 test('rows follow the order of the admin navigation within their workspace', function (): void {
-    $keys = collect(PermissionCatalog::toFrontend()['resources'])->pluck('key');
+    $keys = collect(PermissionMatrixPresenter::toFrontend()['resources'])->pluck('key');
 
     expect($keys->first())->toBe('tasks')
         ->and($keys->search('institutions'))->toBeLessThan($keys->search('meetings'))
         ->and($keys->search('meetings'))->toBeLessThan($keys->search('goals'))
         ->and($keys->search('users'))->toBeLessThan($keys->search('duties'))
-        ->and($keys->last())->toBe('settings');
+        ->and($keys->search('settings'))->toBeLessThan($keys->search('knowledgeItems'))
+        ->and($keys->last())->toBe('knowledgeItems');
 });
 
 test('the editor is told which resources have a trash', function (): void {
-    $resources = collect(PermissionCatalog::toFrontend()['resources'])->keyBy('key');
+    $resources = collect(PermissionMatrixPresenter::toFrontend()['resources'])->keyBy('key');
 
     expect($resources['news']['softDeletes'])->toBeTrue()
         ->and($resources['mailingLists']['softDeletes'])->toBeFalse();
@@ -129,7 +199,7 @@ test('the editor is told which resources have a trash', function (): void {
 
 test('learning curation is scoped while reading belongs to every member', function (): void {
     expect(PermissionCatalog::abilities()['learningSteps']['update'])->toBe(['padalinys', '*'])
-        ->and(PermissionCatalog::areaOf('learningSteps'))->toBe('organizacija')
+        ->and(PermissionMatrixPresenter::areaOf('learningSteps'))->toBe('organizacija')
         ->and(PermissionCatalog::isGrantable('learningSteps.read.padalinys'))->toBeFalse()
         ->and(PermissionCatalog::isGrantable('learningSteps.update.own'))->toBeFalse()
         ->and(BaselineAccess::RESOURCES)->toContain('learningSteps');

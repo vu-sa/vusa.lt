@@ -10,8 +10,8 @@
  *
  * - news         — a plain single-tenant model, the common case
  * - resources    — a single-tenant model whose role also holds a `*`-scoped read
- * - institutions — the only resource with a meaningful `own` scope
  * - duties       — `own` resolves against the duty itself, not a relation
+ * - dutiables / meetings / documents — `own` resolves via their catalog Duty relation
  * - tags         — globally scoped: no tenant relation at all, so the padalinys branch
  *                  must deny explicitly rather than throw
  */
@@ -28,6 +28,7 @@ use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Permission;
+use App\Models\Pivots\Dutiable;
 use App\Models\Problem;
 use App\Models\QuickLink;
 use App\Models\Resource;
@@ -206,17 +207,7 @@ describe('all (*) scope', function (): void {
 });
 
 describe('own scope', function (): void {
-    test('institutions: reaches the actors own institution only', function (): void {
-        $actor = actorGranted($this->tenantA, ['institutions.read.own']);
-
-        $ownInstitution = $actor->duties()->first()->institution;
-        $siblingInstitution = Institution::factory()->for($this->tenantA)->create();
-
-        expect(Gate::forUser($actor)->allows('view', $ownInstitution))->toBeTrue()
-            ->and(Gate::forUser($actor)->allows('view', $siblingInstitution))->toBeFalse();
-    });
-
-    test('duties: resolves against the duty itself, not a relation', function (): void {
+    test('duties: grants the granting duty and excludes a sibling duty in the same tenant', function (): void {
         $actor = actorGranted($this->tenantA, ['duties.update.own']);
 
         $ownDuty = $actor->duties()->first();
@@ -226,11 +217,56 @@ describe('own scope', function (): void {
             ->and(Gate::forUser($actor)->allows('update', $siblingDuty))->toBeFalse();
     });
 
-    test('own does not imply the tenant', function (): void {
-        $actor = actorGranted($this->tenantA, ['institutions.read.own']);
+    test('dutiables: grants a term on the granting duty and excludes a sibling duty\'s term', function (): void {
+        $actor = actorGranted($this->tenantA, ['dutiables.update.own']);
 
-        expect(Gate::forUser($actor)->allows('view', Institution::factory()->for($this->tenantB)->create()))
-            ->toBeFalse();
+        $ownDuty = $actor->duties()->first();
+        $siblingDuty = Duty::factory()->for(Institution::factory()->for($this->tenantA))->create();
+        $colleague = User::factory()->create();
+        $siblingDuty->users()->attach($colleague, ['start_date' => now()->subMonth()]);
+
+        $ownTerm = Dutiable::query()->where('duty_id', $ownDuty->id)->firstOrFail();
+        $siblingTerm = Dutiable::query()->where('duty_id', $siblingDuty->id)->firstOrFail();
+
+        expect(Gate::forUser($actor)->allows('update', $ownTerm))->toBeTrue()
+            ->and(Gate::forUser($actor)->allows('update', $siblingTerm))->toBeFalse();
+    });
+
+    test('meetings: grants own institution meetings outside the term and excludes a sibling institution\'s', function (): void {
+        $actor = actorGranted($this->tenantA, ['meetings.update.own', 'meetings.create.own']);
+
+        $ownInstitution = $actor->duties()->first()->institution;
+        $siblingInstitution = Institution::factory()->for($this->tenantA)->create();
+
+        // Dated years before the actor's term so baseline `hadMemberAtTheTime` does not mask the `.own` check.
+        $ownMeeting = Meeting::factory()->hasAttached($ownInstitution)->create(['start_time' => now()->subYears(3)]);
+        $siblingMeeting = Meeting::factory()->hasAttached($siblingInstitution)->create(['start_time' => now()->subYears(3)]);
+
+        expect(Gate::forUser($actor)->allows('update', $ownMeeting))->toBeTrue()
+            ->and(Gate::forUser($actor)->allows('update', $siblingMeeting))->toBeFalse()
+            ->and(Gate::forUser($actor)->allows('createFor', [Meeting::class, $ownInstitution]))->toBeTrue()
+            ->and(Gate::forUser($actor)->allows('createFor', [Meeting::class, $siblingInstitution]))->toBeFalse();
+    });
+
+    test('documents: grants own institution documents and excludes a sibling institution\'s', function (): void {
+        $actor = actorGranted($this->tenantA, ['documents.update.own', 'documents.create.own']);
+
+        $ownInstitution = $actor->duties()->first()->institution;
+        $siblingInstitution = Institution::factory()->for($this->tenantA)->create();
+
+        $ownDocument = Document::factory()->for($ownInstitution)->create();
+        $siblingDocument = Document::factory()->for($siblingInstitution)->create();
+
+        expect(Gate::forUser($actor)->allows('create', Document::class))->toBeTrue()
+            ->and(Gate::forUser($actor)->allows('update', $ownDocument))->toBeTrue()
+            ->and(Gate::forUser($actor)->allows('update', $siblingDocument))->toBeFalse();
+    });
+
+    test('own does not imply the tenant or grant unlisted own permissions', function (): void {
+        $actor = actorGranted($this->tenantA, ['goals.update.own']);
+        $goal = subjectIn('goals', $this->tenantA);
+
+        expect(Gate::forUser($actor)->allows('update', $goal))->toBeFalse();
     });
 });
 

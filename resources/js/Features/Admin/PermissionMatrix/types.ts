@@ -1,7 +1,7 @@
 export type PermissionAbility = 'create' | 'read' | 'update' | 'delete' | 'forceDelete';
 export type PermissionScope = 'own' | 'padalinys' | '*';
 
-/** One row of the permission catalog, as `PermissionCatalog::toFrontend()` sends it. */
+/** One row of the permission catalog, as `PermissionMatrixPresenter::toFrontend()` sends it. */
 export interface CatalogResource {
   key: string;
   /** ModelEnum value; null for capabilities that are not a model (`settings`). */
