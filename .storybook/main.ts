@@ -59,7 +59,14 @@ const config: StorybookConfig = {
           // render the key itself. Long unbreakable keys also distort layout review.
           "laravel-vue-i18n": path.resolve(projectRoot, 'resources/js/mocks/i18n.ts'),
         }
-      }
+      },
+      // builder-vite sets its own server options, so the app config's watch list never reaches
+      // it; without this it watches every worktree's vendor/ and runs out of inotify watches.
+      server: {
+        watch: {
+          ignored: ['**/.worktrees/**', '**/vendor/**', '**/storage/**', '**/public/**', '**/docs/**', '**/bootstrap/cache/**'],
+        },
+      },
     });
   }
 };

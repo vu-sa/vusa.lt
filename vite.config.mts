@@ -256,8 +256,15 @@ export default defineConfig(({ command, isSsrBuild }) => {
     },
     server: {
       watch: {
+        // Only frontend sources need watching; the PHP and generated folders alone ran a
+        // dev server to ~200k inotify watches, and Storybook starts a second one.
         ignored: [
           '**/.worktrees/**',
+          '**/vendor/**',
+          '**/storage/**',
+          '**/public/**',
+          '**/docs/**',
+          '**/bootstrap/cache/**',
           '**/tests/**',
           '**/__tests__/**',
           '**/*.{test,spec}.{js,jsx,ts,tsx}',
