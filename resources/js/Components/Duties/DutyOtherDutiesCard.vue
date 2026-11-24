@@ -27,6 +27,7 @@
           :users="duty.current_users"
           :max="3"
           size="xxs"
+          :clickable="false"
           class="shrink-0"
         />
         <ChevronRight class="h-4 w-4 shrink-0 text-muted-foreground" />

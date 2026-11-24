@@ -22,7 +22,7 @@
           textSizeClass
         ]"
       >
-        {{ userInitials(user.name) }}
+        {{ initials(user.name) }}
       </AvatarFallback>
     </Avatar>
   </div>
@@ -32,9 +32,10 @@
 import { computed } from 'vue';
 
 import { Avatar, AvatarImage, AvatarFallback, mapPixelToSize, avatarTextSizes, type AvatarSize } from '@/Components/ui/avatar';
+import { initials } from '@/Utils/String';
 
 export interface AvatarUser {
-  id?: string | number;
+  id?: string | number | null;
   name?: string | null;
   profile_photo_path?: string | null;
   profile_photo_focal_point?: string | null;
@@ -68,12 +69,4 @@ const avatarSize = computed<AvatarSize>(() => {
 const textSizeClass = computed(() => {
   return avatarTextSizes[avatarSize.value];
 });
-
-const userInitials = (name: string | null | undefined) => {
-  if (!name) return '';
-
-  const words = name.split(' ');
-  if (words.length === 1) return (words[0] ?? '').substring(0, 2).toUpperCase();
-  return ((words[0] ?? '').charAt(0) + (words[words.length - 1] ?? '').charAt(0)).toUpperCase();
-};
 </script>

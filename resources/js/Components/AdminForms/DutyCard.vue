@@ -28,9 +28,7 @@
         :key="user.id"
         class="flex items-center gap-2 text-sm"
       >
-        <Link :href="route('users.show', user.id)" class="min-w-0 hover:underline">
-          <UserPopover :user size="xxs" show-name :clickable="false" class="text-muted-foreground" />
-        </Link>
+        <UserPopover :user size="xxs" show-name class="min-w-0 text-muted-foreground" />
         <span class="text-xs text-muted-foreground tabular-nums">{{ $t('nuo') }} {{ formatDate(user.pivot?.start_date) }}</span>
         <Button
           v-if="canManage && user.pivot?.id"

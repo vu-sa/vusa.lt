@@ -1,7 +1,8 @@
 <template>
-  <Link
-    :href="route('users.show', member.id)"
-    :class="['flex items-center gap-2.5 border border-border bg-card px-2.5 py-2 text-left', interactiveCardClass]"
+  <component
+    :is="href ? Link : 'div'"
+    :href
+    :class="['flex items-center gap-2.5 border border-border bg-card px-2.5 py-2 text-left', href && interactiveCardClass]"
   >
     <UserPopover :user="member" size="xxs" :clickable="false" class="shrink-0" />
 
@@ -17,7 +18,7 @@
         <span class="truncate">{{ tenureLabel }}</span>
       </div>
     </div>
-  </Link>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -27,6 +28,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Calendar } from '@lucide/vue';
 
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
+import { useUserLink } from '@/Components/Avatars/useUserLink';
 import { Badge } from '@/Components/ui/badge';
 import { formatDateWith } from '@/Utils/dateTime';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
@@ -34,6 +36,8 @@ import { interactiveCardClass } from '@/Utils/interactiveCard';
 const props = defineProps<{
   member: App.Entities.User;
 }>();
+
+const { href } = useUserLink(() => props.member);
 
 /** Cross-tenant representatives carry a non-null pivot tenant_id. */
 const isDelegated = computed(() => props.member.pivot?.tenant_id != null);

@@ -12,7 +12,7 @@
         <Avatar class="size-6 rounded-none">
           <AvatarImage v-if="user?.profile_photo_path" :src="user.profile_photo_path" :alt="user.name" />
           <AvatarFallback class="rounded-none bg-brand-fill text-xs font-bold text-brand-foreground dark:bg-brand-fill dark:text-brand-foreground">
-            {{ initials }}
+            {{ initials(user?.name) }}
           </AvatarFallback>
         </Avatar>
         <span class="hidden max-w-28 truncate text-xs font-bold text-foreground lg:inline">{{ user?.name }}</span>
@@ -226,6 +226,7 @@ import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import AccessibilitySettings from '@/Components/Shared/AccessibilitySettings.vue';
+import { initials } from '@/Utils/String';
 
 import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import ISimpleIconsGithub from '~icons/simple-icons/github';
@@ -233,7 +234,6 @@ import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regula
 
 const page = usePage<PageProps>();
 const user = computed(() => page.props.auth?.user);
-const initials = computed(() => (user.value?.name ?? '').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase());
 
 const isOpen = ref(false);
 const accessibilityOpen = ref(false);

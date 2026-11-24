@@ -79,7 +79,7 @@
                 :alt="change.userName"
                 class="size-full object-cover"
               >
-              <span v-else class="text-xs font-bold text-status-success">{{ change.userName?.charAt(0) }}</span>
+              <span v-else class="text-xs font-bold text-status-success">{{ initials(change.userName) }}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-sm truncate text-foreground">
@@ -130,7 +130,7 @@
                 :alt="change.userName"
                 class="size-full object-cover opacity-50"
               >
-              <span v-else class="text-xs font-bold text-destructive">{{ change.userName?.charAt(0) }}</span>
+              <span v-else class="text-xs font-bold text-destructive">{{ initials(change.userName) }}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-sm truncate line-through text-destructive">
@@ -165,7 +165,7 @@
           class="p-3 flex items-center gap-3"
         >
           <div class="size-8 border border-border bg-muted flex items-center justify-center shrink-0">
-            <span class="text-xs font-bold text-foreground">{{ user.name?.charAt(0) }}</span>
+            <span class="text-xs font-bold text-foreground">{{ initials(user.name) }}</span>
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-sm truncate text-foreground">
@@ -206,6 +206,7 @@ import { formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import { initials } from '@/Utils/String';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 

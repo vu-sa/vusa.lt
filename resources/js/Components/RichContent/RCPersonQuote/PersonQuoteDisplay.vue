@@ -32,14 +32,14 @@
           <Avatar class="size-12 border border-border">
             <AvatarImage v-if="snapshot?.photoUrl" :src="snapshot.photoUrl" :alt="snapshot?.name" class="object-cover" />
             <AvatarFallback class="font-medium">
-              {{ initials || '?' }}
+              {{ initials(snapshot?.name) || '?' }}
             </AvatarFallback>
           </Avatar>
         </button>
         <Avatar v-else class="size-12 border border-border">
           <AvatarImage v-if="snapshot?.photoUrl" :src="snapshot.photoUrl" :alt="snapshot?.name" class="object-cover" />
           <AvatarFallback class="font-medium">
-            {{ initials }}
+            {{ initials(snapshot?.name) }}
           </AvatarFallback>
         </Avatar>
         <div :class="align === 'center' ? 'text-left' : ''">
@@ -100,6 +100,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { initials } from '@/Utils/String';
 
 import RCSection from '../RCSection.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
@@ -241,12 +242,4 @@ function updateOptions(patch: { title?: string; subtitle?: string; eyebrow?: str
 const align = computed<'start' | 'center'>(() => (props.element.options?.align === 'start' ? 'start' : 'center'));
 const showAvatar = computed(() => props.element.options?.showAvatar !== false);
 const snapshot = computed(() => props.element.json_content?.snapshot as { userId?: number; name?: string; photoUrl?: string; attribution?: string } | undefined);
-
-const initials = computed(() => {
-  const name = snapshot.value?.name;
-  if (!name) return '';
-  const words = name.split(' ').filter(Boolean);
-  if (words.length === 1) return words[0]!.substring(0, 2).toUpperCase();
-  return (words[0]!.charAt(0) + words[words.length - 1]!.charAt(0)).toUpperCase();
-});
 </script>

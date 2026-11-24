@@ -9,7 +9,7 @@
     data-slot="comment-item"
     :data-comment-id="comment.id"
   >
-    <UserAvatar :user="avatarUser" :size="isReply ? 28 : 32" class="mt-0.5 shrink-0" />
+    <UserPopover :user="avatarUser" :size="isReply ? 28 : 32" class="mt-0.5 shrink-0" />
 
     <div class="min-w-0 flex-1">
       <header :class="['flex items-start gap-2', headerReserve]">
@@ -138,7 +138,7 @@ import { Ban, CheckCircle2, CornerDownRight, MoreHorizontal, Pencil, SmilePlus, 
 
 import './comment-content.css';
 
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import CommentImages from '@/Components/Discussions/CommentImages.vue';
 import CommentReactions from '@/Components/Discussions/CommentReactions.vue';
 import PollBlock from '@/Components/Discussions/PollBlock.vue';

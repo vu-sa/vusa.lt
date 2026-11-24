@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between" data-slot="member-term-row">
     <div class="flex min-w-0 items-start gap-3">
-      <UserAvatar :user :size="40" class="shrink-0" />
+      <UserPopover :user :size="40" class="shrink-0" />
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
           <Link
@@ -45,7 +45,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Calendar, CalendarCheck, Edit3 } from '@lucide/vue';
 import { computed } from 'vue';
 
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { formatDateWith } from '@/Utils/dateTime';

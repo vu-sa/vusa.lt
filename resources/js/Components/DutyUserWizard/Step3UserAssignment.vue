@@ -82,7 +82,7 @@
                     :alt="user.name"
                     class="size-full object-cover"
                   >
-                  <span v-else class="text-xs font-bold text-muted-foreground">{{ user.name?.charAt(0) }}</span>
+                  <span v-else class="text-xs font-bold text-muted-foreground">{{ initials(user.name) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-sm truncate text-foreground">
@@ -117,7 +117,7 @@
                     :alt="change.userName"
                     class="size-full object-cover opacity-50"
                   >
-                  <span v-else class="text-xs font-bold text-destructive">{{ change.userName?.charAt(0) }}</span>
+                  <span v-else class="text-xs font-bold text-destructive">{{ initials(change.userName) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-sm text-destructive line-through truncate">
@@ -211,7 +211,7 @@
                       :alt="user.name"
                       class="size-full object-cover"
                     >
-                    <span v-else class="text-xs font-bold text-muted-foreground">{{ user.name?.charAt(0) }}</span>
+                    <span v-else class="text-xs font-bold text-muted-foreground">{{ initials(user.name) }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="flex items-center gap-1.5 font-semibold text-sm truncate text-foreground">
@@ -300,7 +300,7 @@
                       :alt="change.userName"
                       class="size-full object-cover"
                     >
-                    <span v-else class="text-xs font-bold text-status-success">{{ change.userName?.charAt(0) }}</span>
+                    <span v-else class="text-xs font-bold text-status-success">{{ initials(change.userName) }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="font-semibold text-sm truncate text-foreground">
@@ -462,6 +462,7 @@ import { getSuggestedEndDate, getTodayDate, formatDateForDisplay } from '@/Compo
 import type { useDutyUserWizard, UserChange, NewUserData } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import { initials } from '@/Utils/String';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 

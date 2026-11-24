@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings, stripHtmlTags, hasHtmlText, escapeHtml, camelCase } from '../String';
+import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings, stripHtmlTags, hasHtmlText, escapeHtml, camelCase, initials } from '../String';
 
 describe('translitLithuanian', () => {
   it('transliterates all Lithuanian lowercase letters', () => {
@@ -444,5 +444,29 @@ describe('camelCase', () => {
   it('leaves already camelCase or single words lowercased', () => {
     expect(camelCase('banner')).toBe('banner');
     expect(camelCase('user')).toBe('user');
+  });
+});
+
+describe('initials', () => {
+  it('takes the first letters of the first and last words', () => {
+    expect(initials('Jonas Jonaitis')).toBe('JJ');
+    expect(initials('Jonas Petras Jonaitis')).toBe('JJ');
+  });
+
+  it('takes the first two characters for a single word', () => {
+    expect(initials('Jonas')).toBe('JO');
+    expect(initials('J')).toBe('J');
+  });
+
+  it('ignores extra whitespace and preserves Lithuanian diacritics uppercased', () => {
+    expect(initials('  Jonas   Jonaitis  ')).toBe('JJ');
+    expect(initials('žydrūnas ąžuolas')).toBe('ŽĄ');
+  });
+
+  it('returns an empty string for blank or missing values', () => {
+    expect(initials('')).toBe('');
+    expect(initials('   ')).toBe('');
+    expect(initials(null)).toBe('');
+    expect(initials(undefined)).toBe('');
   });
 });

@@ -1,9 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { usePage } from '@inertiajs/vue3';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import DutyHolderCard from '../DutyHolderCard.vue';
 
-const stubs = { UserPopover: { template: '<div class="user-popover" />' } };
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+const stubs = {
+  UserPopover: {
+    props: ['user', 'clickable'],
+    template: '<div class="user-popover" :data-clickable="String(clickable)" />',
+  },
+};
 
 const makeMember = (pivot: Record<string, unknown>) => ({
   id: '1',
@@ -12,6 +22,10 @@ const makeMember = (pivot: Record<string, unknown>) => ({
 }) as App.Entities.User;
 
 describe('DutyHolderCard', () => {
+  beforeEach(() => {
+    vi.mocked(usePage).mockReturnValue(createMockPage());
+  });
+
   it('renders the holder name', () => {
     const wrapper = mount(DutyHolderCard, {
       props: { member: makeMember({ start_date: '2023-09-01', end_date: null, tenant_id: null }) },
@@ -25,7 +39,6 @@ describe('DutyHolderCard', () => {
       props: { member: makeMember({ start_date: '2023-09-01', end_date: null, tenant_id: null }) },
       global: { stubs },
     });
-    // $t is mocked to return the key
     expect(wrapper.text()).toContain('dabar');
   });
 
@@ -43,5 +56,37 @@ describe('DutyHolderCard', () => {
       global: { stubs },
     });
     expect(wrapper.text()).not.toContain('Deleguota');
+  });
+
+  it('links the card in admin context with permission and opts the nested UserPopover out', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { path: '/mano/duties/1' },
+      auth: { can: { 'users.read.padalinys': true } },
+    }));
+
+    const wrapper = mount(DutyHolderCard, {
+      props: { member: makeMember({ start_date: '2023-09-01', end_date: null, tenant_id: null }) },
+      global: { stubs },
+    });
+
+    const link = wrapper.find('[data-testid="inertia-link"]');
+    expect(link.exists()).toBe(true);
+    expect(link.attributes('href')).toContain('users.show');
+    expect(wrapper.get('.user-popover').attributes('data-clickable')).toBe('false');
+  });
+
+  it('renders a non-link container without user view permission', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { path: '/mano/duties/1' },
+      auth: { can: { 'users.read.padalinys': false } },
+    }));
+
+    const wrapper = mount(DutyHolderCard, {
+      props: { member: makeMember({ start_date: '2023-09-01', end_date: null, tenant_id: null }) },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-testid="inertia-link"]').exists()).toBe(false);
+    expect(wrapper.get('.user-popover').attributes('data-clickable')).toBe('false');
   });
 });

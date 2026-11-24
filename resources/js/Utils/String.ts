@@ -552,3 +552,23 @@ export const camelCase = (str: string): string => {
     .toLowerCase()
     .replace(/[-_]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''));
 };
+
+/** Two-letter uppercase initials (first + last word, or first two letters of one word). */
+export const initials = (name: string | null | undefined): string => {
+  if (!name || typeof name !== 'string') {
+    return '';
+  }
+
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const first = words[0];
+
+  if (!first) {
+    return '';
+  }
+
+  if (words.length === 1) {
+    return first.substring(0, 2).toUpperCase();
+  }
+
+  return `${first.charAt(0)}${words.at(-1)?.charAt(0) ?? ''}`.toUpperCase();
+};
