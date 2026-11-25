@@ -29,8 +29,9 @@ export function useFileView(options: {
   const activeView = ref<ActiveView>('browse');
   const visibleCount = ref(FILE_PAGE_SIZE);
 
-  // A stale `?type=` from an old link falls back to all.
-  if (typeFilter.value !== 'all' && typeFilter.value !== 'folder' && !(TYPE_FILTER_KINDS as readonly string[]).includes(typeFilter.value)) {
+  // A stale `?type=` from an old link falls back to all; the caller syncs the URL.
+  const initialTypeWasReset = typeFilter.value !== 'all' && typeFilter.value !== 'folder' && !(TYPE_FILTER_KINDS as readonly string[]).includes(typeFilter.value);
+  if (initialTypeWasReset) {
     typeFilter.value = 'all';
   }
 
@@ -98,6 +99,7 @@ export function useFileView(options: {
   }
 
   return {
+    initialTypeWasReset,
     search,
     searchEverywhere,
     typeFilter,

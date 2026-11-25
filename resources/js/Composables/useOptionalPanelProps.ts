@@ -17,9 +17,10 @@ export function useOptionalPanelProps<K extends string>(options: {
   recordKey?: () => unknown;
 }) {
   const requested = new Set<K>();
+  const mutatingMethods = ['post', 'put', 'patch', 'delete'];
 
   const stop = router.on('before', ({ detail: { visit } }) => {
-    if (visit.method === 'get' || visit.only.length) return;
+    if (!mutatingMethods.includes(visit.method) || visit.only.length) return;
 
     visit.except = [...new Set([
       ...visit.except,

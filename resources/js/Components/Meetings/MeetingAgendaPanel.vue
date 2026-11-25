@@ -53,6 +53,7 @@ import type { EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosa
 import type { AgendaListItem, FullAgendaItem, MeetingRecord } from '@/Types/MeetingPage';
 import { formatTime } from '@/Utils/dateTime';
 import { isEmailMeeting } from '@/Utils/MeetingDisplay';
+
 import type { AddAgendaMode } from './AddAgendaItemsSheet.vue';
 
 type EditableItem = EditableAgendaItemSource & { id: string; order: number };
@@ -123,12 +124,16 @@ function deleteFromEditor(): void {
 }
 
 function confirmDelete(): void {
-  if (!pendingDelete.value) return;
-  router.delete(route('agendaItems.destroy', pendingDelete.value.id), {
+  const target = pendingDelete.value;
+  if (!target) return;
+  router.delete(route('agendaItems.destroy', target.id), {
     preserveScroll: true,
     except: ['documents', 'pendingDocuments'],
     onFinish: () => {
-      pendingDelete.value = null;
+      // A second confirmation may have opened meanwhile; leave its target alone.
+      if (pendingDelete.value === target) {
+        pendingDelete.value = null;
+      }
     },
   });
 }

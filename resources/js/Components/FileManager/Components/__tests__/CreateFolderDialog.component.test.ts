@@ -34,4 +34,19 @@ describe('CreateFolderDialog', () => {
 
     expect(router.post).not.toHaveBeenCalled();
   });
+
+  it('sends one request when submitted twice before the parent re-renders', async () => {
+    vi.mocked(router.post).mockImplementation(() => {});
+    // Controlled `busy` that the parent has not re-rendered yet.
+    const wrapper = mount(CreateFolderDialog, {
+      props: { 'open': true, 'inline': true, 'path': 'public/files/vusa', 'folderLabel': 'vusa', 'busy': false, 'onUpdate:open': () => {}, 'onUpdate:busy': () => {} },
+    });
+
+    await wrapper.get('input').setValue('Ataskaitos');
+    const form = wrapper.get('form').element as HTMLFormElement;
+    form.dispatchEvent(new Event('submit'));
+    form.dispatchEvent(new Event('submit'));
+
+    expect(router.post).toHaveBeenCalledTimes(1);
+  });
 });

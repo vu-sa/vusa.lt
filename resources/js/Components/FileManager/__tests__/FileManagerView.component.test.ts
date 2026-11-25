@@ -198,6 +198,12 @@ describe('FileManager', () => {
     expect(wrapper.findAll('[data-slot="file-item"] [data-slot="checkbox"][data-state="checked"]')).toHaveLength(3);
   });
 
+  it('drops a stale type from the URL when it falls back to all', () => {
+    const wrapper = mountManager({ initialState: { type: 'obsolete' } });
+
+    expect(wrapper.emitted('stateChange')?.[0]?.[0]).toMatchObject({ type: 'all' });
+  });
+
   it('reports filters and the open file for the URL', async () => {
     const wrapper = mountManager({ initialState: { sort: 'size:desc' } });
 

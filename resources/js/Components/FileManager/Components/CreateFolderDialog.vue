@@ -71,7 +71,9 @@ const busy = defineModel<boolean>('busy', { default: false });
 const emit = defineEmits<{ created: [] }>();
 
 const name = ref('');
-const canSubmit = computed(() => !busy.value && name.value.trim() !== '');
+// Local and synchronous: the parent's `busy` comes back through a prop only after the next render.
+const submitting = ref(false);
+const canSubmit = computed(() => !busy.value && !submitting.value && name.value.trim() !== '');
 
 function close(): void {
   open.value = false;
@@ -81,6 +83,7 @@ function close(): void {
 function create(): void {
   if (!canSubmit.value) return;
 
+  submitting.value = true;
   busy.value = true;
   router.post(route('files.createDirectory'), { path: props.path, name: name.value.trim() }, {
     preserveScroll: true,
@@ -90,6 +93,7 @@ function create(): void {
       emit('created');
     },
     onFinish: () => {
+      submitting.value = false;
       busy.value = false;
     },
   });

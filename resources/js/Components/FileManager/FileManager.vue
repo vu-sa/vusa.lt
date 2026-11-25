@@ -303,6 +303,7 @@ const {
   isFiltered,
   setSort,
   clearFilters,
+  initialTypeWasReset,
 } = useFileView({
   files: () => props.files ?? [],
   directories: () => props.directories ?? [],
@@ -359,6 +360,9 @@ const viewState = computed<FileManagerViewState>(() => ({
 }));
 
 watch(viewState, state => emit('stateChange', state));
+if (initialTypeWasReset) {
+  emit('stateChange', viewState.value);
+}
 
 watch(view, (next) => {
   storedView.value = next;
