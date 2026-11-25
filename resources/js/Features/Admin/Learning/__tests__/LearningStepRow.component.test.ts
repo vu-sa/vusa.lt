@@ -125,7 +125,7 @@ describe('LearningStepRow', () => {
 
   it.each([
     [LearningImportance.Essential, 'bg-brand-fill', 'uppercase'],
-    [LearningImportance.Recommended, 'border-border', 'uppercase'],
+    [LearningImportance.Recommended, 'border-(--button-outline-border)', 'uppercase'],
     [LearningImportance.Optional, 'hover:bg-accent', 'normal-case'],
   ])('weighs the %s action button by importance', (importance, look, voice) => {
     const wrapper = render(step({ kind: LearningStepKind.Action, actionUrl: '/mano/profile', importance }));

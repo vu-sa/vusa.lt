@@ -38,7 +38,7 @@ describe('SecondMenu.vue', () => {
     expect(link.attributes('href')).toBe('/mocked-route/dashboard');
     expect(link.classes()).toEqual(expect.arrayContaining([
       'border',
-      'border-border',
+      'border-(--button-outline-border)',
       'font-(--action-weight)',
       'uppercase',
       'tracking-wide',

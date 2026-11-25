@@ -19,7 +19,7 @@
           :href="backHref"
           class="group inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-brand"
         >
-          <span class="flex size-9 items-center justify-center rounded-md border border-border transition-colors group-hover:border-brand pointer-coarse:size-11">
+          <span class="flex size-9 items-center justify-center rounded-md border border-(--button-outline-border) bg-(--button-outline-fill) backdrop-blur-sm transition-colors group-hover:border-(--button-outline-hover-border) group-hover:bg-(--button-outline-hover-fill) group-active:bg-(--button-outline-active-fill) pointer-coarse:size-11">
             <ArrowLeft class="size-4" />
           </span>
           <span :class="shellFocus ? 'sr-only lg:not-sr-only' : ''">{{ backLabel ?? $t('Grįžti') }}</span>

@@ -2,9 +2,9 @@
   <Popover v-model:open="isOpen">
     <PopoverTrigger as-child>
       <Button
-        variant="ghost"
+        variant="outline"
         size="icon"
-        class="relative size-8 shrink-0 rounded-md border border-border text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+        class="relative size-8 shrink-0 text-muted-foreground pointer-coarse:size-11"
         data-tour="notifications-indicator"
         :aria-label="$t('Pranešimai')"
       >
@@ -53,8 +53,8 @@
             :href="route('profile.notifications')"
             :title="$t('shell.account.notifications')"
             :class="[
-              'flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground',
-              'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
+              'flex size-7 items-center justify-center rounded-md border border-(--button-outline-border) bg-(--button-outline-fill) text-muted-foreground',
+              'transition-colors hover:border-(--button-outline-hover-border) hover:bg-(--button-outline-hover-fill) hover:text-foreground pointer-coarse:size-11',
             ]"
             @click="isOpen = false"
           >
@@ -149,7 +149,7 @@
                 variant="outline"
                 size="icon-sm"
                 voice="sentence"
-                class="size-7 text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+                class="size-7 text-muted-foreground pointer-coarse:size-11"
                 :title="getPrimaryAction(notification)!.label"
                 :aria-label="getPrimaryAction(notification)!.label"
               >
@@ -161,8 +161,8 @@
                 v-if="!notification.read_at"
                 type="button"
                 :class="[
-                  'flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground',
-                  'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
+                  'flex size-7 items-center justify-center rounded-md border border-(--button-outline-border) bg-(--button-outline-fill) text-muted-foreground',
+                  'transition-colors hover:border-(--button-outline-hover-border) hover:bg-(--button-outline-hover-fill) hover:text-foreground pointer-coarse:size-11',
                 ]"
                 :title="$t('Pažymėti kaip skaitytą')"
                 :aria-label="$t('Pažymėti kaip skaitytą')"

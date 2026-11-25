@@ -71,12 +71,33 @@ html[data-surface="admin"] #nprogress .peg {
   --action-weight: 700;
   --caps-weight: 700;
   --caps-tracking: 0.18em;
+  /* Buttons: public keeps transparent outlines that turn brand on hover and fills that fade 10%. */
+  --button-fill-tint: transparent;
+  --button-hover-mix: 90%;
+  --button-active-mix: 90%;
+  --button-outline-fill: transparent;
+  --button-outline-border: var(--border);
+  --button-outline-hover-fill: transparent;
+  --button-outline-hover-border: var(--brand);
+  --button-outline-hover-text: var(--brand);
+  --button-outline-active-fill: transparent;
 }
 
 [data-surface="admin"] {
   --action-weight: 600;
   --caps-weight: 600;
   --caps-tracking: 0.06em;
+  /* Admin buttons are objects: translucent paper (blurred over a future background), an input-weight
+     edge, a neutral lift on hover and a deeper press. Fills deepen toward ink (light) or paper (dark). */
+  --button-fill-tint: var(--foreground);
+  --button-hover-mix: 86%;
+  --button-active-mix: 76%;
+  --button-outline-fill: color-mix(in oklab, var(--card) 72%, transparent);
+  --button-outline-border: var(--input);
+  --button-outline-hover-fill: color-mix(in oklab, var(--secondary) 92%, transparent);
+  --button-outline-hover-border: color-mix(in oklab, var(--foreground) 38%, transparent);
+  --button-outline-hover-text: var(--foreground);
+  --button-outline-active-fill: color-mix(in oklab, var(--foreground) 10%, var(--card));
 }
 
 /* Rich-content previews inside admin stamp the public surface and keep its voice. */
@@ -84,6 +105,15 @@ html[data-surface="admin"] #nprogress .peg {
   --action-weight: 700;
   --caps-weight: 700;
   --caps-tracking: 0.18em;
+  --button-fill-tint: transparent;
+  --button-hover-mix: 90%;
+  --button-active-mix: 90%;
+  --button-outline-fill: transparent;
+  --button-outline-border: var(--border);
+  --button-outline-hover-fill: transparent;
+  --button-outline-hover-border: var(--brand);
+  --button-outline-hover-text: var(--brand);
+  --button-outline-active-fill: transparent;
 }
 
 /* Admin corners: a small radius makes a working tool feel less like a form to fill in. Public

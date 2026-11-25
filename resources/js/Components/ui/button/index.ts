@@ -12,17 +12,17 @@ export { default as Button } from './Button.vue';
  * `sentence` brings its own 40px height at the default size; `plain` is for calendar cells.
  */
 const buttonVariantClasses = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+  'inline-flex items-center justify-center gap-2 rounded-md whitespace-nowrap transition-[color,background-color,border-color,translate] [[data-surface=admin]_&]:active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
   {
     variants: {
       variant: {
-        'default': 'bg-primary text-primary-foreground hover:bg-primary/90',
-        'brand': 'bg-brand-fill text-brand-foreground hover:bg-brand-fill/90 focus-visible:ring-brand/30',
-        'outline': 'border border-border bg-transparent text-foreground hover:border-brand hover:text-brand aria-expanded:border-brand aria-expanded:text-brand',
-        'secondary': 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        'default': 'bg-primary text-primary-foreground hover:bg-[color-mix(in_oklab,var(--primary)_var(--button-hover-mix),var(--button-fill-tint))] active:bg-[color-mix(in_oklab,var(--primary)_var(--button-active-mix),var(--button-fill-tint))]',
+        'brand': 'bg-brand-fill text-brand-foreground hover:bg-[color-mix(in_oklab,var(--brand-fill)_var(--button-hover-mix),var(--button-fill-tint))] active:bg-[color-mix(in_oklab,var(--brand-fill)_var(--button-active-mix),var(--button-fill-tint))] focus-visible:ring-brand/30',
+        'outline': 'border border-(--button-outline-border) bg-(--button-outline-fill) text-foreground hover:border-(--button-outline-hover-border) hover:bg-(--button-outline-hover-fill) hover:text-(--button-outline-hover-text) aria-expanded:border-(--button-outline-hover-border) aria-expanded:bg-(--button-outline-hover-fill) aria-expanded:text-(--button-outline-hover-text) active:bg-(--button-outline-active-fill) [[data-surface=admin]_&]:backdrop-blur-sm',
+        'secondary': 'bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklab,var(--secondary)_var(--button-hover-mix),var(--button-fill-tint))] active:bg-[color-mix(in_oklab,var(--secondary)_var(--button-active-mix),var(--button-fill-tint))]',
         'ghost': 'text-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent',
         'link': 'h-auto px-0 text-brand underline-offset-4 hover:underline',
-        'destructive': 'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30',
+        'destructive': 'bg-destructive text-white hover:bg-[color-mix(in_oklab,var(--destructive)_var(--button-hover-mix),var(--button-fill-tint))] active:bg-[color-mix(in_oklab,var(--destructive)_var(--button-active-mix),var(--button-fill-tint))] focus-visible:ring-destructive/30',
         // An irreversible action that should not shout until pointed at (form danger zones).
         'destructive-outline': 'border border-destructive/40 bg-transparent text-destructive hover:border-destructive hover:bg-destructive hover:text-white focus-visible:ring-destructive/30',
         'success': 'border border-status-success-border bg-status-success-surface text-status-success hover:border-status-success',

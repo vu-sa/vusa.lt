@@ -102,7 +102,7 @@ function actionHoverClass(action: CollectionRowAction): string {
   }
 
   return [
-    labelled && 'border-border text-foreground',
+    labelled && 'border-(--button-outline-border) bg-(--button-outline-fill) text-foreground active:bg-(--button-outline-active-fill)',
     action.destructive ? 'hover:border-destructive hover:text-destructive' : rowActionHoverClass,
   ].filter(Boolean).join(' ');
 }
