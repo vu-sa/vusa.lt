@@ -1,22 +1,24 @@
 <template>
   <AlertDialog :open @update:open="emit('update:open', $event)">
-    <AlertDialogContent>
+    <AlertDialogContent @open-auto-focus="focusTypedConfirmation">
       <AlertDialogHeader>
         <AlertDialogTitle>{{ title }}</AlertDialogTitle>
         <AlertDialogDescription v-if="description">
           {{ description }}
         </AlertDialogDescription>
       </AlertDialogHeader>
-      <div v-if="typedConfirmationTarget" class="flex flex-col gap-2">
-        <Label for="confirm-dialog-typed">
+      <div v-if="typedConfirmationTarget" ref="typedConfirmationField" class="flex flex-col gap-2">
+        <p class="text-sm text-muted-foreground">
           {{ $t('trash.type_to_confirm') }}
-          <code class="bg-muted px-1.5 py-0.5 font-mono text-foreground">{{ typedConfirmationTarget }}</code>
-        </Label>
+          <code class="bg-muted px-1.5 py-0.5 font-mono break-all text-foreground select-all">{{ typedConfirmationTarget }}</code>
+        </p>
+        <Label :for="typedConfirmationId">{{ $t('trash.confirmation_label') }}</Label>
         <Input
-          id="confirm-dialog-typed"
+          :id="typedConfirmationId"
           v-model="typedConfirmation"
           :placeholder="$t('trash.confirmation_placeholder')"
           autocomplete="off"
+          @keydown.enter.prevent="confirm"
         />
       </div>
       <slot />
@@ -45,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useId, useTemplateRef, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import {
@@ -88,12 +90,23 @@ const typedConfirmation = ref('');
 const typedConfirmationTarget = computed(() => props.confirmationText?.trim() ?? '');
 const typedConfirmationMatches = computed(() => !typedConfirmationTarget.value || typedConfirmation.value.trim() === typedConfirmationTarget.value);
 
-watch(() => props.open, () => {
+const typedConfirmationId = useId();
+const typedConfirmationField = useTemplateRef<HTMLElement>('typedConfirmationField');
+
+watch([() => props.open, () => props.confirmationText], () => {
   typedConfirmation.value = '';
 });
 
+/** An alert dialog focuses Cancel; a typed confirmation starts in its input instead. */
+const focusTypedConfirmation = (event: Event) => {
+  const input = typedConfirmationField.value?.querySelector('input');
+  if (!input) return;
+  event.preventDefault();
+  input.focus();
+};
+
 const confirm = () => {
-  if (!typedConfirmationMatches.value) return;
+  if (props.confirmDisabled || !typedConfirmationMatches.value) return;
   emit('confirm');
   emit('update:open', false);
 };

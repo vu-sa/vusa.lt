@@ -121,6 +121,15 @@ describe('useToasts', () => {
       expect(mockPageProps.flash.info).toBeNull();
     });
 
+    test('shows a flash already present when the layout mounts (a full page load)', async () => {
+      mockPageProps.flash = { success: 'Saved before load', error: null, info: null, warning: null };
+      const { initializeToasts } = useToasts();
+      scope.run(() => initializeToasts());
+      await nextTick();
+
+      expect(mockToast.success).toHaveBeenCalledWith('Saved before load');
+    });
+
     test('shows a flashed warning alongside a success message', async () => {
       const { initializeToasts } = useToasts();
       scope.run(() => initializeToasts());

@@ -47,6 +47,7 @@ export function useToasts() {
    */
   const watchFlashMessages = () => {
     watch(() => usePage().props.flash, (flash, oldFlash) => {
+      if (!flash) return;
       const types = ['success', 'info', 'warning', 'error'] as const;
 
       types.forEach((type) => {
@@ -74,7 +75,7 @@ export function useToasts() {
       if (flash.toast_description) {
         flash.toast_description = null;
       }
-    }, { deep: true });
+    }, { deep: true, immediate: true });
   };
 
   /**

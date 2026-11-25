@@ -86,4 +86,21 @@ describe('ConfirmDialog.vue', () => {
     expect(wrapper.find('input').exists()).toBe(false);
     expect(confirmButton(wrapper).attributes('disabled')).toBeUndefined();
   });
+
+  it('confirms a typed deletion with Enter and clears the text when reopened', async () => {
+    const wrapper = mountDialog({ confirmationText: 'Test record' });
+    const input = wrapper.find('input');
+
+    await input.setValue('Test');
+    await input.trigger('keydown', { key: 'Enter' });
+    expect(wrapper.emitted('confirm')).toBeUndefined();
+
+    await input.setValue('Test record');
+    await input.trigger('keydown', { key: 'Enter' });
+    expect(wrapper.emitted('confirm')).toHaveLength(1);
+
+    await wrapper.setProps({ open: false });
+    await wrapper.setProps({ open: true });
+    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('');
+  });
 });

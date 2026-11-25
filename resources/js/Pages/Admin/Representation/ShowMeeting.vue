@@ -989,8 +989,7 @@ const confirmAgendaItemDelete = () => {
   router.delete(route('agendaItems.destroy', agendaItemPendingDelete.value.id), {
     preserveScroll: true,
     except: ['documents', 'pendingDocuments'],
-    onSuccess: () => {
-      showAgendaItemDeleteDialog.value = false;
+    onFinish: () => {
       agendaItemPendingDelete.value = null;
     },
   });
@@ -1003,9 +1002,6 @@ const handleMeetingDelete = () => {
 
   router.delete(route('meetings.destroy', props.meeting.id), {
     data: { redirect_to: redirectTo },
-    onSuccess: () => {
-      showDeleteDialog.value = false;
-    },
   });
 };
 </script>
