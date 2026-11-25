@@ -1,7 +1,7 @@
 <template>
   <div
     data-slot="form-skeleton"
-    :class="cn('animate-pulse max-w-(--measure-form,40rem) space-y-6', props.class)"
+    :class="cn('motion-safe:animate-pulse max-w-(--measure-form,40rem) space-y-6', props.class)"
   >
     <!-- Section Question & Intro -->
     <div class="space-y-2 border-b border-border pb-4">
@@ -56,11 +56,3 @@ const props = withDefaults(defineProps<Props>(), {
   class: undefined,
 });
 </script>
-
-<style scoped>
-@media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
-}
-</style>

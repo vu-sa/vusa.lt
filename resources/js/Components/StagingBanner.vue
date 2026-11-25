@@ -3,14 +3,14 @@
     v-if="isStaging && !compact && !dismissed"
     data-slot="staging-status"
     role="status"
-    class="rounded-xl border border-amber-300/70 bg-amber-100 text-amber-950 shadow-sm print:hidden dark:border-amber-800/70 dark:bg-amber-950/60 dark:text-amber-100"
+    class="border border-status-attention-border bg-status-attention-surface text-foreground print:hidden"
   >
     <div class="flex min-h-11 items-center justify-between gap-2 px-3 py-1 text-sm sm:px-4">
       <div class="flex min-w-0 items-center gap-3">
-        <AlertTriangle class="size-4 shrink-0 text-amber-800 dark:text-amber-300" aria-hidden="true" />
+        <AlertTriangle class="size-4 shrink-0 text-status-attention" aria-hidden="true" />
         <span class="min-w-0 truncate">
           <span class="font-bold uppercase">{{ $t('staging.title') }}</span>
-          <span class="hidden text-amber-800 sm:inline dark:text-amber-200"> · {{ $t('staging.summary') }}</span>
+          <span class="hidden text-muted-foreground sm:inline"> · {{ $t('staging.summary') }}</span>
         </span>
       </div>
       <div class="flex shrink-0 items-center">
@@ -81,9 +81,7 @@ const detailsOpen = ref(false);
 const topicIcons: Record<StagingTopic, typeof Mail> = { reset: RotateCcw, files: FileWarning, sharepoint: CloudOff, mail: Mail };
 
 const actionClass = [
-  'flex min-h-11 items-center rounded-lg transition-colors',
-  'hover:bg-amber-200/70 dark:hover:bg-amber-900/60',
-  'focus-visible:outline-none focus-visible:ring-2',
-  'focus-visible:ring-amber-600 dark:focus-visible:ring-amber-400',
+  'flex min-h-11 items-center transition-colors',
+  'hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring',
 ];
 </script>

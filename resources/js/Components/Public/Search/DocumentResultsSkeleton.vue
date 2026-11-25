@@ -1,6 +1,6 @@
 <template>
   <!-- List View Skeleton -->
-  <li v-if="viewMode === 'list'" class="animate-pulse py-4 sm:py-5">
+  <li v-if="viewMode === 'list'" class="motion-safe:animate-pulse py-4 sm:py-5">
     <div class="flex items-start gap-3 sm:gap-4">
       <!-- Icon skeleton -->
       <div class="size-10 border border-border bg-secondary shrink-0" />
@@ -31,7 +31,7 @@
   </li>
 
   <!-- Compact View Skeleton -->
-  <li v-else-if="viewMode === 'compact'" class="animate-pulse py-2.5">
+  <li v-else-if="viewMode === 'compact'" class="motion-safe:animate-pulse py-2.5">
     <div class="flex items-center gap-3 px-3 sm:px-4">
       <!-- Icon skeleton -->
       <div class="size-8 border border-border bg-secondary shrink-0" />
@@ -65,11 +65,3 @@ withDefaults(defineProps<Props>(), {
   viewMode: 'list',
 });
 </script>
-
-<style scoped>
-@media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
-}
-</style>

@@ -181,8 +181,8 @@ const statusLabel = computed(() => {
 });
 
 const statusClass = computed(() => {
-  if (hasPushSubscription.value) return 'font-medium text-[var(--status-success)]';
-  if (pushPermission.value === 'denied') return 'font-medium text-[var(--status-danger)]';
+  if (hasPushSubscription.value) return 'font-medium text-status-success';
+  if (pushPermission.value === 'denied') return 'font-medium text-status-danger';
 
   return 'text-muted-foreground';
 });

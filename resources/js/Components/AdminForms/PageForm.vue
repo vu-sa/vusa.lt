@@ -250,7 +250,7 @@
         />
 
         <div v-if="showTocOverlapWarning" class="border-t border-border p-4">
-          <Alert class="border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]">
+          <Alert class="border-status-attention-border bg-status-attention-surface text-status-attention">
             <AlertTriangle class="size-4" />
             <AlertTitle>{{ $t('Turinio lentelė gali persidengti su turiniu') }}</AlertTitle>
             <AlertDescription>

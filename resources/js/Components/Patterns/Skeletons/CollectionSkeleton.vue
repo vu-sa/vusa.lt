@@ -1,7 +1,7 @@
 <template>
   <div
     data-slot="collection-skeleton"
-    :class="cn('animate-pulse space-y-4', props.class)"
+    :class="cn('motion-safe:animate-pulse space-y-4', props.class)"
   >
     <!-- Rows View Skeleton -->
     <div
@@ -113,11 +113,3 @@ const props = withDefaults(defineProps<Props>(), {
   class: undefined,
 });
 </script>
-
-<style scoped>
-@media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
-}
-</style>

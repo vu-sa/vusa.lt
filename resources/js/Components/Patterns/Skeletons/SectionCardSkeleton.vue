@@ -1,7 +1,7 @@
 <template>
   <div
     data-slot="section-card-skeleton"
-    :class="cn('animate-pulse border border-border bg-card p-4 sm:p-5 space-y-4', props.class)"
+    :class="cn('motion-safe:animate-pulse border border-border bg-card p-4 sm:p-5 space-y-4', props.class)"
   >
     <!-- Card Header -->
     <div class="flex items-center justify-between">
@@ -51,11 +51,3 @@ const props = withDefaults(defineProps<Props>(), {
   class: undefined,
 });
 </script>
-
-<style scoped>
-@media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
-}
-</style>

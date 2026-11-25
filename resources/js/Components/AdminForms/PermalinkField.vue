@@ -34,7 +34,7 @@
         @click="copyUrl"
       >
         <Copy v-if="!copied" class="size-4" />
-        <Check v-else class="size-4 text-[var(--status-success)]" />
+        <Check v-else class="size-4 text-status-success" />
       </Button>
       <Button
         v-if="viewUrl"
@@ -61,7 +61,7 @@
       {{ explanation }}
     </p>
 
-    <Alert v-if="warning" class="border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]">
+    <Alert v-if="warning" class="border-status-attention-border bg-status-attention-surface text-status-attention">
       <AlertTriangle class="h-4 w-4" />
       <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
       <AlertDescription>
@@ -124,7 +124,7 @@ const inputValidationClass = computed(() => {
     return 'border-destructive focus-within:border-destructive';
   }
   if (!props.validating && props.valid) {
-    return 'border-[var(--status-success-border)]';
+    return 'border-status-success-border';
   }
   return 'border-border';
 });

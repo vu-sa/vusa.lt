@@ -41,7 +41,7 @@
                 'px-2.5 py-1 text-xs font-semibold',
                 isPreviewing
                   ? 'bg-muted text-muted-foreground'
-                  : 'bg-vusa-red/10 text-vusa-red dark:bg-vusa-red/20',
+                  : 'bg-brand/10 text-brand dark:bg-brand/20',
               ]"
             >
               {{ isPreviewing ? $t('rich-content.preview_mode') : $t('rich-content.edit_mode') }}
@@ -77,7 +77,7 @@
             <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
               <RCFullscreenCanvasGroup v-for="group in groups" :key="getBlockKey(group.element)" v-model:contents="contents" :group :resolved="resolvedByBlockKey" :bands="bandMap" :preview="isPreviewing" @insert="insertAt" @more="openInsertMenuAt" @move="moveBlock" @remove="removeAt" @form="sideBySideContent = $event" />
 
-              <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-zinc-400">
+              <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-muted-foreground">
                 {{ $t('rich-content.fullscreen_empty') }}
               </p>
 

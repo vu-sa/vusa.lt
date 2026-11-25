@@ -16,7 +16,7 @@
         </span>
         <span
           v-else-if="valid"
-          class="ml-1 text-[var(--status-success)]"
+          class="ml-1 text-status-success"
           role="status"
           aria-live="polite"
           :aria-label="$t('validation.valid')"
@@ -85,10 +85,10 @@ const charCountClass = computed(() => {
     return 'text-destructive font-medium';
   }
   if (ratio >= 0.8) {
-    return 'text-[var(--status-attention)]';
+    return 'text-status-attention';
   }
   if (ratio >= 0.5) {
-    return 'text-[var(--status-success)]';
+    return 'text-status-success';
   }
   return 'text-muted-foreground';
 });

@@ -28,7 +28,6 @@ export { default as RecordNextActions } from './RecordNextActions.vue';
 export type { RecordNextAction } from './RecordNextActions.vue';
 export { default as SectionHeaderAction } from './SectionHeaderAction.vue';
 export { default as SectionHeading } from './SectionHeading.vue';
-export { default as StatCard } from './StatCard.vue';
 export { default as StatusMark } from './StatusMark.vue';
 export { default as StatusBadge } from './StatusBadge.vue';
 export { default as EmptyState } from './EmptyState.vue';

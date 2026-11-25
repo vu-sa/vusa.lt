@@ -33,7 +33,7 @@
     <!-- Cross tenant duty alert -->
     <div
       v-if="!canEditDuty"
-      class="border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-4 text-xs text-[var(--status-attention)]"
+      class="border border-status-attention-border bg-status-attention-surface p-4 text-xs text-status-attention"
     >
       {{ $t('forms.fields.cross_tenant_duty_notice') }}
     </div>

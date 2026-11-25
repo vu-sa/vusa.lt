@@ -125,7 +125,7 @@
           v-if="availableLocales.length > 1"
           :class="[
             'flex h-11 shrink-0 items-center gap-2 border px-3 text-xs font-medium pointer-coarse:h-12',
-            'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+            'border-status-attention-border bg-status-attention-surface text-status-attention',
             !missingInCurrentLocale && 'invisible',
           ]"
           :aria-hidden="!missingInCurrentLocale"
@@ -146,7 +146,7 @@
       ref="summary"
       role="alert"
       tabindex="-1"
-      class="mt-8 border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-4 text-[var(--status-danger)] outline-none"
+      class="mt-8 border border-status-danger-border bg-status-danger-surface p-4 text-status-danger outline-none"
       data-testid="form-page-errors"
     >
       <p class="text-sm font-semibold">
@@ -381,14 +381,14 @@ const SaveState: FunctionalComponent<{ state: SaveStateKind }> = ({ state }) => 
   return h('span', {
     'class': [
       'flex items-center gap-1.5 text-xs',
-      state === 'dirty' ? 'text-[var(--status-attention)]' : 'text-muted-foreground',
+      state === 'dirty' ? 'text-status-attention' : 'text-muted-foreground',
     ],
     'role': 'status',
     'aria-live': 'polite',
     'data-save-state': state,
   }, [
     state === 'saving' && h(Loader2, { class: 'size-3 animate-spin' }),
-    state === 'dirty' && h('span', { class: 'size-1.5 bg-[var(--status-attention)] motion-safe:animate-pulse' }),
+    state === 'dirty' && h('span', { class: 'size-1.5 bg-status-attention motion-safe:animate-pulse' }),
     label,
   ]);
 };

@@ -65,7 +65,7 @@
 
       <div
         v-if="isExOfficio"
-        class="flex items-start gap-3 border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-3 text-[var(--status-attention)]"
+        class="flex items-start gap-3 border border-status-attention-border bg-status-attention-surface p-3 text-status-attention"
       >
         <Sparkles class="mt-0.5 size-4 shrink-0" />
         <div class="text-xs">
