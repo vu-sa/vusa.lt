@@ -64,34 +64,27 @@ describe('ShowAdminHome', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { create: { meeting: false } } } }) as ReturnType<typeof usePage>);
     const wrapper = mountPage({ activeActivityRequests: { total: 1, data: [] } });
     const primary = wrapper.get('[data-slot="home-primary-section"]');
-    expect(primary.find('[data-testid="active-requests"]').exists()).toBe(true);
-    expect(primary.find('quick-access-stub').exists()).toBe(false);
+    expect(primary.element.firstElementChild?.querySelector('[data-testid="active-requests"]')).not.toBeNull();
   });
 
-  it('places institutions beside quick actions and destinations in a full row below', () => {
+  it('keeps the work in one main column and quick actions at the top of one sidebar', () => {
     const wrapper = mountPage({
       upcomingMeetings: [{ id: '1', title: 'Meeting' }],
       upcomingTasks: [{ id: 'task-1' }],
       taskStats: { total: 1, overdue: 0, dueSoon: 0 },
     });
-    const tasks = wrapper.find('attention-queue-stub');
-    const quickAccess = wrapper.find('quick-access-stub');
-    const primary = wrapper.find('[data-slot="home-primary-section"]');
-    const secondary = wrapper.find('[data-slot="home-secondary-section"]');
+    const primary = wrapper.get('[data-slot="home-primary-section"]');
+    const main = primary.element.firstElementChild as HTMLElement;
+    const sidebar = primary.get('[data-slot="home-sidebar"]');
 
-    const content = primary.element.firstElementChild;
-    expect(content?.firstElementChild).toBe(tasks.element);
     expect(primary.classes()).toContain('lg:grid-cols-[1.4fr_1fr]');
-    expect(content?.querySelector('institutions-needing-attention-stub')).not.toBeNull();
-    expect(primary.find('aside').find('create-shortcuts-stub').exists()).toBe(true);
-    expect(primary.element.lastElementChild).toBe(primary.find('aside').element);
-    expect(quickAccess.element.parentElement).toBe(wrapper.find('[data-slot="overview-page"]').element);
-    expect(primary.element.nextElementSibling).toBe(quickAccess.element);
-    expect(quickAccess.element.nextElementSibling).toBe(secondary.element);
-    expect(secondary.classes()).not.toContain('border-t');
-    expect(secondary.find('upcoming-meetings-list-stub').exists()).toBe(true);
-    expect(secondary.find('recently-edited-list-stub').exists()).toBe(true);
-    expect(wrapper.find('coordinator-card-stub').exists()).toBe(false);
+    expect(main.firstElementChild).toBe(wrapper.get('attention-queue-stub').element);
+    for (const section of ['institutions-needing-attention-stub', 'upcoming-meetings-list-stub', 'site-content-lists-stub', 'quick-access-stub']) {
+      expect(main.querySelector(section)).not.toBeNull();
+    }
+    expect(sidebar.element.firstElementChild).toBe(sidebar.get('create-shortcuts-stub').element);
+    expect(sidebar.find('recently-edited-list-stub').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="home-secondary-section"]').exists()).toBe(false);
   });
 
   it('lets institutions and quick actions share the full row when tasks collapse', () => {
@@ -116,39 +109,17 @@ describe('ShowAdminHome', () => {
     expect(primary.find('aside').find('create-shortcuts-stub').exists()).toBe(true);
   });
 
-  it('places destinations beside quick actions when the left column has no visible sections', () => {
-    vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { can: { create: { meeting: false }, index: { meeting: false } } },
-    }) as ReturnType<typeof usePage>);
-
-    const wrapper = mountPage();
-    const primary = wrapper.find('[data-slot="home-primary-section"]');
-    const destinations = wrapper.find('[data-slot="home-destinations-section"]');
-
-    expect(primary.element.firstElementChild?.contains(destinations.element)).toBe(true);
-    expect(primary.find('aside').find('create-shortcuts-stub').exists()).toBe(true);
-    expect(wrapper.findAll('quick-access-stub')).toHaveLength(1);
-    expect(wrapper.findComponent({ name: 'QuickAccess' }).props('columns')).toBe(2);
-    expect(wrapper.find('[data-slot="home-secondary-section"]').classes()).not.toContain('border-t');
-  });
-
-  it('keeps destinations below the main row while a reservation draft is available', () => {
+  it('keeps the two-column destination tiles in the main column whatever else it holds', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { create: { meeting: false }, index: { meeting: false } } },
     }) as ReturnType<typeof usePage>);
 
     const wrapper = mountPage({ reservationDraft: { name: null, count: 2, start_time: null, end_time: null } });
+    const main = wrapper.get('[data-slot="home-primary-section"]').element.firstElementChild;
 
-    expect(wrapper.find('[data-slot="home-primary-section"]').element.nextElementSibling)
-      .toBe(wrapper.find('[data-slot="home-destinations-section"]').element);
-    expect(wrapper.findComponent({ name: 'QuickAccess' }).props('columns')).toBe(4);
-  });
-
-  it('places destinations in the left column after institutions load empty', () => {
-    const wrapper = mountPage({ institutionsNeedingAttention: [] });
-    const primary = wrapper.find('[data-slot="home-primary-section"]');
-
-    expect(primary.element.firstElementChild?.querySelector('quick-access-stub')).not.toBeNull();
+    expect(main?.contains(wrapper.get('[data-slot="home-destinations-section"]').element)).toBe(true);
+    expect(wrapper.findAll('quick-access-stub')).toHaveLength(1);
+    expect(wrapper.findComponent({ name: 'QuickAccess' }).props('columns')).toBe(2);
   });
 
   it('shows the first three upcoming tasks and counts all remaining open tasks', () => {
@@ -169,7 +140,6 @@ describe('ShowAdminHome', () => {
 
     expect(draft.text()).toBe('2');
     expect(draft.element.parentElement).toBe(column);
-    expect(column.lastElementChild).toBe(draft.element);
     expect(wrapper.find('attention-queue-stub [data-stub="reservation-draft"]').exists()).toBe(false);
   });
 

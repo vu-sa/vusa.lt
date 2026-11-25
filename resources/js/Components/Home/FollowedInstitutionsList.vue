@@ -7,19 +7,22 @@
     :href-label="$t('Visos sekamos (:count)', { count: String(followed.total) })"
     data-slot="followed-institutions"
   >
-    <ul class="divide-y divide-border/60">
-      <li v-for="institution in followed.items" :key="institution.id" class="flex items-center gap-3 py-3">
-        <Link
-          :href="route('institutions.show', institution.id)"
-          prefetch
-          class="min-w-0 flex-1 truncate font-semibold hover:text-brand"
-        >
-          {{ institution.name }}
+    <CollectionRowList
+      :items="followed.items"
+      frame="attached"
+      :item-key="institution => institution.id"
+      :row-muted="institution => institution.is_active === false"
+    >
+      <template #default="{ item: institution }">
+        <Link :href="route('institutions.show', institution.id)" prefetch :class="cn(ROW_LINK_CLASS, 'flex-col gap-0.5')">
+          <span class="truncate font-semibold text-foreground">{{ institution.name }}</span>
+          <StatusText
+            :status="institution.is_active === false ? inactiveInstitutionStatus : institutionActivityStatuses[institution.activity_status as InstitutionActivityStatus]"
+            class="text-xs"
+          />
         </Link>
-        <InactiveInstitutionBadge v-if="institution.is_active === false" :active="false" />
-        <StatusBadge v-else :status="institutionActivityStatuses[institution.activity_status as InstitutionActivityStatus]" />
-      </li>
-    </ul>
+      </template>
+    </CollectionRowList>
   </OverviewSection>
 </template>
 
@@ -28,10 +31,12 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye } from '@lucide/vue';
 
-import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
-import { StatusBadge } from '@/Components/Patterns';
+import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import { ROW_LINK_CLASS } from '@/Components/Collection/rowList';
+import { StatusText } from '@/Components/Patterns';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import { institutionActivityStatuses } from '@/Constants/statusIcons';
+import { inactiveInstitutionStatus, institutionActivityStatuses } from '@/Constants/statusIcons';
+import { cn } from '@/Utils/Shadcn/utils';
 import type { InstitutionActivityStatus } from '@/Types/enums';
 
 import type { HomeFollowedInstitutions } from './types';

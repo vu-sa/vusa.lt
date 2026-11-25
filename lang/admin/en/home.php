@@ -19,6 +19,7 @@ return [
     'overdue_due_date' => 'Due :date',
     'tasks_title' => 'Your tasks',
     'create_title' => 'Quick actions',
+    'site_content_title' => 'Events and news',
     'overdue_by' => ':daysd late',
     'overdue' => 'late',
 ];

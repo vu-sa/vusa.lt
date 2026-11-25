@@ -2,7 +2,7 @@
   <Link
     :href="route('meetings.show', meeting.id)"
     prefetch
-    class="flex items-center gap-4 px-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+    :class="cn(ROW_LINK_CLASS, 'items-center gap-4')"
   >
     <time
       :datetime="meeting.start_time"
@@ -20,7 +20,7 @@
           <span aria-hidden="true" class="text-border">·</span>
         </span>
         <span class="truncate">{{ meeting.institution_name }}</span>
-        <InactiveInstitutionBadge :active="meeting.institution_is_active ?? undefined" />
+        <StatusText v-if="meeting.institution_is_active === false" :status="inactiveInstitutionStatus" class="shrink-0" />
       </span>
     </span>
     <span class="shrink-0 text-xs text-muted-foreground">{{ formatNearDate(meeting.start_time, { thresholdDays: 365 }) }}</span>
@@ -32,8 +32,11 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye } from '@lucide/vue';
 
-import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+import { ROW_LINK_CLASS } from '@/Components/Collection/rowList';
+import { StatusText } from '@/Components/Patterns';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
+import { inactiveInstitutionStatus } from '@/Constants/statusIcons';
+import { cn } from '@/Utils/Shadcn/utils';
 
 import type { HomeMeeting } from './types';
 

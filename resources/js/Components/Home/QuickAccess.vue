@@ -6,7 +6,7 @@
       {{ $t('home.quick_access.title') }}
     </h2>
 
-    <NavigationTiles :items="links" :columns class="mt-3" />
+    <NavigationTiles :items="links" :columns framed class="mt-3" />
   </section>
 </template>
 

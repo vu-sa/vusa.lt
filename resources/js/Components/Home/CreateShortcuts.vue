@@ -1,38 +1,35 @@
 <template>
-  <!-- Phones reach the same actions through the bottom bar's +, so tasks come first there. -->
   <OverviewSection
     v-if="shortcuts.length > 0"
     :title="$t('home.create_title')"
     :icon="Plus"
     variant="home"
-    class="max-md:hidden"
     data-slot="create-shortcuts"
     data-tour="quick-actions"
   >
-    <div class="flex flex-wrap gap-3">
-      <Button
-        v-for="(shortcut, index) in shortcuts"
-        :key="shortcut.id"
-        :variant="index === 0 ? 'brand' : 'outline'"
-        voice="sentence"
-        class="whitespace-normal text-left"
-        @click="shortcut.action"
-      >
-        <component :is="shortcut.icon" class="size-4" aria-hidden="true" />
-        {{ shortcut.label }}
-      </Button>
-    </div>
+    <!-- Rows, not buttons: the header's Veiksmai is the region's one brand action. -->
+    <CollectionRowList :items="shortcuts" frame="attached" :item-key="shortcut => shortcut.id">
+      <template #default="{ item: shortcut }">
+        <button type="button" :class="cn(ROW_LINK_CLASS, 'group items-center')" :data-shortcut="shortcut.id" @click="shortcut.action">
+          <component :is="shortcut.icon" class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand" aria-hidden="true" />
+          <span class="min-w-0 flex-1 font-semibold text-foreground">{{ shortcut.label }}</span>
+          <ChevronRight class="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+        </button>
+      </template>
+    </CollectionRowList>
   </OverviewSection>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from '@lucide/vue';
+import { ChevronRight, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { useCommandActions } from '@/Components/CommandPalette/useCommandActions';
+import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import { ROW_LINK_CLASS } from '@/Components/Collection/rowList';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import { Button } from '@/Components/ui/button';
+import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<{
   limit?: number;

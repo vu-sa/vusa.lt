@@ -39,7 +39,7 @@ beforeEach(() => {
 });
 
 describe('home actions', () => {
-  it('pairs the meeting answers first, then a problem, then one action per other workspace, with one brand fill', async () => {
+  it('lists the meeting answers first, then a problem, then one action per other workspace, as rows rather than filled buttons', async () => {
     state.actions = [
       createAction('create-new_meeting', 'atstovavimas'),
       createAction('create-complete_meeting', 'atstovavimas'),
@@ -56,9 +56,8 @@ describe('home actions', () => {
     expect(buttons.map(button => button.text())).toEqual([
       'create-new_meeting', 'create-no_meeting', 'create-new_problem', 'create-new_reservation',
     ]);
-    expect(buttons.filter(button => button.classes().includes('bg-brand-fill'))).toHaveLength(1);
-    expect(buttons[0].classes()).toContain('bg-brand-fill');
-    expect(buttons.every(button => button.classes().includes('normal-case'))).toBe(true);
+    expect(wrapper.find('[data-slot="collection-row-list"]').exists()).toBe(true);
+    expect(buttons.some(button => button.classes().includes('bg-brand-fill'))).toBe(false);
 
     await buttons[1].trigger('click');
     expect(state.actions[3].action).toHaveBeenCalledOnce();

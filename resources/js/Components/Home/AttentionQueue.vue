@@ -10,13 +10,13 @@
     :empty="tasks.length === 0"
     :empty-text="stats.total > 0 ? $t('Artimiausiu metu užduočių nėra') : $t('Šiuo metu nieko nelaukia')"
   >
-    <ul class="divide-y divide-border">
-      <li v-for="task in rows" :key="task.id">
+    <CollectionRowList :items="rows" frame="attached" :item-key="task => task.id">
+      <template #default="{ item: task }">
         <component
           :is="task.href ? Link : 'div'"
           :href="task.href ?? undefined"
           :prefetch="task.href ? true : undefined"
-          class="flex items-start gap-3 px-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11"
+          :class="ROW_LINK_CLASS"
         >
           <span class="min-w-0 flex-1">
             <span class="block text-pretty font-semibold text-foreground">{{ task.name }}</span>
@@ -31,8 +31,8 @@
             :class="['shrink-0 text-right text-xs font-semibold', task.isOverdue ? 'text-brand' : 'text-muted-foreground']"
           >{{ task.due }}</time>
         </component>
-      </li>
-    </ul>
+      </template>
+    </CollectionRowList>
   </OverviewSection>
 </template>
 
@@ -42,6 +42,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ClipboardList } from '@lucide/vue';
 import { computed } from 'vue';
 
+import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import { ROW_LINK_CLASS } from '@/Components/Collection/rowList';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { getMeetingAgendaUrl, getTaskableUrl } from '@/Composables/useTaskPresentation';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
