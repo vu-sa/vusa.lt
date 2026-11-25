@@ -7,32 +7,40 @@
     :title="tag ? $t('Redaguoti žymą') : $t('Nauja žyma')"
     :description="$t('Žyma padeda susieti panašų svetainės turinį.')"
     :processing="form.processing"
+    :dirty="form.isDirty"
     @cancel="reset"
     @submit="submit"
   >
-    <div class="space-y-2">
-      <Label for="tag-name">{{ $t('Pavadinimas') }} <span class="text-destructive">*</span></Label>
+    <FormFieldWrapper
+      id="tag-name"
+      :label="$t('Pavadinimas')"
+      required
+      :error="form.errors.name || form.errors['name.lt']"
+    >
       <MultiLocaleInput id="tag-name" v-model:input="form.name" />
-      <p v-if="form.errors.name" class="text-sm text-status-danger">
-        {{ form.errors.name }}
-      </p>
-    </div>
+    </FormFieldWrapper>
 
-    <div class="space-y-2">
-      <Label for="tag-alias">{{ $t('Alias') }}</Label>
-      <Input id="tag-alias" v-model="form.alias" :placeholder="$t('Pvz: stipendijos')" />
-      <p class="text-sm text-muted-foreground">
-        {{ $t('Trumpa nuorodos dalis naudojama ten, kur reikia pastovaus adreso.') }}
-      </p>
-      <p v-if="form.errors.alias" class="text-sm text-status-danger">
-        {{ form.errors.alias }}
-      </p>
-    </div>
+    <FormFieldWrapper
+      id="tag-alias"
+      :label="$t('Alias')"
+      :hint="$t('Trumpa nuorodos dalis naudojama ten, kur reikia pastovaus adreso.')"
+      :error="form.errors.alias"
+    >
+      <Input
+        id="tag-alias"
+        :model-value="form.alias ?? ''"
+        :placeholder="$t('Pvz: stipendijos')"
+        @update:model-value="value => form.alias = String(value) || null"
+      />
+    </FormFieldWrapper>
 
-    <div class="space-y-2">
-      <Label>{{ $t('Aprašymas') }}</Label>
+    <FormFieldWrapper
+      id="tag-description"
+      :label="$t('Aprašymas')"
+      :error="form.errors.description"
+    >
       <MultiLocaleTiptapFormItem v-model:input="form.description" />
-    </div>
+    </FormFieldWrapper>
 
     <label for="tag-is-topic" class="flex min-h-11 items-center gap-3 border-y border-border py-3 text-sm">
       <Checkbox id="tag-is-topic" v-model="form.is_topic" />
@@ -45,16 +53,15 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, watch } from 'vue';
 
-import SheetForm from '@/Components/Patterns/SheetForm.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import MultiLocaleTiptapFormItem from '@/Components/AdminForms/MultiLocaleTiptapFormItem.vue';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
+import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { Input } from '@/Components/ui/input';
+import { useSheetCrudForm } from '@/Composables/useSheetCrudForm';
 
 interface TagInput {
   created_at?: string | null;
@@ -66,48 +73,32 @@ interface TagInput {
   is_topic: boolean;
 }
 
+interface TagFormData {
+  id?: string | number;
+  name: { lt: string; en: string };
+  description: { lt: string; en: string };
+  alias: string | null;
+  is_topic: boolean;
+}
+
 const props = defineProps<{ open: boolean; tag?: TagInput | null }>();
 const emit = defineEmits<{ 'update:open': [value: boolean]; 'saved': [] }>();
 
-const open = computed({ get: () => props.open, set: (value: boolean) => emit('update:open', value) });
-const blank = (): TagInput => ({ name: { lt: '', en: '' }, description: { lt: '', en: '' }, alias: null, is_topic: false });
-const form = useForm<TagInput>(blank());
-
-watch(() => props.tag, (tag) => {
-  form.defaults(tag
-    ? {
-        id: tag.id,
-        name: { ...tag.name },
-        description: { lt: tag.description?.lt ?? '', en: tag.description?.en ?? '' },
-        alias: tag.alias,
-        is_topic: tag.is_topic,
-      }
-    : blank());
-  form.reset();
-  form.clearErrors();
-}, { immediate: true });
-
-function reset(): void {
-  form.reset();
-  form.clearErrors();
-}
-
-function submit(): void {
-  const options = {
-    preserveScroll: true,
-    headers: { 'X-Tag-Sheet': 'true' },
-    onSuccess: () => {
-      form.defaults();
-      open.value = false;
-      emit('saved');
-    },
-  };
-
-  if (props.tag?.id) {
-    form.patch(route('tags.update', props.tag.id), options);
-  }
-  else {
-    form.post(route('tags.store'), options);
-  }
-}
+const { open, form, reset, submit } = useSheetCrudForm<TagFormData, TagInput>({
+  open: () => props.open,
+  onUpdateOpen: value => emit('update:open', value),
+  onSaved: () => emit('saved'),
+  record: () => props.tag,
+  blank: () => ({ name: { lt: '', en: '' }, description: { lt: '', en: '' }, alias: null, is_topic: false }),
+  fromRecord: raw => ({
+    id: raw.id,
+    name: { ...raw.name },
+    description: { lt: raw.description?.lt ?? '', en: raw.description?.en ?? '' },
+    alias: raw.alias,
+    is_topic: raw.is_topic,
+  }),
+  storeUrl: () => route('tags.store'),
+  updateUrl: id => route('tags.update', id),
+  visitOptions: { headers: { 'X-Tag-Sheet': 'true' } },
+});
 </script>

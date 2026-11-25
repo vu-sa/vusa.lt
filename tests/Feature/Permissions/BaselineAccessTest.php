@@ -3,6 +3,7 @@
 use App\Models\Cadence;
 use App\Models\Document;
 use App\Models\Duty;
+use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionSecretary;
@@ -149,4 +150,15 @@ test('comments on a record they can see', function (): void {
     asUser($this->member)
         ->postJson(route('api.v1.admin.comments.store', ['commentableType' => 'institution', 'commentableId' => $this->institution->id]), ['body' => '<p>Kada kitas posėdis?</p>'])
         ->assertCreated();
+});
+
+test('reads enabled padalinys goals without a role, but cannot edit or delete them', function (): void {
+    $this->tenant->update(['goals_enabled' => true]);
+    $goal = Goal::factory()->create(['tenant_id' => $this->tenant->id]);
+
+    asUser($this->member)->get(route('goals.index'))->assertOk();
+    asUser($this->member)->get(route('goals.show', $goal))->assertOk();
+
+    expect($this->member->can('update', $goal))->toBeFalse()
+        ->and($this->member->can('delete', $goal))->toBeFalse();
 });

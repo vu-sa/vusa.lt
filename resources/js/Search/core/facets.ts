@@ -18,7 +18,7 @@ export function useFacetSearch(): FacetSearch | undefined {
 
 export interface RawFacet {
   field_name: string;
-  counts: Array<{ value: string; count: number }>;
+  counts: Array<{ value: string; count: number; highlighted?: string }>;
 }
 
 export function facetSearches(params: Record<string, unknown>, filters: Record<string, string> = {}): Record<string, unknown>[] {

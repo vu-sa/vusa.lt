@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\BaseTaskHandler;
+use App\Tasks\MeetingAgendaTaskRoster;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -114,7 +115,7 @@ class ResyncTaskAssigneesForCadence
                 continue;
             }
 
-            $task->users()->sync(ResolveTaskAssignees::forMeeting($meeting)->pluck('id'));
+            MeetingAgendaTaskRoster::refresh($task, $meeting, keepExistingWhenEmpty: false);
             $count++;
         }
 

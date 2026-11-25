@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
-import { nextTick, h } from 'vue';
-import type { ColumnDef } from '@tanstack/vue-table';
+import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 
 import DataTable from '@/Components/ui/data-table/DataTable.vue';
+import type { DataTableColumn } from '@/Components/ui/data-table/dataTableFeatures';
 import { commonStubs } from '@/tests/stubs';
 
 interface TestRow {
@@ -12,7 +12,10 @@ interface TestRow {
   age: number;
 }
 
-const columns: ColumnDef<any, TestRow, any>[] = [
+const TestDataTable = DataTable<TestRow>;
+type TestTableProps = Parameters<typeof TestDataTable>[0];
+
+const columns: DataTableColumn<TestRow>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
@@ -40,8 +43,8 @@ const data: TestRow[] = [
 describe('DataTable.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
-  const createWrapper = (props: Record<string, any> = {}) => {
-    return mount(DataTable, {
+  const createWrapper = (props: Partial<TestTableProps> = {}) => {
+    return mount(TestDataTable, {
       props: {
         columns,
         data,
@@ -66,10 +69,6 @@ describe('DataTable.vue', () => {
             template: '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
             props: ['modelValue', 'disabled'],
           },
-          DropdownMenu: { template: '<div><slot /></div>' },
-          DropdownMenuTrigger: { template: '<div><slot /></div>' },
-          DropdownMenuContent: { template: '<div><slot /></div>' },
-          DropdownMenuCheckboxItem: { template: '<div><slot /></div>' },
           // Table components
           Table: { template: '<table><slot /></table>' },
           TableBody: { template: '<tbody><slot /></tbody>' },
@@ -84,7 +83,6 @@ describe('DataTable.vue', () => {
           ChevronRightIcon: { template: '<span>→</span>' },
           ChevronsLeftIcon: { template: '<span>«</span>' },
           ChevronsRightIcon: { template: '<span>»</span>' },
-          SlidersIcon: { template: '<span>⚙</span>' },
           Button: {
             template: '<button type="button" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>',
             props: ['variant', 'size', 'disabled'],
@@ -141,7 +139,7 @@ describe('DataTable.vue', () => {
     });
 
     it('renders empty slot when provided', () => {
-      wrapper = mount(DataTable, {
+      wrapper = mount(TestDataTable, {
         props: { columns, data: [] },
         slots: {
           empty: '<div data-testid="custom-empty">Custom Empty</div>',
@@ -185,11 +183,6 @@ describe('DataTable.vue', () => {
       expect(wrapper.emitted('update:global-filter')).toBeTruthy();
       const events = wrapper.emitted('update:global-filter')!;
       expect(events[events.length - 1]![0]).toBe('Alice');
-    });
-
-    it('hides search when manualFiltering is true', () => {
-      wrapper = createWrapper({ enableFiltering: true, manualFiltering: true });
-      expect(wrapper.find('input').exists()).toBe(false);
     });
   });
 
@@ -258,7 +251,7 @@ describe('DataTable.vue', () => {
     it('starts on page index 0', () => {
       wrapper = createWrapper({ pagination: true, pageSize: 2 });
       const vm = wrapper.vm as any;
-      expect(vm.table.getState().pagination.pageIndex).toBe(0);
+      expect(vm.table.store.get().pagination.pageIndex).toBe(0);
     });
 
     it('can navigate to next page via table API', async () => {
@@ -271,12 +264,12 @@ describe('DataTable.vue', () => {
       vm.table.nextPage();
       await nextTick();
 
-      expect(vm.table.getState().pagination.pageIndex).toBe(1);
+      expect(vm.table.store.get().pagination.pageIndex).toBe(1);
       expect(vm.table.getCanNextPage()).toBe(false);
     });
 
     it('uses custom pagination slot when provided', () => {
-      wrapper = mount(DataTable, {
+      wrapper = mount(TestDataTable, {
         props: { columns, data, pagination: true, pageSize: 2 },
         slots: {
           pagination: '<div data-testid="custom-pagination">Custom Pagination</div>',
@@ -300,7 +293,7 @@ describe('DataTable.vue', () => {
   });
 
   describe('row selection', () => {
-    const columnsWithSelection: ColumnDef<any, TestRow, any>[] = [
+    const columnsWithSelection: DataTableColumn<TestRow>[] = [
       {
         accessorKey: 'id',
         header: 'ID',
@@ -436,27 +429,6 @@ describe('DataTable.vue', () => {
       expect(rows[0]!.text()).toContain('Alice');
     });
 
-    it('syncs external sorting prop', async () => {
-      wrapper = createWrapper({ externalSorting: [{ id: 'name', desc: true }] });
-      await nextTick();
-
-      const rows = wrapper.findAll('tbody tr');
-      // With desc sort by name, first should be Diana or similar
-      expect(rows.length).toBe(4);
-    });
-
-    it('syncs external pagination prop', async () => {
-      wrapper = createWrapper({
-        pagination: true,
-        pageSize: 2,
-        externalPagination: { pageIndex: 1, pageSize: 2 },
-      });
-      await nextTick();
-
-      const rows = wrapper.findAll('tbody tr');
-      expect(rows.length).toBe(2);
-    });
-
     it('syncs external rowSelection prop', async () => {
       wrapper = createWrapper({
         columns: [
@@ -494,8 +466,8 @@ describe('DataTable.vue', () => {
 
   describe('slots', () => {
     it('renders filters slot', () => {
-      wrapper = mount(DataTable, {
-        props: { columns, data, enableFiltering: true },
+      wrapper = mount(TestDataTable, {
+        props: { columns, data },
         slots: {
           filters: '<div data-testid="filters-slot">Filters</div>',
         },
@@ -517,8 +489,8 @@ describe('DataTable.vue', () => {
     });
 
     it('renders actions slot', () => {
-      wrapper = mount(DataTable, {
-        props: { columns, data, enableColumnVisibility: true },
+      wrapper = mount(TestDataTable, {
+        props: { columns, data },
         slots: {
           actions: '<div data-testid="actions-slot">Actions</div>',
         },

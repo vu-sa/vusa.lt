@@ -24,7 +24,7 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import CollectionSelectDialog from './CollectionSelectDialog.vue';
 import type { InstitutionOption } from './institutionOption';

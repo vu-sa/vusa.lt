@@ -42,11 +42,8 @@ tests:
   - tests/Browser/DutyResponsibilitiesLayoutTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowUser.component.test.ts
-  - resources/js/Components/Duties/__tests__/DutyCurrentHoldersCard.component.test.ts
   - resources/js/Components/Duties/__tests__/DutyHolderCard.component.test.ts
   - resources/js/Components/Duties/__tests__/DutyLabel.component.test.ts
-  - resources/js/Components/Duties/__tests__/DutyLineageCard.component.test.ts
-  - resources/js/Components/Duties/__tests__/DutyOtherDutiesCard.component.test.ts
   - resources/js/Components/Duties/__tests__/DutySummaryCard.component.test.ts
   - resources/js/Components/Duties/__tests__/InflectedDutyName.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
@@ -56,7 +53,7 @@ tests:
   - resources/js/Features/Admin/Occupancy/__tests__/AssignDutyUserSheet.component.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/DutySearchField.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
-  - resources/js/Features/Admin/Occupancy/__tests__/MemberSearchField.component.test.ts
+  - resources/js/Components/Pickers/__tests__/UserSearchField.component.test.ts
   - resources/js/Components/Duties/__tests__/DutyPreview.component.test.ts
   - resources/js/Components/AdminForms/__tests__/useDuplicateDutyCheck.test.ts
 ---

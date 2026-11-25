@@ -176,9 +176,6 @@ const debouncedTrackVisit = useDebounceFn(
   { maxWait: 3000 },
 );
 
-// Track the current page component to detect navigation
-const currentComponent = ref(usePage().component);
-
 // Clear tour registration when navigating to a new page
 // Use flush: 'sync' to ensure this runs immediately when the prop changes,
 // before the new page component's setup runs and registers its tour
@@ -187,12 +184,10 @@ watch(() => usePage().component, (component, oldComponent) => {
   if (oldComponent && oldComponent !== component) {
     clearTour();
   }
-  currentComponent.value = component;
 }, { flush: 'sync' });
 
 const mounted = ref(false);
 const online = useOnline();
-let offlineToastId: string | number | undefined;
 
 // Initialize unified toast system
 const toasts = useToasts();
@@ -200,15 +195,9 @@ const toasts = useToasts();
 // Handle online/offline status with Sonner
 const handleOnlineStatus = (isOnline: boolean) => {
   if (!isOnline) {
-    // Show persistent offline toast
-    offlineToastId = toasts.error($t('Your internet connection was lost.'));
+    toasts.error($t('Your internet connection was lost.'));
   }
   else if (mounted.value) {
-    // Dismiss offline toast and show restoration message
-    if (offlineToastId) {
-      // Note: toast.dismiss() is not available in our composable, but the success message will show
-      offlineToastId = undefined;
-    }
     toasts.success($t('Your internet connection was restored.'));
   }
 };

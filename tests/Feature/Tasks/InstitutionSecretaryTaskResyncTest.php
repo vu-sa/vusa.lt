@@ -78,6 +78,18 @@ test('emptying the roster hands the open task back to the members', function ():
     expect($this->task->fresh()->users()->pluck('users.id')->all())->toBe([$this->member->id]);
 });
 
+test('re-staffing clears an open roster when nobody was eligible at the meeting date', function (): void {
+    $duty = $this->member->duties()->firstOrFail();
+    $this->member->duties()->updateExistingPivot($duty->id, ['start_date' => '2026-01-01']);
+
+    asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
+        'cadence_id' => $this->cadence->id,
+        'user_ids' => [],
+    ])->assertRedirect();
+
+    expect($this->task->fresh()->users)->toBeEmpty();
+});
+
 test('a completed task is left alone', function (): void {
     $this->task->update(['completed_at' => now()]);
 

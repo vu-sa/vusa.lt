@@ -6,7 +6,7 @@ import { renderToString } from 'vue/server-renderer';
 import { i18nVue, reset } from 'laravel-vue-i18n';
 import { ZiggyVue, route, type Config } from 'ziggy-js';
 
-import PublicLayout from './Layouts/PersistentPublicLayout.vue';
+import PublicLayout from './Components/Public/Layouts/PublicLayout.vue';
 import { VILNIUS_TIMEZONE } from './Utils/dateTime';
 
 // Render dates the way visitors' browsers (and Laravel's app.timezone) do; in UTC, anything near

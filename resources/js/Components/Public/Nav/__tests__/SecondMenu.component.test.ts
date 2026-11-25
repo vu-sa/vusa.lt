@@ -10,8 +10,8 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 // The template reads `$page` (a static global mock from tests/setup.ts), while the
 // script's `usePage()` needs the shared factory mock — set both from the same props.
-function mountMenu(auth: { user: Record<string, unknown> | null }) {
-  const page = createMockPage({ auth: auth as never });
+function mountMenu(auth: { user: Record<string, unknown> } | null) {
+  const page = createMockPage({ auth });
   vi.mocked(usePage).mockReturnValue(page);
 
   const originalPage = config.global.mocks.$page;
@@ -59,7 +59,7 @@ describe('SecondMenu.vue', () => {
   });
 
   it('shows the login button with an account icon when logged out', () => {
-    const wrapper = mountMenu({ user: null });
+    const wrapper = mountMenu(null);
 
     expect(wrapper.find('[data-slot="avatar"]').exists()).toBe(false);
     expect(wrapper.find('[data-slot="mano-vusa-button-icon"]').exists()).toBe(true);
@@ -73,7 +73,7 @@ describe('SecondMenu.vue', () => {
 
   it('hides the "more" dropdown when no tenant links overflow', () => {
     const page = createMockPage({
-      auth: { user: null } as never,
+      auth: null,
       tenant: {
         links: [
           { id: 1, text: 'Nuoroda 1', link: '/one', icon: null, is_important: false },

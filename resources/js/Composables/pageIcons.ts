@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { Home, LayoutDashboard, Settings } from '@lucide/vue';
+import { FileCog, Home, LayoutDashboard, Settings } from '@lucide/vue';
 
 import {
   AgendaItemIcon,
@@ -23,7 +23,6 @@ import {
   TagIcon,
   TaskIcon,
   TenantIcon,
-  TypeIcon,
   UserIcon,
 } from '@/Components/icons';
 
@@ -54,7 +53,7 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   news: NewsIcon,
   pages: PageIcon,
   banners: BannerIcon,
-  types: TypeIcon,
+  types: FileCog,
   tags: TagIcon,
   calendar: CalendarIcon,
   eventTypes: CalendarIcon,

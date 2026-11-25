@@ -20,6 +20,7 @@ final class BaselineAccess
         'meetings',
         'agendaItems',
         'problems',
+        'goals',
         'resources',
         'documents',
         'duties',
@@ -48,6 +49,7 @@ final class BaselineAccess
         'comments.delete.own',
         'resources.read.*',
         'problems.read.*',
+        'goals.read.*',
         'duties.read.own',
         'reservations.create.*',
     ];

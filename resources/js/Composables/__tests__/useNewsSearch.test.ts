@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
+import { SearchClientFactory } from '@/Search/core/services/SearchClientFactory';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 const mockSearch = vi.fn().mockResolvedValue({
@@ -38,17 +39,15 @@ const mockSearch = vi.fn().mockResolvedValue({
   ],
 });
 
-vi.mock('@/Search/core/services/SearchClientFactory', () => ({
-  SearchClientFactory: {
-    createPublicClient: vi.fn(() => ({
-      search: mockSearch,
-    })),
-  },
-}));
-
 describe('useNewsSearch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(SearchClientFactory, 'createPublicClient').mockReturnValue({
+      apiKey: 'test-key',
+      nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
+      searchFacet: vi.fn(),
+      search: mockSearch,
+    });
     window.history.replaceState({}, '', '/lt/naujienos');
 
     vi.mocked(usePage).mockReturnValue(
@@ -142,5 +141,23 @@ describe('useNewsSearch', () => {
     expect(search.tenantFacets.value).toEqual([{ label: 'VU SA', value: 'VU SA', count: 1 }]);
     expect(search.yearFacets.value).toEqual([{ label: '2026', value: '2026', count: 1 }]);
     expect(search.tagFacets.value).toEqual([{ label: 'Studijos', value: 'Studijos', count: 1 }]);
+  });
+
+  it('retries the first page from "show more" after a failed refresh of server-seeded news', async () => {
+    const { useNewsSearch } = await import('../useNewsSearch');
+    const search = useNewsSearch({
+      initialNews: [{ id: 1, title: 'Seeded', short: '', permalink: 'seeded', image: '', publish_time: '2026-01-01', tenant: null, tags: [] } as never],
+      initialTotal: 30,
+    });
+
+    mockSearch.mockRejectedValueOnce(new Error('Typesense unavailable'));
+    await search.performSearch(false);
+    expect(search.error.value).toBe('Typesense unavailable');
+    expect(search.hasMore.value).toBe(true);
+
+    mockSearch.mockClear();
+    search.loadMore();
+    await vi.waitFor(() => expect(mockSearch).toHaveBeenCalledTimes(1));
+    expect(mockSearch.mock.calls[0]![1]).toMatchObject({ page: 1 });
   });
 });

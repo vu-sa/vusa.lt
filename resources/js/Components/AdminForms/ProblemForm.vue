@@ -195,22 +195,10 @@
     </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti problemą') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti problemą')"
         :title="$t('Ištrinti problemą?')"
         :description="$t('Problema bus perkelta į šiukšlinę.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -220,7 +208,7 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronsUpDown, CircleDot, Layers, Trash2 } from '@lucide/vue';
+import { ChevronsUpDown, CircleDot, Layers } from '@lucide/vue';
 import { capitalize, computed, ref } from 'vue';
 
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
@@ -228,7 +216,7 @@ import { problemStatuses, statusRoleClasses } from '@/Constants/statusIcons';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import FormDangerZone from '@/Components/Patterns/FormDangerZone.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -238,7 +226,7 @@ import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { CollectionSelectDialog } from '@/Components/Pickers';
 import UserSearchField, { type MemberHit } from '@/Components/Pickers/UserSearchField.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate, todayIso } from '@/Utils/dateTime';
@@ -266,7 +254,6 @@ const emit = defineEmits<{
 
 const activeLocale = ref<'lt' | 'en'>('lt');
 const otherLocale = computed(() => activeLocale.value === 'lt' ? 'en' : 'lt');
-const deleteConfirmOpen = ref(false);
 const institutionDialogOpen = ref(false);
 
 const asTranslated = (value: unknown): Translated => {

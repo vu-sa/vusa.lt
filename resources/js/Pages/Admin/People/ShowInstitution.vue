@@ -244,7 +244,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onUnmounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { useIntersectionObserver } from '@vueuse/core';
 import { Deferred, WhenVisible, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -289,6 +289,7 @@ import RecordActivity from '@/Components/ActivityLog/RecordActivity.vue';
 import { useDutyAssignmentSheet } from '@/Features/Admin/Occupancy/useDutyAssignmentSheet';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
+import { useOptionalPanelProps } from '@/Composables/useOptionalPanelProps';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import type { InstitutionActivityStatus } from '@/Types/enums';
 import type { ShowInstitutionPageProps } from '@/Types/ShowInstitutionPage';
@@ -420,15 +421,7 @@ const optionalProps = [
   'institutionLinks', 'files', 'activityRequests', 'assignmentTerms', 'assignmentPicker',
 ] as const;
 
-const stopPreservingPanels = router.on('before', ({ detail: { visit } }) => {
-  if (visit.method === 'get' || visit.only.length) return;
-
-  visit.except = [...new Set([...visit.except, ...optionalProps.filter(key => props[key] === undefined)])];
-  if (!visit.except.length) {
-    visit.only = Object.keys(usePage().props);
-  }
-});
-onUnmounted(stopPreservingPanels);
+useOptionalPanelProps({ keys: optionalProps, isLoaded: key => props[key] !== undefined });
 
 watch(() => props.institution.id, () => {
   currentSection.value = new URL(usePage().url, 'http://localhost').searchParams.get('tab') ?? 'overview';

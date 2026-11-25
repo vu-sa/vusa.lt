@@ -1,5 +1,5 @@
-import { usePage } from '@inertiajs/vue3';
-
+import type { RawFacet } from '@/Search/core/facets';
+import type { TypesenseClient, TypesenseSearchResponse } from '@/Search/core/services/SearchClientFactory';
 import type { MeetingSearchFilters, MeetingFacet, ProcessedMeetingSearchResult } from '@/Types/MeetingSearchTypes';
 
 /**
@@ -8,11 +8,9 @@ import type { MeetingSearchFilters, MeetingFacet, ProcessedMeetingSearchResult }
  */
 export class MeetingSearchService {
   private abortController: AbortController | null = null;
-  private searchClient: any;
   private collection: string;
 
-  constructor(searchClient: any, collectionName?: string) {
-    this.searchClient = searchClient;
+  constructor(private searchClient: Pick<TypesenseClient, 'search'>, collectionName?: string, private getLocale = () => 'lt') {
     this.collection = collectionName || 'public_meetings';
   }
 
@@ -31,12 +29,11 @@ export class MeetingSearchService {
     // Create new abort controller for this search
     this.abortController = new AbortController();
 
-    const page = usePage();
-    const locale = page.props.app.locale || 'lt';
+    const locale = this.getLocale();
     const institutionNameField = `institution_name_${locale}`;
 
     // Build search parameters
-    const searchParams: any = {
+    const searchParams: Record<string, unknown> = {
       q: filters.query.trim() || '*',
       query_by: `title,description,${institutionNameField}`,
       query_by_weights: '10,5,3',
@@ -76,11 +73,10 @@ export class MeetingSearchService {
     this.cancelCurrentSearch();
     this.abortController = new AbortController();
 
-    const page = usePage();
-    const locale = page.props.app.locale || 'lt';
+    const locale = this.getLocale();
     const institutionNameField = `institution_name_${locale}`;
 
-    const searchParams: any = {
+    const searchParams: Record<string, unknown> = {
       q: '*',
       query_by: `title,description,${institutionNameField}`,
       facet_by: 'year,month,tenant_shortname,institution_type_title',
@@ -165,8 +161,8 @@ export class MeetingSearchService {
 
     // Date range filter
     if (filters.dateRange.from || filters.dateRange.to) {
-      const from = filters.dateRange.from?.getTime() / 1000 || 0;
-      const to = filters.dateRange.to?.getTime() / 1000 || Math.floor(Date.now() / 1000);
+      const from = (filters.dateRange.from?.getTime() ?? 0) / 1000 || 0;
+      const to = (filters.dateRange.to?.getTime() ?? 0) / 1000 || Math.floor(Date.now() / 1000);
       conditions.push(`start_time:[${Math.floor(from)}..${Math.floor(to)}]`);
     }
 
@@ -176,8 +172,8 @@ export class MeetingSearchService {
   /**
    * Process search response from Typesense
    */
-  private processSearchResponse(response: any): ProcessedMeetingSearchResult {
-    const hits = response.hits?.map((hit: any) => hit.document) || [];
+  private processSearchResponse(response: TypesenseSearchResponse): ProcessedMeetingSearchResult {
+    const hits = response.hits?.map(hit => hit.document) || [];
     const totalHits = response.found || 0;
     const facets = this.processFacets(response.facet_counts || []);
 
@@ -196,11 +192,10 @@ export class MeetingSearchService {
   /**
    * Process facets from Typesense response
    */
-  private processFacets(facetCounts: any[]): MeetingFacet[] {
-    const page = usePage();
-    const locale = page.props.app.locale || 'lt';
+  private processFacets(facetCounts: RawFacet[]): MeetingFacet[] {
+    const locale = this.getLocale();
 
-    return facetCounts.map((facetCount: any) => {
+    return facetCounts.map(facetCount => {
       const field = facetCount.field_name;
 
       // Determine label based on field
@@ -216,7 +211,7 @@ export class MeetingSearchService {
       }
 
       // Process values
-      const values = (facetCount.counts || []).map((count: any) => ({
+      const values = (facetCount.counts || []).map(count => ({
         value: String(count.value),
         label: this.formatFacetLabel(field, count.value, locale),
         count: count.count,
@@ -235,7 +230,7 @@ export class MeetingSearchService {
   /**
    * Format facet label based on field type
    */
-  private formatFacetLabel(field: string, value: any, locale: string): string {
+  private formatFacetLabel(field: string, value: string, locale: string): string {
     if (field === 'month') {
       const monthLabels: Record<string, Record<string, string>> = {
         1: { lt: 'Sausis', en: 'January' },

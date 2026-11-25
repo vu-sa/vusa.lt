@@ -165,29 +165,6 @@ export const i18nVue = {
   },
 };
 
-// ============================================================================
-// Storybook fn()-wrapped versions for spy/assertion capabilities
-// ============================================================================
-
-const transFn: typeof trans = trans;
-const transChoiceFn: typeof transChoice = transChoice;
-
-// Try to wrap with storybook/test fn() for spy capabilities
-// This will silently fail in VitePress where storybook/test is not available
-try {
-  // Dynamic import would be ideal but we need sync exports
-  // Instead, check if we're in a Storybook environment
-  if (typeof window !== 'undefined' && (window as any).__STORYBOOK_PREVIEW__) {
-    // We're in Storybook - the fn() wrapped versions will be set up via preview.ts
-    // This block is a placeholder for future dynamic setup if needed
-  }
-}
-catch {
-  // Not in Storybook environment, use plain functions
-}
-
-export { transFn, transChoiceFn };
-
 // Default export for convenience
 export default {
   trans,
@@ -201,8 +178,6 @@ export default {
   loadLanguage,
   isLoaded,
   i18nVue,
-  transFn,
-  transChoiceFn,
   // Export raw translations for debugging/inspection
   translations,
 };

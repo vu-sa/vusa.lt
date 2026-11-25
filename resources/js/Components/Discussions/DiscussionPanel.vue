@@ -168,7 +168,7 @@ const props = withDefaults(defineProps<{
 });
 
 const titleId = useId();
-const currentUser = computed(() => (usePage().props.auth as { user?: App.Entities.User } | undefined)?.user ?? null);
+const currentUser = computed(() => usePage().props.auth?.user ?? null);
 const discussion = useDiscussionThread(props.commentableType, props.commentableId);
 const { comments, mentionables, meta, loading, posting, mutating, members } = discussion;
 

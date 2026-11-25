@@ -215,31 +215,12 @@
         >
       </FormFieldWrapper>
 
-      <!-- Gallery Images -->
-      <FormFieldWrapper
-        id="images"
-        :label="$t('Galerijos nuotraukos')"
-        :hint="`${$t('Papildomos nuotraukos, rodomos galerijoje')}. ${$t('Nuotraukos optimizuojamos automatiškai prieš įkėlimą.')}`"
-      >
-        <ImageUpload
-          v-if="!readOnly"
-          v-model:files="newGalleryImages"
-          :max="20"
-          :existing-urls="existingGalleryImages"
-          cropper
-          :compress="false"
-          @remove:existing="removeExistingImage"
-        />
-        <div v-else-if="existingGalleryImages.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <img
-            v-for="image in existingGalleryImages"
-            :key="image.id"
-            :src="image.url"
-            :alt="image.name"
-            class="aspect-video w-full border border-border object-cover"
-          >
-        </div>
-      </FormFieldWrapper>
+      <CalendarGalleryField
+        v-model:files="newGalleryImages"
+        :calendar-id="calendar.id"
+        :images="calendar.images"
+        :read-only="readOnly"
+      />
     </FormPanel>
 
     <!-- Links and Promotion section -->
@@ -304,39 +285,7 @@
         />
       </ContentPublishPanel>
 
-      <!-- Related meeting panel in modern admin style -->
-      <FormPanel v-if="meeting" :title="$t('Susietas posėdis')" :icon="CalendarClock">
-        <div class="flex flex-col gap-3 text-xs">
-          <div class="flex items-start justify-between gap-2">
-            <a
-              :href="route('meetings.show', { meeting: meeting.id })"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="group inline-flex items-center gap-1 font-semibold text-foreground hover:text-brand hover:underline"
-            >
-              <span>{{ meeting.institution_name ?? $t('Posėdis') }}</span>
-              <ArrowUpRight class="size-3.5 text-muted-foreground group-hover:text-brand" />
-            </a>
-            <span v-if="meeting.trashed" class="border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive">
-              {{ $t('meetings.announce.form_alert_trashed') }}
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 text-muted-foreground">
-            <span>{{ meeting.agenda_items_count }} {{ $t('darbotvarkės punktai') }}</span>
-          </div>
-
-          <div class="border-t border-border pt-2 leading-relaxed text-muted-foreground">
-            {{ form.is_draft
-              ? $t('meetings.announce.form_alert_draft')
-              : $t('meetings.announce.form_alert_published') }}
-          </div>
-
-          <div class="text-[11px] italic text-muted-foreground/80">
-            {{ $t('meetings.announce.timing_locked') }}
-          </div>
-        </div>
-      </FormPanel>
+      <CalendarRelatedMeetingPanel v-if="meeting" :meeting :is-draft="Boolean(form.is_draft)" />
 
       <FormPanel :title="$t('Renginio nustatymai')" :icon="SlidersHorizontal">
         <FormFieldWrapper
@@ -421,22 +370,10 @@
 
     <!-- Danger Zone Slot -->
     <template v-if="!isCreate && enableDelete && !readOnly" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti renginį') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti renginį')"
         :title="$t('Ištrinti renginį?')"
         :description="$t('Renginys bus perkeltas į šiukšlinę.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -444,8 +381,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref, watch } from 'vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   ArrowUpRight,
@@ -456,12 +393,11 @@ import {
   Link2,
   SlidersHorizontal,
   Tags,
-  Trash2,
   WandSparkles,
 } from '@lucide/vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { isSameDay, toNaiveDateTimeString } from '@/Utils/dateTime';
 import { guessEventTypeSlug } from '@/Utils/eventTypeFromTitle';
 import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
@@ -486,6 +422,9 @@ import PublicUrlHistoryCard, { type PublicUrlRow } from './PublicUrlHistoryCard.
 import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
 import PermalinkField from './PermalinkField.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
+import CalendarGalleryField from './Calendar/CalendarGalleryField.vue';
+import CalendarRelatedMeetingPanel, { type CalendarRelatedMeeting } from './Calendar/CalendarRelatedMeetingPanel.vue';
+import { calendarHeroStyleOptions } from './Calendar/calendarHeroStyles';
 import ContentPublishPanel from './ContentPublishPanel.vue';
 
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
@@ -496,14 +435,7 @@ const props = withDefaults(defineProps<{
   availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
   /** Set when this event is the public announcement of a meeting. */
-  meeting?: {
-    id: string;
-    start_time: string;
-    title: string;
-    trashed: boolean;
-    agenda_items_count: number;
-    institution_name: string | null;
-  } | null;
+  meeting?: CalendarRelatedMeeting | null;
   rememberKey?: string;
   submitUrl: string;
   submitMethod: 'post' | 'patch';
@@ -531,7 +463,6 @@ function openMeetingCreation(): void {
   });
 }
 
-const deleteConfirmOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
 
 const fieldIds: Record<string, string> = {
@@ -716,48 +647,7 @@ const statusCallout = computed(() => {
   return $t('Paskelbtas renginys matomas viešame kalendoriuje.');
 });
 
-// Hero style icons as simple SVG representations
-const CardHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
-  h('rect', { x: 4, y: 4, width: 88, height: 56, rx: 6 }),
-  h('path', { d: 'M4 40 h88' }),
-  h('path', { d: 'M12 48 h20' }),
-  h('path', { d: 'M12 30 l10 -8 l12 10 l8 -6 l14 10' }),
-  h('circle', { cx: 74, cy: 16, r: 4 }),
-]);
-
-const SplitHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
-  h('rect', { x: 4, y: 4, width: 88, height: 56, rx: 6 }),
-  h('path', { d: 'M40 4 v56' }),
-  h('path', { d: 'M48 16 h32 M48 26 h24 M48 36 h32' }),
-]);
-
-const MinimalHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
-  h('path', { d: 'M8 20 h80' }),
-  h('path', { d: 'M8 32 h56' }),
-  h('path', { d: 'M8 44 h32' }),
-  h('circle', { cx: 82, cy: 44, r: 6 }),
-]);
-
-const heroStyleOptions = [
-  {
-    value: 'card',
-    label: $t('Didelė kortelė'),
-    description: $t('Nuotrauka fone'),
-    icon: CardHeroIcon,
-  },
-  {
-    value: 'split',
-    label: $t('Nuotrauka šalia'),
-    description: $t('Kortelė su nuotrauka'),
-    icon: SplitHeroIcon,
-  },
-  {
-    value: 'minimal',
-    label: $t('Minimalus'),
-    description: $t('Be nuotraukos'),
-    icon: MinimalHeroIcon,
-  },
-];
+const heroStyleOptions = calendarHeroStyleOptions();
 
 const heroStyle = computed({
   get: () => form.hero_style ?? 'card',
@@ -807,46 +697,9 @@ const endDate = computed({
   },
 });
 
-// Gallery images handling
-interface ExistingImage {
-  id: string | number;
-  url: string;
-  name: string;
-}
-
-// Existing gallery images from the server
-const existingGalleryImages = ref<ExistingImage[]>(
-  (props.calendar.images ?? []).map((img: Record<string, unknown>) => ({
-    id: img.id as string | number,
-    url: (img.url ?? img.original_url ?? '') as string,
-    name: (img.name ?? 'image.jpg') as string,
-  })),
-);
-
-// New gallery images to be uploaded
+// New gallery files go out with the form.
 const newGalleryImages = ref<File[]>([]);
-
-// Sync new gallery images to form.images for submission
 watch(newGalleryImages, (files) => {
   form.images = files;
 }, { deep: true });
-
-// Remove existing gallery image
-function removeExistingImage(img: { id: string | number; url: string }) {
-  if (!props.readOnly && props.calendar.id) {
-    router.post(
-      route('calendar.destroyMedia', {
-        calendar: props.calendar.id,
-        media: img.id,
-      }),
-      {},
-      {
-        preserveScroll: true,
-        onSuccess: () => {
-          existingGalleryImages.value = existingGalleryImages.value.filter(i => i.id !== img.id);
-        },
-      },
-    );
-  }
-}
 </script>

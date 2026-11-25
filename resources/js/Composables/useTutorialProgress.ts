@@ -8,17 +8,19 @@
  * No localStorage is used to avoid issues when switching users in the same browser.
  */
 
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import type { PageProps } from '@/Types/index';
+
+import { useApiMutation } from './useApi';
 
 // Global reactive state - single instance shared across all composables
 export const globalProgress = ref<Record<string, string>>({});
 
 // Track if we've initialized from server AND with which user
 let hasInitialized = false;
-let initializedUserId: number | null = null;
+let initializedUserId: string | null = null;
 
 /**
  * Initialize progress from server (Inertia page props)
@@ -43,7 +45,7 @@ export function initProgress(): void {
     }
 
     // User changed (login/logout) or first initialization
-    if (serverProgress && typeof serverProgress === 'object') {
+    if (serverProgress && typeof serverProgress === 'object' && !Array.isArray(serverProgress)) {
       globalProgress.value = { ...serverProgress };
     }
     else {
@@ -61,23 +63,32 @@ export function initProgress(): void {
   }
 }
 
-/**
- * Update a single tutorial's progress (local state only, backend synced separately)
- */
-export function updateProgress(tourId: string, timestamp: string): void {
-  globalProgress.value = {
-    ...globalProgress.value,
-    [tourId]: timestamp,
-  };
+async function syncProgress(action: 'complete' | 'reset', tourId: string, warning: string): Promise<void> {
+  try {
+    const { execute } = useApiMutation(
+      route(`api.v1.admin.tutorials.${action}`),
+      'POST',
+      { tour_id: tourId },
+      { showSuccessToast: false, showErrorToast: false },
+    );
+    await execute();
+  }
+  catch (error) {
+    console.warn(warning, error);
+  }
 }
 
-/**
- * Remove a tutorial's progress (for reset)
- */
-export function removeProgress(tourId: string): void {
-  const newProgress = { ...globalProgress.value };
-  delete newProgress[tourId];
-  globalProgress.value = newProgress;
+export async function completeProgress(tourId: string, warning: string, onComplete?: () => void): Promise<void> {
+  globalProgress.value = { ...globalProgress.value, [tourId]: new Date().toISOString() };
+  onComplete?.();
+  await syncProgress('complete', tourId, warning);
+}
+
+export async function resetProgress(tourId: string, warning: string): Promise<void> {
+  const progress = { ...globalProgress.value };
+  delete progress[tourId];
+  globalProgress.value = progress;
+  await syncProgress('reset', tourId, warning);
 }
 
 /**

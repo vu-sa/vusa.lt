@@ -10,13 +10,14 @@ const catalog: PermissionCatalog = {
     {
       key: 'meetings', model: 'meeting', area: 'atstovavimas',
       abilities: { read: ['padalinys', '*'], update: ['own', 'padalinys', '*'], delete: ['own', 'padalinys', '*'] },
+      baselineLabels: null,
       baseline: 'Posėdžius tavo pareigų laikotarpiu gali redaguoti.',
       baselineSegments: [{ text: 'Posėdžius ', strong: false }, { text: 'tavo pareigų laikotarpiu', strong: true }, { text: ' gali redaguoti.', strong: false }],
       scopeLabels: { own: 'Savo institucijų, visų kadencijų' },
       scopeDescriptions: { update: { own: 'Visi teisę suteikiančių pareigybių institucijų posėdžiai, ir už tavo pareigų laikotarpio ribų.', padalinys: 'Visi padalinio posėdžiai.' } },
       softDeletes: true,
     },
-    { key: 'mailingLists', model: 'mailing_list', area: 'organizacija', abilities: { read: ['padalinys', '*'], delete: ['padalinys', '*'] }, baseline: null, softDeletes: false },
+    { key: 'mailingLists', model: 'mailing_list', area: 'organizacija', abilities: { read: ['padalinys', '*'], delete: ['padalinys', '*'] }, baseline: null, baselineLabels: null, softDeletes: false },
   ],
   retired: ['meetings.read.own'],
 };
@@ -67,6 +68,26 @@ describe('PermissionMatrix', () => {
 
     expect(table.find('[data-resource="meetings"]').exists()).toBe(true);
     expect(table.find('[data-resource="mailingLists"]').exists()).toBe(true);
+  });
+
+  it.each(['Piloto dalyviai', 'Pilot members'])('shows %s for goals and keeps the generic label for other locked cells', (label) => {
+    const wrapper = mount(PermissionMatrix, {
+      props: {
+        catalog: {
+          ...catalog,
+          resources: [
+            ...catalog.resources,
+            { key: 'goals', model: 'goal', area: 'atstovavimas', abilities: {}, baseline: null, baselineLabels: { read: label }, softDeletes: false },
+            { key: 'problems', model: 'problem', area: 'atstovavimas', abilities: {}, baseline: null, baselineLabels: null, softDeletes: false },
+          ],
+          retired: ['goals.read.*', 'problems.read.*'],
+        },
+        granted: [],
+      },
+    });
+
+    const lockedLabels = wrapper.findAll('[data-testid="cell-baseline"]').map(cell => cell.text());
+    expect(lockedLabels).toEqual([label, 'responsibilities.matrix.everyone', label, 'responsibilities.matrix.everyone']);
   });
 
   it('offers only the scopes an ability allows', () => {

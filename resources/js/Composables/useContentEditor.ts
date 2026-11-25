@@ -3,7 +3,8 @@ import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { toast } from 'vue-sonner';
 
-import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
+import { apiRequest, type ApiResult } from '@/Composables/apiRequest';
+import type { PageProps } from '@/Types/index';
 import type { ImageData } from '@/Types/media';
 
 import { recoveryStorage, type RecoveryCopy } from './contentEditorStorage';
@@ -31,6 +32,12 @@ export interface ContentEditorData extends Record<string, unknown> {
   content_version?: string;
   other_lang_id?: number | null;
   content?: { parts: Array<{ id?: number; key?: string; [key: string]: unknown }> };
+}
+
+export function contentEditorRequestError(result: Pick<ApiResult<unknown>, 'status' | 'message' | 'body'>): string {
+  if (result.status === 0) return `TypeError: ${result.message ?? 'Network error'}`;
+  if (result.body === null) return 'SyntaxError: Unexpected end of JSON input';
+  return result.message ?? `Request failed (${result.status})`;
 }
 
 export function editorSnapshot(data: Record<string, unknown>): ContentEditorData {
@@ -69,8 +76,7 @@ export function blankTranslation(data: ContentEditorData): ContentEditorData {
 }
 
 export function useContentEditor<T extends Record<string, unknown>>(kind: ContentKind, form: InertiaForm<T>, options: { stay?: boolean; identity?: string; onSaved?: (data: ContentEditorData) => void | Promise<void> } = {}) {
-  const page = usePage();
-  const userId = (page.props.auth as { user?: { id: string } })?.user?.id ?? 'anonymous';
+  const userId = usePage<PageProps>().props.auth?.user?.id ?? 'anonymous';
   const currentId = ref<number | undefined>(form.data().id as number | undefined);
   const pointer = `content-editor:${userId}:${kind}:new`;
   let identity = options.identity ?? (currentId.value ? `record-${currentId.value}` : `new-${crypto.randomUUID()}`);
@@ -158,22 +164,29 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
     status.value = 'syncing';
     const sent = snapshot();
     try {
-      const { data } = await http.put(draftUrl, { snapshot: sent, revision: revision.value });
-      revision.value = data.data.revision;
-      status.value = 'synced';
-      if (JSON.stringify(sent) !== JSON.stringify(snapshot())) serverTimer = setTimeout(sync, 2000);
-    }
-    catch (error) {
-      if (http.isError(error) && error.response?.status === 409) {
+      const result = await apiRequest<RecoveryCopy & { revision: number }>(draftUrl, {
+        method: 'PUT',
+        body: { snapshot: sent, revision: revision.value },
+      });
+      if (result.status === 409 && result.body !== null) {
+        const server = (result.body as { data?: RecoveryCopy | null }).data;
         copies.value = [
           { snapshot: snapshot(), updated_at: new Date().toISOString(), source: 'local' },
-          { ...error.response.data.data, source: 'server' },
-        ].filter(copy => copy.snapshot);
-        revision.value = error.response.data.data?.revision ?? 0;
+          ...(server?.snapshot ? [{ ...server, source: 'server' as const }] : []),
+        ];
+        revision.value = server?.revision ?? 0;
         ready.value = false;
         status.value = 'conflict';
       }
+      else if (result.ok && result.data) {
+        revision.value = result.data.revision;
+        status.value = 'synced';
+        if (JSON.stringify(sent) !== JSON.stringify(snapshot())) serverTimer = setTimeout(sync, 2000);
+      }
       else status.value = 'offline';
+    }
+    catch {
+      status.value = 'offline';
     }
     finally {
       syncing = false;
@@ -203,7 +216,11 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
 
   async function discard() {
     try {
-      await http.delete(draftUrl, { data: { revision: revision.value } });
+      const result = await apiRequest(draftUrl, { method: 'DELETE', body: { revision: revision.value } });
+      if (!result.ok || result.body === null) {
+        status.value = 'offline';
+        return;
+      }
       await recoveryStorage(storageKey, 'delete');
       revision.value = 0;
       copies.value = [];
@@ -231,8 +248,17 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
     recordConflict.value = false;
     try {
       const url = route(`api.v1.admin.contentEditor.${kind}.${currentId.value ? 'update' : 'store'}`, currentId.value ? { [kind === 'pages' ? 'page' : 'news']: currentId.value } : undefined);
-      const { data } = await http.request({ url, method: currentId.value ? 'patch' : 'post', data: sent });
-      const saved = data.data as ContentEditorData;
+      const result = await apiRequest<ContentEditorData>(url, { method: currentId.value ? 'PATCH' : 'POST', body: sent });
+      if (!result.ok || !result.data) {
+        if (result.status === 422 && result.body !== null) {
+          form.setError(Object.fromEntries(Object.entries(result.errors ?? {}).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value])) as Partial<Record<keyof T, string>>);
+        }
+        recordConflict.value = result.status === 409 && result.body !== null;
+        saveError.value = contentEditorRequestError(result);
+        await localBackup();
+        return;
+      }
+      const saved = result.data;
       const unchanged = JSON.stringify(snapshot()) === JSON.stringify(sent);
       const committed = { ...sent, id: saved.id, content_version: saved.content_version, permalink: saved.permalink };
       for (const field of ['image_media', 'featured_image_media'] as const) {
@@ -265,18 +291,22 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
       await options.onSaved?.(saved);
       if (unchanged) {
         try {
-          await http.delete(draftUrl, { data: { revision: revision.value } });
-          revision.value = 0;
-          status.value = 'idle';
-        }
-        catch (failure) {
-          if (http.isError(failure) && failure.response.status === 409) {
-            copies.value = [{ ...failure.response.data.data, source: 'server' }].filter(copy => copy.snapshot);
-            revision.value = failure.response.data.data?.revision ?? 0;
+          const cleanup = await apiRequest(draftUrl, { method: 'DELETE', body: { revision: revision.value } });
+          if (cleanup.status === 409 && cleanup.body !== null) {
+            const server = (cleanup.body as { data?: RecoveryCopy | null }).data;
+            copies.value = server?.snapshot ? [{ ...server, source: 'server' }] : [];
+            revision.value = server?.revision ?? 0;
             ready.value = copies.value.length === 0;
             status.value = 'conflict';
           }
+          else if (cleanup.ok && cleanup.body !== null) {
+            revision.value = 0;
+            status.value = 'idle';
+          }
           else status.value = 'offline';
+        }
+        catch {
+          status.value = 'offline';
         }
         if (!dirty()) {
           try {
@@ -294,18 +324,12 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
         }
         catch { /* A blocked storage API must not turn a completed save into an error. */ }
         form.defaults();
-        router.visit(data.meta?.redirect_url ?? route(`${kind}.edit`, saved.id));
+        const redirect = result.meta?.redirect_url;
+        router.visit(typeof redirect === 'string' ? redirect : route(`${kind}.edit`, saved.id));
       }
     }
     catch (error) {
-      if (http.isError(error)) {
-        if (error.response?.status === 422) {
-          form.setError(Object.fromEntries(Object.entries(error.response.data.errors ?? {}).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value])) as Partial<Record<keyof T, string>>);
-        }
-        recordConflict.value = error.response?.status === 409;
-        saveError.value = error.response?.data?.message ?? error.message;
-      }
-      else saveError.value = String(error);
+      saveError.value = String(error);
       await localBackup();
     }
     finally {
@@ -317,15 +341,20 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
   async function loadCurrent() {
     if (!currentId.value) return;
     try {
-      const { data } = await http.get(route('api.v1.admin.contentEditor.show', { kind, record: currentId.value }));
-      copies.value = [{ snapshot: snapshot(), source: 'local', updated_at: new Date().toISOString() }, { snapshot: data.data, source: 'server', updated_at: data.data.updated_at }];
+      const result = await apiRequest<ContentEditorData & { updated_at: string }>(route('api.v1.admin.contentEditor.show', { kind, record: currentId.value }));
+      if (!result.ok || !result.data) {
+        saveError.value = contentEditorRequestError(result);
+        return;
+      }
+      const current = result.data;
+      copies.value = [{ snapshot: snapshot(), source: 'local', updated_at: new Date().toISOString() }, { snapshot: current, source: 'server', updated_at: current.updated_at }];
       ready.value = false;
       // Choosing a copy acknowledges this exact server version; the user's body is retained.
-      Object.assign(form, { content_version: data.data.content_version });
-      copies.value[0].snapshot.content_version = data.data.content_version;
+      Object.assign(form, { content_version: current.content_version });
+      copies.value[0].snapshot.content_version = current.content_version;
       recordConflict.value = false;
     }
-    catch (error) { saveError.value = http.isError(error) ? error.response.data.message ?? error.message : String(error); }
+    catch (error) { saveError.value = String(error); }
   }
 
   const unload = (event: BeforeUnloadEvent) => {
@@ -348,9 +377,12 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
     catch { status.value = 'unavailable'; }
     let server: RecoveryCopy | undefined;
     try {
-      const { data } = await http.get(draftUrl);
-      server = data.data ?? undefined;
-      revision.value = server?.revision ?? 0;
+      const result = await apiRequest<RecoveryCopy>(draftUrl);
+      if (result.ok && result.body !== null) {
+        server = result.data ?? undefined;
+        revision.value = server?.revision ?? 0;
+      }
+      else status.value = 'offline';
     }
     catch { status.value = 'offline'; }
     if (local && JSON.stringify(local.snapshot) !== baseline) copies.value.push({ ...local, source: 'local' });

@@ -284,7 +284,7 @@ const inflectDutyName = (name: string, gender: DutyNameGender): string => {
   return name.slice(0, head.start + head.stem.length) + ending + name.slice(head.end);
 };
 
-export type DutyPronouns = string | { lt?: string | null; en?: string | null } | null | undefined;
+export type DutyPronouns = string | { lt?: string | null; en?: string | null } | [] | null | undefined;
 
 export interface DutyNameHolder {
   name?: string | null;
@@ -301,6 +301,7 @@ const pronounGender = (pronouns: string | null | undefined): DutyNameGender | nu
 
 export const resolveDutyPronouns = (pronouns: DutyPronouns, locale: string): string => {
   if (typeof pronouns === 'string') return pronouns;
+  if (Array.isArray(pronouns)) return '';
   const preferred = pronouns?.[locale === 'en' ? 'en' : 'lt'];
   if (pronounGender(preferred)) return preferred ?? '';
   return [pronouns?.lt, pronouns?.en].find(value => pronounGender(value)) ?? '';

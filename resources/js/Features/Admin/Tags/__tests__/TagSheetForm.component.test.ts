@@ -13,9 +13,9 @@ const mountForm = (tag: InstanceType<typeof TagSheetForm>['$props']['tag'] = nul
   global: {
     stubs: {
       SheetForm: {
-        props: ['open', 'title'],
-        emits: ['submit'],
-        template: '<section v-if="open"><h1>{{ title }}</h1><slot /><button data-testid="save" @click="$emit(\'submit\')">save</button></section>',
+        props: ['open', 'title', 'dirty'],
+        emits: ['submit', 'cancel', 'update:open'],
+        template: '<section v-if="open" :data-dirty="String(Boolean(dirty))"><h1>{{ title }}</h1><slot /><button type="button" data-testid="save" @click="$emit(\'submit\')">save</button></section>',
       },
       TiptapEditor: {
         props: ['modelValue'],
@@ -39,11 +39,16 @@ describe('TagSheetForm', () => {
     const post = vi.spyOn(form, 'post').mockImplementation(() => {});
 
     expect(wrapper.text()).toContain('Nauja žyma');
+    expect(wrapper.get('section').attributes('data-dirty')).toBe('false');
     await wrapper.get('[data-testid="description"]').setValue('Naujas aprašymas');
+    expect(wrapper.get('section').attributes('data-dirty')).toBe('true');
     await wrapper.get('[data-testid="save"]').trigger('click');
 
     expect(form.description).toEqual({ lt: 'Naujas aprašymas', en: '' });
-    expect(post).toHaveBeenCalledWith(route('tags.store'), expect.any(Object));
+    expect(post).toHaveBeenCalledWith(route('tags.store'), expect.objectContaining({
+      preserveScroll: true,
+      headers: { 'X-Tag-Sheet': 'true' },
+    }));
     wrapper.unmount();
   });
 

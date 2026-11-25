@@ -2,6 +2,7 @@
 
 namespace App\Services\Notifications;
 
+use App\Actions\Cadences\ResolveCadenceForInstitution;
 use App\Enums\NotificationType;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\InstitutionCheckIn;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Services\ResponsibilityResolver;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 /**
  * Which notification types a user can currently receive, so Pranešimų nustatymai lists only those.
@@ -32,12 +34,8 @@ class NotificationAudience
 
     public function canReceive(User $user, NotificationType $type): bool
     {
-        if (! $type->isConfigurable()) {
-            return false;
-        }
-
         if ($user->isSuperAdmin()) {
-            return true;
+            return $type->isConfigurable();
         }
 
         return match ($type) {
@@ -54,7 +52,11 @@ class NotificationAudience
             // Whoever may send "Ar vyko posėdis?" hears back when it reached the wrong person.
             NotificationType::InstitutionActivityNotMine => $user->can('viewAny', InstitutionCheckIn::class),
             NotificationType::SupportRequestCreated => $user->can('viewAny', SupportRequest::class),
-            default => true,
+            NotificationType::FollowedInstitutionActivity, NotificationType::ReservationStatusChanged,
+            NotificationType::AssignedToResource, NotificationType::ReservationDraftItemTaken,
+            NotificationType::CommentMention, NotificationType::CommentActivity, NotificationType::SupportRequestAssigned,
+            NotificationType::SupportRequestInvolved, NotificationType::SupportRequestStatusChanged => true,
+            NotificationType::Welcome, NotificationType::TestPush => false,
         };
     }
 
@@ -94,9 +96,18 @@ class NotificationAudience
             }
         }
 
-        return InstitutionSecretary::query()
+        $today = Carbon::today();
+        $nominations = InstitutionSecretary::query()
             ->where('user_id', $user->id)
-            ->whereHas('cadence', fn (Builder $query) => $query->containing(now()->toDateString()))
-            ->exists();
+            ->whereHas('cadence', fn (Builder $query) => $query->containing($today->toDateString()))
+            ->get(['institution_id', 'cadence_id']);
+
+        if ($nominations->isEmpty()) {
+            return false;
+        }
+
+        $terms = ResolveCadenceForInstitution::forInstitutions($nominations->pluck('institution_id'), $today);
+
+        return $nominations->contains(fn (InstitutionSecretary $nomination): bool => $terms[$nomination->institution_id]?->id === $nomination->cadence_id);
     }
 }

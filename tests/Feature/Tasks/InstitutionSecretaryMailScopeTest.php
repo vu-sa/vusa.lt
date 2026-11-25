@@ -204,3 +204,17 @@ test('extending a term over a meeting hands its open task to the secretary', fun
 
     expect($task->fresh()->users()->pluck('users.id')->all())->toBe([$this->secretary->id]);
 });
+
+test('an empty roster on reopen keeps the prior assignees', function (): void {
+    $meeting = meetingNeedingItsAgendaFilled($this->institution);
+    $task = agendaCompletionTaskFor($meeting);
+    fillEveryAgendaItem($meeting);
+    expect($task->fresh()->completed_at)->not->toBeNull();
+
+    $meeting->updateQuietly(['start_time' => now()->subYears(2)]);
+    $item = $meeting->agendaItems()->firstOrFail();
+    $item->update(['type' => AgendaItemType::Voting]);
+
+    expect($task->fresh()->completed_at)->toBeNull()
+        ->and($task->users()->pluck('users.id')->all())->toEqualCanonicalizing($this->members->pluck('id')->all());
+});

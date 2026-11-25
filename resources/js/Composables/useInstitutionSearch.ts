@@ -1,102 +1,20 @@
-/**
- * Institution Search Composable
- *
- * Uses shared search infrastructure with institution-specific functionality.
- */
-import { ref, computed, nextTick, type ComputedRef } from 'vue';
+import { computed } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
-import { usePage } from '@inertiajs/vue3';
 
-import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
+import { useBaseSearch } from '@/Search/core/composables/useBaseSearch';
 import { FilterUtils } from '@/Search/core/services/FilterUtils';
-import type { ProcessedSearchResult } from '@/Search/core/types';
-import type { InstitutionSearchFilters, InstitutionFacet, InstitutionSearchPreferences, InstitutionSearchController, SearchError } from '@/Types/InstitutionSearchTypes';
-import { InstitutionSearchService } from '@/Search/public/InstitutionSearchService';
-
-import { createTypesenseClients } from './useSearchClient';
+import type { TypesenseClient } from '@/Search/core/services/SearchClientFactory';
+import { InstitutionSearchService, type RawInstitutionDocument } from '@/Search/public/InstitutionSearchService';
+import { usePublicSearchService } from '@/Search/public/composables/usePublicSearchService';
+import type { InstitutionSearchFilters, InstitutionFacet, InstitutionSearchPreferences, InstitutionSearchController } from '@/Types/InstitutionSearchTypes';
 
 export type { InstitutionSearchPreferences };
 
-// ============================================================================
-// Types
-// ============================================================================
-
-/**
- * Extended preferences for institution search
- */
-interface InstitutionPreferences extends InstitutionSearchPreferences {
-  viewMode: 'grid' | 'list';
-  recentSearches: string[];
-}
-
-// ============================================================================
-// Service Adapter
-// ============================================================================
-
-/**
- * Adapter to make InstitutionSearchService compatible with BaseSearchService interface
- */
-class InstitutionSearchServiceAdapter implements BaseSearchService<InstitutionSearchFilters, InstitutionFacet> {
-  private service: InstitutionSearchService;
-  private getLocale: () => string;
-
-  constructor(service: InstitutionSearchService, getLocale: () => string) {
-    this.service = service;
-    this.getLocale = getLocale;
-  }
-
-  async performSearch(
-    filters: InstitutionSearchFilters,
-    perPage: number,
-    isLoadMore: boolean,
-    currentPage: number,
-  ): Promise<ProcessedSearchResult<InstitutionFacet>> {
-    const result = await this.service.performSearch(
-      filters,
-      perPage,
-      isLoadMore,
-      currentPage,
-      this.getLocale(),
-    );
-    return {
-      hits: result.hits,
-      totalHits: result.totalHits,
-      totalPages: result.totalPages,
-      currentPage: result.currentPage,
-      facets: result.facets,
-    };
-  }
-
-  async loadInitialFacets(): Promise<InstitutionFacet[]> {
-    return this.service.loadInitialFacets();
-  }
-
-  cancelCurrentSearch(): void {
-    this.service.cancelCurrentSearch();
-  }
-}
-
-// ============================================================================
-// Composable
-// ============================================================================
-
 export const useInstitutionSearch = (options: { typeDescendants?: Record<string, string[]> } = {}): InstitutionSearchController => {
-  // Extended preferences for institution search
-  const institutionPreferences = useLocalStorage<InstitutionPreferences>('institution-search-preferences', {
+  const institutionPreferences = useLocalStorage<InstitutionSearchPreferences>('institution-search-preferences', {
     viewMode: 'grid', // Default to grid view for institutions
     recentSearches: [],
   });
-
-  // Search client refs (for initialization)
-  const searchClient = ref<any>(null);
-  const typesenseClient = ref<any>(null);
-  const institutionService = ref<InstitutionSearchService | null>(null);
-
-  // Get current locale
-  const getCurrentLocale = (): string => {
-    const page = usePage();
-    return (page.props.app as any)?.locale || 'lt';
-  };
 
   // Default filters for institution search
   const defaultFilters: InstitutionSearchFilters = {
@@ -118,86 +36,20 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
     }
   };
 
-  // Initialize base search without service (will be set after client init)
-  const baseSearch = useBaseSearch<InstitutionSearchFilters, InstitutionFacet, any>({
+  const baseSearch = useBaseSearch<InstitutionSearchFilters, InstitutionFacet, Record<string, unknown>>({
     defaultFilters,
-    searchService: null, // Will be set after initialization
+    searchService: null,
     filterKeyMapper,
     localStorageKey: 'institution-search-state',
-    perPage: 24,
     debounceDelay: 200, // Faster debounce for institutions
-    maxRetries: 3,
-    searchOnMount: false,
-    loadFacetsOnMount: false,
   });
 
-  // ============================================================================
-  // Client Initialization
-  // ============================================================================
-
-  const initializeSearchClient = async () => {
-    const page = usePage();
-    const typesenseConfig = page.props.typesenseConfig as any;
-
-    if (!typesenseConfig?.apiKey) {
-      console.warn('Typesense not configured - institution search unavailable');
-      return null;
-    }
-
-    try {
-      // Get collection name from config (with staging prefix if applicable)
-      const collectionName = typesenseConfig.collections?.public_institutions || 'public_institutions';
-
-      // Build collection-specific search parameters
-      const collectionSpecificSearchParameters: Record<string, any> = {};
-      collectionSpecificSearchParameters[collectionName] = {
-        query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
-        query_by_weights: '10,8,6,4,3,5',
-        facet_by: ['tenant_shortname', 'type_slugs', 'has_contacts'].join(','),
-        per_page: 24,
-      };
-
-      const clients = createTypesenseClients(typesenseConfig, {
-        additionalSearchParameters: {
-          query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
-          query_by_weights: '10,8,6,4,3,5',
-          num_typos: 2,
-          typo_tokens_threshold: 1,
-          drop_tokens_threshold: 1,
-          max_hits: 1000,
-          per_page: 24,
-          facet_by: ['tenant_shortname', 'type_slugs', 'has_contacts'].join(','),
-          max_facet_values: 50,
-          sort_by: 'display_priority:desc,has_logo:desc,name_lt:asc',
-        },
-        collectionSpecificSearchParameters,
-      });
-
-      searchClient.value = clients.searchClient;
-      typesenseClient.value = clients.typesenseClient;
-
-      // Create institution service and adapter
-      institutionService.value = new InstitutionSearchService(typesenseClient.value, collectionName, options.typeDescendants);
-      const adapter = new InstitutionSearchServiceAdapter(institutionService.value, getCurrentLocale);
-
-      // Set the service on base search
-      baseSearch.setSearchService(adapter);
-
-      // Load initial facets
-      await nextTick();
-      await baseSearch.loadInitialFacets();
-
-      return clients.searchClient;
-    }
-    catch (error) {
-      console.error('Failed to initialize Typesense clients:', error);
-      return null;
-    }
-  };
-
-  // ============================================================================
-  // Institution-Specific Methods
-  // ============================================================================
+  const { searchClient, initializeSearchClient } = usePublicSearchService(
+    baseSearch,
+    'public_institutions',
+    (client: TypesenseClient<RawInstitutionDocument>, collection, getLocale) =>
+      new InstitutionSearchService(client, collection, options.typeDescendants, getLocale),
+  );
 
   const toggleTenant = (tenantShortname: string) => {
     const current = baseSearch.filters.value.tenants;
@@ -239,10 +91,6 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
     baseSearch.debouncedSearch();
   };
 
-  // ============================================================================
-  // Recent Searches (using institution preferences)
-  // ============================================================================
-
   const clearRecentSearches = () => {
     institutionPreferences.value.recentSearches = [];
   };
@@ -252,10 +100,6 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
       s => s !== searchToRemove,
     );
   };
-
-  // ============================================================================
-  // Search State (matching original interface)
-  // ============================================================================
 
   const searchState = computed(() => ({
     isSearching: baseSearch.status.value === 'searching',
@@ -271,10 +115,6 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
     status: baseSearch.status.value,
   }));
 
-  // ============================================================================
-  // Return Controller (matching InstitutionSearchController interface)
-  // ============================================================================
-
   return {
     // State from base
     searchState,
@@ -287,19 +127,19 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
     totalHits: baseSearch.totalHits,
     results: baseSearch.results,
     facets: baseSearch.mergedFacets, // Use merged facets
-    filters: baseSearch.filters as unknown as ComputedRef<InstitutionSearchFilters>,
+    filters: baseSearch.filters,
     viewMode: computed(() => institutionPreferences.value.viewMode),
     recentSearches: computed(() => institutionPreferences.value.recentSearches),
 
     // Error handling
-    searchError: baseSearch.error as ComputedRef<SearchError | null>,
+    searchError: baseSearch.error,
     isOnline: baseSearch.isOnline,
     retryCount: baseSearch.retryCount,
     maxRetries: baseSearch.maxRetries,
 
     // Actions from base
     search: baseSearch.search,
-    setFilter: baseSearch.setFilter as <K extends keyof InstitutionSearchFilters>(key: K, value: InstitutionSearchFilters[K]) => void,
+    setFilter: baseSearch.setFilter,
     loadMore: baseSearch.loadMore,
     retrySearch: baseSearch.retrySearch,
     clearError: baseSearch.clearError,
@@ -315,7 +155,7 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
     removeRecentSearch,
 
     // Internal
-    searchClient: computed(() => searchClient.value),
+    searchClient,
     initializeSearchClient,
     cancelPendingSearch: baseSearch.cancelPendingSearch,
   };

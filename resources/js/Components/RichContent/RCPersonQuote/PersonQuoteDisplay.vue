@@ -99,7 +99,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { initials } from '@/Utils/String';
 
 import RCSection from '../RCSection.vue';

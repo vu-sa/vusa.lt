@@ -19,8 +19,6 @@ const sourceResolver = createNodeResolver({
 
 export const LEGACY_ADMIN_EXCEPTIONS = [
   'resources/js/Pages/Admin/Dashboard/Components/CoordinatorSkeleton.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/RepresentativeActivitySkeleton.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/RepresentativeDataTable.vue',
 ];
 
 const MIGRATED_ADMIN_COMPONENT_PATHS = [
@@ -68,7 +66,7 @@ const MIGRATED_ADMIN_COMPONENT_PATHS = [
   'resources/js/Components/Reservations/**',
   'resources/js/Components/Duties/**',
   'resources/js/Components/Institutions/{AddCheckInDialog,InstitutionDutiesSection,InstitutionMeetingsList,InstitutionOverviewSection,RelatedInstitutionTile,SecretariesSection}.vue',
-  'resources/js/Components/AdminForms/{DutyCard,InstitutionForm,ReservationForm,ResourceForm,UserForm,TenantForm,StudyProgramForm}.vue',
+  'resources/js/Components/AdminForms/{InstitutionForm,ReservationForm,ResourceForm,UserForm,TenantForm,StudyProgramForm}.vue',
   'resources/js/Features/Admin/DutiableTimeline/**',
   'resources/js/Features/Admin/ResourceCategories/**',
   'resources/js/Features/Admin/Tenants/**',
@@ -464,6 +462,7 @@ export default tseslint.config(
     files: [
       'resources/js/Pages/Admin/**/*.{vue,ts}',
       'resources/js/Features/Admin/**/*.{vue,ts}',
+      'resources/js/Components/AdminForms/**/*.{vue,ts}',
       'resources/js/Components/{Search,Pickers,ActivityLog,FileManager}/**/*.{vue,ts}',
     ],
     rules: {

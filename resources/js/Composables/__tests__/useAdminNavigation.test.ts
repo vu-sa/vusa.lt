@@ -8,6 +8,8 @@ const section = (key: string, routeName: string, extra: Partial<AdminSection> = 
   routeName,
   routeParams: {},
   entityType: null,
+  description: null,
+  startsGroup: false,
   collectionActions: [],
   matches: [routeName.endsWith('.index') ? `${routeName.slice(0, -5)}*` : routeName],
   ...extra,
@@ -17,6 +19,7 @@ const workspace = (key: string, sections: AdminSection[]): AdminWorkspace => ({
   key,
   label: key,
   description: '',
+  experimental: false,
   sections,
   createActions: [],
 });

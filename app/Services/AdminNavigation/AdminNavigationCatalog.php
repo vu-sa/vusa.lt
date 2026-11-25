@@ -49,7 +49,10 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v15-';
+    public const string CACHE_PREFIX = 'admin-navigation-v16-';
+
+    /** Canonical workspace order shared by the shell and the permission matrix editor. */
+    public const array WORKSPACE_KEYS = ['pradzia', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema', 'wiki'];
 
     private const int CACHE_TTL = 1800;
 
@@ -386,6 +389,7 @@ class AdminNavigationCatalog
             'key' => $workspace->key,
             'label' => $workspace->labelKey,
             'description' => $workspace->descriptionKey,
+            'experimental' => $workspace->experimental,
             'sections' => $this->withOverview($workspace, $sections),
             'createActions' => $this->visibleCreateActions($workspace->createActions, $user),
         ];

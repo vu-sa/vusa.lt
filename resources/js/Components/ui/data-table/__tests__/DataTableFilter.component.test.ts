@@ -35,7 +35,7 @@ function mountFilter(props: Record<string, unknown> = {}) {
   });
 }
 
-describe('DataTableFilter search', () => {
+describe('DataTableFilter client-side facets', () => {
   it('does not render a search input by default', () => {
     const wrapper = mountFilter();
 
@@ -78,8 +78,8 @@ describe('DataTableFilter search', () => {
     await applyButton!.trigger('click');
 
     const applied = wrapper.emitted('apply')?.at(-1)?.[0] as number[];
-    expect(applied).toContain(1);
-    expect(applied).toContain(2);
+    expect(applied).toEqual(expect.arrayContaining([1, 2]));
+    expect(wrapper.emitted('update:value')?.at(-1)).toEqual([applied]);
   });
 
   it('stops propagation of character keystrokes from the search input', () => {

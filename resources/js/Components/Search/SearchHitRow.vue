@@ -9,7 +9,7 @@
     <div v-else-if="hit.isRecent" class="flex size-10 shrink-0 items-center justify-center bg-secondary text-muted-foreground">
       <Clock class="size-5" aria-hidden="true" />
     </div>
-    <EntityTypeMark v-else :type="collectionEntityType[hit.collection]" size="lg" icon-only />
+    <EntityTypeMark v-else :type="adminSearchCollections[hit.collection].entityType" size="lg" icon-only />
 
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 min-w-0">
@@ -99,7 +99,7 @@ import EntityTypeMark from '@/Components/Patterns/EntityTypeMark.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { useSearchHitMatches } from '@/Search/admin/Composables/useSearchHitMatches';
-import type { NormalizedSearchHit, SearchCollectionKey } from '@/Search/admin/Utils/searchHitMappers';
+import { adminSearchCollections, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 const props = withDefaults(defineProps<{
   hit: NormalizedSearchHit;
@@ -115,7 +115,7 @@ const props = withDefaults(defineProps<{
 
 const { matches, titleMatch, metaMatch, contextMatch } = useSearchHitMatches(() => props.hit);
 const typeLabel = computed(() => {
-  const definition = getEntityTypeDefinition(collectionEntityType[props.hit.collection]);
+  const definition = getEntityTypeDefinition(adminSearchCollections[props.hit.collection].entityType);
   return definition ? $t(definition.label) : undefined;
 });
 
@@ -123,19 +123,6 @@ defineEmits<{
   view: [];
   edit: [];
 }>();
-
-const collectionEntityType: Record<SearchCollectionKey, string> = {
-  meetings: 'meeting',
-  agendaItems: 'agenda_item',
-  institutions: 'institution',
-  resources: 'resource',
-  duties: 'duty',
-  documents: 'document',
-  news: 'news',
-  pages: 'page',
-  calendar: 'calendar',
-  users: 'user',
-};
 
 const quickActionClasses = [
   'flex size-9 items-center justify-center text-muted-foreground opacity-100 transition-colors',

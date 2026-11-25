@@ -1,10 +1,6 @@
-/**
- * Shared visual vocabulary for institution relationship graphs: the full force-directed graph
- * colours edges by category, the one-deep radial preview by direction.
- */
+/** Shared visual vocabulary for institution relationship graphs: edges are coloured by category or scope. */
 
 export type RelationshipType = 'direct' | 'type' | 'cross-tenant';
-export type RelationshipDirection = 'outgoing' | 'incoming' | 'mutual';
 
 export interface RelationshipStyle {
   /** Stroke/marker color, legible on both light and dark backgrounds. */
@@ -18,13 +14,6 @@ export const EDGE_TYPE_STYLES: Record<RelationshipType, RelationshipStyle> = {
   'direct': { color: '#10b981', labelKey: 'relationships.graph.type_direct' },
   'type': { color: '#8b5cf6', labelKey: 'relationships.graph.type_type_based' },
   'cross-tenant': { color: '#f97316', labelKey: 'relationships.graph.type_cross_tenant' },
-};
-
-/** Edge styling keyed by `direction` (used by the radial preview). */
-export const DIRECTION_STYLES: Record<RelationshipDirection, RelationshipStyle & { arrow: 'out' | 'in' | 'none' }> = {
-  outgoing: { color: '#10b981', labelKey: 'relationships.graph.direction_outgoing', arrow: 'out' },
-  incoming: { color: '#3b82f6', labelKey: 'relationships.graph.direction_incoming', arrow: 'in' },
-  mutual: { color: '#a1a1aa', labelKey: 'relationships.graph.direction_mutual', arrow: 'none' },
 };
 
 export type RelationshipScope = 'within-tenant' | 'cross-tenant';

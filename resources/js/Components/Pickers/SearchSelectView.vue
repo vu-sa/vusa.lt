@@ -113,7 +113,7 @@ import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useFilterPills } from '@/Search/admin/Composables/useFilterPills';
 import type { AdminCollectionSearchController } from '@/Search/admin/Composables/useAdminCollectionSearch';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import SearchSplitView from '../Search/SearchSplitView.vue';
 import SearchDetailPane from '../Search/SearchDetailPane.vue';

@@ -24,8 +24,6 @@ import { cn } from '@/Utils/Shadcn/utils';
  * One figure in a stats strip. Meant to sit in a hairline-divided row
  * (`divide-x divide-border`), not in a card — the number is the emphasis, and a box around it
  * competes with the number.
- *
- * The public counterpart to `Patterns/StatCard`, which is a bordered admin KPI tile.
  */
 const props = withDefaults(defineProps<{
   value?: string | number;

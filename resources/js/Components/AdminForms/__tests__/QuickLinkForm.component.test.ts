@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import type * as Inertia from '@inertiajs/vue3';
 
+import LinkTargetField from '@/Components/AdminForms/LinkTargetField.vue';
 import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
 
 // Real useForm (reactive) — the global inertia mock's useForm returns a plain object,
@@ -25,6 +26,10 @@ vi.mock('@/Composables/useApi', () => ({
     data: resolveUrlData,
     error: ref(null),
   })),
+  apiRequest: vi.fn(async () => {
+    await executeResolveUrl();
+    return { ok: resolveUrlData.value !== null, data: resolveUrlData.value };
+  }),
 }));
 
 const formStubs = {
@@ -111,8 +116,9 @@ describe('QuickLinkForm.vue', () => {
     wrapper = createWrapper();
     resolveUrlData.value = { url: '/lt/naujiena/nauja-stipendija' };
 
+    expect(wrapper.findComponent(LinkTargetField).exists()).toBe(true);
     await wrapper.find('[data-testid="confirm-picker"]').trigger('click');
-    await wrapper.vm.$nextTick();
+    await flushPromises();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const linkInput = wrapper.find('#link');
@@ -125,7 +131,7 @@ describe('QuickLinkForm.vue', () => {
 
     const topicSelect = wrapper.findAll('select').find(s => s.findAll('option').some(o => o.text() === 'Parama'));
     await topicSelect?.setValue('3');
-    await wrapper.vm.$nextTick();
+    await flushPromises();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const linkInput = wrapper.find('#link');
@@ -149,7 +155,7 @@ describe('QuickLinkForm.vue', () => {
     wrapper = createWrapper({ enableDelete: true, quickLink: { id: 5, text: 'Nuoroda', link: 'https://vu.lt' } });
 
     // Click delete button to open confirm dialog
-    const deleteBtn = wrapper.find('button.border-destructive\\/40');
+    const deleteBtn = wrapper.find('[data-slot="form-danger-zone"] button');
     expect(deleteBtn.exists()).toBe(true);
     await deleteBtn.trigger('click');
 

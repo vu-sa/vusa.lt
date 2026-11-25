@@ -48,7 +48,6 @@ interface StudentRepFormInfo {
 
 const props = defineProps<{
   studentRepFormInfo?: StudentRepFormInfo | null;
-  institutionName?: string;
 }>();
 
 const registrationUrl = computed(() => {

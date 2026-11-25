@@ -32,7 +32,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { Button } from '@/Components/ui/button';
 import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
-import { adminCollectionToKey, normalizeHit, type MapperContext, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
+import type { MapperContext } from '@/Search/admin/Utils/searchHitMappers';
 import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
 
 import SearchSelectView from './SearchSelectView.vue';
@@ -70,8 +71,7 @@ const controller = useAdminCollectionSearch({
   baseFilterBy: props.baseFilterBy,
 });
 
-const collectionKey = adminCollectionToKey(props.collection);
-const mapHit = (doc: unknown): NormalizedSearchHit => normalizeHit(collectionKey, doc, props.mapperCtx);
+const mapHit = (doc: unknown): NormalizedSearchHit => normalizeHit(props.collection, doc, props.mapperCtx);
 
 // Selection state mirrors SearchSelectDialog: a Set of record ids + a Map to keep
 // the full hit objects around even after a new search removes them from the list.

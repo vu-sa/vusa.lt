@@ -250,7 +250,7 @@
         />
 
         <div v-if="showTocOverlapWarning" class="border-t border-border p-4">
-          <Alert class="border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]">
+          <Alert class="border-status-attention-border bg-status-attention-surface text-status-attention">
             <AlertTriangle class="size-4" />
             <AlertTitle>{{ $t('Turinio lentelė gali persidengti su turiniu') }}</AlertTitle>
             <AlertDescription>
@@ -278,22 +278,10 @@
     </template>
 
     <template v-if="!isCreate && enableDelete" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti puslapį') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti puslapį')"
         :title="$t('Ištrinti puslapį?')"
         :description="$t('Puslapis bus perkeltas į šiukšlinę.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -304,12 +292,12 @@
 import { provide, computed, ref, h } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from '@lucide/vue';
+import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree } from '@lucide/vue';
 
 import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useContentEditor } from '@/Composables/useContentEditor';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
@@ -321,7 +309,7 @@ import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { resolveTenantPublicHost, resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { CollectionSelectDialog } from '@/Components/Pickers';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { Textarea } from '@/Components/ui/textarea';
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 
@@ -360,7 +348,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<(event: 'delete') => void>();
 
 const isCreate = computed(() => props.rememberKey === 'CreatePage');
-const deleteConfirmOpen = ref(false);
 
 const fieldIds: Record<string, string> = {
   title: 'title',
@@ -476,26 +463,26 @@ const FocusedLayoutIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', s
   h('rect', { x: 16, y: 24, width: 64, height: 32, rx: 2 }),
 ]);
 
-const layoutOptions = [
+const layoutOptions = computed(() => [
   {
     value: 'default',
-    label: 'Standartinis',
-    description: 'Su šonine juosta',
+    label: $t('Standartinis'),
+    description: $t('Su šonine juosta'),
     icon: DefaultLayoutIcon,
   },
   {
     value: 'wide',
-    label: 'Platus',
-    description: 'Visas plotis',
+    label: $t('Platus'),
+    description: $t('Visas plotis'),
     icon: WideLayoutIcon,
   },
   {
     value: 'focused',
-    label: 'Susikaupęs',
-    description: 'Centruotas',
+    label: $t('Susikaupęs'),
+    description: $t('Centruotas'),
     icon: FocusedLayoutIcon,
   },
-];
+]);
 
 const languageLabels = computed(() => ({
   lang: $t('Puslapio kalba'),

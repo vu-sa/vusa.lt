@@ -184,7 +184,7 @@
             v-if="pathChangedOnExistingForm"
             :class="[
               'flex items-center gap-2 border p-2.5 text-xs font-medium',
-              'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+              'border-status-attention-border bg-status-attention-surface text-status-attention',
             ]"
           >
             <AlertTriangle class="size-4 shrink-0" />

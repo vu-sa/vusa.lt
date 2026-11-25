@@ -1,7 +1,7 @@
 <template>
   <div
     data-slot="record-skeleton"
-    :class="cn('animate-pulse space-y-6', props.class)"
+    :class="cn('motion-safe:animate-pulse space-y-6', props.class)"
   >
     <!-- Title band skeleton -->
     <div class="space-y-3 pb-6 border-b border-border">
@@ -57,11 +57,3 @@ interface Props {
 
 const props = defineProps<Props>();
 </script>
-
-<style scoped>
-@media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
-}
-</style>

@@ -45,12 +45,8 @@
       <p class="text-sm font-medium text-foreground">
         {{ $t('Peržiūra') }}
       </p>
-      <div class="border border-border bg-secondary/50 p-4">
-        <SocialEmbedPreview
-          :url="modelValue.url"
-          :platform="detectedPlatform"
-          :show-caption="options.showCaption"
-        />
+      <div data-surface="public" class="border border-border bg-secondary/50 p-4 text-foreground">
+        <RCSocialEmbed :element="previewElement" />
       </div>
     </div>
 
@@ -69,19 +65,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, useId, watch } from 'vue';
 import { CircleCheck, TriangleAlert } from '@lucide/vue';
+import { computed, useId, watch } from 'vue';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import type { SocialEmbed } from '@/Types/contentParts';
 
+import RCSocialEmbed from '../RCSocialEmbed.vue';
 import { detectSocialPlatform } from '../embedUrl';
 
 import FacebookIcon from '~icons/simple-icons/facebook';
 import InstagramIcon from '~icons/simple-icons/instagram';
 
-const SocialEmbedPreview = defineAsyncComponent(() => import('./SocialEmbedPreview.vue'));
 const urlId = useId();
 const captionId = useId();
 
@@ -92,6 +88,16 @@ const options = defineModel<SocialEmbed['options']>('options');
 const hasInputUrl = computed(() => Boolean(modelValue.value?.url?.trim()));
 
 const detectedPlatform = computed(() => detectSocialPlatform(modelValue.value?.url));
+
+const previewElement = computed<SocialEmbed>(() => ({
+  json_content: {
+    url: modelValue.value?.url ?? '',
+    platform: null,
+  },
+  options: {
+    showCaption: options.value?.showCaption,
+  },
+}));
 
 const platformIcon = computed(() => {
   if (detectedPlatform.value === 'facebook') return FacebookIcon;

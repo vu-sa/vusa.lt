@@ -5,7 +5,6 @@ import { ref } from 'vue';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import { useCommandPalette } from '@/Composables/useCommandPalette';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
-import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
 import { loadWikiLinkTargets } from '@/Search/admin/useWikiLinkTargets';
 import { KnowledgeItemKind } from '@/Types/enums';
 
@@ -53,15 +52,23 @@ describe('admin palette relevance', () => {
       duties: [],
       news: [{ id: 'n1', title: 'Išrinkta Uršulė Barkauskaitė', _searchTitleMatches: [{ field: 'title', segments: [{ text: 'Išrinkta Uršulė Barkauskaitė', matched: true }] }], _text_match: '610246614105227019' }],
     },
-  ])('ranks $name', async ({ workspace, query, first, users, duties, news }) => {
+    {
+      name: 'an agenda item returned under its backend collection ID',
+      workspace: 'visak', query: 'Punktas', first: 'Punktas',
+      users: [], duties: [], news: [],
+      agendaItems: [{ id: 'a1', title: 'Punktas' }],
+    },
+  ])('ranks $name', async ({ workspace, query, first, users, duties, news, agendaItems = [] }) => {
     vi.mocked(useCommandActions).mockReturnValue({
       filterActions: () => [], activeWorkspace: ref({ key: workspace }),
       workspaceKeyForEntity: (entity: string) => entity === 'user' ? 'organizacija' : 'visak',
     } as unknown as ReturnType<typeof useCommandActions>);
-    const results = createEmptyMultiSearchResults();
-    results.users = users as unknown as typeof results.users;
-    results.duties = duties as unknown as typeof results.duties;
-    results.news = news as unknown as typeof results.news;
+    const results = {
+      users: { hits: users, found: users.length },
+      duties: { hits: duties, found: duties.length },
+      news: { hits: news, found: news.length },
+      agenda_items: { hits: agendaItems, found: agendaItems.length },
+    };
     vi.mocked(useAdminSearch).mockReturnValue({
       multiSearch: vi.fn().mockResolvedValue(results), initialize: vi.fn(), isRateLimited: ref(false), getDirectInstitutionIds: () => [],
     } as unknown as ReturnType<typeof useAdminSearch>);
@@ -92,7 +99,7 @@ describe('admin palette Wiki results', () => {
       filterActions: () => [], activeWorkspace: ref({ key: 'wiki' }), workspaceKeyForEntity: () => 'wiki',
     } as unknown as ReturnType<typeof useCommandActions>);
     vi.mocked(useAdminSearch).mockReturnValue({
-      multiSearch: vi.fn().mockResolvedValue(createEmptyMultiSearchResults()), initialize: vi.fn(), isRateLimited: ref(false), getDirectInstitutionIds: () => [],
+      multiSearch: vi.fn().mockResolvedValue({}), initialize: vi.fn(), isRateLimited: ref(false), getDirectInstitutionIds: () => [],
     } as unknown as ReturnType<typeof useAdminSearch>);
     const wrapper = mount(AdminCommandPalette, {
       global: { stubs: {

@@ -337,7 +337,7 @@ describe('ShowMeeting.vue', () => {
     const before = [...vi.mocked(router.on).mock.calls].reverse().find(([event]) => event === 'before')?.[1];
     expect(before).toBeDefined();
     const event = new CustomEvent('inertia:before', {
-      detail: { visit: { method: 'patch', except: [] } },
+      detail: { visit: { method: 'patch', only: [] as string[], except: [] as string[] } },
     });
     before?.(event as Parameters<NonNullable<typeof before>>[0]);
     expect(event.detail.visit.except).toEqual(['files', 'documents', 'pendingDocuments', 'recentAgendas']);

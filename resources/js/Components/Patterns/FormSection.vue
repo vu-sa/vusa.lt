@@ -8,7 +8,7 @@
         <div class="flex items-center gap-2">
           <span
             v-if="missingCount && missingCount > 0"
-            class="text-xs text-[var(--status-attention)]"
+            class="text-xs text-status-attention"
           >
             {{ $t('Trūksta :count laukų', { count: String(missingCount) }) }}
           </span>

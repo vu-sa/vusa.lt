@@ -17,24 +17,20 @@
     </div>
 
     <!-- Table -->
-    <DataTableProvider
-      ref="dataTableProviderRef"
+    <DataTable
       :columns
       :data
-      :is-server-side="false"
       :page-size
-      :enable-pagination
+      :pagination="enablePagination"
       :row-class-name
       :empty-message
       :enable-filtering="false"
-      :enable-column-visibility
-      :manual-filtering="false"
       :global-filter="searchText"
     >
       <template #empty>
         <slot name="empty">
           <div class="flex flex-col items-center justify-center py-8 text-center">
-            <component :is="emptyIcon || Circle" class="h-12 w-12 text-muted-foreground mb-4" />
+            <Circle class="h-12 w-12 text-muted-foreground mb-4" />
             <h3 class="text-lg font-medium mb-2">
               {{ emptyMessage || $t('tables.no_results') }}
             </h3>
@@ -44,47 +40,26 @@
           </div>
         </slot>
       </template>
-    </DataTableProvider>
+    </DataTable>
   </div>
 </template>
 
-<script setup lang="ts" generic="TData">
+<script setup lang="ts" generic="TData extends RowData">
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
+import type { RowData } from '@tanstack/vue-table';
 import { Circle } from '@lucide/vue';
 
 import { Input } from '@/Components/ui/input';
 import type { SimpleTableProps } from '@/Types/TableConfigTypes';
 
-import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
+import DataTable from '../ui/data-table/DataTable.vue';
 
-// Props using the simplified interface
-const props = withDefaults(defineProps<SimpleTableProps<TData>>(), {
+withDefaults(defineProps<SimpleTableProps<TData>>(), {
   enablePagination: true,
   pageSize: 10,
   enableFiltering: true,
-  enableColumnVisibility: false,
 });
 
-// Component state
 const searchText = ref('');
-
-// Reference to the DataTableProvider
-const dataTableProviderRef = ref<InstanceType<typeof DataTableProvider>>();
-
-// Expose public methods for external control
-const clearSearch = () => {
-  searchText.value = '';
-};
-
-const getFilteredData = () => {
-  return dataTableProviderRef.value?.getFilteredData() || [];
-};
-
-defineExpose({
-  clearSearch,
-  getFilteredData,
-  get searchText() { return searchText.value; },
-});
 </script>

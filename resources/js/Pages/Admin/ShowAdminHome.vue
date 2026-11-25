@@ -81,6 +81,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
+import type { PageProps } from '@/Types/index';
 import MyActivityRequests, { type ActiveActivityRequests } from '@/Components/Home/MyActivityRequests.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';

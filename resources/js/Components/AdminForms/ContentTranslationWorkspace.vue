@@ -28,9 +28,10 @@ import { computed, inject, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
+import { apiRequest } from '@/Composables/apiRequest';
+import type { PageProps } from '@/Types/index';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
-import { blankTranslation, type ContentEditorData } from '@/Composables/useContentEditor';
+import { blankTranslation, contentEditorRequestError, type ContentEditorData } from '@/Composables/useContentEditor';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 
@@ -44,7 +45,7 @@ const sourcePane = source ? { ...source, ready: computed(() => source.ready.valu
 const target = ref<ContentEditorData | null>(null);
 const error = ref('');
 const activeLocale = ref(source?.form.lang ?? 'lt');
-const userId = (usePage().props.auth as { user?: { id: string } })?.user?.id;
+const userId = usePage<PageProps>().props.auth?.user?.id;
 const draftPointer = `content-translation:${userId}:${source?.kind}:${source?.form.id ?? 'new'}`;
 let draftIdentity = source?.form.id
   ? `new-00000000-0000-4000-8000-${String(source.form.id).padStart(12, '0')}`
@@ -56,31 +57,57 @@ try {
 catch { /* Server recovery remains available when browser storage is blocked. */ }
 watch(() => source?.form.id, (id) => {
   if (!id) return;
-  try { localStorage.setItem(`content-translation:${userId}:${source?.kind}:${id}`, draftIdentity); }
+  try {
+    localStorage.setItem(`content-translation:${userId}:${source?.kind}:${id}`, draftIdentity);
+  }
   catch { /* The existing recovery identity still belongs to this editor session. */ }
 });
 watch(open, async (value) => {
   if (!value || !source) return;
   error.value = '';
   try {
-    target.value = props.counterpartId
-      ? (await http.get(route('api.v1.admin.contentEditor.show', { kind: source.kind, record: props.counterpartId }))).data.data
-      : blankTranslation(source.form);
-    if (!props.counterpartId && source.kind === 'pages' && source.form.parent_id) {
-      const { data } = await http.get(route('api.v1.admin.contentEditor.show', { kind: 'pages', record: source.form.parent_id }));
-      target.value!.parent_id = data.data.other_lang_id ?? null;
+    if (props.counterpartId) {
+      const result = await apiRequest<ContentEditorData>(route('api.v1.admin.contentEditor.show', { kind: source.kind, record: props.counterpartId }));
+      if (result.ok && result.data) {
+        target.value = result.data;
+      }
+      else {
+        error.value = contentEditorRequestError(result);
+      }
+      return;
+    }
+    target.value = blankTranslation(source.form);
+    if (source.kind === 'pages' && source.form.parent_id) {
+      const result = await apiRequest<ContentEditorData>(route('api.v1.admin.contentEditor.show', { kind: 'pages', record: source.form.parent_id }));
+      if (result.ok && result.data) {
+        target.value!.parent_id = result.data.other_lang_id ?? null;
+      }
+      else {
+        error.value = contentEditorRequestError(result);
+      }
     }
   }
-  catch (failure) { error.value = http.isError(failure) ? failure.response?.data?.message ?? failure.message : String(failure); }
+  catch (failure) {
+    error.value = String(failure);
+  }
 }, { immediate: true });
 async function paired() {
   if (!source?.form.id) return;
   pairingInProgress.value = true;
   try {
-    const { data: response } = await http.get(route('api.v1.admin.contentEditor.show', { kind: source.kind, record: source.form.id }));
-    source.acknowledgePairing?.(response.data);
+    const result = await apiRequest<ContentEditorData>(route('api.v1.admin.contentEditor.show', { kind: source.kind, record: source.form.id }));
+    if (result.ok && result.data) {
+      source.acknowledgePairing?.(result.data);
+    }
+    else {
+      error.value = $t('editor.counterpart_unavailable');
+    }
   }
-  catch { error.value = $t('editor.counterpart_unavailable'); }
-  finally { pairingInProgress.value = false; }
+  catch {
+    error.value = $t('editor.counterpart_unavailable');
+  }
+  finally {
+    pairingInProgress.value = false;
+  }
 }
 </script>

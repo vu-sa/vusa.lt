@@ -10,7 +10,7 @@
 
 import { computed, type ComputedRef, type MaybeRefOrGetter, toValue } from 'vue';
 
-import type { UrgencyLevel } from '@/Composables/useDashboardCardStyles';
+export type UrgencyLevel = 'success' | 'warning' | 'danger' | 'neutral';
 
 interface MeetingData {
   id: string | number;

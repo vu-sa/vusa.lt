@@ -1,12 +1,12 @@
 // Institution search interfaces - adapted from DocumentSearchTypes
 
 // Core search interfaces
-export interface InstitutionSearchFilters {
+export type InstitutionSearchFilters = {
   query: string;
   tenants: string[];
   types: string[]; // Institution type slugs for filtering
   hasContacts: boolean | null; // Filter by whether institution has active contacts
-}
+};
 
 export interface InstitutionFacet {
   field: string;

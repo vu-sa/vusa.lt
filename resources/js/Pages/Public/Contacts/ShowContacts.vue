@@ -26,7 +26,7 @@
     <!-- Main Content -->
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <!-- Search, Filter Controls & View Mode -->
-      <div class="space-y-4">
+      <div class="space-y-4" data-nosnippet>
         <div v-if="rootTypes.length > 0" class="hidden flex-wrap items-center gap-1.5 pb-1 sm:flex">
           <span class="mr-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {{ $t('Kategorijos') }}:
@@ -44,28 +44,7 @@
         </div>
 
         <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-          <!-- Search Input -->
-          <div class="relative min-w-0 flex-1">
-            <IFluentSearch16Regular class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              v-model="searchInput"
-              type="text"
-              :placeholder="`${$t('search.search_institutions_placeholder')}`"
-              :class="[
-                'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
-                'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
-              ]"
-            >
-            <button
-              v-if="searchInput"
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              @click="searchInput = ''"
-            >
-              <IFluentDismiss16Regular class="size-3.5" />
-              <span class="sr-only">{{ $t('Išvalyti') }}</span>
-            </button>
-          </div>
+          <PublicSearchInput v-model="searchInput" :placeholder="$t('search.search_institutions_placeholder')" />
 
           <!-- Filter Button (opens filter popovers row) -->
           <button
@@ -308,7 +287,7 @@ import { useDebounceFn, useStorage } from '@vueuse/core';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { useInstitutionSearch } from '@/Composables/useInstitutionSearch';
-import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import { PageTitleBand, PublicSearchInput } from '@/Components/Public/Base';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import TagChip from '@/Components/Brand/TagChip.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
@@ -319,7 +298,6 @@ import StudentRepInstitutionCard from '@/Components/Public/Institutions/StudentR
 import InstitutionResultsSkeleton from '@/Components/Public/Search/InstitutionResultsSkeleton.vue';
 import { TenantType } from '@/Types/enums';
 
-import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';

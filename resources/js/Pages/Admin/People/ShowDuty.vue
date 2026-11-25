@@ -33,7 +33,7 @@
     <template #alert>
       <div
         v-if="isVacant"
-        class="flex items-start gap-3 border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-4 text-[var(--status-attention)]"
+        class="flex items-start gap-3 border border-status-attention-border bg-status-attention-surface p-4 text-status-attention"
         data-testid="duty-vacancy-alert"
       >
         <UserX class="mt-0.5 size-5 shrink-0" />

@@ -1,6 +1,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import type { PageProps } from '@/Types/index';
 
 /**
  * The pending-task count the shell shows as a badge (O12: tasks are what needs you, so they

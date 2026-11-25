@@ -34,7 +34,7 @@ import {
   UserX,
 } from '@lucide/vue';
 
-import { DocumentStatus, GoalStatus, InstitutionActivityStatus, LearningImportance, LearningStage, LearningStepKind, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { DocumentStatus, GoalStatus, InstitutionActivityStatus, LearningImportance, LearningStepKind, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 import * as data from './statuses';
 
@@ -182,13 +182,6 @@ export const learningStepKinds = {
   [LearningStepKind.MeetingPrep]: withIcon(data.learningStepKinds[LearningStepKind.MeetingPrep], CalendarCheck),
 };
 
-export const learningStepStages = {
-  [LearningStage.BeforeStart]: withIcon(data.learningStepStages[LearningStage.BeforeStart], Clock3),
-  [LearningStage.FirstMonths]: withIcon(data.learningStepStages[LearningStage.FirstMonths], CalendarClock),
-  [LearningStage.WholeTerm]: withIcon(data.learningStepStages[LearningStage.WholeTerm], RefreshCw),
-  [LearningStage.TermEnd]: withIcon(data.learningStepStages[LearningStage.TermEnd], CalendarCheck),
-};
-
 export const learningStepImportances = {
   [LearningImportance.Essential]: withIcon(data.learningStepImportances[LearningImportance.Essential], CircleDot),
   [LearningImportance.Recommended]: withIcon(data.learningStepImportances[LearningImportance.Recommended], CircleCheck),
@@ -211,19 +204,6 @@ function withIcon(presentation: data.StatusPresentation, icon: LucideIcon): Stat
   return { ...presentation, icon };
 }
 
-export const learningImportanceStatuses = {
-  essential: withIcon(data.learningImportanceStatuses.essential, CircleDot),
-  recommended: withIcon(data.learningImportanceStatuses.recommended, Circle),
-  optional: withIcon(data.learningImportanceStatuses.optional, CircleDashed),
-};
-
 export const discussionTopicStatuses = {
   closed: withIcon(data.discussionTopicStatuses.closed, CircleCheck),
-};
-
-export const learningProgressStatuses = {
-  pending: withIcon(data.learningProgressStatuses.pending, Circle),
-  done: withIcon(data.learningProgressStatuses.done, CircleCheck),
-  skipped: withIcon(data.learningProgressStatuses.skipped, CircleMinus),
-  updated: withIcon(data.learningProgressStatuses.updated, RefreshCw),
 };

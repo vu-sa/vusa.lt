@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
 import type { AdminSection } from '@/Composables/useAdminNavigation';
+import { ModelEnum } from '@/Types/enums';
 
 import IndexTypes from '../IndexTypes.vue';
 
@@ -13,7 +14,7 @@ vi.mock('@/Composables/useFeatureSpotlight', () => ({
 
 const destination: AdminSection = {
   key: 'instituciju_tipai', label: 'shell.sections.instituciju_tipai',
-  routeName: 'institutionTypes.index', routeParams: {}, entityType: 'institution_type',
+  routeName: 'institutionTypes.index', routeParams: {}, entityType: ModelEnum.INSTITUTION_TYPE,
   description: 'shell.section_descriptions.instituciju_tipai',
   collectionActions: [], matches: ['institutionTypes.*'], startsGroup: false,
 };

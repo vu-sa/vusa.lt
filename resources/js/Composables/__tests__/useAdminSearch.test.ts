@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, reactive, type EffectScope } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import { adminSearchRequests } from '@/Components/Search/adminSearchCollections';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -155,41 +156,54 @@ describe('useAdminSearch collection searches', () => {
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
-  it('keeps collection keys separate and omits inaccessible collections in multi-search', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(json({ ...config, collections: {
-      ...config.collections,
-      meetings: { name: 'admin_meetings', key: 'meeting-key', hasAccess: true },
-      users: { name: 'admin_users', key: 'forbidden-key', hasAccess: false },
-    } })).mockResolvedValueOnce(json({ results: [{ hits: [], found: 0 }, { hits: [], found: 0 }] }));
+  const profile = {
+    version: 2,
+    parameters: { query_by: 'search_text_en,name_en', query_by_weights: '100,50', infix: 'off,fallback', num_typos: '2,2' },
+    defaultSort: 'updated_at:desc',
+    facetFields: [],
+    sortFields: ['updated_at'],
+  };
+
+  it.each(adminSearchRequests())('searches registered $id with its authorized key and server profile', async ({ id, limit }) => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(json({
+        ...config,
+        collections: { [id]: { name: `prefixed_${id}`, key: 'record-key', hasAccess: true } },
+        searchProfiles: { [id]: profile },
+        searchLocale: 'en',
+      }))
+      .mockResolvedValueOnce(json({ results: [{ hits: [{ document: { id: 'match' } }], found: 4 }] }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await createSearch().multiSearch('test');
+    const results = await createSearch().multiSearch('council', adminSearchRequests());
 
-    const { searches } = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(searches).toHaveLength(2);
-    expect(searches).toEqual(expect.arrayContaining([
-      expect.objectContaining({ 'collection': 'admin_meetings', 'x-typesense-api-key': 'meeting-key' }),
-      expect.objectContaining({ 'collection': 'institutions', 'x-typesense-api-key': 'scoped-key' }),
-    ]));
+    const [, request] = fetchMock.mock.calls[1];
+    expect(request.headers['X-TYPESENSE-API-KEY']).toBe('header-key');
+    expect(JSON.parse(request.body).searches).toEqual([expect.objectContaining({
+      'collection': `prefixed_${id}`, 'x-typesense-api-key': 'record-key', 'per_page': limit,
+      'query_by': 'search_text_en,name_en', 'query_by_weights': '100,50',
+      'infix': 'off,fallback', 'sort_by': '_text_match:desc,updated_at:desc',
+    })]);
+    expect(results[id]).toMatchObject({ hits: [{ id: 'match' }], found: 4 });
   });
 
-  it('uses server query fields and default sorting instead of client fallbacks', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(json({ ...config, searchProfiles: { institutions: {
-      version: 2,
-      parameters: { query_by: 'search_text_en,name_en', query_by_weights: '100,50', infix: 'off,fallback', num_typos: '2,2' },
-      defaultSort: 'updated_at:desc',
-      facetFields: [],
-      sortFields: ['updated_at'],
-    } }, searchLocale: 'en' })).mockResolvedValueOnce(json({ results: [{ hits: [], found: 0 }] }));
+  it('omits collections with missing access, keys or profiles and server-only collections', async () => {
+    const authorized = { name: 'prefixed', key: 'scoped-key', hasAccess: true };
+    const fetchMock = vi.fn().mockResolvedValueOnce(json({
+      ...config,
+      collections: {
+        pages: { ...authorized, hasAccess: false },
+        meetings: { ...authorized, key: '' },
+        news: authorized,
+        server_only: authorized,
+      },
+      searchProfiles: { pages: profile, meetings: profile, server_only: profile },
+    }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await createSearch().multiSearch('council');
+    await expect(createSearch().multiSearch('test', adminSearchRequests())).resolves.toEqual({});
 
-    const { searches } = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(searches[0]).toMatchObject({
-      query_by: 'search_text_en,name_en', query_by_weights: '100,50',
-      infix: 'off,fallback', sort_by: '_text_match:desc,updated_at:desc',
-    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('rechecks key expiry on access and deduplicates the expired config reload', async () => {

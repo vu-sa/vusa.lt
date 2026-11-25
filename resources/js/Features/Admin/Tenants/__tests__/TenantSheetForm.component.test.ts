@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TenantSheetForm, { type TenantInput, type TenantInstitution } from '@/Features/Admin/Tenants/TenantSheetForm.vue';
 import CollectionSelectContent from '@/Components/Pickers/CollectionSelectContent.vue';
-import { normalizeHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit } from '@/Components/Search/adminSearchCollections';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

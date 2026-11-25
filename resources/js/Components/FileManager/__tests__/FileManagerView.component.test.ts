@@ -6,6 +6,7 @@ import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionB
 import { commonStubs } from '@/tests/stubs';
 
 import FileManager from '../FileManager.vue';
+import { folderActionsFor } from '../fileActions';
 import type { DirectoryEntry, FileEntry } from '../types';
 
 const directories: DirectoryEntry[] = [
@@ -103,13 +104,11 @@ describe('FileManager', () => {
 
   it('offers delete only on an empty folder and posts it to the folder route', async () => {
     const wrapper = mountManager();
-    const vm = wrapper.vm as unknown as {
-      folderActionsFor: (d: DirectoryEntry) => { actions: { key: string }[]; note?: string };
-    };
+    const everything = { upload: true, createDirectory: true, deleteDirectory: true, update: true, delete: true };
 
-    expect(vm.folderActionsFor(directories[0]).actions.map(a => a.key)).not.toContain('delete');
-    expect(vm.folderActionsFor(directories[0]).note).toBe('files.ui.delete_folder_not_empty');
-    expect(vm.folderActionsFor(directories[1]).actions.map(a => a.key)).toContain('delete');
+    expect(folderActionsFor(directories[0]!, everything).actions.map(a => a.key)).not.toContain('delete');
+    expect(folderActionsFor(directories[0]!, everything).note).toBe('files.ui.delete_folder_not_empty');
+    expect(folderActionsFor(directories[1]!, everything).actions.map(a => a.key)).toContain('delete');
 
     wrapper.findComponent({ name: 'FolderStrip' }).vm.$emit('action', 'delete', directories[1]);
     await wrapper.vm.$nextTick();
@@ -119,12 +118,9 @@ describe('FileManager', () => {
   });
 
   it('hides folder delete from someone who may not delete folders here', () => {
-    const wrapper = mountManager({
-      abilities: { upload: true, createDirectory: true, deleteDirectory: false, update: false, delete: false },
-    });
-    const vm = wrapper.vm as unknown as { folderActionsFor: (d: DirectoryEntry) => { actions: unknown[]; note?: string } };
+    const abilities = { upload: true, createDirectory: true, deleteDirectory: false, update: false, delete: false };
 
-    expect(vm.folderActionsFor(directories[1])).toEqual({ actions: [], note: undefined });
+    expect(folderActionsFor(directories[1]!, abilities)).toEqual({ actions: [], note: undefined });
   });
 
   it('closes the details sheet after deleting its file, without blanking the list', async () => {
@@ -200,6 +196,12 @@ describe('FileManager', () => {
 
     expect(wrapper.text()).toContain('files.ui.checked');
     expect(wrapper.findAll('[data-slot="file-item"] [data-slot="checkbox"][data-state="checked"]')).toHaveLength(3);
+  });
+
+  it('drops a stale type from the URL when it falls back to all', () => {
+    const wrapper = mountManager({ initialState: { type: 'obsolete' } });
+
+    expect(wrapper.emitted('stateChange')?.[0]?.[0]).toMatchObject({ type: 'all' });
   });
 
   it('reports filters and the open file for the URL', async () => {

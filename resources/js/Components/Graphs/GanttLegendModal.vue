@@ -19,7 +19,7 @@
           <!-- Meetings Section -->
           <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <component :is="MeetingIconFilled" class="h-4 w-4" />
+              <component :is="MeetingIcon" class="h-4 w-4" />
               {{ $t('Posėdžiai') }}
             </h4>
             <div class="grid gap-2 pl-6" data-slot="gantt-legend-meeting-statuses">
@@ -39,7 +39,7 @@
 
           <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <component :is="MeetingIconFilled" class="h-4 w-4" />
+              <component :is="MeetingIcon" class="h-4 w-4" />
               {{ $t('visak.gantt.legend.types') }}
             </h4>
             <div class="grid gap-2 pl-6">
@@ -55,7 +55,7 @@
           <!-- Coverage Section -->
           <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <component :is="NotificationIconFilled" class="h-4 w-4" />
+              <component :is="Bell" class="h-4 w-4" />
               {{ $t('Atstovavimo padengimas') }}
             </h4>
             <div class="grid gap-2 pl-6">
@@ -129,7 +129,7 @@
           <!-- Institution Indicators Section -->
           <div class="mb-6 break-inside-avoid space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
-              <component :is="InstitutionIconFilled" class="h-4 w-4" />
+              <component :is="InstitutionIcon" class="h-4 w-4" />
               {{ $t('Institucijų indikatoriai') }}
             </h4>
             <div class="grid gap-2 pl-6">
@@ -332,11 +332,12 @@
 import { computed, ref, watch } from 'vue';
 import { useMutationObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Globe, Link2, CalendarOff, MailQuestion } from '@lucide/vue';
+import { Bell, Globe, Link2, CalendarOff, MailQuestion } from '@lucide/vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-import { InstitutionIconFilled, MeetingIconFilled, NotificationIconFilled } from '@/Components/icons';
+
+import { InstitutionIcon, MeetingIcon } from '@/Components/icons';
 import { meetingAlignmentStatuses, meetingCompletionStatuses } from '@/Constants/statuses';
 
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors';

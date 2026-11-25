@@ -23,7 +23,7 @@ tests:
   - tests/Feature/Permissions/UnclaimedUserVisibilityTest.php
   - tests/Feature/Api/Admin/UserSearchApiControllerTest.php
   - tests/Feature/DigestEmailPreferencesTest.php
-  - resources/js/Features/Admin/Occupancy/__tests__/MemberSearchField.component.test.ts
+  - resources/js/Components/Pickers/__tests__/UserSearchField.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowUser.component.test.ts
   - resources/js/Components/AdminForms/__tests__/UserForm.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts

@@ -19,46 +19,6 @@ export interface InstitutionPageMeeting {
   can_discard?: boolean;
 }
 
-export interface InstitutionPageTask {
-  id: string;
-  name: string | null;
-  description?: string | null;
-  due_date?: string | null;
-  completed_at?: string | null;
-  created_at?: string | null;
-  action_type?: string | null;
-  metadata?: Record<string, unknown> | null;
-  progress?: {
-    current: number;
-    total: number;
-    percentage: number;
-  } | null;
-  is_overdue?: boolean;
-  can_be_manually_completed?: boolean;
-  icon?: string | null;
-  color?: string | null;
-  taskable?: {
-    id: string;
-    name?: string;
-    type?: string;
-  } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users?: AvatarUser[];
-}
-
-export interface InstitutionPageRelatedInstitution {
-  is_active?: boolean;
-  id: string | number;
-  name: string | null;
-  direction?: 'outgoing' | 'incoming' | 'mutual';
-  via?: 'direct' | 'type';
-  kind?: string;
-  kind_label?: string;
-  cross_tenant?: boolean;
-  authorized?: boolean;
-}
-
 interface InstitutionPageType {
   id: number;
   title?: string | null;

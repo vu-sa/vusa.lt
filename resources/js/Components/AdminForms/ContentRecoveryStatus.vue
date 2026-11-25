@@ -17,7 +17,7 @@
         :class="[
           'size-4 shrink-0',
           editor.status.value === 'syncing' && 'animate-spin',
-          needsAttention && 'text-[var(--status-attention)]',
+          needsAttention && 'text-status-attention',
         ]"
         aria-hidden="true"
       />

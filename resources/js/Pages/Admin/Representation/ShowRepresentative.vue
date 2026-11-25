@@ -21,7 +21,7 @@
 
     <template v-if="rep.attention" #alert>
       <p
-        class="border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] px-4 py-3 text-sm font-medium text-foreground"
+        class="border border-status-attention-border bg-status-attention-surface px-4 py-3 text-sm font-medium text-foreground"
         data-slot="representative-attention-reason"
       >
         {{ attentionText(rep) }}

@@ -125,7 +125,6 @@ Rules for anything added there:
 | An entity type's icon + category colour | `EntityTypeMark` / `getEntityTypeDefinition` | `@/Components/Patterns/EntityTypeMark.vue`, `@/Constants/entityTypes` |
 | A settings screen with several independent saves | `OverviewPage` + a `SectionCard` per block | `@/Components/Layouts/OverviewPage.vue`, `@/Components/Patterns` |
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
-| Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
 | A ruled grid of destinations (icon, label, description) — Visi skyriai, overview sections, quick access | `NavigationTiles` (`WorkspaceSectionTiles` for a workspace's catalog sections) | `@/Components/Patterns`, `@/Components/Overview/WorkspaceSectionTiles.vue` |
 | A short list whose order the user changes (drag handle + arrows) | `SortableRowList` | `@/Components/Collection/SortableRowList.vue` |

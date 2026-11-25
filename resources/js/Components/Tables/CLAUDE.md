@@ -51,7 +51,8 @@ duplicate / restore / permanent delete come from `useCollectionRecordActions` wi
 ## SimpleDataTable
 
 Client-side TanStack table for embedded use (< ~100 rows): `:data` + `:columns` (`ColumnDef[]`).
-It renders through `ui/table`, so it shares the collection table's look.
+It composes `ui/data-table/DataTable.vue` directly for local search, sorting and pagination.
+Use `#filters` for facets over the supplied rows and `#empty` for a custom empty state.
 
 ## Gotchas
 

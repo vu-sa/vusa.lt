@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { h } from 'vue';
 
 import { commonStubs } from '@/tests/stubs';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import SearchSelectDialog from '../SearchSelectDialog.vue';
 

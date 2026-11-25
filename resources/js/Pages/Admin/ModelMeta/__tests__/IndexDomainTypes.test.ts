@@ -23,7 +23,7 @@ function render(typeKind: 'institutionType' | 'dutyType', canCreate: boolean) {
   }));
 
   return mount(IndexDomainTypes, {
-    props: { typeKind, types: [], deletedCount: 0 },
+    props: { typeKind, types: [], deletedCount: 0, abilities: { delete: false, restore: false } },
     global: {
       stubs: {
         CollectionPage: { name: 'CollectionPage', props: ['columns', 'source'], template: '<main><slot name="actions" /></main>' },

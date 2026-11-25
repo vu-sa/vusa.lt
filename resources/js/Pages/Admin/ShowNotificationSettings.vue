@@ -34,7 +34,7 @@
     <p
       v-if="!pushAvailable"
       data-testid="push-unavailable"
-      class="flex items-start gap-2 border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-3 text-xs leading-snug text-[var(--status-attention)]"
+      class="flex items-start gap-2 border border-status-attention-border bg-status-attention-surface p-3 text-xs leading-snug text-status-attention"
     >
       <Smartphone class="size-4 shrink-0" aria-hidden="true" />
       {{ $t('notifications.preferences.push_no_devices') }}
@@ -141,7 +141,7 @@
     <template #aside>
       <FormPanel :title="$t('notifications.preferences.mute_all')" :icon="BellOff">
         <template v-if="mutedUntil">
-          <p data-testid="muted-banner" class="flex items-center gap-1.5 text-sm font-medium text-[var(--status-attention)]">
+          <p data-testid="muted-banner" class="flex items-center gap-1.5 text-sm font-medium text-status-attention">
             <BellOff class="size-4 shrink-0" aria-hidden="true" />
             {{ $t('notifications.preferences.muted_until', { date: formatDateTime(mutedUntil) }) }}
           </p>

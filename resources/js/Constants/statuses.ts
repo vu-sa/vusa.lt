@@ -1,4 +1,4 @@
-import { DocumentStatus, GoalStatus, InstitutionActivityStatus, LearningImportance, LearningStage, LearningStepKind, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { DocumentStatus, GoalStatus, InstitutionActivityStatus, LearningImportance, LearningStepKind, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 export type StatusRole = 'neutral' | 'info' | 'progress' | 'attention' | 'success' | 'danger';
 
@@ -203,13 +203,6 @@ export const learningStepKinds: Record<LearningStepKind, StatusPresentation> = {
   [LearningStepKind.MeetingPrep]: status('learning.kinds.meeting_prep', 'neutral'),
 };
 
-export const learningStepStages: Record<LearningStage, StatusPresentation> = {
-  [LearningStage.BeforeStart]: status('learning.stages.before_start', 'info'),
-  [LearningStage.FirstMonths]: status('learning.stages.first_months', 'progress'),
-  [LearningStage.WholeTerm]: status('learning.stages.whole_term', 'neutral'),
-  [LearningStage.TermEnd]: status('learning.stages.term_end', 'attention'),
-};
-
 export const learningStepImportances: Record<LearningImportance, StatusPresentation> = {
   [LearningImportance.Essential]: status('learning.importance.essential', 'attention'),
   [LearningImportance.Recommended]: status('learning.importance.recommended', 'info'),
@@ -231,20 +224,7 @@ export function statusFor<K extends string, T extends StatusPresentation>(map: R
   return value && Object.hasOwn(map, value) ? map[value as K]! : null;
 }
 
-export const learningImportanceStatuses = {
-  essential: status('learning.importance.essential', 'info'),
-  recommended: status('learning.importance.recommended', 'neutral'),
-  optional: status('learning.importance.optional', 'neutral'),
-};
-
 /** A discussion topic: only a closed one carries a badge. */
 export const discussionTopicStatuses = {
   closed: status('discussions.topic.closed', 'success'),
-};
-
-export const learningProgressStatuses = {
-  pending: status('learning.states.pending', 'neutral'),
-  done: status('learning.states.done', 'success'),
-  skipped: status('learning.states.skipped', 'neutral'),
-  updated: status('learning.path.updated', 'info'),
 };

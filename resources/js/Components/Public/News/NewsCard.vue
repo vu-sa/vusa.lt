@@ -63,6 +63,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Image } from '@lucide/vue';
 import { computed } from 'vue';
 
+import type { PageProps } from '@/Types/index';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { descriptionMatch, matchTitle } from '@/Search/core/matches';
 import MediaFrame from '@/Components/Brand/MediaFrame.vue';

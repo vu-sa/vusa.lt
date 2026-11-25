@@ -144,7 +144,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import FileSelector from '@/Components/FileManager/FileSelector.vue';
 import { InlineCollectionSelect } from '@/Components/Pickers';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { Spinner } from '@/Components/ui/spinner';
 
 import { linkTargetProvider, type LinkTarget } from './linkTargets';

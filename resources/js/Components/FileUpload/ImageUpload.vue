@@ -108,7 +108,7 @@
           <!-- Success indicator -->
           <div
             v-if="isNewFile && !isBusy && localFiles[0]?.status === 'success'"
-            class="absolute bottom-2 right-2 flex size-6 items-center justify-center border border-border bg-background text-[var(--status-success)] shadow-xs"
+            class="absolute bottom-2 right-2 flex size-6 items-center justify-center border border-border bg-background text-status-success shadow-xs"
             data-slot="image-upload-success"
           >
             <Check class="size-3.5" />
@@ -244,7 +244,7 @@
       <div
         v-for="failed in localFiles.filter(f => f.status === 'error')"
         :key="failed.id"
-        class="mt-2 flex flex-wrap items-center gap-2 text-sm text-[var(--status-danger)]"
+        class="mt-2 flex flex-wrap items-center gap-2 text-sm text-status-danger"
         role="alert"
       >
         <span>{{ failed.error }}</span>

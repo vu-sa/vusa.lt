@@ -14,7 +14,8 @@
 
 <script setup lang="ts">
 import { useAdminCollectionSearch } from '@/Search/admin/Composables/useAdminCollectionSearch';
-import { adminCollectionToKey, normalizeHit, type MapperContext, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
+import type { MapperContext } from '@/Search/admin/Utils/searchHitMappers';
 import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
 
 import SearchSelectView from './SearchSelectView.vue';
@@ -48,6 +49,6 @@ const controller = useAdminCollectionSearch({
 
 // Real Typesense documents → the rich per-collection detail preview via
 // SearchSelectView's default detail pane (SearchDetailPane).
-const collectionKey = adminCollectionToKey(props.collection);
-const mapHit = (doc: unknown): NormalizedSearchHit => normalizeHit(collectionKey, doc, props.mapperCtx);
+
+const mapHit = (doc: unknown): NormalizedSearchHit => normalizeHit(props.collection, doc, props.mapperCtx);
 </script>

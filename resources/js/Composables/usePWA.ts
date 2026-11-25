@@ -5,6 +5,7 @@ import { toast } from 'vue-sonner';
 import type { registerSW as RegisterSW } from 'virtual:pwa-register';
 
 import { apiRequest, SessionExpiredError } from '@/Composables/apiRequest';
+import type { PageProps } from '@/Types/index';
 import { describeDevice } from '@/Utils/pushDevice';
 
 /**
@@ -116,7 +117,7 @@ function updatePWACookie(): void {
 }
 
 function getVapidKey(): string | null {
-  return (usePage().props.pwa as { vapidPublicKey?: string } | undefined)?.vapidPublicKey ?? null;
+  return usePage<PageProps>().props.pwa?.vapidPublicKey ?? null;
 }
 
 // Convert URL-safe base64 to Uint8Array for VAPID key
@@ -295,8 +296,8 @@ export function usePWA() {
       return currentBrowserSubscribed.value;
     }
     // Fall back to checking if current browser's endpoint is in server list
-    const page = usePage();
-    const endpoints = (page.props.pwa as { subscriptionEndpoints?: string[] } | undefined)?.subscriptionEndpoints ?? [];
+    const page = usePage<PageProps>();
+    const endpoints = page.props.pwa?.subscriptionEndpoints ?? [];
     if (currentBrowserEndpoint.value && endpoints.length > 0) {
       return endpoints.includes(currentBrowserEndpoint.value);
     }
@@ -306,8 +307,8 @@ export function usePWA() {
 
   // Check if ANY device has push subscription (for showing device management)
   const hasAnyPushSubscription = computed(() => {
-    const page = usePage();
-    return (page.props.pwa as { hasPushSubscription?: boolean } | undefined)?.hasPushSubscription ?? false;
+    const page = usePage<PageProps>();
+    return page.props.pwa?.hasPushSubscription ?? false;
   });
 
   // Check current browser's subscription status and store endpoint
@@ -329,8 +330,8 @@ export function usePWA() {
     }
 
     // Fallback: check against server-side endpoints
-    const page = usePage();
-    const endpoints = (page.props.pwa as { subscriptionEndpoints?: string[] } | undefined)?.subscriptionEndpoints ?? [];
+    const page = usePage<PageProps>();
+    const endpoints = page.props.pwa?.subscriptionEndpoints ?? [];
     if (currentBrowserEndpoint.value) {
       currentBrowserSubscribed.value = endpoints.includes(currentBrowserEndpoint.value);
     }

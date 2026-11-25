@@ -2,9 +2,9 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 
 import { highlightText, matchTitle, type SearchMatchDocument } from '@/Search/core/matches';
 
-import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
+import type { SearchHit } from '../Utils/searchHitMappers';
 
-export function useSearchHitMatches(hit: MaybeRefOrGetter<NormalizedSearchHit>) {
+export function useSearchHitMatches(hit: MaybeRefOrGetter<Pick<SearchHit<string>, 'raw' | 'title' | 'meta' | 'subtitle'>>) {
   const matches = computed(() => toValue(hit).raw as SearchMatchDocument);
   const titleMatch = computed(() => matchTitle(toValue(hit).title, matches.value._searchTitleMatches));
   const fieldMatches = computed(() => Object.values(matches.value._searchFieldMatches ?? {}));

@@ -7,21 +7,30 @@
  */
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
-import { BriefcaseBusiness, CalendarCheck, CalendarDays, ClipboardList, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck, type LucideIcon } from '@lucide/vue';
+import {
+  Bell,
+  Bookmark,
+  BriefcaseBusiness,
+  CalendarCheck,
+  CalendarDays,
+  ClipboardList,
+  Eye,
+  FileCheck,
+  FileText,
+  ListChecks,
+  ListTodo,
+  Megaphone,
+  MessageSquare,
+  Presentation,
+  Puzzle,
+  ShieldCheck,
+  User,
+  type LucideIcon,
+} from '@lucide/vue';
 
 import { formatNearDate } from '@/Utils/dateTime';
-import { getModelIcon } from '@/Components/icons';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import type { ModelEnum } from '@/Types/enums';
-
-// Default icons for notification categories
-import IFluentComment24Regular from '~icons/fluent/comment24-regular';
-import IFluentTaskListSquareLtr24Regular from '~icons/fluent/task-list-square-ltr24-regular';
-import IFluentBookmark24Regular from '~icons/fluent/bookmark24-regular';
-import IFluentDeviceMeetingRoomRemote24Regular from '~icons/fluent/device-meeting-room-remote24-regular';
-import IFluentDocumentBulletList24Regular from '~icons/fluent/document-bullet-list24-regular';
-import IFluentPerson24Regular from '~icons/fluent/person24-regular';
-import IFluentPuzzlePiece24Regular from '~icons/fluent/puzzle-piece24-regular';
-import IFluentAlert24Regular from '~icons/fluent/alert24-regular';
 
 export interface NotificationAction {
   label: string;
@@ -197,26 +206,27 @@ export function getNotificationIcon(notification: Notification): Component {
   // Try to get model-specific icon first
   const modelKey = getModelEnumKey(data);
   if (modelKey) {
-    return getModelIcon(modelKey);
+    const icon = getEntityTypeDefinition(modelKey)?.icon;
+    if (icon) return icon;
   }
 
   // Fall back to category-based icons
   const { category } = data;
   switch (category) {
     case 'comment':
-      return IFluentComment24Regular;
+      return MessageSquare;
     case 'task':
-      return IFluentTaskListSquareLtr24Regular;
+      return ListChecks;
     case 'reservation':
-      return IFluentBookmark24Regular;
+      return Bookmark;
     case 'meeting':
-      return IFluentDeviceMeetingRoomRemote24Regular;
+      return Presentation;
     case 'registration':
-      return IFluentDocumentBulletList24Regular;
+      return FileText;
     case 'user':
-      return IFluentPerson24Regular;
+      return User;
     case 'duty':
-      return IFluentPuzzlePiece24Regular;
+      return Puzzle;
     default:
       // Legacy type-based mapping
       return getIconByType(getNotificationType(notification));
@@ -230,30 +240,30 @@ function getIconByType(type: string): Component {
   switch (type) {
     case 'ModelCommented':
     case 'CommentPostedNotification':
-      return IFluentComment24Regular;
+      return MessageSquare;
     case 'MemberRegistered':
     case 'MemberRegistrationNotification':
     case 'StudentRepRegistrationNotification':
-      return IFluentDocumentBulletList24Regular;
+      return FileText;
     case 'UserAttachedToModel':
     case 'AssignedToResourceNotification':
-      return IFluentPerson24Regular;
+      return User;
     case 'TaskAssignedNotification':
     case 'TaskCompletedNotification':
     case 'TaskOverdueNotification':
     case 'TaskCreatedNotification':
     case 'TaskReminderNotification':
-      return IFluentTaskListSquareLtr24Regular;
+      return ListChecks;
     case 'ReservationStatusChangedNotification':
-      return IFluentBookmark24Regular;
+      return Bookmark;
     case 'MeetingReminderNotification':
-      return IFluentDeviceMeetingRoomRemote24Regular;
+      return Presentation;
     case 'DutyExpiringNotification':
-      return IFluentPuzzlePiece24Regular;
+      return Puzzle;
     case 'WelcomeNotification':
-      return IFluentPerson24Regular;
+      return User;
     default:
-      return IFluentAlert24Regular;
+      return Bell;
   }
 }
 

@@ -70,6 +70,7 @@ return [
         'meetings' => 'You see public meetings and meetings of institutions reached through non-ended duties, authorized relationships or secretary nominations. You can see and edit your institutions’ meetings whose date falls within :period, even after your duties end.',
         'agendaItems' => 'You see public agenda items of public meetings. You can see, create, edit and delete items and votes of your institutions’ meetings dated within :period, even after your duties end. You also see items through non-ended duties, authorized relationships and secretary nominations. Meeting editing access includes managing its agenda.',
         'problems' => 'Sees every unit\'s problems.',
+        'goals' => 'Members of pilot-enrolled units can read all participating units\' goals.',
         'resources' => 'Sees all resources.',
         'documents' => 'Every member browses published documents in ViSAK. These permissions are for managing them: seeing pending and hidden files, publishing and hiding.',
         'duties' => 'Sees their current and past duties and terms.',

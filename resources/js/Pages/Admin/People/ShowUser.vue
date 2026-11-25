@@ -43,7 +43,7 @@
       <!-- Shown once: the server flashes the password on the redirect and never keeps it. -->
       <div
         v-if="generatedPassword"
-        class="space-y-2 border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-4"
+        class="space-y-2 border border-status-attention-border bg-status-attention-surface p-4"
         data-testid="generated-password"
       >
         <p class="text-sm font-semibold text-foreground">
