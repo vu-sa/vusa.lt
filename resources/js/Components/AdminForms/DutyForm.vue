@@ -54,59 +54,14 @@
         />
       </FormFieldWrapper>
 
-      <div v-if="showFormerNames" id="duty-former-names" class="-mt-2 space-y-1" data-testid="duty-former-names">
-        <FieldHistoryDisclosure v-model:open="formerNamesOpen" :label="$t('Ankstesni pavadinimai')" :count="form.former_names.length">
-          <li class="px-3 py-2 text-xs text-muted-foreground">
-            {{ $t('Seni laikotarpiai rodomi su tuo metu galiojusiu pavadinimu.') }}
-          </li>
-          <li
-            v-for="(former, index) in form.former_names"
-            :key="index"
-            class="grid gap-2 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_10rem_auto] sm:items-end"
-            data-testid="former-name-row"
-          >
-            <div class="space-y-1">
-              <Label :for="`former-name-lt-${index}`" class="flex items-center gap-2 text-xs text-muted-foreground">
-                LT
-                <span v-if="former.auto" class="border border-border bg-secondary px-1.5 text-xs font-medium text-foreground">{{ $t('Naujas') }}</span>
-              </Label>
-              <Input :id="`former-name-lt-${index}`" v-model="former.name.lt" :disabled="former.auto" />
-            </div>
-            <div class="space-y-1">
-              <Label :for="`former-name-en-${index}`" class="text-xs text-muted-foreground">EN</Label>
-              <Input :id="`former-name-en-${index}`" v-model="former.name.en" :disabled="former.auto" />
-            </div>
-            <div class="space-y-1">
-              <Label class="text-xs text-muted-foreground">{{ $t('Naudotas iki') }}</Label>
-              <DatePicker
-                :model-value="former.used_until"
-                :disabled="former.auto"
-                @update:model-value="(value?: Date) => former.used_until = value ? formatDate(value) : ''"
-              />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              class="u-touch text-destructive"
-              :aria-label="$t('Pašalinti')"
-              data-testid="former-name-remove"
-              @click="removeFormerName(index)"
-            >
-              <Trash2 class="size-3.5" />
-            </Button>
-          </li>
-          <li class="p-2">
-            <Button type="button" variant="ghost" size="sm" voice="sentence" class="u-touch" @click="addFormerName">
-              <Plus class="size-3.5" />
-              {{ $t('Pridėti ankstesnį pavadinimą') }}
-            </Button>
-          </li>
-        </FieldHistoryDisclosure>
-        <p v-if="formerNamesError" class="text-xs text-destructive" role="alert">
-          {{ formerNamesError }}
-        </p>
-      </div>
+      <DutyFormerNamesField
+        v-if="showFormerNames"
+        v-model:open="formerNamesOpen"
+        :rows="form.former_names"
+        :error="formerNamesError"
+        @add="addFormerName"
+        @remove="removeFormerName"
+      />
 
       <!-- Duplicate Duty Warning -->
       <DuplicateDutyWarning
@@ -178,74 +133,16 @@
       </FormFieldWrapper>
     </template>
 
-    <FormSection
+    <DutyAssignableTenantsSection
       v-if="showAssignableTenants"
-      :title="$t('forms.fields.assignable_tenants')"
-      :description="$t('Leisti kitiems padaliniams skirti atstovus į šią pareigybę.')"
-      data-testid="assignable-tenants-section"
-    >
-      <div class="space-y-3">
-        <MultiSelect
-          v-if="canEditDuty"
-          id="assignable-tenants"
-          v-model="selectedAssignableTenants"
-          :options="assignableTenants"
-          label-field="shortname"
-          value-field="id"
-          :placeholder="$t('forms.placeholders.select_tenants')"
-        />
-        <div v-if="visibleAssignableTenantRows.length > 0" class="divide-y divide-border border border-border">
-          <div
-            v-for="row in visibleAssignableTenantRows"
-            :key="row.tenant_id"
-            class="flex items-center justify-between p-3"
-          >
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-medium text-foreground">{{ tenantShortname(row) }}</span>
-              <span
-                class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-semibold text-muted-foreground"
-                :data-testid="`tenant-occupancy-${row.tenant_id}`"
-              >
-                {{ tenantOccupancy(row) }} / {{ row.quota ?? '∞' }}
-              </span>
-            </div>
-            <div v-if="canEditDuty" class="flex items-center gap-2">
-              <div class="flex items-center gap-1.5">
-                <Label :for="`quota-${row.tenant_id}`" class="text-xs text-muted-foreground">{{ $t('Kvota') }}:</Label>
-                <Input
-                  :id="`quota-${row.tenant_id}`"
-                  v-model.number="row.quota"
-                  type="number"
-                  min="1"
-                  class="h-7 w-16 text-center text-xs"
-                />
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                class="u-touch text-destructive"
-                @click="removeTenantRow(row.tenant_id)"
-              >
-                <Trash2 class="size-3.5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-        <Button
-          v-if="canEditDuty"
-          type="button"
-          variant="ghost"
-          size="sm"
-          voice="sentence"
-          class="u-touch text-muted-foreground"
-          data-testid="assignable-tenants-clear"
-          @click="clearAssignableTenants"
-        >
-          {{ $t('Nebeleisti kitiems padaliniams skirti atstovų') }}
-        </Button>
-      </div>
-    </FormSection>
+      v-model:rows="form.assignable_tenants"
+      :tenants="assignableTenants"
+      :can-edit-duty="canEditDuty"
+      :acting-tenant-ids="actingAssignableTenantIds"
+      :picked-users="assignableTenantUsers"
+      :ex-officio-members="exOfficioMembers"
+      @clear="clearAssignableTenants"
+    />
 
     <SpotlightPopover
       v-if="fillActions.length"
@@ -422,21 +319,18 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, ChevronsUpDown, History, Plus, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
+import { Building2, ChevronsUpDown, History, Plus, SlidersHorizontal, Users } from '@lucide/vue';
 
 import { operatingStatuses } from '@/Constants/statusIcons';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { FieldHistoryDisclosure, FormDangerZone, FormFillActions, FormPanel, FormSection, type FormFillAction } from '@/Components/Patterns';
-import { DatePicker } from '@/Components/ui/date-picker';
+import { FormDangerZone, FormFillActions, FormPanel, type FormFillAction } from '@/Components/Patterns';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { NumberField } from '@/Components/ui/number-field';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
-import { MultiSelect } from '@/Components/ui/multi-select';
 import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import InstitutionSelectDialog from '@/Components/Pickers/InstitutionSelectDialog.vue';
 import CollectionSelectDialog from '@/Components/Pickers/CollectionSelectDialog.vue';
@@ -452,18 +346,10 @@ import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 import ActivityStatusField from './ActivityStatusField.vue';
+import DutyAssignableTenantsSection from './Duty/DutyAssignableTenantsSection.vue';
+import DutyFormerNamesField from './Duty/DutyFormerNamesField.vue';
+import { visibleAssignableTenantRows, type AssignableTenantRow, type FormerNameRow } from './Duty/dutyFormRows';
 
-interface AssignableTenantRow {
-  tenant_id: number;
-  quota: number | null;
-}
-
-interface FormerNameRow {
-  name: { lt: string; en: string };
-  used_until: string;
-  /** Added because the name was just changed; follows the rename rather than being edited. */
-  auto?: boolean;
-}
 
 interface DutyPropType {
   id?: string;
@@ -750,7 +636,7 @@ const onExOfficioConfirm = (hits: NormalizedSearchHit[]) => {
 const assignableTenantsRevealed = ref(false);
 const showAssignableTenants = computed(() => (props.assignableTenants?.length ?? 0) > 0 && (props.canEditDuty
   ? form.assignable_tenants.length > 0 || assignableTenantsRevealed.value
-  : visibleAssignableTenantRows.value.length > 0));
+  : visibleAssignableTenantRows(form.assignable_tenants, false, props.actingAssignableTenantIds).length > 0));
 
 const revealAssignableTenants = async () => {
   assignableTenantsRevealed.value = true;
@@ -764,38 +650,6 @@ const clearAssignableTenants = () => {
   if (form.contacts_grouping === 'tenant') {
     form.contacts_grouping = 'none';
   }
-};
-
-const selectedAssignableTenants = computed({
-  get: () => {
-    const ids = new Set(form.assignable_tenants.map(r => r.tenant_id));
-    return (props.assignableTenants ?? []).filter(t => ids.has(t.id));
-  },
-  set: (tenants: Array<{ id: number; shortname: string }>) => {
-    const existingMap = new Map(form.assignable_tenants.map(r => [r.tenant_id, r.quota]));
-    form.assignable_tenants = tenants.map(t => ({
-      tenant_id: t.id,
-      quota: existingMap.get(t.id) ?? null,
-    }));
-  },
-});
-
-const visibleAssignableTenantRows = computed(() => {
-  if (!props.canEditDuty) {
-    const actingIds = new Set(props.actingAssignableTenantIds ?? []);
-    return form.assignable_tenants.filter(r => actingIds.has(r.tenant_id));
-  }
-  return form.assignable_tenants;
-});
-
-const tenantShortname = (row: AssignableTenantRow) => {
-  return props.assignableTenants?.find(t => t.id === row.tenant_id)?.shortname ?? String(row.tenant_id);
-};
-
-const tenantOccupancy = (row: AssignableTenantRow) => {
-  const pickedCount = (props.assignableTenantUsers?.[row.tenant_id] ?? []).length;
-  const exOfficioCount = (props.exOfficioMembers ?? []).filter(m => m.tenant_id === row.tenant_id).length;
-  return pickedCount + exOfficioCount;
 };
 
 const fillSpotlight = useFeatureSpotlight('duty-form-fill-actions-v1');
@@ -821,8 +675,4 @@ const fillActions = computed<FormFillAction[]>(() => {
 
   return actions;
 });
-
-const removeTenantRow = (tenantId: number) => {
-  form.assignable_tenants = form.assignable_tenants.filter(r => r.tenant_id !== tenantId);
-};
 </script>
