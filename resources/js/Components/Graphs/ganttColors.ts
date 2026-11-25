@@ -152,13 +152,13 @@ export const lightModeColors: GanttColors = {
   // Tooltips
   tooltipBg: 'oklch(0.995 0.003 85)', // --popover
   tooltipText: 'oklch(0.17 0.008 70)', // --popover-foreground
-  tooltipBorder: 'oklch(0.855 0.008 80)', // --border
+  tooltipBorder: 'oklch(0.9 0.007 80)', // --border
 
   // Center line indicator
   centerLine: 'oklch(0.46 0.01 75 / 60%)', // --muted-foreground/60%, never confused with today
   centerDateBg: 'oklch(0.995 0.003 85)', // --popover
   centerDateText: 'oklch(0.17 0.008 70)', // --popover-foreground
-  centerDateBorder: 'oklch(0.855 0.008 80)', // --border
+  centerDateBorder: 'oklch(0.9 0.007 80)', // --border
 
   // Month headers
   monthHeaderBg: 'oklch(0.93 0.006 85)', // --muted

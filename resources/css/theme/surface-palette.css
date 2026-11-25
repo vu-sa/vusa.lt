@@ -36,8 +36,8 @@
   --accent: oklch(0.925 0.006 85);
   --accent-foreground: oklch(0.2 0.008 70);
   --destructive: oklch(0.55 0.19 27);
-  --border: oklch(0.855 0.008 80);
-  --input: oklch(0.76 0.01 78);
+  --border: oklch(0.9 0.007 80);
+  --input: oklch(0.8 0.009 78);
   --ring: oklch(0.48 0.18 25);
 
   /* Light mode's `--border` is already fully opaque, so it renders identically regardless of
