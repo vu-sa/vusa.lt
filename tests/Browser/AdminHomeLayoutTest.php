@@ -23,6 +23,14 @@ it('keeps the home layout within the viewport at the redesign widths', function 
 
             if (! $dark && $width === 390) {
                 docsScreenshot($page, 'admin-home-phone');
+                $headerTop = 'document.querySelector("[data-slot=mobile-context-bar]").getBoundingClientRect().top';
+                $top = $page->script($headerTop);
+
+                foreach ([300, 100, 0] as $offset) {
+                    $page->script('document.querySelector("[data-slot=admin-scroll-area]").scrollTop = '.$offset);
+                    expect($page->script('document.querySelector("[data-slot=admin-scroll-area]").scrollTop'))->toBe($offset)
+                        ->and($page->script($headerTop))->toBe($top);
+                }
             }
 
             // 840 ends the desktop frame after Tavo institucijos instead of on the next heading.

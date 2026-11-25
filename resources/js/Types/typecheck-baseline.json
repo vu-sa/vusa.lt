@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2291,
+  "total": 2289,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -447,7 +447,6 @@
     "resources/js/Components/Layouts/FormPage.vue | TS7053 | Element implicitly has an 'any' type because expression of type '\"title-status\"' can't be used to index type 'Readonly<__VLS_Slots> & __VLS_Slots'.": 1,
     "resources/js/Components/Layouts/Shell/Shell.stories.ts | TS2322 | Type '(story: () => unknown) => unknown' is not assignable to type 'DecoratorFunction$2<VueRenderer, {}>'.": 2,
     "resources/js/Components/Layouts/Shell/__tests__/AdminShell.component.test.ts | TS2532 | Object is possibly 'undefined'.": 1,
-    "resources/js/Components/Layouts/Shell/__tests__/MobileBottomBar.component.test.ts | TS2532 | Object is possibly 'undefined'.": 2,
     "resources/js/Components/Layouts/Shell/__tests__/MobileMenuPanel.component.test.ts | TS2532 | Object is possibly 'undefined'.": 5,
     "resources/js/Components/Layouts/Shell/__tests__/PaletteField.component.test.ts | TS2532 | Object is possibly 'undefined'.": 5,
     "resources/js/Components/Layouts/Shell/__tests__/SectionTabs.component.test.ts | TS18048 | 'agendaItems' is possibly 'undefined'.": 3,
