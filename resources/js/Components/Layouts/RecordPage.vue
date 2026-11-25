@@ -63,7 +63,7 @@
               </div>
 
               <div class="flex shrink-0 flex-wrap items-center gap-2 lg:ml-auto">
-                <div v-if="navigation" class="flex h-11 items-center border border-border">
+                <div v-if="navigation" class="flex h-11 items-center rounded-md border border-border">
                   <Button
                     variant="ghost"
                     :size="navigation.previousLabel ? 'default' : 'icon-lg'"

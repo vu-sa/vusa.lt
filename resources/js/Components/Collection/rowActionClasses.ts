@@ -1,5 +1,5 @@
 export const rowActionIconClass = [
-  'flex size-9 items-center justify-center border border-border text-muted-foreground transition-colors',
+  'flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors',
   'pointer-coarse:size-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
 ].join(' ');
 

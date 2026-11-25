@@ -83,7 +83,7 @@
       :class="view === 'preview' ? 'grid min-w-0 max-w-full gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : ''"
     >
       <div class="min-w-0">
-        <div v-if="view === 'table'" ref="tableEl" class="min-w-0 max-w-full overflow-x-auto border border-border" data-slot="collection-table">
+        <div v-if="view === 'table'" ref="tableEl" class="min-w-0 max-w-full overflow-x-auto rounded-md border border-border" data-slot="collection-table">
           <Table :class="tableFixed ? ['table-fixed', tableMinWidth ?? 'min-w-[52rem]'] : undefined">
             <TableHeader>
               <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">

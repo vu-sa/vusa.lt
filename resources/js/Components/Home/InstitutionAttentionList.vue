@@ -11,7 +11,7 @@
         </Link>
         <span
           v-if="institution.is_secretary ?? institution.is_administered"
-          class="mt-1 inline-flex items-center gap-1 border border-border px-1.5 py-0.5 text-xs text-muted-foreground"
+          class="mt-1 inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-xs text-muted-foreground"
           :title="$t('secretaries.dashboard.secretary_hint')"
           data-slot="institution-secretary-badge"
         >

@@ -10,7 +10,7 @@
       <span>{{ label }} ({{ count }})</span>
     </summary>
 
-    <div class="mt-2 border border-border bg-background">
+    <div class="mt-2 rounded-md border border-border bg-background">
       <ul class="divide-y divide-border">
         <slot />
       </ul>

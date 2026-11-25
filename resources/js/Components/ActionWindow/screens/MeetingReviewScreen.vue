@@ -49,7 +49,7 @@
          delegates into the option is absent rather than offered and refused. -->
     <label
       v-if="canAnnounce"
-      class="mt-4 flex cursor-pointer select-none items-start gap-3 border border-border bg-card p-4"
+      class="mt-4 flex cursor-pointer select-none items-start gap-3 rounded-md border border-border bg-card p-4"
     >
       <Checkbox
         :model-value="!!draft.meeting.announce_in_calendar"

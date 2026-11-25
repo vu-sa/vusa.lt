@@ -6,7 +6,7 @@
   >
     <time
       :datetime="meeting.start_time"
-      class="flex size-12 shrink-0 flex-col items-center justify-center border border-border bg-card text-center"
+      class="flex size-12 shrink-0 flex-col items-center justify-center rounded-md border border-border bg-card text-center"
     >
       <span class="mb-0.5 text-[11px] leading-none font-semibold uppercase text-brand">{{ formatMonthAbbr(meeting.start_time) }}</span>
       <span class="text-lg leading-none font-semibold tabular-nums">{{ day(meeting.start_time) }}</span>

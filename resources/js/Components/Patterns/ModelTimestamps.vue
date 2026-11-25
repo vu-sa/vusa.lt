@@ -1,5 +1,5 @@
 <template>
-  <dl v-if="createdAt || updatedAt" class="border border-border bg-background text-sm" data-slot="model-timestamps">
+  <dl v-if="createdAt || updatedAt" class="rounded-md border border-border bg-background text-sm" data-slot="model-timestamps">
     <div v-if="createdAt" class="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
       <dt class="text-muted-foreground">
         {{ $t('Sukurta') }}

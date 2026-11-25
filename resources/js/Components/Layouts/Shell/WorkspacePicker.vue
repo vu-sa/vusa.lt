@@ -13,7 +13,7 @@
         <Button
           variant="ghost"
           size="xs"
-          class="gap-2 border border-border px-3 text-xs font-bold uppercase tracking-wide pointer-coarse:h-11 hover:border-brand hover:bg-transparent hover:text-brand"
+          class="gap-2 rounded-md border border-border px-3 text-xs font-bold uppercase tracking-wide pointer-coarse:h-11 hover:border-brand hover:bg-transparent hover:text-brand"
         >
           <component :is="workspaceIcon(activeWorkspace?.key ?? 'pradzia')" class="size-4 text-brand" />
           <span>{{ activeWorkspace ? $t(activeWorkspace.label) : $t('shell.chrome.workspaces') }}</span>

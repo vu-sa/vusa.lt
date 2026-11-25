@@ -24,7 +24,7 @@
       </Button>
     </DropdownMenuTrigger>
 
-    <DropdownMenuContent align="end" class="w-72 border border-border bg-popover p-0 shadow-none">
+    <DropdownMenuContent align="end" class="w-72 rounded-md border border-border bg-popover p-0 shadow-none">
       <!-- User Identity Header -->
       <div class="border-b border-border px-4 py-3">
         <p class="truncate text-sm font-bold text-foreground">
@@ -65,7 +65,7 @@
             <Palette class="size-4 shrink-0" />
             <span>{{ $t('shell.account.appearance') }}</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent class="w-64 border border-border bg-popover p-1 shadow-none">
+          <DropdownMenuSubContent class="w-64 rounded-md border border-border bg-popover p-1 shadow-none">
             <DropdownMenuItem class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium" @select="toggleDarkMode">
               <Sun v-if="isDark" class="size-4 shrink-0" />
               <Moon v-else class="size-4 shrink-0" />
@@ -83,7 +83,7 @@
             <CircleHelp class="size-4 shrink-0" />
             <span>{{ $t('shell.account.help') }}</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent class="w-64 border border-border bg-popover p-1 shadow-none">
+          <DropdownMenuSubContent class="w-64 rounded-md border border-border bg-popover p-1 shadow-none">
             <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <a :href="docsBase" target="_blank" rel="noopener noreferrer">
                 <BookOpen class="size-4 shrink-0" />
@@ -127,7 +127,7 @@
             <Info class="size-4 shrink-0" />
             <span>{{ $t('shell.account.about') }}</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent class="w-56 border border-border bg-popover p-1 shadow-none">
+          <DropdownMenuSubContent class="w-56 rounded-md border border-border bg-popover p-1 shadow-none">
             <DropdownMenuLabel class="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               {{ lastUpdateDate ?? 'VU SA' }}
             </DropdownMenuLabel>

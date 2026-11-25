@@ -8,7 +8,7 @@
         <button
           v-if="canGoBack"
           type="button"
-          class="flex size-8 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+          class="flex size-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
           :aria-label="$t('action_window.common.back')"
           @click="back"
         >
@@ -59,7 +59,7 @@
       <!-- Close button -->
       <button
         type="button"
-        class="flex size-8 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+        class="flex size-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
         :aria-label="$t('action_window.common.close')"
         @click="close"
       >

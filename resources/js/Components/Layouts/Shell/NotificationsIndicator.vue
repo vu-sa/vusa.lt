@@ -4,7 +4,7 @@
       <Button
         variant="ghost"
         size="icon"
-        class="relative size-8 shrink-0 border border-border text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+        class="relative size-8 shrink-0 rounded-md border border-border text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
         data-tour="notifications-indicator"
         :aria-label="$t('Pranešimai')"
       >
@@ -27,7 +27,7 @@
     <PopoverContent
       :class="[
         'flex max-h-[min(36rem,var(--reka-popover-content-available-height))] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden',
-        'border border-border bg-popover p-0 shadow-xl sm:w-96',
+        'rounded-md border border-border bg-popover p-0 shadow-xl sm:w-96',
       ]"
       align="end"
       :collision-padding="16"
@@ -53,7 +53,7 @@
             :href="route('profile.notifications')"
             :title="$t('shell.account.notifications')"
             :class="[
-              'flex size-7 items-center justify-center border border-border text-muted-foreground',
+              'flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground',
               'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
             ]"
             @click="isOpen = false"
@@ -76,7 +76,7 @@
             <!-- Square category icon box -->
             <div
               :class="[
-                'mt-0.5 flex size-8 shrink-0 items-center justify-center border border-border',
+                'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border border-border',
                 getNotificationColorClasses(notification).combined,
               ]"
             >
@@ -161,7 +161,7 @@
                 v-if="!notification.read_at"
                 type="button"
                 :class="[
-                  'flex size-7 items-center justify-center border border-border text-muted-foreground',
+                  'flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground',
                   'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
                 ]"
                 :title="$t('Pažymėti kaip skaitytą')"
@@ -179,7 +179,7 @@
           v-else
           class="flex flex-col items-center justify-center p-8 text-center"
         >
-          <div class="mb-3 flex size-10 items-center justify-center border border-border bg-secondary">
+          <div class="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-secondary">
             <Bell class="size-5 text-muted-foreground" />
           </div>
           <p class="text-sm font-semibold text-foreground">

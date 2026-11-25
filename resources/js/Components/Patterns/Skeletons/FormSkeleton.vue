@@ -23,7 +23,7 @@
         />
 
         <!-- Input box -->
-        <div class="h-10 w-full border border-border bg-secondary/40" />
+        <div class="h-10 w-full rounded-md border border-border bg-secondary/40" />
 
         <!-- Hint -->
         <div
