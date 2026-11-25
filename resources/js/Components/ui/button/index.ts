@@ -23,6 +23,8 @@ const buttonVariantClasses = cva(
         'ghost': 'text-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent',
         'link': 'h-auto px-0 text-brand underline-offset-4 hover:underline',
         'destructive': 'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30',
+        // An irreversible action that should not shout until pointed at (form danger zones).
+        'destructive-outline': 'border border-destructive/40 bg-transparent text-destructive hover:border-destructive hover:bg-destructive hover:text-white focus-visible:ring-destructive/30',
         'success': 'border border-status-success-border bg-status-success-surface text-status-success hover:border-status-success',
         'warning': 'border border-status-attention-border bg-status-attention-surface text-status-attention hover:border-status-attention',
         // Fixed-dark grounds (hero scrim, ink panels), where light-mode `--foreground` is near-black.
