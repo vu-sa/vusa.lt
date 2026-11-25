@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ref } from 'vue';
 
 import { TagChip } from '@/Components/Brand';
+import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import { Button } from '@/Components/ui/button';
 
 import CheckControl from '../../Shared/CheckControl.vue';
@@ -14,7 +15,6 @@ import HeaderWordmark from './HeaderWordmark.vue';
 import PublicEmptyState from './PublicEmptyState.vue';
 import PublicSearchInput from './PublicSearchInput.vue';
 import PublicSortMenu from './PublicSortMenu.vue';
-import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import ReadingSizeControl from './ReadingSizeControl.vue';
 import SectionBand from './SectionBand.vue';
 import ShareButton from './ShareButton.vue';
