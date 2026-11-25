@@ -79,6 +79,8 @@ export function useListingSearch<TDocument, TItem>(options: ListingSearchOptions
 
   let activeRequest: AbortController | null = null;
   let canAppend = true;
+  /** The last first-page search failed, so the shown page (often server-seeded) has nothing to append to. */
+  let replaceFailed = false;
 
   provideFacetSearch(async (field, text, signal) => search.value?.client.searchFacet(field, text, signal) ?? []);
 
@@ -111,6 +113,7 @@ export function useListingSearch<TDocument, TItem>(options: ListingSearchOptions
     error.value = null;
     if (!append) {
       canAppend = false;
+      replaceFailed = false;
       currentPage.value = 1;
     }
 
@@ -149,6 +152,7 @@ export function useListingSearch<TDocument, TItem>(options: ListingSearchOptions
       if (controller.signal.aborted || activeRequest !== controller) return;
       if (err instanceof Error && err.name === 'AbortError') return;
       error.value = err instanceof Error ? err.message : 'Search failed';
+      if (!append) replaceFailed = true;
     }
     finally {
       if (activeRequest === controller) {
@@ -182,7 +186,13 @@ export function useListingSearch<TDocument, TItem>(options: ListingSearchOptions
   }, true);
 
   const loadMore = () => {
-    if (hasMore.value) performSearch(true);
+    if (!hasMore.value) return;
+    // Retry the first page rather than leave "show more" dead after a failed refresh.
+    if (replaceFailed && !activeRequest) {
+      performSearch(false);
+      return;
+    }
+    performSearch(true);
   };
 
   return { query, sortBy, items, totalHits, currentPage, isLoading, isLoadingMore, hasMore, error, loadMore, performSearch };

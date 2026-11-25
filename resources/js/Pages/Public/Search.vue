@@ -72,7 +72,6 @@
           v-else-if="!controller.hasAnyResults.value && controller.hasSearched.value && !controller.isSearching.value"
           :title="$t('search.no_results_found')"
           :description="$t('search.no_results_criteria')"
-          heading-tag="h3"
         >
           <template #icon>
             <IFluentSearch24Regular aria-hidden="true" />

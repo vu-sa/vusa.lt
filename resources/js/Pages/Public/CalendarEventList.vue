@@ -261,7 +261,6 @@
           v-else-if="!isLoading && events.length === 0"
           :title="$t('Renginių nerasta')"
           :description="$t('Pagal pasirinktus kriterijus renginių nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.')"
-          heading-tag="h3"
         >
           <template #icon>
             <IFluentCalendarLtr24Regular aria-hidden="true" />

@@ -142,4 +142,22 @@ describe('useNewsSearch', () => {
     expect(search.yearFacets.value).toEqual([{ label: '2026', value: '2026', count: 1 }]);
     expect(search.tagFacets.value).toEqual([{ label: 'Studijos', value: 'Studijos', count: 1 }]);
   });
+
+  it('retries the first page from "show more" after a failed refresh of server-seeded news', async () => {
+    const { useNewsSearch } = await import('../useNewsSearch');
+    const search = useNewsSearch({
+      initialNews: [{ id: 1, title: 'Seeded', short: '', permalink: 'seeded', image: '', publish_time: '2026-01-01', tenant: null, tags: [] } as never],
+      initialTotal: 30,
+    });
+
+    mockSearch.mockRejectedValueOnce(new Error('Typesense unavailable'));
+    await search.performSearch(false);
+    expect(search.error.value).toBe('Typesense unavailable');
+    expect(search.hasMore.value).toBe(true);
+
+    mockSearch.mockClear();
+    search.loadMore();
+    await vi.waitFor(() => expect(mockSearch).toHaveBeenCalledTimes(1));
+    expect(mockSearch.mock.calls[0]![1]).toMatchObject({ page: 1 });
+  });
 });

@@ -68,6 +68,7 @@
               v-model="documentSort"
               :options="sortOptions"
               :default-value="hasQuery ? 'relevance' : 'date_desc'"
+              label-class="hidden lg:inline"
             />
 
             <!-- View Mode Toggle -->
@@ -255,7 +256,6 @@
           v-else-if="!isSearching && documents.length === 0"
           :title="$t('search.no_documents_found')"
           :description="$t('Pagal pasirinktus kriterijus dokumentų nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.')"
-          heading-tag="h3"
         >
           <template #icon>
             <IFluentDocumentMultiple24Regular aria-hidden="true" />
@@ -369,8 +369,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  allContentTypes: () =>[],
-  importantContentTypes: () =>[],
+  allContentTypes: () => [],
+  importantContentTypes: () => [],
 });
 
 const page = usePage();

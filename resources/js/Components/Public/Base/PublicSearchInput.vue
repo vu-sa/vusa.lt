@@ -7,17 +7,13 @@
       type="search"
       :placeholder
       :aria-label="ariaLabel ?? placeholder"
-      :class="[
-        'h-11 w-full border border-border bg-background pr-9 pl-10 text-sm text-foreground',
-        'transition-colors placeholder:text-muted-foreground/70 focus:border-brand focus:outline-none',
-        '[&::-webkit-search-cancel-button]:hidden',
-      ]"
+      :class="cn(searchFieldClass, 'pr-10 pointer-coarse:pr-12 [&::-webkit-search-cancel-button]:hidden')"
       @keydown.enter="emit('submit', model)"
     >
     <button
       v-if="model"
       type="button"
-      class="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:size-11"
+      class="absolute top-1/2 right-0.5 flex size-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:right-0 pointer-coarse:size-11"
       @click="clear"
     >
       <IFluentDismiss16Regular class="size-3.5" aria-hidden="true" />
@@ -28,6 +24,9 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
+
+import { searchFieldClass } from '@/Components/ui/control';
+import { cn } from '@/Utils/Shadcn/utils';
 
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';

@@ -4,16 +4,11 @@
       <button
         type="button"
         data-slot="public-sort-menu"
-        :class="[
-          'inline-flex h-11 shrink-0 items-center justify-between gap-2 border px-3.5 text-xs font-bold tracking-wide uppercase transition-colors',
-          isChanged
-            ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
-            : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-        ]"
+        :class="controlVariants({ active: isChanged })"
         :aria-label="label"
       >
         <component :is="current?.icon" v-if="current?.icon" class="size-3.5" aria-hidden="true" />
-        <span>{{ label }}</span>
+        <span :class="labelClass">{{ label }}</span>
         <IFluentChevronDown16Regular class="size-3.5 transition-transform duration-200" :class="{ 'rotate-180': open }" aria-hidden="true" />
       </button>
     </PopoverTrigger>
@@ -47,9 +42,10 @@
 </template>
 
 <script setup lang="ts" generic="T extends string">
-import { computed, ref, type Component } from 'vue';
+import { computed, ref, type Component, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
@@ -68,6 +64,8 @@ const props = defineProps<{
   defaultValue: T;
   label?: string;
   heading?: string;
+  /** Hides the visible label in a crowded toolbar (e.g. `hidden lg:inline`); the trigger keeps its aria-label. */
+  labelClass?: HTMLAttributes['class'];
 }>();
 
 const model = defineModel<T>({ required: true });
