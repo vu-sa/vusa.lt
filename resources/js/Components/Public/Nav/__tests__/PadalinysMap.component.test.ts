@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { describe, expect, it, vi } from 'vitest';
 import Leaflet from 'leaflet';
+import { MarkerClusterGroup } from 'leaflet.markercluster';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
@@ -47,17 +48,18 @@ vi.mock('leaflet', () => {
         zoom: vi.fn(createControl),
       },
       map: vi.fn(() => map),
-      markerClusterGroup: vi.fn(() => ({
-        addLayer: vi.fn(),
-        clearLayers: vi.fn(),
-        on: vi.fn(),
-      })),
       tileLayer: vi.fn(() => tileLayer),
     },
   };
 });
 
-vi.mock('leaflet.markercluster', () => ({}));
+vi.mock('leaflet.markercluster', () => ({
+  MarkerClusterGroup: vi.fn(class {
+    addLayer = vi.fn();
+    clearLayers = vi.fn();
+    on = vi.fn();
+  }),
+}));
 
 describe('PadalinysMap.vue', () => {
   it('recreates map and cluster motion options when the preference changes', async () => {
@@ -72,13 +74,14 @@ describe('PadalinysMap.vue', () => {
       await vi.dynamicImportSettled();
       await flushPromises();
       expect(Leaflet.map).toHaveBeenLastCalledWith('padalinys-leaflet-map', expect.objectContaining({ zoomAnimation: true }));
+      expect(MarkerClusterGroup).toHaveBeenLastCalledWith(expect.objectContaining({ animate: true }));
       preferences.reduceMotion.value = true;
       await vi.dynamicImportSettled();
       await flushPromises();
       expect(Leaflet.map).toHaveBeenLastCalledWith('padalinys-leaflet-map', expect.objectContaining({
         zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false, inertia: false,
       }));
-      expect(Leaflet.markerClusterGroup).toHaveBeenLastCalledWith(expect.objectContaining({ animate: false }));
+      expect(MarkerClusterGroup).toHaveBeenLastCalledWith(expect.objectContaining({ animate: false }));
     }
     finally {
       wrapper.unmount();

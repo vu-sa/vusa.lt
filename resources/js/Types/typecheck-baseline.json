@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2292,
+  "total": 2291,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -498,7 +498,6 @@
     "resources/js/Components/Public/MeetingCard.vue | TS2769 | No overload matches this call.": 1,
     "resources/js/Components/Public/Nav/PadalinysMap.vue | TS18047 | 'L' is possibly 'null'.": 5,
     "resources/js/Components/Public/Nav/PadalinysMap.vue | TS18047 | 'leafletMap' is possibly 'null'.": 1,
-    "resources/js/Components/Public/Nav/PadalinysMap.vue | TS18047 | 'markerClusterGroup' is possibly 'null'.": 1,
     "resources/js/Components/Public/Nav/__tests__/PadalinysSelector.component.test.ts | TS2353 | Object literal may only specify known properties, and 'PadalinysMap' does not exist in type '{ Popover: { template: string; }; PopoverTrigger: { template: string; }; PopoverContent: { template: string; emits: string[]; }; }'.": 1,
     "resources/js/Components/Public/Nav/__tests__/QuickLink.component.test.ts | TS2739 | Type '{ icon: null; id: number; text: string; link: string; is_important: boolean; }' is missing the following properties from type 'QuickLink': is_active, tenant_id, created_at, updated_at, tenant_exists": 1,
     "resources/js/Components/Public/Nav/__tests__/QuickLink.component.test.ts | TS2739 | Type '{ id: number; text: string; link: string; icon: string; is_important: boolean; }' is missing the following properties from type 'QuickLink': is_active, tenant_id, created_at, updated_at, tenant_exists": 1,
