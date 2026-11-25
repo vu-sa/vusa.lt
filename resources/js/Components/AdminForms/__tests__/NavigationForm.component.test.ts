@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import type * as Inertia from '@inertiajs/vue3';
 
+import LinkTargetField from '@/Components/AdminForms/LinkTargetField.vue';
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 
 // Use the real Inertia useForm so nested `extra_attributes.*` mutations are properly
@@ -166,6 +167,7 @@ describe('NavigationForm.vue', () => {
 
     const nameInput = wrapper.find('#name');
     expect((nameInput.element as HTMLInputElement).disabled).toBe(true);
+    expect(wrapper.findComponent(LinkTargetField).exists()).toBe(false);
     expect(wrapper.text()).not.toContain('navigation.form.link_target');
   });
 
@@ -173,8 +175,9 @@ describe('NavigationForm.vue', () => {
     wrapper = createWrapper();
     resolveUrlData.value = { url: '/lt/stipendijos-ir-parama' };
 
+    expect(wrapper.findComponent(LinkTargetField).exists()).toBe(true);
     await wrapper.find('[data-testid="confirm-picker"]').trigger('click');
-    await wrapper.vm.$nextTick();
+    await flushPromises();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const urlInput = wrapper.find('#url');
@@ -187,7 +190,7 @@ describe('NavigationForm.vue', () => {
 
     const topicSelect = wrapper.findAll('select').find(s => s.findAll('option').some(o => o.text() === 'Renginiai'));
     await topicSelect?.setValue('5');
-    await wrapper.vm.$nextTick();
+    await flushPromises();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const urlInput = wrapper.find('#url');

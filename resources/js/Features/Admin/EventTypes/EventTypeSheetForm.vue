@@ -11,56 +11,56 @@
     @cancel="reset"
     @submit="submit"
   >
-    <div class="space-y-2">
-      <Label for="event-type-name">{{ $t('forms.fields.title') }} <span class="text-destructive">*</span></Label>
+    <FormFieldWrapper
+      id="event-type-name"
+      :label="$t('forms.fields.title')"
+      required
+      :error="form.errors.name || form.errors['name.lt']"
+    >
       <MultiLocaleInput id="event-type-name" v-model:input="form.name" />
-      <p v-if="form.errors.name || form.errors['name.lt']" class="text-sm text-destructive">
-        {{ form.errors.name || form.errors['name.lt'] }}
-      </p>
-    </div>
+    </FormFieldWrapper>
 
-    <div class="space-y-2">
-      <Label for="event-type-slug">{{ $t('forms.fields.technical_slug') }} <span class="text-destructive">*</span></Label>
+    <FormFieldWrapper
+      id="event-type-slug"
+      :label="$t('forms.fields.technical_slug')"
+      required
+      :error="form.errors.slug"
+    >
       <Input id="event-type-slug" v-model="form.slug" placeholder="Pvz: mokymai" />
-      <p v-if="form.errors.slug" class="text-sm text-destructive">
-        {{ form.errors.slug }}
-      </p>
-    </div>
+    </FormFieldWrapper>
 
-    <div class="space-y-2">
-      <Label for="event-type-description">
-        {{ $t('forms.fields.description') }}
-      </Label>
+    <FormFieldWrapper
+      id="event-type-description"
+      :label="$t('forms.fields.description')"
+      :error="form.errors.description"
+    >
       <MultiLocaleInput
         id="event-type-description"
         v-model:input="form.description"
         input-type="textarea"
       />
-      <p v-if="form.errors.description" class="text-sm text-destructive">
-        {{ form.errors.description }}
-      </p>
-    </div>
+    </FormFieldWrapper>
 
-    <div class="space-y-2">
-      <Label for="event-type-sort-order">{{ $t('forms.fields.sort_order') }}</Label>
+    <FormFieldWrapper
+      id="event-type-sort-order"
+      :label="$t('forms.fields.sort_order')"
+      :error="form.errors.sort_order"
+    >
       <Input id="event-type-sort-order" v-model.number="form.sort_order" type="number" min="0" />
-      <p v-if="form.errors.sort_order" class="text-sm text-destructive">
-        {{ form.errors.sort_order }}
-      </p>
-    </div>
+    </FormFieldWrapper>
 
     <div class="space-y-2 pt-2">
       <div class="flex items-center gap-3">
         <Checkbox
           id="event-type-is-active"
-          :model-value="!!form.is_active"
+          :model-value="Boolean(form.is_active)"
           @update:model-value="val => form.is_active = val === true ? 1 : 0"
         />
         <Label for="event-type-is-active" class="cursor-pointer font-medium">
           {{ $t('forms.fields.is_active') }}
         </Label>
       </div>
-      <p v-if="form.errors.is_active" class="text-sm text-destructive">
+      <p v-if="form.errors.is_active" class="text-xs text-destructive">
         {{ form.errors.is_active }}
       </p>
     </div>
@@ -68,14 +68,13 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
-import { computed, toRaw, watch } from 'vue';
-
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Checkbox } from '@/Components/ui/checkbox';
+import { useSheetCrudForm } from '@/Composables/useSheetCrudForm';
 
 interface EventTypeInput {
   created_at?: string | null;
@@ -88,6 +87,15 @@ interface EventTypeInput {
   is_active: number | boolean;
 }
 
+interface EventTypeFormData {
+  id?: string | number;
+  name: { lt: string; en: string };
+  slug: string;
+  description: { lt: string; en: string };
+  sort_order: number;
+  is_active: number;
+}
+
 const props = defineProps<{
   open: boolean;
   eventType?: EventTypeInput | null;
@@ -98,60 +106,27 @@ const emit = defineEmits<{
   'saved': [];
 }>();
 
-const open = computed({
-  get: () => props.open,
-  set: (value: boolean) => emit('update:open', value),
+const { open, form, reset, submit } = useSheetCrudForm<EventTypeFormData, EventTypeInput>({
+  open: () => props.open,
+  onUpdateOpen: value => emit('update:open', value),
+  onSaved: () => emit('saved'),
+  record: () => props.eventType,
+  blank: () => ({
+    name: { lt: '', en: '' },
+    slug: '',
+    description: { lt: '', en: '' },
+    sort_order: 0,
+    is_active: 1,
+  }),
+  fromRecord: raw => ({
+    id: raw.id,
+    name: typeof raw.name === 'object' && raw.name ? raw.name : { lt: String(raw.name ?? ''), en: '' },
+    slug: raw.slug ?? '',
+    description: typeof raw.description === 'object' && raw.description ? raw.description : { lt: String(raw.description ?? ''), en: '' },
+    sort_order: raw.sort_order ?? 0,
+    is_active: raw.is_active ? 1 : 0,
+  }),
+  storeUrl: () => route('eventTypes.store'),
+  updateUrl: id => route('eventTypes.update', id),
 });
-
-const blank = (): EventTypeInput => ({
-  name: { lt: '', en: '' },
-  slug: '',
-  description: { lt: '', en: '' },
-  sort_order: 0,
-  is_active: 1,
-});
-
-const form = useForm<EventTypeInput>(blank());
-
-watch(() => props.eventType, (eventType) => {
-  if (eventType) {
-    const raw = structuredClone(toRaw(eventType));
-    form.defaults({
-      id: raw.id,
-      name: typeof raw.name === 'object' && raw.name ? raw.name : { lt: String(raw.name ?? ''), en: '' },
-      slug: raw.slug ?? '',
-      description: typeof raw.description === 'object' && raw.description ? raw.description : { lt: String(raw.description ?? ''), en: '' },
-      sort_order: raw.sort_order ?? 0,
-      is_active: raw.is_active ? 1 : 0,
-    });
-  }
-  else {
-    form.defaults(blank());
-  }
-  form.reset();
-  form.clearErrors();
-}, { immediate: true });
-
-function reset(): void {
-  form.reset();
-  form.clearErrors();
-}
-
-function submit(): void {
-  const options = {
-    preserveScroll: true,
-    onSuccess: () => {
-      form.defaults();
-      open.value = false;
-      emit('saved');
-    },
-  };
-
-  if (props.eventType?.id) {
-    form.patch(route('eventTypes.update', props.eventType.id), options);
-  }
-  else {
-    form.post(route('eventTypes.store'), options);
-  }
-}
 </script>

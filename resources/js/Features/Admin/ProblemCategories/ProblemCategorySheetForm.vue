@@ -11,39 +11,38 @@
     @cancel="reset"
     @submit="submit"
   >
-    <div class="space-y-2">
-      <Label for="problem-category-name">{{ $t('forms.fields.title') }} <span class="text-destructive">*</span></Label>
+    <FormFieldWrapper
+      id="problem-category-name"
+      :label="$t('forms.fields.title')"
+      required
+      :error="form.errors.name || form.errors['name.lt']"
+    >
       <MultiLocaleInput id="problem-category-name" v-model:input="form.name" :placeholder="PROBLEM_CATEGORY_PLACEHOLDERS.name" />
-      <p v-if="form.errors['name.lt']" class="text-sm text-status-danger">
-        {{ form.errors['name.lt'] }}
-      </p>
-    </div>
+    </FormFieldWrapper>
 
-    <div class="space-y-2">
-      <Label for="problem-category-description">
-        {{ $t('forms.fields.description') }}
-      </Label>
+    <FormFieldWrapper
+      id="problem-category-description"
+      :label="$t('forms.fields.description')"
+      :hint="$t('Aprašymas rodomas problemos formoje, kai renkamasi kategorija.')"
+      :error="form.errors.description"
+    >
       <MultiLocaleInput
         id="problem-category-description"
         v-model:input="form.description"
         input-type="textarea"
         :placeholder="PROBLEM_CATEGORY_PLACEHOLDERS.description"
       />
-      <p class="text-xs text-muted-foreground">
-        {{ $t('Aprašymas rodomas problemos formoje, kai renkamasi kategorija.') }}
-      </p>
-    </div>
+    </FormFieldWrapper>
   </SheetForm>
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, toRaw, watch } from 'vue';
 
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
-import { Label } from '@/Components/ui/label';
+import { useSheetCrudForm } from '@/Composables/useSheetCrudForm';
 import { PROBLEM_CATEGORY_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 
 export interface ProblemCategoryInput {
@@ -54,40 +53,27 @@ export interface ProblemCategoryInput {
   description: { lt: string; en: string } | null;
 }
 
+interface ProblemCategoryFormData {
+  id?: number;
+  name: { lt: string; en: string };
+  description: { lt: string; en: string };
+}
+
 const props = defineProps<{ open: boolean; category?: ProblemCategoryInput | null }>();
 const emit = defineEmits<{ 'update:open': [value: boolean]; 'saved': [] }>();
 
-const open = computed({ get: () => props.open, set: (value: boolean) => emit('update:open', value) });
-const blank = (): ProblemCategoryInput => ({ name: { lt: '', en: '' }, description: { lt: '', en: '' } });
-const form = useForm<ProblemCategoryInput>(blank());
-
-watch(() => props.category, (category) => {
-  const { id, name, description } = category ? structuredClone(toRaw(category)) : blank();
-  form.defaults({ id, name, description: description ?? { lt: '', en: '' } });
-  form.reset();
-  form.clearErrors();
-}, { immediate: true });
-
-function reset(): void {
-  form.reset();
-  form.clearErrors();
-}
-
-function submit(): void {
-  const options = {
-    preserveScroll: true,
-    onSuccess: () => {
-      form.defaults();
-      open.value = false;
-      emit('saved');
-    },
-  };
-
-  if (props.category?.id) {
-    form.patch(route('problemCategories.update', props.category.id), options);
-  }
-  else {
-    form.post(route('problemCategories.store'), options);
-  }
-}
+const { open, form, reset, submit } = useSheetCrudForm<ProblemCategoryFormData, ProblemCategoryInput>({
+  open: () => props.open,
+  onUpdateOpen: value => emit('update:open', value),
+  onSaved: () => emit('saved'),
+  record: () => props.category,
+  blank: () => ({ name: { lt: '', en: '' }, description: { lt: '', en: '' } }),
+  fromRecord: ({ id, name, description }) => ({
+    id,
+    name,
+    description: description ?? { lt: '', en: '' },
+  }),
+  storeUrl: () => route('problemCategories.store'),
+  updateUrl: id => route('problemCategories.update', id),
+});
 </script>

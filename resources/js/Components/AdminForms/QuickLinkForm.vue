@@ -42,40 +42,11 @@
         </Suspense>
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="link_target" :label="$t('navigation.form.link_target')">
-        <div class="flex flex-wrap items-center gap-2">
-          <MultiCollectionSelectDialog
-            v-model:open="pickerOpen"
-            :collections="['pages', 'news', 'calendar', 'institutions', 'documents']"
-            :title="$t('Pasirink objektą')"
-            :confirm-label="$t('Pasirinkti')"
-            :search-placeholder="$t('navigation.form.link_target_search')"
-            @confirm="onTargetConfirm"
-          >
-            <template #trigger>
-              <Button type="button" variant="outline" class="justify-between font-normal">
-                <span class="truncate" :class="{ 'text-muted-foreground': !lastPickedLabel }">
-                  {{ lastPickedLabel ?? $t('navigation.form.link_target_placeholder') }}
-                </span>
-                <ChevronDown class="ml-2 size-4 opacity-50" />
-              </Button>
-            </template>
-          </MultiCollectionSelectDialog>
-
-          <span class="text-xs text-muted-foreground">{{ $t('navigation.form.or') }}</span>
-
-          <NativeSelect
-            class="w-auto min-w-40"
-            size="sm"
-            :placeholder="$t('navigation.form.link_target_topic')"
-            :model-value="topicSelectValue"
-            :options="topicSelectOptions"
-            @update:model-value="onTopicSelected"
-          />
-
-          <Loader2 v-if="isResolvingUrl" class="size-4 animate-spin text-muted-foreground" />
-        </div>
-      </FormFieldWrapper>
+      <LinkTargetField
+        :topic-options
+        :dialog-title="$t('Pasirink objektą')"
+        @select="url => form.link = url"
+      />
 
       <FormFieldWrapper
         id="link"
@@ -172,34 +143,25 @@
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
-import { ChevronDown, ExternalLink, Languages, LayoutGrid, Loader2, Star, Trash2 } from '@lucide/vue';
+import { ExternalLink, Languages, LayoutGrid, Star, Trash2 } from '@lucide/vue';
 
-import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import LinkTargetField, { type LinkTargetTopicOption } from '@/Components/AdminForms/LinkTargetField.vue';
+import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, FormToggleRow, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { NativeSelect } from '@/Components/ui/native-select';
-import { useApiMutation } from '@/Composables/useApi';
 import type { StatusPresentation } from '@/Constants/statusIcons';
-import { MultiCollectionSelectDialog } from '@/Components/Pickers';
-import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { safeHref } from '@/Utils/safeHref';
-
-interface TopicOption {
-  id: number;
-  name: string;
-  alias: string | null;
-}
 
 const props = withDefaults(defineProps<{
   quickLink: App.Entities.QuickLink;
   tenantOptions: Record<string, unknown>[];
-  topicOptions?: TopicOption[];
+  topicOptions?: LinkTargetTopicOption[];
   rememberKey?: string;
   enableDelete?: boolean;
 }>(), {
@@ -237,49 +199,6 @@ const langOptions: FormSegmentOption<'lt' | 'en'>[] = [
 ];
 
 const tenantList = computed(() => props.tenantOptions as unknown as App.Entities.Tenant[]);
-
-// --- Link target picker -----------------------------------------------------
-const pickerOpen = ref(false);
-const lastPickedLabel = ref<string | null>(null);
-
-const resolveUrlBody = ref<{ collection: string; id: string | number } | null>(null);
-const { execute: executeResolveUrl, data: resolveUrlData, isFetching: isResolvingUrl } = useApiMutation<{ url: string }, { collection: string; id: string | number }>(
-  route('api.v1.admin.navigation.resolveUrl'),
-  'POST',
-  resolveUrlBody,
-  { showSuccessToast: false },
-);
-
-const resolveAndFillUrl = async (collection: string, id: string | number, label: string) => {
-  resolveUrlBody.value = { collection, id };
-  await executeResolveUrl();
-  if (resolveUrlData.value?.url) {
-    form.link = resolveUrlData.value.url;
-    lastPickedLabel.value = label;
-  }
-};
-
-const onTargetConfirm = (hits: NormalizedSearchHit[]) => {
-  const hit = hits[0];
-  if (!hit) {
-    return;
-  }
-  resolveAndFillUrl(hit.collection, hit.recordId, hit.title);
-};
-
-const topicSelectOptions = computed(() =>
-  props.topicOptions?.map(t => ({ value: String(t.id), label: t.name })) ?? [],
-);
-
-const topicSelectValue = ref<string | undefined>(undefined);
-const onTopicSelected = (val: unknown) => {
-  const value = val as string | undefined;
-  topicSelectValue.value = value;
-  const topic = props.topicOptions?.find(t => String(t.id) === value);
-  if (topic) {
-    resolveAndFillUrl('topics', topic.id, topic.name);
-  }
-};
 
 defineExpose({
   form,

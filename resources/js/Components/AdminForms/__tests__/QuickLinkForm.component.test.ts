@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import type * as Inertia from '@inertiajs/vue3';
 
+import LinkTargetField from '@/Components/AdminForms/LinkTargetField.vue';
 import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
 
 // Real useForm (reactive) — the global inertia mock's useForm returns a plain object,
@@ -111,8 +112,9 @@ describe('QuickLinkForm.vue', () => {
     wrapper = createWrapper();
     resolveUrlData.value = { url: '/lt/naujiena/nauja-stipendija' };
 
+    expect(wrapper.findComponent(LinkTargetField).exists()).toBe(true);
     await wrapper.find('[data-testid="confirm-picker"]').trigger('click');
-    await wrapper.vm.$nextTick();
+    await flushPromises();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const linkInput = wrapper.find('#link');
@@ -125,7 +127,7 @@ describe('QuickLinkForm.vue', () => {
 
     const topicSelect = wrapper.findAll('select').find(s => s.findAll('option').some(o => o.text() === 'Parama'));
     await topicSelect?.setValue('3');
-    await wrapper.vm.$nextTick();
+    await flushPromises();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const linkInput = wrapper.find('#link');

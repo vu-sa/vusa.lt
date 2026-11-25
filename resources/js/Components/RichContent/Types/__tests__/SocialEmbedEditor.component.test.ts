@@ -2,16 +2,17 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { reactive } from 'vue';
 
+import RCSocialEmbed from '../../RCSocialEmbed.vue';
 import SocialEmbedEditor from '../SocialEmbedEditor.vue';
 
-interface EmbedContent { url: string; platform: string | null }
+interface EmbedContent { url: string; platform: 'facebook' | 'instagram' | null }
 
 describe('SocialEmbedEditor', () => {
   it('labels its controls and identifies a supported URL', async () => {
     const content = reactive<EmbedContent>({ url: '', platform: null });
     const wrapper = mount(SocialEmbedEditor, {
       props: { modelValue: content, options: { showCaption: true } },
-      global: { stubs: { SocialEmbedPreview: true } },
+      global: { stubs: { RCSocialEmbed: true } },
     });
 
     const url = wrapper.find('input[type="url"]');
@@ -25,20 +26,25 @@ describe('SocialEmbedEditor', () => {
   });
 
   describe('opening existing content', () => {
-    it('synchronizes platform immediately on mount when platform was null', () => {
+    it('synchronizes platform immediately on mount when platform was null and renders RCSocialEmbed preview', () => {
       const content = reactive<EmbedContent>({
         url: 'https://www.instagram.com/reel/example123/',
         platform: null,
       });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       expect(content.platform).toBe('instagram');
       expect(wrapper.text()).toContain('Instagram');
       expect(wrapper.text()).toContain('Nuoroda atpažinta');
-      expect(wrapper.findComponent({ name: 'SocialEmbedPreview' }).exists()).toBe(true);
+      const preview = wrapper.findComponent(RCSocialEmbed);
+      expect(preview.exists()).toBe(true);
+      expect(preview.props('element')).toEqual({
+        json_content: { url: 'https://www.instagram.com/reel/example123/', platform: null },
+        options: { showCaption: true },
+      });
     });
 
     it('corrects a mismatched/stale saved platform on mount', () => {
@@ -48,7 +54,7 @@ describe('SocialEmbedEditor', () => {
       });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       expect(content.platform).toBe('facebook');
@@ -63,7 +69,7 @@ describe('SocialEmbedEditor', () => {
       });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       expect(content.platform).toBeNull();
@@ -80,7 +86,7 @@ describe('SocialEmbedEditor', () => {
       });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       expect(wrapper.find('[data-testid="platform-badge"]').text()).toContain('Facebook');
@@ -104,7 +110,7 @@ describe('SocialEmbedEditor', () => {
       });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       const urlInput = wrapper.find('input[type="url"]');
@@ -113,7 +119,7 @@ describe('SocialEmbedEditor', () => {
       expect(content.platform).toBeNull();
       expect(wrapper.text()).not.toContain('Nuoroda atpažinta');
       expect(wrapper.text()).not.toContain('Patikrink nuorodą');
-      expect(wrapper.findComponent({ name: 'SocialEmbedPreview' }).exists()).toBe(false);
+      expect(wrapper.findComponent(RCSocialEmbed).exists()).toBe(false);
     });
   });
 
@@ -122,7 +128,7 @@ describe('SocialEmbedEditor', () => {
       const content = reactive<EmbedContent>({ url: '', platform: null });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       const urlInput = wrapper.find('input[type="url"]');
@@ -131,14 +137,14 @@ describe('SocialEmbedEditor', () => {
       expect(content.platform).toBeNull();
       expect(wrapper.text()).toContain('Patikrink nuorodą');
       expect(wrapper.text()).not.toContain('Nuoroda atpažinta');
-      expect(wrapper.findComponent({ name: 'SocialEmbedPreview' }).exists()).toBe(false);
+      expect(wrapper.findComponent(RCSocialEmbed).exists()).toBe(false);
     });
 
     it('shows warning and sets platform to null on lookalike domains', async () => {
       const content = reactive<EmbedContent>({ url: '', platform: null });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       const urlInput = wrapper.find('input[type="url"]');
@@ -146,7 +152,7 @@ describe('SocialEmbedEditor', () => {
       await urlInput.setValue('https://notfacebook.com/posts/123');
       expect(content.platform).toBeNull();
       expect(wrapper.text()).toContain('Patikrink nuorodą');
-      expect(wrapper.findComponent({ name: 'SocialEmbedPreview' }).exists()).toBe(false);
+      expect(wrapper.findComponent(RCSocialEmbed).exists()).toBe(false);
 
       await urlInput.setValue('https://facebook.com.evil.com/posts/123');
       expect(content.platform).toBeNull();
@@ -165,7 +171,7 @@ describe('SocialEmbedEditor', () => {
       const content = reactive<EmbedContent>({ url: '', platform: null });
       const wrapper = mount(SocialEmbedEditor, {
         props: { modelValue: content, options: { showCaption: true } },
-        global: { stubs: { SocialEmbedPreview: true } },
+        global: { stubs: { RCSocialEmbed: true } },
       });
 
       const urlInput = wrapper.find('input[type="url"]');
