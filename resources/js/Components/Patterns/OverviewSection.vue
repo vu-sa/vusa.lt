@@ -11,7 +11,7 @@
     </p>
 
     <template v-else>
-      <header :class="['flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4', headerRuleClass]">
+      <header :class="['flex flex-wrap items-center justify-between gap-x-4 gap-y-2', headerRuleClass]">
         <h2 :class="['flex items-center gap-2 text-foreground', variant === 'home' ? 'text-sm font-semibold uppercase tracking-[0.06em]' : 'text-base font-semibold']">
           <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
           {{ title }}
