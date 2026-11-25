@@ -123,23 +123,10 @@
     </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        voice="sentence"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('goals.delete') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('goals.delete')"
         :title="$t('goals.delete_confirm')"
         :description="$t('goals.delete_description')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -149,19 +136,18 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { CircleDot, Trash2 } from '@lucide/vue';
+import { CircleDot } from '@lucide/vue';
 import { capitalize, computed, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import FormDangerZone from '@/Components/Patterns/FormDangerZone.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
@@ -192,7 +178,6 @@ const emit = defineEmits<{
 
 const activeLocale = ref<'lt' | 'en'>('lt');
 const otherLocale = computed(() => (activeLocale.value === 'lt' ? 'en' : 'lt'));
-const deleteConfirmOpen = ref(false);
 
 const asTranslated = (value: unknown): Translated => {
   const text = (value && typeof value === 'object' && !Array.isArray(value) ? value : {}) as Partial<Translated>;

@@ -12,7 +12,7 @@
 
         <div class="z-40 flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background/95 px-3 py-2 backdrop-blur">
           <Button v-if="!embedded" type="button" size="icon" class="size-11" variant="ghost" :title="$t('rich-content.close_fullscreen_editor')" @click="$emit('close')">
-            <IFluentDismiss24Regular class="size-4" />
+            <X class="size-4" />
           </Button>
           <Button
             type="button"
@@ -23,15 +23,15 @@
             :title="isPreviewing ? $t('rich-content.switch_to_edit') : $t('rich-content.switch_to_preview')"
             @click="isPreviewing = !isPreviewing"
           >
-            <IFluentEdit24Regular v-if="isPreviewing" class="size-4" />
-            <IFluentEye24Regular v-else class="size-4" />
+            <Pencil v-if="isPreviewing" class="size-4" />
+            <Eye v-else class="size-4" />
           </Button>
           <ButtonGroup>
             <Button type="button" size="icon" class="size-11" variant="outline" :title="$t('Atšaukti')" :disabled="!history.canUndo" @click="history.undo()">
-              <IFluentArrowUndo24Filled class="size-3.5" />
+              <Undo2 class="size-3.5" />
             </Button>
             <Button type="button" size="icon" class="size-11" variant="outline" :title="$t('editor.redo')" :disabled="!history.canRedo" @click="history.redo()">
-              <IFluentArrowRedo24Filled class="size-3.5" />
+              <Redo2 class="size-3.5" />
             </Button>
           </ButtonGroup>
           <DarkModeButton size="icon" class="size-11" />
@@ -56,7 +56,7 @@
             </Button>
           </SpotlightPopover>
           <Button type="button" size="sm" class="ml-auto min-h-11" data-testid="fullscreen-save" :disabled="context?.form.processing || (context && !context.ready.value)" @click="context ? context.save() : $emit('save')">
-            <IFluentSave24Regular class="size-4" />
+            <Save class="size-4" />
             {{ $t(context?.form.processing ? 'editor.saving' : 'Išsaugoti') }}
           </Button>
         </div>
@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { computed, inject, provide, ref, watch } from 'vue';
-import { ListTree } from '@lucide/vue';
+import { Eye, ListTree, Pencil, Redo2, Save, Undo2, X } from '@lucide/vue';
 import { moveArrayElement } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -148,13 +148,6 @@ import { resolveBands, type BandResolution } from '../../bandLayout';
 
 import RCFullscreenCanvasGroup from './RCFullscreenCanvasGroup.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from './useActiveHotspot';
-
-import IFluentDismiss24Regular from '~icons/fluent/dismiss24-regular';
-import IFluentArrowUndo24Filled from '~icons/fluent/arrow-undo24-filled';
-import IFluentArrowRedo24Filled from '~icons/fluent/arrow-redo24-filled';
-import IFluentEdit24Regular from '~icons/fluent/edit24-regular';
-import IFluentEye24Regular from '~icons/fluent/eye24-regular';
-import IFluentSave24Regular from '~icons/fluent/save24-regular';
 
 const props = defineProps<{
   tenantId?: number | null;

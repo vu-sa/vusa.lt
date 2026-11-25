@@ -278,22 +278,10 @@
     </template>
 
     <template v-if="!isCreate && enableDelete" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti puslapį') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti puslapį')"
         :title="$t('Ištrinti puslapį?')"
         :description="$t('Puslapis bus perkeltas į šiukšlinę.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -304,12 +292,12 @@
 import { provide, computed, ref, h } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from '@lucide/vue';
+import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree } from '@lucide/vue';
 
 import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useContentEditor } from '@/Composables/useContentEditor';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
@@ -360,7 +348,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<(event: 'delete') => void>();
 
 const isCreate = computed(() => props.rememberKey === 'CreatePage');
-const deleteConfirmOpen = ref(false);
 
 const fieldIds: Record<string, string> = {
   title: 'title',

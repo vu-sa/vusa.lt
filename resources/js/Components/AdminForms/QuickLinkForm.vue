@@ -117,40 +117,28 @@
     </template>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti greitąją nuorodą') }}
-      </Button>
+      <FormDangerZone
+        :label="$t('Ištrinti greitąją nuorodą')"
+        :title="$t('Ištrinti greitąją nuorodą?')"
+        :description="$t('Ar tikrai nori perkelti šią greitąją nuorodą į šiukšliadėžę?')"
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Ištrinti greitąją nuorodą?')"
-    :description="$t('Ar tikrai nori perkelti šią greitąją nuorodą į šiukšliadėžę?')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="emit('delete')"
-  />
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref } from 'vue';
-import { ExternalLink, Languages, LayoutGrid, Star, Trash2 } from '@lucide/vue';
+import { computed } from 'vue';
+import { ExternalLink, Languages, LayoutGrid, Star } from '@lucide/vue';
 
 import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import LinkTargetField, { type LinkTargetTopicOption } from '@/Components/AdminForms/LinkTargetField.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormSegmentedControl, FormToggleRow, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, FormSegmentedControl, FormToggleRow, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
@@ -175,7 +163,6 @@ const emit = defineEmits<{
 }>();
 
 const isCreate = computed(() => !props.quickLink?.id || props.rememberKey === 'CreateQuickLink');
-const isDeleteDialogOpen = ref(false);
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.quickLink)

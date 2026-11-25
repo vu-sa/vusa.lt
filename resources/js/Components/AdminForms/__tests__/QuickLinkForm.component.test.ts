@@ -151,7 +151,7 @@ describe('QuickLinkForm.vue', () => {
     wrapper = createWrapper({ enableDelete: true, quickLink: { id: 5, text: 'Nuoroda', link: 'https://vu.lt' } });
 
     // Click delete button to open confirm dialog
-    const deleteBtn = wrapper.find('button.border-destructive\\/40');
+    const deleteBtn = wrapper.find('[data-slot="form-danger-zone"] button');
     expect(deleteBtn.exists()).toBe(true);
     await deleteBtn.trigger('click');
 

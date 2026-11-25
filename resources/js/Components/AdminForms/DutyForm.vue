@@ -408,22 +408,10 @@
 
     <!-- Danger Zone Slot -->
     <template v-if="isEditing && canEditDuty" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti pareigybę') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti pareigybę')"
         :title="$t('Ištrinti pareigybę?')"
         :description="$t('Pareigybė bus visiškai pašalinta iš sistemos.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -440,7 +428,7 @@ import { operatingStatuses } from '@/Constants/statusIcons';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FieldHistoryDisclosure, FormFillActions, FormPanel, FormSection, type FormFillAction } from '@/Components/Patterns';
+import { FieldHistoryDisclosure, FormDangerZone, FormFillActions, FormPanel, FormSection, type FormFillAction } from '@/Components/Patterns';
 import { DatePicker } from '@/Components/ui/date-picker';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { Input } from '@/Components/ui/input';
@@ -547,7 +535,6 @@ const emit = defineEmits<{
 const isEditing = computed(() => !!props.duty?.id);
 
 const activeLocale = ref<'lt' | 'en'>('lt');
-const deleteConfirmOpen = ref(false);
 
 // Error keys that are not the id of the field they belong to.
 const fieldIds = {

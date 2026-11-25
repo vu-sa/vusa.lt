@@ -48,7 +48,7 @@ describe('useSheetCrudForm', () => {
     expect(isOpen.value).toBe(false);
   });
 
-  it('posts a new record, clears dirtiness before the visit, and closes on success', () => {
+  it('posts a new record, clears dirtiness before the visit, and closes on success', async () => {
     const isOpen = ref(true);
     const onUpdateOpen = vi.fn((value: boolean) => {
       isOpen.value = value;
@@ -67,6 +67,7 @@ describe('useSheetCrudForm', () => {
     });
 
     form.name.lt = 'Naujas';
+    await nextTick();
     expect(form.isDirty).toBe(true);
 
     let wasDirtyAtPost = true;

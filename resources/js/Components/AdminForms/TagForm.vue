@@ -56,40 +56,28 @@
     </template>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti žymą') }}
-      </Button>
+      <FormDangerZone
+        :label="$t('Ištrinti žymą')"
+        :title="$t('Ištrinti žymą?')"
+        :description="$t('Ar tikrai nori perkelti šią žymą į šiukšliadėžę?')"
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Ištrinti žymą?')"
-    :description="$t('Ar tikrai nori perkelti šią žymą į šiukšliadėžę?')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="emit('delete')"
-  />
 </template>
 
 <script setup lang="tsx">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, Star, Tags, Trash2 } from '@lucide/vue';
+import { ExternalLink, Star, Tags } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
 import MultiLocaleTiptapFormItem from '@/Components/AdminForms/MultiLocaleTiptapFormItem.vue';
 import { NewsIcon } from '@/Components/icons';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormToggleRow, SectionCard, StatusBadge } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, FormToggleRow, SectionCard, StatusBadge } from '@/Components/Patterns';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -125,7 +113,6 @@ const emit = defineEmits<{
 }>();
 
 const isCreate = computed(() => !props.postTag?.id || props.rememberKey === 'CreateTag');
-const isDeleteDialogOpen = ref(false);
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.postTag as unknown as Record<string, unknown>)

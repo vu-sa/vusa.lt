@@ -255,7 +255,7 @@ describe('ReservationForm.vue', () => {
   it('deletes the draft and leaves for the reservation list', async () => {
     wrapper = mountForm(cartWith([item()]));
 
-    await wrapper.find('[data-testid="reservation-draft-delete"]').trigger('click');
+    await wrapper.find('[data-testid="reservation-draft-delete"] button').trigger('click');
     wrapper.findComponent({ name: 'ConfirmDialog' }).vm.$emit('confirm');
 
     const [url, options] = vi.mocked(router.delete).mock.calls.at(-1)! as [string, { onSuccess: () => void }];

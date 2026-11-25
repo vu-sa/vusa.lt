@@ -462,6 +462,7 @@ export default tseslint.config(
     files: [
       'resources/js/Pages/Admin/**/*.{vue,ts}',
       'resources/js/Features/Admin/**/*.{vue,ts}',
+      'resources/js/Components/AdminForms/**/*.{vue,ts}',
       'resources/js/Components/{Search,Pickers,ActivityLog,FileManager}/**/*.{vue,ts}',
     ],
     rules: {

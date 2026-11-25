@@ -262,40 +262,28 @@
     </template>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('navigation.form.delete_link') }}
-      </Button>
+      <FormDangerZone
+        :label="$t('navigation.form.delete_link')"
+        :title="$t('Ištrinti navigacijos elementą?')"
+        :description="$t('Ar tikrai nori perkelti šį elementą į šiukšliadėžę?')"
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Ištrinti navigacijos elementą?')"
-    :description="$t('Ar tikrai nori perkelti šį elementą į šiukšliadėžę?')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="emit('delete')"
-  />
 </template>
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, ExternalLink, Palette, SlidersHorizontal, Trash2 } from '@lucide/vue';
+import { ChevronDown, ExternalLink, Palette, SlidersHorizontal } from '@lucide/vue';
 
 import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import LinkTargetField, { type LinkTargetTopicOption } from '@/Components/AdminForms/LinkTargetField.vue';
 import VisualOptionSelect from '@/Components/AdminForms/VisualOptionSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { FormDangerZone } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
@@ -340,7 +328,6 @@ if (!form.extra_attributes) {
 }
 
 const isCreate = computed(() => !form.id);
-const isDeleteDialogOpen = ref(false);
 
 const fieldIds = ['name', 'url', 'parent_id', 'is_active'];
 

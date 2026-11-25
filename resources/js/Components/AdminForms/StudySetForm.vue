@@ -190,27 +190,14 @@
     </template>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        variant="outline"
-        size="sm"
-        type="button"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti komplektą') }}
-      </Button>
+      <FormDangerZone
+        :label="$t('Ištrinti komplektą')"
+        :title="$t('Ištrinti komplektą?')"
+        :description="$t('Komplektas bus perkeltas į šiukšliadėžę.')"
+        @confirm="$emit('delete')"
+      />
     </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Ištrinti komplektą?')"
-    :description="$t('Komplektas bus perkeltas į šiukšliadėžę.')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="$emit('delete')"
-  />
 </template>
 
 <script setup lang="ts">
@@ -220,7 +207,7 @@ import { Plus, SlidersHorizontal, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { FormDangerZone } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
@@ -284,7 +271,6 @@ defineEmits<{
 }>();
 
 const isCreate = computed(() => props.rememberKey === 'CreateStudySet' || !props.studySet.id);
-const isDeleteDialogOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
 
 const fieldIds = {

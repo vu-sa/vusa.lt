@@ -421,22 +421,10 @@
 
     <!-- Danger Zone Slot -->
     <template v-if="!isCreate && enableDelete && !readOnly" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti renginį') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti renginį')"
         :title="$t('Ištrinti renginį?')"
         :description="$t('Renginys bus perkeltas į šiukšlinę.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -456,12 +444,11 @@ import {
   Link2,
   SlidersHorizontal,
   Tags,
-  Trash2,
   WandSparkles,
 } from '@lucide/vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { isSameDay, toNaiveDateTimeString } from '@/Utils/dateTime';
 import { guessEventTypeSlug } from '@/Utils/eventTypeFromTitle';
 import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
@@ -531,7 +518,6 @@ function openMeetingCreation(): void {
   });
 }
 
-const deleteConfirmOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
 
 const fieldIds: Record<string, string> = {

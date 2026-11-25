@@ -298,7 +298,7 @@ describe('StudySetForm.vue', () => {
         enableDelete: true,
       });
 
-      const deleteBtn = wrapper.find('button.border-destructive\\/40');
+      const deleteBtn = wrapper.find('[data-slot="form-danger-zone"] button');
       expect(deleteBtn.exists()).toBe(true);
       await deleteBtn.trigger('click');
 
