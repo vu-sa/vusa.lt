@@ -1,3 +1,4 @@
+import type { TaskRow } from '@/Types/TaskRow';
 import type { DutyAssignmentPicker } from '@/Types/DutyAssignment';
 import type { WikiPageSummary } from '@/Types/learning';
 import type { ActionType, InstitutionActivityAnswer, InstitutionActivityCampaign, InstitutionActivityStatus, InstitutionRelationKind, InstitutionScope, MeetingType } from '@/Types/enums';
@@ -161,28 +162,7 @@ export interface InstitutionManagement {
   studyPrograms: InstitutionStudyProgram[];
 }
 
-export interface InstitutionTask {
-  id: string;
-  name: string;
-  description: string | null;
-  due_date: string | null;
-  completed_at: string | null;
-  cancelled_at: string | null;
-  created_at: string;
-  updated_at: string;
-  action_type: ActionType | null;
-  metadata: Record<string, unknown> | null;
-  progress: { current: number; total: number; percentage: number } | null;
-  is_overdue: boolean;
-  can_be_manually_completed: boolean;
-  can_update: boolean;
-  icon: string;
-  color: string;
-  taskable: { id: number | string; name: string | null; type: string } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users: ({ id: string; name: string; profile_photo_path: string | null })[];
-}
+export type InstitutionTask = TaskRow;
 
 export interface InstitutionHistoryItem {
   id: string;

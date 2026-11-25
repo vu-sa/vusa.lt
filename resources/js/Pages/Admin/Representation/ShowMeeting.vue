@@ -95,33 +95,15 @@
     </template>
 
     <template #agenda>
-      <div class="space-y-6">
-        <MeetingAgendaList
-          v-model:editing="agendaEditing"
-          :agenda-items="meeting.agenda_items ?? []"
-          :meeting-id="meeting.id"
-          :can-add="abilities.createAgendaItems"
-          :can-reorder="abilities.reorderAgendaItems"
-          :requires-student-perspective="!isInternalBody"
-          :loading-item-id="editableAgendaItemLoading"
-          @add="openAgendaSheet"
-          @edit="openAgendaItemEditor"
-          @delete="requestAgendaItemDelete"
-        />
-        <AgendaItemEditSheet
-          v-if="editableAgendaItem"
-          :key="editableAgendaItemKey"
-          v-model:open="agendaItemEditorOpen"
-          :item="editableAgendaItem"
-          :default-start-time="previousItemEnd(editableAgendaItem.order)"
-          :meeting-start-time="isEmailMeeting(meeting) ? null : formatTime(meeting.start_time)"
-          :requires-student-perspective="!isInternalBody"
-          :is-public="isShownPublicly(publicVisibility)"
-          :can-delete="agendaItemBeingEdited?.can?.delete ?? false"
-          :except="['documents', 'tasks', 'pendingDocuments']"
-          @delete="deleteFromEditor"
-        />
-      </div>
+      <MeetingAgendaPanel
+        v-model:editing="agendaEditing"
+        :meeting
+        :can-add="abilities.createAgendaItems"
+        :can-reorder="abilities.reorderAgendaItems"
+        :requires-student-perspective="!isInternalBody"
+        :is-public="isShownPublicly(publicVisibility)"
+        @add="openAgendaSheet"
+      />
     </template>
 
     <template #documents>
@@ -194,62 +176,12 @@
       :recent-agendas
     />
 
-    <!-- Add Institution Dialog -->
-    <Dialog v-model:open="showAddInstitutionDialog">
-      <DialogContent class="max-w-sm">
-        <DialogHeader>
-          <DialogTitle class="flex items-center gap-2">
-            <Link2 class="h-4 w-4" />
-            {{ $t('Pridėti instituciją') }}
-          </DialogTitle>
-          <DialogDescription class="text-sm text-muted-foreground mt-2">
-            Retais atvejais, atstovavimo organai gali turėti bendrų posėdžių. Jei šis posėdis yra bendras su kitomis institucijomis, pasirink jas.
-            Gali pasirinkti tik iš susijusių institucijų.
-          </DialogDescription>
-        </DialogHeader>
-        <div class="space-y-4 pt-2">
-          <Skeleton v-if="availableInstitutionsForAttach === undefined" class="h-10 w-full" />
-          <Select v-else v-model="addInstitutionId">
-            <SelectTrigger>
-              <SelectValue :placeholder="$t('Pasirink instituciją')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="option in availableInstitutionsToAdd"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p v-if="availableInstitutionsForAttach !== undefined && availableInstitutionsToAdd.length === 0" class="text-sm text-muted-foreground">
-            {{ $t('Nėra galimų institucijų pridėti.') }}
-          </p>
-          <div class="flex justify-end gap-2">
-            <Button variant="outline" size="sm" @click="showAddInstitutionDialog = false">
-              {{ $t('Atšaukti') }}
-            </Button>
-            <Button size="sm" :disabled="!addInstitutionId" @click="handleAttachInstitution">
-              {{ $t('Pridėti') }}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-
-    <ConfirmDialog
-      v-model:open="showAgendaItemDeleteDialog"
-      :title="$t('Šalinti darbotvarkės punktą?')"
-      :description="$t('Ar tikrai nori ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.')"
-      :confirm-label="$t('Šalinti')"
-      destructive
-      @confirm="confirmAgendaItemDelete"
-    >
-      <p v-if="agendaItemPendingDelete" class="border border-border bg-secondary/60 px-3 py-2 text-sm font-medium text-foreground">
-        {{ agendaItemPendingDelete.title }}
-      </p>
-    </ConfirmDialog>
+    <AttachMeetingInstitutionDialog
+      v-model:open="showAddInstitutionDialog"
+      :meeting-id="meeting.id"
+      :attached-ids="institutionIds"
+      :available-institutions="availableInstitutionsForAttach"
+    />
 
     <ConfirmDialog
       v-model:open="showDeleteDialog"
@@ -278,8 +210,8 @@
   </RecordPage>
 </template>
 
-<script setup lang="tsx">
-import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent, nextTick } from 'vue';
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 'vue';
 import { Link, router, WhenVisible } from '@inertiajs/vue3';
 import { useClipboard, useStorage } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
@@ -289,23 +221,22 @@ import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitut
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { InstitutionScope, LocaleEnum, ModelEnum, type ActionType, type AgendaItemType, type MeetingKind, type MeetingType } from '@/Types/enums';
+import { InstitutionScope, LocaleEnum, ModelEnum } from '@/Types/enums';
+import type { AttachableMeetingInstitution, LinkedMeetingDocument, MeetingAbilities, MeetingCompletion, MeetingFile, MeetingInstitution, MeetingRecord, MeetingRepresentative } from '@/Types/MeetingPage';
+import type { TaskRow } from '@/Types/TaskRow';
 import { genitivizeEveryWord } from '@/Utils/String';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { formatMeetingDateTime, formatMeetingTimeOnly, isEmailMeeting } from '@/Utils/MeetingDisplay';
+import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
-import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statusIcons';
+import { meetingCompletionStatuses } from '@/Constants/statusIcons';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
-import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
-import { useApi } from '@/Composables/useApi';
-import type { EditableAgendaItemSource } from '@/Composables/useAgendaItemAutosave';
-import { formatNearDate, formatTime } from '@/Utils/dateTime';
-import AgendaItemEditSheet from '@/Components/AgendaItems/AgendaItemEditSheet.vue';
+import MeetingAgendaPanel from '@/Components/Meetings/MeetingAgendaPanel.vue';
+import AttachMeetingInstitutionDialog from '@/Components/Meetings/AttachMeetingInstitutionDialog.vue';
+import { useOptionalPanelProps } from '@/Composables/useOptionalPanelProps';
+import { formatNearDate } from '@/Utils/dateTime';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
 import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
 import AddAgendaItemsSheet, { type AddAgendaMode, type RecentAgenda } from '@/Components/Meetings/AddAgendaItemsSheet.vue';
@@ -324,157 +255,6 @@ import { enterMeeting } from '@/Composables/useRecordTrail';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 
-interface MeetingInstitution {
-  id: string;
-  name: string | null;
-  is_active: boolean;
-  tenant_id: number | null;
-  tenant: { shortname: string } | null;
-}
-
-interface MeetingFile {
-  id: string;
-  fileable_type: string;
-  fileable_id: string;
-  sharepoint_id: string;
-  sharepoint_path: string | null;
-  name: string;
-  file_type: string | null;
-  mime_type: string | null;
-  size_bytes: number | null;
-  file_date: string | null;
-  description: string | null;
-  public_link: string | null;
-  public_link_expires_at: string | null;
-  last_synced_at: string | null;
-  deleted_externally_at: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  formatted_size: string | null;
-}
-
-interface MeetingVote {
-  is_main: boolean;
-  is_consensus: boolean;
-  student_vote: string | null;
-  decision: string | null;
-  student_benefit: string | null;
-}
-
-interface RedactedAgendaItem {
-  id: string;
-  order: number;
-  is_private: true;
-  is_redacted: true;
-  title: string;
-  can: { update: boolean; delete: boolean };
-}
-
-interface FullAgendaItem {
-  is_redacted?: never;
-  id: string;
-  order: number;
-  brought_by_students: boolean;
-  type: AgendaItemType | null;
-  start_time: string | null;
-  end_time: string | null;
-  title: string | null;
-  is_private: boolean;
-  votes: MeetingVote[];
-  comments_count: number;
-  has_notes: boolean;
-  can: { update: boolean; delete: boolean };
-}
-
-type AgendaListItem = RedactedAgendaItem | FullAgendaItem;
-
-interface MeetingRecord {
-  id: string;
-  title: string;
-  meeting_kind: MeetingKind | null;
-  type: MeetingType | null;
-  type_label: string | null;
-  start_time: string;
-  end_time: string | null;
-  created_at: string;
-  updated_at: string;
-  description: { lt: string; en: string };
-  title_noun: string;
-  inherited_meeting_kind: MeetingKind;
-  agenda_items: AgendaListItem[];
-  sharepointPath: string | null;
-  sharepointFolderUrl: string | null;
-  institutions: MeetingInstitution[];
-  has_calendar_event: boolean;
-  has_protocol: boolean;
-}
-
-interface MeetingRepresentative {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  facebook_url: string | null;
-  pronouns: string | null;
-  show_pronouns: boolean;
-  profile_photo_path: string | null;
-  profile_photo_focal_point: string | null;
-}
-
-interface MeetingTask {
-  id: string;
-  name: string;
-  description: string | null;
-  due_date: string | null;
-  completed_at: string | null;
-  cancelled_at: string | null;
-  created_at: string;
-  updated_at: string;
-  action_type: ActionType | null;
-  metadata: Record<string, unknown> | null;
-  progress: { current: number; total: number; percentage: number } | null;
-  is_overdue: boolean;
-  can_be_manually_completed: boolean;
-  can_update: boolean;
-  icon: string;
-  color: string;
-  taskable: { id: number | string; name: string | null; type: string } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users: Array<{ id: string; name: string; profile_photo_path: string | null }>;
-}
-
-interface AttachableMeetingInstitution {
-  id: string;
-  name: string | null;
-  is_active: boolean;
-  tenant_shortname: string | null;
-}
-
-interface LinkedMeetingDocument {
-  id: number;
-  title: string;
-  name: string;
-  content_type: string | null;
-  document_date: string | null;
-  language_code: string;
-  anonymous_url: string | null;
-}
-
-interface MeetingAbilities {
-  update: boolean;
-  delete: boolean;
-  discard: boolean;
-  createAgendaItems: boolean;
-  reorderAgendaItems: boolean;
-  attachInstitution: boolean;
-}
-
-interface MeetingCompletion {
-  status: MeetingCompletionStatus | null;
-  missingActions: MeetingMissingAction[];
-}
-
 const props = withDefaults(defineProps<{
   meeting: MeetingRecord;
   representatives: MeetingRepresentative[];
@@ -484,7 +264,7 @@ const props = withDefaults(defineProps<{
   completion: MeetingCompletion;
   publicVisibility: MeetingPublicVisibility;
   recordNavigation?: RecordNavigationContext;
-  tasks?: MeetingTask[];
+  tasks?: TaskRow[];
   documents?: LinkedMeetingDocument[];
   /** Unpublished SharePoint files this meeting could link. */
   pendingDocuments?: DocumentFolderRow[];
@@ -620,52 +400,6 @@ const openAgendaSheet = (mode: AddAgendaMode) => {
   showAgendaSheet.value = true;
 };
 
-// The edit sheet loads every translation when opened.
-
-const agendaItemEditorOpen = ref(false);
-const agendaItemBeingEdited = ref<AgendaListItem | null>(null);
-const editableAgendaItem = ref<(EditableAgendaItemSource & { id: string; order: number }) | null>(null);
-const editableAgendaItemKey = ref(0);
-const editableAgendaItemLoading = ref<string | null>(null);
-const editableAgendaItemUrl = ref('');
-const editableAgendaItemApi = useApi<EditableAgendaItemSource & { id: string; order: number }>(editableAgendaItemUrl, { immediate: false, refetch: false });
-
-const openAgendaItemEditor = async ({ id }: Pick<AgendaListItem, 'id'>) => {
-  const item = props.meeting.agenda_items.find(candidate => candidate.id === id);
-  if (!item) return;
-
-  editableAgendaItemLoading.value = item.id;
-  editableAgendaItemUrl.value = route('api.v1.admin.agendaItems.editable', item.id);
-  await editableAgendaItemApi.execute();
-
-  if (editableAgendaItemLoading.value !== item.id) {
-    return;
-  }
-  editableAgendaItemLoading.value = null;
-
-  if (editableAgendaItemApi.isSuccess.value && editableAgendaItemApi.data.value) {
-    agendaItemBeingEdited.value = item;
-    editableAgendaItem.value = editableAgendaItemApi.data.value;
-    editableAgendaItemKey.value++;
-    agendaItemEditorOpen.value = true;
-  }
-};
-
-const deleteFromEditor = () => {
-  agendaItemEditorOpen.value = false;
-  if (agendaItemBeingEdited.value) {
-    requestAgendaItemDelete(agendaItemBeingEdited.value);
-  }
-};
-
-const previousItemEnd = (order: number): string | null => {
-  const previous = (props.meeting.agenda_items ?? [])
-    .filter((item): item is FullAgendaItem => !item.is_redacted && item.order < order && !!item.end_time)
-    .sort((a, b) => b.order - a.order)[0];
-
-  return previous?.end_time ? String(previous.end_time).slice(0, 5) : null;
-};
-
 // Read-only by default; toggled on to add/reorder/delete agenda items
 const agendaEditing = ref(false);
 
@@ -702,31 +436,13 @@ const getInitialTab = () => {
 
 const currentTab = ref(getInitialTab());
 
-type OptionalPanelProp = 'files' | 'tasks' | 'documents' | 'pendingDocuments' | 'availableInstitutionsForAttach';
-const optionalPanelProps: OptionalPanelProp[] = ['files', 'tasks', 'documents', 'pendingDocuments', 'availableInstitutionsForAttach'];
-const stopPreservingUnopenedPanels = router.on('before', (event) => {
-  if (!['post', 'put', 'patch', 'delete'].includes(event.detail.visit.method)) return;
-  event.detail.visit.except = [...new Set([
-    ...(event.detail.visit.except ?? []),
-    ...optionalPanelProps.filter(key => props[key] === undefined),
-    'recentAgendas',
-  ])];
+const { load: loadOptionalProps } = useOptionalPanelProps({
+  keys: ['files', 'tasks', 'documents', 'pendingDocuments', 'availableInstitutionsForAttach'] as const,
+  isLoaded: key => props[key] !== undefined,
+  alwaysExcept: ['recentAgendas'],
+  disabled: () => props.readOnly,
+  recordKey: () => props.meeting.id,
 });
-onUnmounted(stopPreservingUnopenedPanels);
-
-const requestedProps = new Set<OptionalPanelProp>();
-const loadOptionalProps = (keys: OptionalPanelProp[]) => {
-  if (props.readOnly) return;
-  const only = keys.filter(key => props[key] === undefined && !requestedProps.has(key));
-  if (!only.length) return;
-  only.forEach(key => requestedProps.add(key));
-  router.reload({
-    only,
-    onFinish: () => only.forEach(key => requestedProps.delete(key)),
-  });
-};
-
-watch(() => props.meeting.id, () => requestedProps.clear());
 
 watch(currentTab, (newTab) => {
   storedTab.value = newTab;
@@ -875,37 +591,9 @@ watch(() => props.meeting.id, () => enterMeeting({
 
 // Joint meeting — institution management
 const showAddInstitutionDialog = ref(false);
-const addInstitutionId = ref('');
 watch(showAddInstitutionDialog, (open) => {
   if (open) loadOptionalProps(['availableInstitutionsForAttach']);
 });
-
-const availableInstitutionsToAdd = computed(() => {
-  const attached = new Set(props.meeting.institutions?.map(i => i.id) ?? []);
-  return (props.availableInstitutionsForAttach ?? [])
-    .filter(inst => !attached.has(inst.id))
-    .map(inst => ({
-      label: inst.tenant_shortname ? `${inst.name} (${inst.tenant_shortname})` : inst.name,
-      value: inst.id,
-    }));
-});
-
-const handleAttachInstitution = () => {
-  if (!addInstitutionId.value) {
-    return;
-  }
-  // Institutions decide which pending documents can be linked, and who the tasks reach.
-  router.post(route('meetings.institutions.attach', props.meeting.id), {
-    institution_id: addInstitutionId.value,
-  }, {
-    preserveScroll: true,
-    except: ['documents'],
-    onSuccess: () => {
-      showAddInstitutionDialog.value = false;
-      addInstitutionId.value = '';
-    },
-  });
-};
 
 const handleDetachInstitution = (institutionId: string) => {
   router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }), {
@@ -970,29 +658,6 @@ const handleRecordAction = (action: string) => {
   if (action.startsWith('detach-institution:')) {
     handleDetachInstitution(action.slice('detach-institution:'.length));
   }
-};
-
-// Event handlers
-// Agenda item deletion goes through a confirmation dialog
-const showAgendaItemDeleteDialog = ref(false);
-const agendaItemPendingDelete = ref<AgendaListItem | null>(null);
-
-const requestAgendaItemDelete = (agendaItem: AgendaListItem) => {
-  agendaItemPendingDelete.value = agendaItem;
-  showAgendaItemDeleteDialog.value = true;
-};
-
-const confirmAgendaItemDelete = () => {
-  if (!agendaItemPendingDelete.value) {
-    return;
-  }
-  router.delete(route('agendaItems.destroy', agendaItemPendingDelete.value.id), {
-    preserveScroll: true,
-    except: ['documents', 'pendingDocuments'],
-    onFinish: () => {
-      agendaItemPendingDelete.value = null;
-    },
-  });
 };
 
 const handleMeetingDelete = () => {
