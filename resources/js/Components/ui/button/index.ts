@@ -12,7 +12,7 @@ export { default as Button } from './Button.vue';
  * `sentence` brings its own 40px height at the default size; `plain` is for calendar cells.
  */
 const buttonVariantClasses = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md whitespace-nowrap transition-[color,background-color,border-color,translate] [[data-surface=admin]_&]:active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+  'inline-flex items-center justify-center gap-2 rounded-md whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
   {
     variants: {
       variant: {

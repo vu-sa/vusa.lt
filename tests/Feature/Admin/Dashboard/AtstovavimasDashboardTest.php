@@ -18,7 +18,6 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\QuickLink;
 use App\Models\Resource;
 use App\Models\Role;
-use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
@@ -234,18 +233,6 @@ describe('atstovavimas dashboard', function (): void {
                 ->where('upcomingMeetings.total', 21)
                 ->has('upcomingMeetings.items', 20)
             );
-    });
-
-    test('the overview number counts only the user\'s own open tasks', function (): void {
-        $open = Task::factory()->create(['completed_at' => null]);
-        $done = Task::factory()->create(['completed_at' => now()]);
-        $someoneElses = Task::factory()->create(['completed_at' => null]);
-        $this->user->tasks()->attach([$open->id, $done->id]);
-        $this->admin->tasks()->attach($someoneElses->id);
-
-        asUserWithInertia($this->user)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertInertia(fn (Assert $page) => $page->where('openTasksCount', 1));
     });
 
     test('regular user can access atstovavimas dashboard', function (): void {

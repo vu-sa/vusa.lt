@@ -69,7 +69,6 @@ class AtstovavimasDashboardController extends AdminController
                 'to' => $today->copy()->addMonthsNoOverflow(2)->toDateString(),
             ],
             'canViewTenantOverview' => fn () => Gate::allows('viewAny', Meeting::class),
-            'openTasksCount' => fn () => Task::openTaskCountsFor($user())['tasks_count'],
             // Duty and followed institutions alike; the page narrows it by the tenant selector.
             'upcomingMeetings' => fn () => GetUpcomingMeetingsForUser::execute($user()),
             'followedInstitutions' => Inertia::defer(

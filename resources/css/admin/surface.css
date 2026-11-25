@@ -88,7 +88,7 @@ html[data-surface="admin"] #nprogress .peg {
   --caps-weight: 600;
   --caps-tracking: 0.06em;
   /* Admin buttons: no fill at rest (blurring a future background), an input-weight edge, an ink
-     tint and ink-weight edge on hover, a deeper tint on press. Fills deepen toward ink (light) or paper (dark). */
+     tint and ink-weight edge on hover, a deeper tint on press, without movement. Fills deepen toward ink (light) or paper (dark). */
   --button-fill-tint: var(--foreground);
   --button-hover-mix: 86%;
   --button-active-mix: 76%;

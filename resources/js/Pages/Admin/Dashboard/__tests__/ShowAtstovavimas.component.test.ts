@@ -87,7 +87,6 @@ function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: Ho
       userInstitutions: [],
       initialMeetingsWindow: { from: '2026-05-01', to: '2026-11-30' },
       canViewTenantOverview,
-      openTasksCount: 4,
       coordinators,
       upcomingMeetings: { items: [], total: 0 },
       followedInstitutions,
@@ -123,70 +122,17 @@ describe('the padalinys overview', () => {
   });
 });
 
-describe('numbers', () => {
-  it('counts the personal institutions and links every number', () => {
-    wrapper = createWrapper(false);
-
-    const links = wrapper.findAll('[data-slot="overview-numbers"] a');
-    expect(links.map(link => link.attributes('data-number'))).toEqual(['overdue', 'approaching', 'recent_check_in', 'incomplete_meetings', 'open_tasks']);
-    expect(links.map(link => link.find('span').text())).toEqual(['1', '1', '0', '1', '4']);
-    expect(links[3].attributes('href')).toBe('/mano/meetings.index?completion_status=incomplete');
-  });
-});
-
 describe('layout', () => {
-  it('places the KPI strips beside coordinators in two columns when both primary lists are empty', async () => {
-    institutions.value = [institution('2', 'healthy')];
+  it('has no numbers strip: attention and meetings lead, coordinators sit beside them', () => {
     wrapper = createWrapper(false, { total: 0, items: [] }, [{ id: '1', name: 'Koordinatorė' }]);
-    await nextTick();
 
     const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
-    const numbers = primary.get('[data-slot="overview-numbers"]');
-    expect(primary.isVisible()).toBe(true);
-    expect(primary.classes()).toContain('gap-12');
-    expect(primary.find('aside [data-testid="coordinators"]').exists()).toBe(true);
-    expect(numbers.classes()).toContain('lg:grid-cols-2');
-    expect(numbers.classes()).toContain('max-md:gap-y-6');
-    expect(numbers.classes()).toContain('lg:mt-8');
-    expect(numbers.findAll('li')).toHaveLength(5);
-    expect(wrapper.findAll('[data-slot="overview-numbers"]')).toHaveLength(1);
-  });
-
-  it('lets the KPI strips span the page when no coordinator is shown', async () => {
-    institutions.value = [institution('2', 'healthy')];
-    wrapper = createWrapper(false, { total: 0, items: [] });
-    await nextTick();
-
-    const numbers = wrapper.get('[data-slot="overview-numbers"]');
-    const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
-    expect(primary.isVisible()).toBe(false);
-    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(false);
-    expect(wrapper.get('[data-slot="overview-page"]').classes()).toContain('max-md:gap-12');
-    expect(numbers.classes()).toContain('lg:grid-cols-4');
-    expect(numbers.findAll('li')).toHaveLength(5);
-  });
-
-  it('keeps the KPI strips full width when the left column has content', () => {
-    wrapper = createWrapper(false, undefined, [{ id: '1', name: 'Koordinatorė' }]);
-
-    const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
-    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(false);
-    expect(wrapper.get('[data-slot="overview-numbers"]').classes()).toContain('lg:grid-cols-4');
-  });
-
-  it('puts the numbers across the page above the two-column content', () => {
-    wrapper = createWrapper(false, { total: 0, items: [] });
-
-    const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
-    const aside = primary.get('aside');
-    const numbers = wrapper.get('[data-slot="overview-numbers"]');
-    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(false);
-    expect(numbers.element.compareDocumentPosition(primary.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
     expect(primary.find('[data-testid="attention"]').exists()).toBe(true);
-    expect(aside.find('[data-testid="coordinators"]').exists()).toBe(true);
+    expect(primary.get('aside').find('[data-testid="coordinators"]').exists()).toBe(true);
+
     const status = wrapper.get('[data-slot="overview-status-list"]');
     const timeline = wrapper.get('[data-slot="atstovavimas-timeline-phone-note"]');
-    expect(aside.find('[data-slot="overview-status-list"]').exists()).toBe(false);
     expect(timeline.element.compareDocumentPosition(status.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
