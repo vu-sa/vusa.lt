@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { ref } from 'vue';
 
 import { TagChip } from '@/Components/Brand';
 import { Button } from '@/Components/ui/button';
@@ -10,6 +11,9 @@ import AccessibilityMenu from './AccessibilityMenu.vue';
 import HairlineList from './HairlineList.vue';
 import HairlineRow from './HairlineRow.vue';
 import HeaderWordmark from './HeaderWordmark.vue';
+import PublicEmptyState from './PublicEmptyState.vue';
+import PublicSearchInput from './PublicSearchInput.vue';
+import PublicSortMenu from './PublicSortMenu.vue';
 import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import ReadingSizeControl from './ReadingSizeControl.vue';
 import SectionBand from './SectionBand.vue';
@@ -234,6 +238,35 @@ export const Share: Story = {
         <div class="flex flex-wrap items-center gap-4">
           <ShareButton title="Pradedama kandidatų registracija" />
           <ShareButton title="Pradedama kandidatų registracija" variant="brand" />
+        </div>
+      </SectionBand>
+    `,
+  }),
+};
+
+/** The controls above a public listing: the search field, the sort menu and the empty result. */
+export const ListingControls: Story = {
+  render: () => ({
+    components: { PublicEmptyState, PublicSearchInput, PublicSortMenu, SectionBand, Button },
+    setup: () => ({
+      query: ref('Studentų atstovai'),
+      sort: ref('relevance'),
+      sortOptions: [
+        { value: 'relevance', label: 'Pagal aktualumą' },
+        { value: 'newest', label: 'Naujausi viršuje' },
+        { value: 'oldest', label: 'Seniausi viršuje' },
+      ],
+    }),
+    template: `
+      <SectionBand spacing="tight">
+        <div class="flex flex-col gap-6">
+          <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+            <PublicSearchInput v-model="query" placeholder="Ieškoti naujienų..." />
+            <PublicSortMenu v-model="sort" :options="sortOptions" default-value="relevance" />
+          </div>
+          <PublicEmptyState title="Naujienų nerasta" description="Pabandyk kitą paieškos frazę arba išvalyk filtrus.">
+            <Button voice="brand" variant="outline" size="sm">Išvalyti filtrus</Button>
+          </PublicEmptyState>
         </div>
       </SectionBand>
     `,

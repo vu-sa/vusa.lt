@@ -32,6 +32,9 @@ export { default as SectionBand } from './SectionBand.vue';
 export { default as ShareButton } from './ShareButton.vue';
 export { default as StatCell } from './StatCell.vue';
 export { default as PublicFilterPopover, type FilterOption } from './PublicFilterPopover.vue';
+export { default as PublicSearchInput } from './PublicSearchInput.vue';
+export { default as PublicSortMenu, type PublicSortOption } from './PublicSortMenu.vue';
+export { default as PublicEmptyState } from './PublicEmptyState.vue';
 
 // Shared with the admin surface; re-exported so public callers keep one import path.
 export { DisplayHeading, EyebrowLabel, TagChip } from '@/Components/Brand';
