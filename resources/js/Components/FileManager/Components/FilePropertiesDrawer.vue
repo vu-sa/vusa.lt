@@ -10,7 +10,7 @@
     >
       <template v-if="file">
         <SheetHeader class="border-b border-border px-4 py-3 pr-12">
-          <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {{ $t('files.ui.details') }}
           </p>
           <SheetTitle class="text-base font-semibold break-words text-foreground">

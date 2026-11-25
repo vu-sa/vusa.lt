@@ -1,7 +1,7 @@
 <template>
   <th
     data-slot="table-head"
-    :class="cn('h-11 px-4 text-left align-middle text-[11px] font-bold uppercase tracking-[0.18em] whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', props.class)"
+    :class="cn('h-11 px-4 text-left align-middle text-[11px] font-(--caps-weight) uppercase tracking-(--caps-tracking) whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]', props.class)"
   >
     <slot />
   </th>

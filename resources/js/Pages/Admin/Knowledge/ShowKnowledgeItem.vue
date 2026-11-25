@@ -2,7 +2,7 @@
   <OverviewPage :title="item.title" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
     <template #heading>
       <div :class="['grid gap-y-3', canTrack && 'grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3']" data-slot="step-heading">
-        <p :class="['text-xs font-bold uppercase tracking-[0.2em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">
+        <p :class="['text-xs font-semibold uppercase tracking-[0.06em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">
           {{ $t(`learning.kinds.${item.kind}`) }}
         </p>
         <LearningCompletionControl v-if="canTrack" v-model="checked" :step="viewerItem" :disabled="saving" class="mt-1.5 sm:mt-2.5" />

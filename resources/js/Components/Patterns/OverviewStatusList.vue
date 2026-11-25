@@ -1,6 +1,6 @@
 <template>
   <section v-if="rows.length > 0" class="flex flex-col gap-3" data-slot="overview-status-list" :aria-labelledby="headingId">
-    <h2 :id="headingId" class="flex items-center gap-2 border-b border-border pb-3 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+    <h2 :id="headingId" class="flex items-center gap-2 border-b border-border pb-3 text-sm font-semibold uppercase tracking-[0.06em] text-foreground">
       <CircleCheck class="size-4 shrink-0 text-brand" aria-hidden="true" />
       {{ $t('shell.chrome.all_clear') }}
     </h2>

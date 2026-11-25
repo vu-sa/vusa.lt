@@ -31,8 +31,8 @@ const buttonVariantClasses = cva(
         'brand-outline-on-dark': 'border border-white/25 bg-transparent text-white hover:border-brand hover:text-brand',
       },
       voice: {
-        brand: 'font-bold uppercase tracking-wide',
-        sentence: 'font-bold normal-case tracking-normal',
+        brand: 'font-(--action-weight) uppercase tracking-wide',
+        sentence: 'font-(--action-weight) normal-case tracking-normal',
         plain: 'font-medium normal-case',
       },
       size: {

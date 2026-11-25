@@ -1,12 +1,12 @@
 <template>
   <header class="py-3 md:py-5 lg:py-8" data-slot="collection-title-band">
-    <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
+    <p class="text-xs font-semibold uppercase tracking-[0.06em] text-brand">
       {{ eyebrow }}
     </p>
 
     <div class="mt-2 flex flex-col gap-3 sm:mt-3 sm:flex-row sm:items-end sm:justify-between sm:gap-5">
       <div class="min-w-0">
-        <h1 class="u-display text-balance text-3xl leading-[0.95] text-foreground sm:text-4xl lg:text-5xl">
+        <h1 class="u-display text-balance text-3xl leading-[1.08] text-foreground sm:text-4xl lg:text-5xl">
           {{ title }}
         </h1>
         <div v-if="lead || $slots.lead" class="mt-3 max-w-xl text-pretty leading-relaxed text-muted-foreground">

@@ -39,7 +39,7 @@ describe('SecondMenu.vue', () => {
     expect(link.classes()).toEqual(expect.arrayContaining([
       'border',
       'border-border',
-      'font-bold',
+      'font-(--action-weight)',
       'uppercase',
       'tracking-wide',
       'w-31',

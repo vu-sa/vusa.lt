@@ -50,6 +50,14 @@
   p>a {
     @apply underline;
   }
+
+  [data-surface="admin"] h1:not([data-surface="public"] *) {
+    font-weight: 700;
+  }
+
+  [data-surface="admin"] :is(h2, h3, h4):not([data-surface="public"] *) {
+    font-weight: 600;
+  }
 }
 
 /* Icons set beside body text.

@@ -63,3 +63,25 @@ html[data-surface="admin"] #nprogress .peg {
 [data-slot="form-page"] [data-slot="select-trigger"]:focus-within:not([aria-invalid="true"]) {
   border-color: var(--brand);
 }
+
+/* Action and caps-label weight per surface: public keeps its bold poster voice, admin speaks
+   one step quieter. Variables rather than an `admin:` variant, so a caller's own `font-*`
+   still wins through tailwind-merge. */
+:root {
+  --action-weight: 700;
+  --caps-weight: 700;
+  --caps-tracking: 0.18em;
+}
+
+[data-surface="admin"] {
+  --action-weight: 600;
+  --caps-weight: 600;
+  --caps-tracking: 0.06em;
+}
+
+/* Rich-content previews inside admin stamp the public surface and keep its voice. */
+[data-surface="admin"] [data-surface="public"] {
+  --action-weight: 700;
+  --caps-weight: 700;
+  --caps-tracking: 0.18em;
+}

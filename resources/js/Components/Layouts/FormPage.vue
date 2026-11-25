@@ -81,14 +81,14 @@
       ]"
     >
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <EntityTypeMark v-if="entityType" :type="entityType" size="sm" class="text-xs font-bold uppercase tracking-[0.2em]" />
+        <EntityTypeMark v-if="entityType" :type="entityType" size="sm" class="text-xs font-semibold uppercase tracking-[0.06em]" />
         <span v-if="entityType" class="h-3 border-l border-border" aria-hidden="true" />
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand" data-testid="form-page-eyebrow">
+        <p class="text-xs font-semibold uppercase tracking-[0.06em] text-brand" data-testid="form-page-eyebrow">
           {{ mode === 'create' ? $t('Kuri naują') : mode === 'view' ? $t('Peržiūri') : $t('Redaguoji') }}
         </p>
       </div>
 
-      <h1 class="u-display text-balance text-4xl leading-[0.95] text-foreground sm:text-5xl">
+      <h1 class="u-display text-balance text-4xl leading-[1.08] text-foreground sm:text-5xl">
         <slot name="title">
           {{ title }}
         </slot>

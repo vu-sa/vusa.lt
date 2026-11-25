@@ -27,7 +27,7 @@
     </div>
 
     <div class="min-w-0">
-      <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground" data-testid="hero-date">
+      <p class="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground" data-testid="hero-date">
         {{ today }}
       </p>
       <h1 class="u-display mt-2 text-balance text-2xl text-foreground sm:text-3xl" data-tour="greeting-section">

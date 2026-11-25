@@ -63,9 +63,9 @@
     <!-- Header band: title + entity mark -->
     <header class="space-y-1.5 border-b border-border pt-2 sm:pt-3 pb-3 sm:pb-4">
       <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-        <EntityTypeMark type="duty" size="sm" class="text-xs font-bold uppercase tracking-[0.2em]" />
+        <EntityTypeMark type="duty" size="sm" class="text-xs font-semibold uppercase tracking-[0.06em]" />
         <span class="h-3 border-l border-border" aria-hidden="true" />
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
+        <p class="text-xs font-semibold uppercase tracking-[0.06em] text-brand">
           {{ $t('shell.workspaces.organizacija.title') }}
         </p>
       </div>

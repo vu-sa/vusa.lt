@@ -119,7 +119,7 @@ import {
 import { agendaItemStatuses } from '@/Constants/statusIcons';
 import { agendaStatusExplanations, voteFieldExplanations } from '@/Constants/votingExplainer';
 
-const HEADING_CLASS = 'text-xs font-bold uppercase tracking-[0.18em] text-foreground';
+const HEADING_CLASS = 'text-xs font-semibold uppercase tracking-[0.06em] text-foreground';
 const TIPS = ['voting.help_tip_1', 'voting.help_tip_2', 'voting.help_tip_3'];
 
 const showModal = ref(false);

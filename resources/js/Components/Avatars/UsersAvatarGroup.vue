@@ -28,7 +28,7 @@
       </button>
     </PopoverTrigger>
     <PopoverContent class="w-[min(24rem,calc(100vw-2rem))] p-0" align="end" :data-slot="popoverSlot">
-      <p class="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <p class="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
         {{ popoverTitle ?? $t('Naudotojai') }} · {{ users.length }}
       </p>
       <ul v-if="users.length" class="max-h-72 divide-y divide-border/60 overflow-y-auto overscroll-contain">
@@ -89,7 +89,7 @@
           </button>
         </PopoverTrigger>
         <PopoverContent class="w-[min(24rem,calc(100vw-2rem))] p-0" align="end" :data-slot="popoverSlot">
-          <p class="border-b border-border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          <p class="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {{ popoverTitle ?? $t('Other users') }} · {{ hiddenUsers.length }}
           </p>
           <ul class="max-h-72 divide-y divide-border/60 overflow-y-auto overscroll-contain">

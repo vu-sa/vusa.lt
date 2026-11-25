@@ -28,19 +28,19 @@
         <div class="min-w-0 flex-1">
           <p
             v-if="progress"
-            class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand"
+            class="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand"
           >
             {{ $t('action_window.common.step') }} {{ progress.step }} / {{ progress.total }}
           </p>
           <p
             v-else-if="isReview"
-            class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand"
+            class="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand"
           >
             {{ $t('action_window.common.review') }}
           </p>
           <p
             v-else-if="identity"
-            class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand"
+            class="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand"
           >
             {{ $t(identity.label) }}
           </p>

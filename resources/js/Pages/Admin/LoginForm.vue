@@ -58,7 +58,7 @@
           >
         </div>
 
-        <p class="text-xs font-bold uppercase tracking-[0.28em] text-brand">
+        <p class="text-xs font-semibold uppercase tracking-[0.06em] text-brand">
           {{ $t('Prisijungimas') }}
         </p>
         <h1 class="mt-3 text-pretty text-3xl font-bold leading-tight text-foreground">

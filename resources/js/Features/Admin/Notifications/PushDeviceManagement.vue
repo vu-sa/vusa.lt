@@ -49,7 +49,7 @@
     </div>
 
     <div class="flex items-center justify-between gap-2 px-4 pt-3 pb-1">
-      <h3 class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <h3 class="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
         {{ $t('notifications.push_devices.all_devices') }} · {{ devices.length }}
       </h3>
       <Button

@@ -1,7 +1,7 @@
 <template>
   <section v-if="links.length > 0" data-slot="home-quick-access">
     <!-- The OverviewSection home heading without its hairline; the tiles draw their own. -->
-    <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+    <h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-foreground">
       <ArrowUpRight class="size-4 shrink-0 text-brand" aria-hidden="true" />
       {{ $t('home.quick_access.title') }}
     </h2>
