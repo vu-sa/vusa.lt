@@ -11,7 +11,7 @@
       v-if="dragOver"
       class="pointer-events-none absolute inset-2 z-30 flex items-start justify-center border-2 border-dashed border-brand pt-6"
     >
-      <p class="flex items-center gap-2 bg-background px-3 py-2 text-sm font-bold text-brand">
+      <p class="flex items-center gap-2 bg-background px-3 py-2 text-sm font-semibold text-brand">
         <Upload class="size-4" aria-hidden="true" />
         {{ $t('files.ui.drop_here', { folder: folderName }) }}
       </p>
@@ -72,7 +72,7 @@
 
         <div v-else class="border border-border">
           <table class="w-full table-fixed text-left text-sm">
-            <thead class="border-b border-border bg-secondary/40 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+            <thead class="border-b border-border bg-secondary/40 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               <tr>
                 <th v-if="!selectionMode" scope="col" class="w-11 px-3 py-2">
                   <Checkbox

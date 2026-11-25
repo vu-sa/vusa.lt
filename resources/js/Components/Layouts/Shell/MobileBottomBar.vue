@@ -71,7 +71,7 @@
           :key="unreadPops"
           data-slot="notification-count"
           :class="[
-            'absolute -top-1.5 left-3.5 flex h-4 min-w-4 items-center justify-center bg-brand-fill px-0.5 text-[11px] font-bold leading-none tabular-nums text-brand-foreground',
+            'absolute -top-1.5 left-3.5 flex h-4 min-w-4 items-center justify-center bg-brand-fill px-0.5 text-[11px] font-semibold leading-none tabular-nums text-brand-foreground',
             unreadPops > 0 && 'animate-badge-pop',
           ]"
         >

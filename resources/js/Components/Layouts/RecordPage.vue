@@ -14,7 +14,7 @@
           </div>
 
           <div :class="['min-w-0 flex-1', actionsBesideTitle && 'lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start lg:gap-x-6']">
-            <p :class="['flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand', actionsBesideTitle && 'lg:col-span-2']" data-slot="record-eyebrow">
+            <p :class="['flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.06em] text-brand', actionsBesideTitle && 'lg:col-span-2']" data-slot="record-eyebrow">
               <component :is="entityDefinition.icon" v-if="entityDefinition" class="size-4 shrink-0" aria-hidden="true" />
               {{ $t(entityLabel) }}
               <template v-if="eyebrowSuffix">
@@ -63,7 +63,7 @@
               </div>
 
               <div class="flex shrink-0 flex-wrap items-center gap-2 lg:ml-auto">
-                <div v-if="navigation" class="flex h-11 items-center border border-border">
+                <div v-if="navigation" class="flex h-11 items-center rounded-md border border-border">
                   <Button
                     variant="ghost"
                     :size="navigation.previousLabel ? 'default' : 'icon-lg'"
@@ -120,7 +120,7 @@
           ]"
           :data-status-role="fact.status?.role"
         >
-          <dt :class="['text-[11px] font-bold uppercase tracking-[0.18em]', fact.labelClass ?? 'text-muted-foreground']" :aria-label="fact.labelIcon ? fact.label : undefined">
+          <dt :class="['text-[11px] font-semibold uppercase tracking-[0.06em]', fact.labelClass ?? 'text-muted-foreground']" :aria-label="fact.labelIcon ? fact.label : undefined">
             <component :is="fact.labelIcon" v-if="fact.labelIcon" class="size-3.5" aria-hidden="true" />
             <template v-else>
               {{ fact.label }}
@@ -192,7 +192,7 @@
             :data-section="section.value"
             :class="[
               '-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 pointer-coarse:h-11',
-              'text-xs font-bold uppercase tracking-wide whitespace-nowrap',
+              'text-xs font-semibold uppercase tracking-wide whitespace-nowrap',
               section.value === currentSection
                 ? 'border-brand text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
@@ -209,7 +209,7 @@
 
       <!-- The phone selector and desktop tabs share the same section state. -->
       <div v-if="hasTabs" class="sticky top-[var(--shell-chrome-height,0px)] z-30 mt-8 border-b border-border bg-background py-3 md:hidden" data-slot="record-section-switcher">
-        <label :for="switcherId" class="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        <label :for="switcherId" class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
           {{ $t('Rodyti') }}
         </label>
         <NativeSelect :id="switcherId" :model-value="mobileSection" :options="switcherOptions" @update:model-value="pickMobileSection" @change="selectSection(($event.target as HTMLSelectElement).value)" />

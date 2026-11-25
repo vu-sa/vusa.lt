@@ -159,17 +159,13 @@ import {
   Library,
 } from '@lucide/vue';
 
-import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
-import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
+import { useAdminSearch } from '@/Composables/useAdminSearch';
+import type { MultiSearchResults } from '@/Search/core/types';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
 import { resolvePageIcon } from '@/Composables/pageIcons';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
-import {
-  collectAllTabHits,
-  type MapperContext,
-  type NormalizedSearchHit,
-  type SearchCollectionKey,
-} from '@/Search/admin/Utils/searchHitMappers';
+import { adminSearchCollections, adminSearchRequests, collectAllTabHits, type AdminSearchCollectionId, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
+import type { MapperContext } from '@/Search/admin/Utils/searchHitMappers';
 import SearchHitRow from '@/Components/Search/SearchHitRow.vue';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { TopProgressBar } from '@/Components/Patterns';
@@ -187,20 +183,6 @@ import ActionResult from './results/ActionResult.vue';
 import { useCommandActions } from './useCommandActions';
 import PaletteDialog from './PaletteDialog.vue';
 
-/** Search collection → the catalog `entityType` whose section owns it, for workspace ranking. */
-const collectionEntityType: Record<SearchCollectionKey, string> = {
-  meetings: 'meeting',
-  agendaItems: 'agenda_item',
-  institutions: 'institution',
-  resources: 'resource',
-  duties: 'duty',
-  documents: 'document',
-  news: 'news',
-  pages: 'page',
-  calendar: 'calendar',
-  users: 'user',
-};
-
 // Command palette state
 const { isOpen, query, recentItems, close } = useCommandPalette();
 
@@ -215,7 +197,7 @@ const { filterActions, workspaceKeyForEntity, activeWorkspace } = useCommandActi
 // Local state
 const isSearching = ref(false);
 const searchError = ref<string | null>(null);
-const searchResults = ref<MultiSearchResults>(createEmptyMultiSearchResults());
+const searchResults = ref<MultiSearchResults<AdminSearchCollectionId>>({});
 const searchInputRef = ref<HTMLInputElement | null>(null);
 
 const pinnedItems = computed<RecentItem[]>(() => pinnedPages.value);
@@ -239,12 +221,12 @@ const mapperCtx = computed<MapperContext>(() => ({
 }));
 
 const flatHits = computed<NormalizedSearchHit[]>(() => {
-  const hits = collectAllTabHits(searchResults.value, { query: query.value, dutyCtx: mapperCtx.value });
+  const hits = collectAllTabHits(searchResults.value, { query: query.value, mapperContext: mapperCtx.value });
   if (query.value.trim()) return hits;
   const current = activeWorkspace.value?.key;
 
   return [...hits].sort((a, b) => {
-    const inCurrent = (hit: NormalizedSearchHit) => Number(workspaceKeyForEntity(collectionEntityType[hit.collection]) === current);
+    const inCurrent = (hit: NormalizedSearchHit) => Number(workspaceKeyForEntity(adminSearchCollections[hit.collection].entityType) === current);
 
     return inCurrent(b) - inCurrent(a);
   });
@@ -271,7 +253,7 @@ const hasResults = computed(() => (
 // Debounced search function - 300ms debounce to reduce request frequency
 const performSearch = useDebounceFn(async (searchQuery: string) => {
   if (!searchQuery.trim()) {
-    searchResults.value = createEmptyMultiSearchResults();
+    searchResults.value = {};
     isSearching.value = false;
     return;
   }
@@ -288,18 +270,7 @@ const performSearch = useDebounceFn(async (searchQuery: string) => {
 
   try {
     // Equal limits, so no collection floods the ranked list.
-    searchResults.value = await multiSearch(searchQuery, {
-      meetingsLimit: 3,
-      agendaItemsLimit: 3,
-      newsLimit: 3,
-      pagesLimit: 3,
-      calendarLimit: 3,
-      institutionsLimit: 3,
-      documentsLimit: 3,
-      resourcesLimit: 3,
-      dutiesLimit: 3,
-      usersLimit: 3,
-    });
+    searchResults.value = await multiSearch(searchQuery, adminSearchRequests());
   }
   catch (error) {
     const message = error instanceof Error ? error.message : 'Search failed';
@@ -323,7 +294,7 @@ watch(query, (newQuery) => {
     performSearch(newQuery);
   }
   else {
-    searchResults.value = createEmptyMultiSearchResults();
+    searchResults.value = {};
   }
 });
 

@@ -93,7 +93,7 @@ import { DateRangePicker } from '@/Components/ui/date-picker';
 import { capitalize } from '@/Utils/String';
 import { ResourceIcon } from '@/Components/icons';
 import { ResourceSelectDialog } from '@/Components/Pickers';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 

@@ -17,7 +17,7 @@
         :class="[ROW_ITEM_CLASS, ROW_PADDING_CLASS, 'flex-col gap-2 sm:flex-row sm:items-center']"
       >
         <div class="flex shrink-0 items-baseline gap-2 sm:w-36">
-          <span class="font-bold text-foreground">{{ roster.label }}</span>
+          <span class="font-semibold text-foreground">{{ roster.label }}</span>
           <span class="text-xs text-muted-foreground">
             {{ roster.is_current ? $t('secretaries.institution.current_term') : $t('secretaries.institution.next_term') }}
           </span>
@@ -95,8 +95,7 @@ import { UserPlus, X } from '@lucide/vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { ROW_ITEM_CLASS, ROW_LIST_BOX_CLASS, ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { SectionHeaderAction } from '@/Components/Patterns';
-import MultiCollectionSelectDialog from '@/Components/Pickers/MultiCollectionSelectDialog.vue';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { MultiCollectionSelectDialog, normalizeHit, type NormalizedSearchHit } from '@/Components/Pickers';
 
 import type { SecretaryRoster, SecretaryUser } from './secretaryTypes';
 import { useSecretaryRoster } from './useSecretaryRoster';

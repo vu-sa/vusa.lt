@@ -17,7 +17,7 @@
     <div class="space-y-1">
       <p class="flex min-h-5 flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
         <span v-if="!notification.read_at" class="size-1.5 shrink-0 bg-brand-fill" aria-hidden="true" />
-        <span class="text-[11px] font-bold uppercase tracking-wide text-brand">{{ categoryTag }}</span>
+        <span class="text-[11px] font-semibold uppercase tracking-wide text-brand">{{ categoryTag }}</span>
         <time :datetime="notification.created_at">{{ formattedTime }}</time>
       </p>
 

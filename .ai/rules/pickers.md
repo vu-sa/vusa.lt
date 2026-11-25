@@ -27,7 +27,7 @@ Pick by option count, plain-text vs rich formatting, and whether records are sea
 
 4. **Rich options with descriptions / layout previews**: `VisualOptionSelect` (or shadcn `<Select>` where options inside the dropdown popup require descriptions, rich multi-line content, or complex sub-elements).
 
-5. **`CollectionSelectDialog` / `MultiCollectionSelectDialog`** (`resources/js/Components/Pickers/`): Multi- or single-record selection backed by Typesense/Scout search across full search-indexed collections (news, pages, institutions, calendar events). Use `normalizeHit()` to shape hits.
+5. **`CollectionSelectDialog` / `MultiCollectionSelectDialog`** (`resources/js/Components/Pickers/`): Multi- or single-record selection backed by Typesense/Scout search across full search-indexed collections (news, pages, institutions, calendar events). Import the dialogs, `normalizeHit()` and `NormalizedSearchHit` from `@/Components/Pickers` in entity components. `Components/Search` composes entity previews in its registry.
 
 Small, non-searchable lookup lists (e.g. `EventType`, ~7 rows total, no `tenant_id`) get no dedicated API/search endpoint — they are either shared globally via `HandleInertiaRequests::share()` (e.g. `eventTypes`, mirroring the `tenants` share) and read with `usePage().props.eventTypes`, or passed directly as a prop from whichever controller needs them. `EventType::name` is Spatie-translatable; serialized for inertia, translations resolve to the current-locale **string** server-side when requested in public contexts, or the full translation array in admin interfaces.
 

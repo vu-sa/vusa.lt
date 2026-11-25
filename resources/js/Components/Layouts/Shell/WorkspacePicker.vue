@@ -11,9 +11,9 @@
         @blur="scheduleClose"
       >
         <Button
-          variant="ghost"
+          variant="outline"
           size="xs"
-          class="gap-2 border border-border px-3 text-xs font-bold uppercase tracking-wide pointer-coarse:h-11 hover:border-brand hover:bg-transparent hover:text-brand"
+          class="gap-2 px-3 text-xs font-semibold uppercase tracking-wide pointer-coarse:h-11"
         >
           <component :is="workspaceIcon(activeWorkspace?.key ?? 'pradzia')" class="size-4 text-brand" />
           <span>{{ activeWorkspace ? $t(activeWorkspace.label) : $t('shell.chrome.workspaces') }}</span>
@@ -51,7 +51,7 @@
               <component :is="workspaceIcon(workspace.key)" class="mt-0.5 size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand group-focus-visible:text-brand" />
               <span class="min-w-0">
                 <span class="flex flex-wrap items-center gap-2">
-                  <span class="text-xs font-bold uppercase tracking-wide transition-colors group-hover:text-brand group-focus-visible:text-brand">{{ $t(workspace.label) }}</span>
+                  <span class="text-xs font-semibold uppercase tracking-wide transition-colors group-hover:text-brand group-focus-visible:text-brand">{{ $t(workspace.label) }}</span>
                   <Badge v-if="workspace.experimental" variant="outline" class="text-[11px]" data-testid="workspace-experimental">{{ $t('shell.chrome.experimental') }}</Badge>
                 </span>
                 <span class="block text-sm text-muted-foreground">{{ $t(workspace.description) }}</span>

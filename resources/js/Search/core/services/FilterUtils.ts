@@ -12,6 +12,10 @@
 
 import type { BaseSearchFilters, FacetConfig, DateRangeFilter } from '../types';
 
+export function quoteFilterValue(value: string): string {
+  return `\`${value.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``;
+}
+
 /**
  * FilterUtils class - provides static methods for filter manipulation
  */

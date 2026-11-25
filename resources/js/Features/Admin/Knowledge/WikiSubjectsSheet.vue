@@ -57,7 +57,7 @@ import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import InstitutionSelectDialog from '@/Components/Pickers/InstitutionSelectDialog.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { KnowledgeItemKind } from '@/Types/enums';
 import type { LearningTypeOption, WikiSubject, WikiSubjectType } from '@/Types/learning';
 

@@ -32,7 +32,7 @@ describe('HeroButtons', () => {
 
   it('renders the hairline outline on light surfaces by default', () => {
     const classes = classesOf(makeButton({ variant: 'outline' }));
-    expect(classes).toContain('border-border');
+    expect(classes).toContain('border-(--button-outline-border)');
     expect(classes).toContain('text-foreground');
   });
 

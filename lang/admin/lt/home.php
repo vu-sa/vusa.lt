@@ -19,10 +19,7 @@ return [
     'overdue_due_date' => 'Terminas praėjo :date',
     'tasks_title' => 'Tavo užduotys',
     'create_title' => 'Greiti veiksmai',
+    'site_content_title' => 'Renginiai ir naujienos',
     'overdue_by' => 'vėluoja :days d.',
     'overdue' => 'vėluoja',
-    'summary' => [
-        'waiting' => 'Laukia užduočių: :count',
-        'overdue' => 'vėluoja: :count',
-    ],
 ];

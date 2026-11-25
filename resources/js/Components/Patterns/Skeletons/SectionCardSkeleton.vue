@@ -1,14 +1,14 @@
 <template>
   <div
     data-slot="section-card-skeleton"
-    :class="cn('animate-pulse border border-border bg-card p-4 sm:p-5 space-y-4', props.class)"
+    :class="cn('motion-safe:animate-pulse rounded-md border border-border bg-card p-4 sm:p-5 space-y-4', props.class)"
   >
     <!-- Card Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <div class="size-4 bg-secondary" />
         <div class="h-5 w-32 bg-secondary" />
-        <div class="size-5 border border-border bg-secondary/70" />
+        <div class="size-5 rounded-md border border-border bg-secondary/70" />
       </div>
       <div class="h-4 w-16 bg-secondary/50" />
     </div>
@@ -51,11 +51,3 @@ const props = withDefaults(defineProps<Props>(), {
   class: undefined,
 });
 </script>
-
-<style scoped>
-@media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
-}
-</style>

@@ -14,31 +14,10 @@
     <!-- Main Content -->
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <!-- Search, Filter Controls & View Mode -->
-      <div class="space-y-4">
+      <div class="space-y-4" data-nosnippet>
         <!-- Search Bar, Filter Toggle + View Mode -->
         <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-          <!-- Search Input -->
-          <div class="relative min-w-0 flex-1">
-            <IFluentSearch16Regular class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              v-model="searchInput"
-              type="text"
-              :placeholder="`${$t('search.search_meetings_placeholder')}`"
-              :class="[
-                'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
-                'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
-              ]"
-            >
-            <button
-              v-if="searchInput"
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              @click="searchInput = ''"
-            >
-              <IFluentDismiss16Regular class="size-3.5" />
-              <span class="sr-only">{{ $t('Išvalyti') }}</span>
-            </button>
-          </div>
+          <PublicSearchInput v-model="searchInput" :placeholder="$t('search.search_meetings_placeholder')" />
 
           <!-- Filter Button (opens filter popovers row) -->
           <button
@@ -65,63 +44,7 @@
             />
           </button>
 
-          <!-- Sort Popover -->
-          <Popover v-model:open="isSortPopoverOpen">
-            <PopoverTrigger as-child>
-              <button
-                type="button"
-                :class="[
-                  'inline-flex h-11 shrink-0 items-center justify-between gap-2 border px-3.5 text-xs font-bold uppercase tracking-wide transition-colors',
-                  filters.sort !== 'relevance'
-                    ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
-                    : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-                ]"
-                :aria-label="$t('Rikiuoti')"
-              >
-                <component :is="currentSortIcon" class="size-3.5" />
-                <span class="hidden sm:inline">{{ $t('Rikiuoti') }}</span>
-                <IFluentChevronDown16Regular
-                  class="size-3.5 transition-transform duration-200"
-                  :class="{ 'rotate-180': isSortPopoverOpen }"
-                />
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              align="end"
-              class="z-50 w-64 border border-border bg-popover p-0 text-popover-foreground shadow-lg"
-            >
-              <div class="border-b border-border px-3.5 py-2.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                {{ $t('Rikiuoti pagal') }}
-              </div>
-              <div class="divide-y divide-border/40">
-                <button
-                  v-for="option in sortOptions"
-                  :key="option.value"
-                  type="button"
-                  role="radio"
-                  :aria-checked="filters.sort === option.value"
-                  :class="[
-                    'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm font-medium',
-                    'text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-                  ]"
-                  @click="selectSort(option.value)"
-                >
-                  <div class="flex items-center gap-2">
-                    <component
-                      :is="getSortIcon(option.value)"
-                      class="size-4 text-muted-foreground"
-                    />
-                    <span>{{ option.label }}</span>
-                  </div>
-                  <IFluentCheckmark16Filled
-                    v-if="filters.sort === option.value"
-                    class="size-4 text-brand"
-                  />
-                </button>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <PublicSortMenu v-model="meetingSort" :options="sortOptions" default-value="relevance" />
         </div>
 
         <!-- Filter Popovers Bar (toggled by the filter button) -->
@@ -338,7 +261,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn, useStorage } from '@vueuse/core';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import { PageTitleBand, PublicSearchInput, PublicSortMenu, type PublicSortOption } from '@/Components/Public/Base';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import TagChip from '@/Components/Brand/TagChip.vue';
 import HairlineList from '@/Components/Public/Base/HairlineList.vue';
@@ -346,15 +269,12 @@ import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base
 import MeetingCompactListItem from '@/Components/Public/Search/MeetingCompactListItem.vue';
 import MeetingResultsSkeleton from '@/Components/Public/Search/MeetingResultsSkeleton.vue';
 import { useMeetingSearch } from '@/Composables/useMeetingSearch';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { MeetingSearchSort } from '@/Types/MeetingSearchTypes';
 import { TenantType } from '@/Types/enums';
 
 import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
 import IFluentArrowSortDownLines24Regular from '~icons/fluent/arrow-sort-down-lines-24-regular';
 import IFluentArrowSortUpLines24Regular from '~icons/fluent/arrow-sort-up-lines-24-regular';
-import IFluentCheckmark16Filled from '~icons/fluent/checkmark-16-filled';
-import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
@@ -388,7 +308,6 @@ const {
 
 const showFilterBar = useStorage('vusa-show-filters-expanded', false);
 const searchInput = ref('');
-const isSortPopoverOpen = ref(false);
 
 function applyCurrentTenantFilter(): void {
   const { tenant } = page.props;
@@ -406,30 +325,16 @@ const pageEyebrow = computed(() => {
   return tenantName ? `${tenantName} · ${$t('search.meeting_search_title')}` : $t('search.meeting_search_title');
 });
 
-const sortOptions: Array<{ value: MeetingSearchSort; label: string }> = [
-  { value: 'relevance', label: $t('Pagal aktualumą') },
-  { value: 'date_desc', label: $t('Naujausi pirmi') },
-  { value: 'date_asc', label: $t('Seniausi pirmi') },
+const sortOptions: PublicSortOption<MeetingSearchSort>[] = [
+  { value: 'relevance', label: $t('Pagal aktualumą'), icon: IFluentArrowSort24Regular },
+  { value: 'date_desc', label: $t('Naujausi pirmi'), icon: IFluentArrowSortDownLines24Regular },
+  { value: 'date_asc', label: $t('Seniausi pirmi'), icon: IFluentArrowSortUpLines24Regular },
 ];
 
-const selectSort = (newSortBy: MeetingSearchSort) => {
-  searchController.setSortBy(newSortBy);
-  isSortPopoverOpen.value = false;
-};
-
-const getSortIcon = (mode: MeetingSearchSort | undefined) => {
-  switch (mode) {
-    case 'date_desc':
-      return IFluentArrowSortDownLines24Regular;
-    case 'date_asc':
-      return IFluentArrowSortUpLines24Regular;
-    case 'relevance':
-    default:
-      return IFluentArrowSort24Regular;
-  }
-};
-
-const currentSortIcon = computed(() => getSortIcon(filters.value.sort));
+const meetingSort = computed<MeetingSearchSort>({
+  get: () => filters.value.sort ?? 'relevance',
+  set: searchController.setSortBy,
+});
 
 // Year options computed from facets
 const yearFacet = computed(() => {

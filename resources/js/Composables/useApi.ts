@@ -32,17 +32,11 @@
  */
 
 import { computed, type Ref, type ComputedRef, unref } from 'vue';
-import { useFetch, type UseFetchReturn, type UseFetchOptions } from '@vueuse/core';
+import { useFetch, type UseFetchOptions } from '@vueuse/core';
 
 import { jsonHeaders, notifySessionExpired } from '@/Composables/apiRequest';
 import { useToasts } from '@/Composables/useToasts';
-import type {
-  ApiResponse,
-  ApiSuccessResponse,
-  ApiErrorResponse,
-  isApiSuccess,
-  isApiError,
-} from '@/Types/api.d';
+import type { ApiResponse } from '@/Types/api.d';
 
 export { apiRequest, type ApiRequestOptions, type ApiResult } from '@/Composables/apiRequest';
 
@@ -120,9 +114,19 @@ export function useApi<T = unknown>(
   url: string | Ref<string>,
   options: UseApiOptions<T> = {},
 ): UseApiReturn<T> {
+  return useApiFetch(url, options);
+}
+
+type MutationMethod = 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+function useApiFetch<T, B>(
+  url: string | Ref<string>,
+  options: UseApiOptions<T>,
+  mutation?: { method: MutationMethod; body?: B | Ref<B> },
+): UseApiReturn<T> {
   const {
     showErrorToast = true,
-    showSuccessToast = false,
+    showSuccessToast = mutation !== undefined,
     successMessage,
     errorMessage,
     transform,
@@ -134,12 +138,19 @@ export function useApi<T = unknown>(
   // Use VueUse's useFetch
   const fetchReturn = useFetch<ApiResponse<T>>(url, {
     ...fetchOptions,
+    ...(mutation && { immediate: false }),
     beforeFetch({ options }) {
       options.headers = {
         ...options.headers,
-        ...jsonHeaders(false),
+        ...jsonHeaders(mutation !== undefined),
       };
       options.credentials = 'same-origin';
+      if (mutation) {
+        options.method = mutation.method;
+        if (mutation.body) {
+          options.body = JSON.stringify(unref(mutation.body));
+        }
+      }
       return { options };
     },
     afterFetch(ctx) {
@@ -231,12 +242,12 @@ export function useApi<T = unknown>(
     }
 
     if (rawData.success === true && showSuccessToast) {
-      const message = successMessage || (rawData as ApiSuccessResponse<T>).message || 'Success';
+      const message = successMessage || rawData.message || 'Success';
       toasts.success(message);
     }
 
     if (rawData.success === false && showErrorToast) {
-      const message = errorMessage || (rawData as ApiErrorResponse).message || 'An error occurred';
+      const message = errorMessage || rawData.message || 'An error occurred';
       toasts.error(message);
     }
   };
@@ -273,133 +284,5 @@ export function useApiMutation<T = unknown, B = unknown>(
   body?: B | Ref<B>,
   options: UseApiOptions<T> = {},
 ): UseApiReturn<T> {
-  const {
-    showErrorToast = true,
-    showSuccessToast = true,
-    successMessage,
-    errorMessage,
-    transform,
-    ...fetchOptions
-  } = options;
-
-  const toasts = useToasts();
-
-  const fetchReturn = useFetch<ApiResponse<T>>(url, {
-    ...fetchOptions,
-    immediate: false, // Mutations should be explicit
-    beforeFetch({ options }) {
-      options.method = method;
-      options.headers = {
-        ...options.headers,
-        ...jsonHeaders(true),
-      };
-      options.credentials = 'same-origin';
-      if (body) {
-        options.body = JSON.stringify(unref(body));
-      }
-      return { options };
-    },
-    afterFetch(ctx) {
-      if (typeof ctx.data === 'string') {
-        try {
-          ctx.data = JSON.parse(ctx.data);
-        }
-        catch {
-          // Keep as-is
-        }
-      }
-      return ctx;
-    },
-    onFetchError(ctx) {
-      if (ctx.response?.status === 419) {
-        notifySessionExpired();
-      }
-      if (typeof ctx.data === 'string') {
-        try {
-          ctx.data = JSON.parse(ctx.data);
-        }
-        catch {
-          ctx.data = {
-            success: false,
-            message: ctx.error?.message || 'Network error',
-            code: 'SERVER_ERROR',
-          };
-        }
-      }
-      else if (!ctx.data) {
-        // Handle case where data is null/undefined on error
-        ctx.data = {
-          success: false,
-          message: ctx.error?.message || 'Network error',
-          code: 'SERVER_ERROR',
-        };
-      }
-      return ctx;
-    },
-  }).json<ApiResponse<T>>();
-
-  const data = computed<T | null>(() => {
-    const rawData = unref(fetchReturn.data);
-    if (rawData && typeof rawData === 'object' && 'success' in rawData && rawData.success === true && 'data' in rawData) {
-      const responseData = rawData.data as T;
-      return transform ? transform(responseData) : responseData;
-    }
-    return null;
-  });
-
-  const error = computed<string | null>(() => {
-    const rawData = unref(fetchReturn.data);
-    if (rawData && rawData.success === false) {
-      return rawData.message || 'An error occurred';
-    }
-    if (fetchReturn.error.value) {
-      return fetchReturn.error.value.message || 'Network error';
-    }
-    return null;
-  });
-
-  const isSuccess = computed<boolean>(() => {
-    const rawData = unref(fetchReturn.data);
-    return rawData !== null && rawData !== undefined && rawData?.success === true;
-  });
-
-  const execute = async (): Promise<void> => {
-    await fetchReturn.execute();
-
-    // onFetchError already showed the session-expired toast.
-    if (fetchReturn.statusCode.value === 419) {
-      return;
-    }
-
-    const rawData = unref(fetchReturn.data);
-
-    // Safety check for undefined/null response
-    if (rawData === null || rawData === undefined) {
-      if (showErrorToast) {
-        toasts.error(errorMessage || 'No response from server');
-      }
-      return;
-    }
-
-    if (rawData.success === true && showSuccessToast) {
-      const message = successMessage || (rawData as ApiSuccessResponse<T>).message || 'Success';
-      toasts.success(message);
-    }
-
-    if (rawData.success === false && showErrorToast) {
-      const message = errorMessage || (rawData as ApiErrorResponse).message || 'An error occurred';
-      toasts.error(message);
-    }
-  };
-
-  return {
-    data,
-    response: fetchReturn.data as Ref<ApiResponse<T> | null>,
-    error,
-    isFetching: fetchReturn.isFetching,
-    isFinished: fetchReturn.isFinished,
-    isSuccess,
-    execute,
-    abort: fetchReturn.abort,
-  };
+  return useApiFetch(url, options, { method, body });
 }

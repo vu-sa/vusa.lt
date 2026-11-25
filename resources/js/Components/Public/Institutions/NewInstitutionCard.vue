@@ -6,11 +6,11 @@
     data-slot="institution-card"
   >
     <MediaFrame
-      :image="institution.image_media ?? imageFromSearch(institution as unknown as Record<string, unknown>)"
+      :image="card.image_media ?? imageFromSearch(institution as unknown as Record<string, unknown>)"
       sizes="(min-width: 1280px) 392px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-      :src="institution.image_url ?? undefined"
+      :src="card.image_url ?? undefined"
       :alt="String(institution.name || '')"
-      :focal-point="institution.image_focal_point"
+      :focal-point="card.image_focal_point"
       :grayscale="false"
       hover-zoom
       class="aspect-[2/1] shrink-0 border-0 border-b border-border"
@@ -83,8 +83,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import { imageFromSearch } from '@/Types/media';
-import MediaFrame from '@/Components/Public/Base/MediaFrame.vue';
+import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import { safeHref } from '@/Utils/safeHref';
 
 import InstitutionCardArrow from './InstitutionCardArrow.vue';
@@ -105,8 +107,10 @@ const props = defineProps<{
   omitTypeSlugs?: string[];
 }>();
 
+const card = computed(() => props.institution as InstitutionCardData);
+
 const { url, eyebrow, description } = useInstitutionCard(
-  () => props.institution as InstitutionCardData,
+  () => card.value,
   () => props.href,
   () => props.omitTypeSlugs,
 );

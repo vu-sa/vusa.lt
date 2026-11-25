@@ -14,7 +14,7 @@
 
       <div v-if="rows.length" class="flex flex-col gap-6">
         <section v-for="group in groups" :key="group.key" :data-group="group.key">
-          <h3 class="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          <h3 class="mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {{ group.label }} · {{ group.rows.length }}
           </h3>
           <CollectionRowList frame="box" :items="group.rows" :item-key="row => row.id" :row-muted="row => row.authorized === false">

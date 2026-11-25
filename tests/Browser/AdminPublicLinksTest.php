@@ -64,9 +64,9 @@ it('opens an activity answer and home news and events outside the admin Inertia 
         ->and($notification->fresh()->read_at)->not->toBeNull();
 
     navigateTo($page, '/mano');
-    waitForInertiaRender($page, '[data-slot=site-content] [data-slot=news-card]');
+    waitForInertiaRender($page, '[data-slot=site-content] [data-slot=site-content-news]');
     $page->script('window.adminLinkProbe = true');
-    $page->click('[data-slot=site-content] [data-slot=news-card]');
+    $page->click('[data-slot=site-content] [data-slot=site-content-news]');
     waitForInertiaRender($page, 'h1:has-text("Nuorodos naujiena")');
 
     $page->assertSee($news->title)->assertNoJavaScriptErrors();
@@ -82,9 +82,9 @@ it('opens an activity answer and home news and events outside the admin Inertia 
     expect($page->script('window.publicLinkProbe'))->toBeTrue();
 
     navigateTo($page, '/mano');
-    waitForInertiaRender($page, '[data-slot=site-content] [data-slot=event-card] a');
+    waitForInertiaRender($page, '[data-slot=site-content] [data-slot=site-content-event]');
     $page->script('window.adminLinkProbe = true');
-    $page->click('[data-slot=site-content] [data-slot=event-card] a');
+    $page->click('[data-slot=site-content] [data-slot=site-content-event]');
     waitForInertiaRender($page, 'h1:has-text("Nuorodos renginys")');
 
     $page->assertSee($event->getTranslation('title', 'lt'))->assertNoJavaScriptErrors();

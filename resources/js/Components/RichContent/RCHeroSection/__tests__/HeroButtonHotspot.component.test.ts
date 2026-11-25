@@ -44,7 +44,7 @@ describe('HeroButtonHotspot', () => {
   it('renders the button text and the outline variant', () => {
     const { wrapper } = mountHotspot({ button: { text: 'Skaityti', link: '#', variant: 'outline' as const } });
     expect(wrapper.text()).toContain('Skaityti');
-    expect(wrapper.find('button').classes()).toContain('border-border');
+    expect(wrapper.find('button').classes()).toContain('border-(--button-outline-border)');
   });
 
   it('renders brand-outline-on-dark when onDark is true', () => {

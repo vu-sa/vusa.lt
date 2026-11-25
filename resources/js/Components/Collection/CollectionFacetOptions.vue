@@ -5,7 +5,7 @@
     type="search"
     :aria-label="$t('search.facet_search')"
     :placeholder="$t('search.facet_search')"
-    class="mb-2 min-h-11 w-full border border-border bg-background px-3 text-sm text-foreground"
+    class="mb-2 min-h-11 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
   >
   <p v-if="loading" role="status" class="px-2 text-xs text-muted-foreground">
     {{ $t('search.facet_search_loading') }}

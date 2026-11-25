@@ -12,11 +12,6 @@ export function academicYear(input: DateInput): number {
   return month >= ACADEMIC_YEAR_START_MONTH ? year : year - 1;
 }
 
-/** The starting year of the academic year that contains today. */
-export function currentAcademicYear(): number {
-  return academicYear(new Date());
-}
-
 /** A compact label from the starting year: 2025 → "2025/26". */
 export function formatAcademicYearLabel(startYear: number): string {
   return `${startYear}/${String((startYear + 1) % 100).padStart(2, '0')}`;

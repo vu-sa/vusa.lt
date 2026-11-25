@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'resources/js/Components/Public/Base/MediaFrame.vue'
+  - 'resources/js/Components/Brand/MediaFrame.vue'
 ---
 
 # Base

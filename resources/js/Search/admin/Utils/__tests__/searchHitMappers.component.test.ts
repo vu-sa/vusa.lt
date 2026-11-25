@@ -4,30 +4,15 @@ import { usePage } from '@inertiajs/vue3';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { meetingCompletionStatuses } from '@/Constants/statusIcons';
 import type { MultiSearchResults } from '@/Search/core/types';
-import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
+import { collectAllTabHits, normalizeHit, type AdminSearchCollectionId } from '@/Components/Search/adminSearchCollections';
 
 import {
-  adminCollectionToKey,
-  collectAllTabHits,
   formatSearchDate,
   formatSearchDateTime,
-  normalizeHit,
   getUserDuties,
 } from '../searchHitMappers';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
-
-describe('adminCollectionToKey', () => {
-  it('maps snake_case agenda_items to the camelCase result key', () => {
-    expect(adminCollectionToKey('agenda_items')).toBe('agendaItems');
-  });
-
-  it('passes through other collections unchanged', () => {
-    expect(adminCollectionToKey('meetings')).toBe('meetings');
-    expect(adminCollectionToKey('institutions')).toBe('institutions');
-    expect(adminCollectionToKey('resources')).toBe('resources');
-  });
-});
 
 describe('formatSearchDate', () => {
   it('returns undefined for missing timestamps', () => {
@@ -84,9 +69,9 @@ describe('normalizeHit', () => {
   });
 
   it('links an agenda item to its edit page and uses institution as subtitle', () => {
-    const hit = normalizeHit('agendaItems', { id: '3', title: 'Punktas', meeting_title: 'M', meeting_id: '9', institution_name_lt: 'VU Senatas' });
+    const hit = normalizeHit('agenda_items', { id: '3', title: 'Punktas', meeting_title: 'M', meeting_id: '9', institution_name_lt: 'VU Senatas' });
 
-    expect(hit.id).toBe('agendaItems-3');
+    expect(hit.id).toBe('agenda_items-3');
     expect(hit.subtitle).toBe('VU Senatas');
     expect(hit.href).toContain('agendaItems.edit');
   });
@@ -165,12 +150,8 @@ describe('normalizeHit', () => {
 });
 
 describe('collectAllTabHits', () => {
-  /** Build a MultiSearchResults with only the keys we care about populated. */
-  function makeResults(partial: Partial<Omit<MultiSearchResults, 'counts'>>): MultiSearchResults {
-    return {
-      ...createEmptyMultiSearchResults(),
-      ...partial,
-    };
+  function makeResults(partial: Partial<Record<AdminSearchCollectionId, Record<string, unknown>[]>>): MultiSearchResults<AdminSearchCollectionId> {
+    return Object.fromEntries(Object.entries(partial).map(([id, hits]) => [id, { hits, found: hits.length }]));
   }
 
   // Real-world int64 scores: these are EQUAL when compared as JS numbers
@@ -247,7 +228,7 @@ describe('English search results', () => {
     expect(normalizeHit('institutions', names).title).toBe('Council');
     expect(normalizeHit('resources', { ...names, is_reservable: true, category_name: 'Technika', category_name_en: 'Equipment' }).subtitle).toBe('Equipment');
     expect(normalizeHit('meetings', relation).subtitle).toBe('Council');
-    expect(normalizeHit('agendaItems', relation).subtitle).toBe('Council');
+    expect(normalizeHit('agenda_items', relation).subtitle).toBe('Council');
     expect(normalizeHit('duties', { ...names, ...relation }).subtitle).toBe('Council');
   });
 });

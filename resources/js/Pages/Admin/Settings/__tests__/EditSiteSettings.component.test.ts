@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 
 import EditSiteSettings from '@/Pages/Admin/Settings/EditSiteSettings.vue';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 /**
  * Stands in for CollectionSelectDialog — the real Typesense search flow is out of scope

@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-2">
           <component :is="currentDeviceIcon" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <p class="truncate text-sm font-bold text-foreground">
+          <p class="truncate text-sm font-semibold text-foreground">
             {{ $t('notifications.push_devices.this_device') }}
           </p>
         </div>
@@ -49,7 +49,7 @@
     </div>
 
     <div class="flex items-center justify-between gap-2 px-4 pt-3 pb-1">
-      <h3 class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <h3 class="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
         {{ $t('notifications.push_devices.all_devices') }} · {{ devices.length }}
       </h3>
       <Button
@@ -181,8 +181,8 @@ const statusLabel = computed(() => {
 });
 
 const statusClass = computed(() => {
-  if (hasPushSubscription.value) return 'font-medium text-[var(--status-success)]';
-  if (pushPermission.value === 'denied') return 'font-medium text-[var(--status-danger)]';
+  if (hasPushSubscription.value) return 'font-medium text-status-success';
+  if (pushPermission.value === 'denied') return 'font-medium text-status-danger';
 
   return 'text-muted-foreground';
 });

@@ -1,4 +1,5 @@
 {
+  "Other users": "Other users",
   "Rodyti daugiau (:shown iš :total)": "Show more (:shown of :total)",
   "Daugiausiai klausimų": "Most items",
   "Mažiausiai klausimų": "Fewest items",
@@ -1646,5 +1647,14 @@
     "Paspausk elementą – liks matomi tik su juo susiję.": "Click an element to see only what it is tied to.",
     "Pašalinti :name": "Remove :name",
     "Ieškok pagal vardą…": "Search by name…",
-    "Jau pasirinktas": "Already picked"
+    "Jau pasirinktas": "Already picked",
+    "Standartinis": "Standard",
+    "Su šonine juosta": "With a sidebar",
+    "Platus": "Wide",
+    "Visas plotis": "Full width",
+    "Susikaupęs": "Focused",
+    "Centruotas": "Centred",
+    "Pildyti anglų kalbos laukelius": "Fill in the English fields",
+    "Pildyti lietuvių kalbos laukelius": "Fill in the Lithuanian fields",
+    "Kartais atstovavimo organai posėdžiauja kartu. Jei šis posėdis bendras su kitomis institucijomis, pasirink jas iš susijusių.": "Representative bodies sometimes meet jointly. If this meeting is shared with other institutions, choose them from the related ones."
 }

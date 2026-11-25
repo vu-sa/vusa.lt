@@ -8,7 +8,7 @@ import { cva } from 'class-variance-authority';
 export const controlVariants = cva(
   [
     'inline-flex shrink-0 items-center justify-center gap-2 border',
-    'text-xs font-bold transition-colors',
+    'text-xs font-(--action-weight) transition-colors',
     'outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
     'disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0',
   ],
@@ -39,12 +39,12 @@ export const controlVariants = cva(
 export const controlCountClass = 'flex h-4 min-w-4 items-center justify-center bg-brand-fill px-1 font-mono text-[0.625rem] leading-none text-brand-foreground';
 
 /** A segmented toggle (view modes): one hairline frame, the chosen segment is brand-filled. */
-export const segmentGroupClass = 'inline-flex h-11 shrink-0 border border-border bg-background p-0.5 pointer-coarse:h-12';
+export const segmentGroupClass = 'inline-flex h-11 shrink-0 rounded-md border border-border bg-background p-0.5 pointer-coarse:h-12';
 
 export const segmentVariants = cva(
   [
-    'flex h-full items-center justify-center gap-1.5 px-3',
-    'text-xs font-bold uppercase tracking-wide transition-colors',
+    'flex h-full items-center justify-center gap-1.5 rounded-sm px-3',
+    'text-xs font-(--caps-weight) uppercase tracking-wide transition-colors',
     'outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 [&_svg]:size-4 [&_svg]:shrink-0',
   ],
   {

@@ -89,6 +89,8 @@ const props = defineProps<{
   typeKind: 'institutionType' | 'dutyType';
   types: TypeRow[];
   deletedCount: number;
+  /** From the type policy: only super admins delete, and restore follows delete, not create. */
+  abilities: { delete: boolean; restore: boolean };
 }>();
 
 const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
@@ -125,8 +127,8 @@ const actions = useCollectionRecordActions({
   source,
   routePrefix: resource,
   openHref: id => route(`${resource}.show`, id),
-  canDelete: () => Boolean(page.props.auth?.can?.delete?.[props.typeKind]),
-  canRestore: () => Boolean(page.props.auth?.can?.restore?.[props.typeKind]),
+  canDelete: () => props.abilities.delete,
+  canRestore: () => props.abilities.restore,
   canForceDelete: () => canForceDelete.value,
 });
 const actionsFor = (type: TypeRow) => actions.rowActions(type, titleOf(type), isTrash);

@@ -41,15 +41,15 @@
     <!-- Legend -->
     <div class="flex flex-wrap items-center gap-4 border-t border-border pt-3 text-[10px] text-muted-foreground">
       <div class="flex items-center gap-1.5">
-        <div class="size-2 bg-[var(--status-success)]" />
+        <div class="size-2 bg-status-success" />
         <span>{{ $t('Optimalu') }}</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <div class="size-2 bg-[var(--status-attention)]" />
+        <div class="size-2 bg-status-attention" />
         <span>{{ $t('Per trumpa') }}</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <div class="size-2 bg-[var(--status-danger)]" />
+        <div class="size-2 bg-status-danger" />
         <span>{{ $t('Per ilga') }}</span>
       </div>
     </div>
@@ -82,16 +82,16 @@ const titleLengthClass = computed(() => {
   const len = titleLength.value;
   if (len === 0) return 'text-muted-foreground';
   if (len > 60) return 'text-destructive font-medium';
-  if (len < 30) return 'text-[var(--status-attention)]';
-  return 'text-[var(--status-success)]';
+  if (len < 30) return 'text-status-attention';
+  return 'text-status-success';
 });
 
 const titleDotClass = computed(() => {
   const len = titleLength.value;
   if (len === 0) return 'bg-muted';
-  if (len > 60) return 'bg-[var(--status-danger)]';
-  if (len < 30) return 'bg-[var(--status-attention)]';
-  return 'bg-[var(--status-success)]';
+  if (len > 60) return 'bg-status-danger';
+  if (len < 30) return 'bg-status-attention';
+  return 'bg-status-success';
 });
 
 // Description: optimal 120-160, short <120, long >160
@@ -99,15 +99,15 @@ const descriptionLengthClass = computed(() => {
   const len = descriptionLength.value;
   if (len === 0) return 'text-muted-foreground';
   if (len > 160) return 'text-destructive font-medium';
-  if (len < 120) return 'text-[var(--status-attention)]';
-  return 'text-[var(--status-success)]';
+  if (len < 120) return 'text-status-attention';
+  return 'text-status-success';
 });
 
 const descriptionDotClass = computed(() => {
   const len = descriptionLength.value;
   if (len === 0) return 'bg-muted';
-  if (len > 160) return 'bg-[var(--status-danger)]';
-  if (len < 120) return 'bg-[var(--status-attention)]';
-  return 'bg-[var(--status-success)]';
+  if (len > 160) return 'bg-status-danger';
+  if (len < 120) return 'bg-status-attention';
+  return 'bg-status-success';
 });
 </script>

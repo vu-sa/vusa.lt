@@ -51,7 +51,7 @@
           <!-- New file indicator -->
           <div
             v-if="isNewFile && !isBusy && localFiles[0]?.status === 'success'"
-            class="absolute bottom-2 left-2 flex items-center gap-1 border border-border bg-background px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-foreground shadow-xs"
+            class="absolute bottom-2 left-2 flex items-center gap-1 border border-border bg-background px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-foreground shadow-xs"
           >
             <UploadIcon class="size-3" />
             {{ $t("Naujas") }}
@@ -108,7 +108,7 @@
           <!-- Success indicator -->
           <div
             v-if="isNewFile && !isBusy && localFiles[0]?.status === 'success'"
-            class="absolute bottom-2 right-2 flex size-6 items-center justify-center border border-border bg-background text-[var(--status-success)] shadow-xs"
+            class="absolute bottom-2 right-2 flex size-6 items-center justify-center border border-border bg-background text-status-success shadow-xs"
             data-slot="image-upload-success"
           >
             <Check class="size-3.5" />
@@ -153,7 +153,7 @@
                 <ImagePlus class="size-6" />
               </div>
               <div>
-                <p class="text-sm font-bold text-foreground">
+                <p class="text-sm font-semibold text-foreground">
                   {{ isDragging ? $t("Paleisk failą") : $t("Įkelti nuotrauką") }}
                 </p>
                 <p class="mt-1 text-xs text-muted-foreground">
@@ -187,7 +187,7 @@
             <!-- New file indicator -->
             <div
               v-if="f.file"
-              class="absolute bottom-1 left-1 flex items-center gap-0.5 bg-background border border-border px-1.5 py-0.5 text-[10px] font-bold text-foreground shadow-xs"
+              class="absolute bottom-1 left-1 flex items-center gap-0.5 bg-background border border-border px-1.5 py-0.5 text-[10px] font-semibold text-foreground shadow-xs"
             >
               <UploadIcon class="size-2.5" />
             </div>
@@ -244,7 +244,7 @@
       <div
         v-for="failed in localFiles.filter(f => f.status === 'error')"
         :key="failed.id"
-        class="mt-2 flex flex-wrap items-center gap-2 text-sm text-[var(--status-danger)]"
+        class="mt-2 flex flex-wrap items-center gap-2 text-sm text-status-danger"
         role="alert"
       >
         <span>{{ failed.error }}</span>

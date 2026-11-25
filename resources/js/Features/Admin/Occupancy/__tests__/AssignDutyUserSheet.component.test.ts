@@ -29,7 +29,7 @@ const stubs = {
   DatePicker: { props: ['modelValue', 'disabled'], template: '<input class="date" :value="modelValue" :disabled="disabled" />' },
   TiptapEditor: { template: '<div class="tiptap" />' },
   ImageUpload: { template: '<div class="image-upload" />' },
-  MemberSearchField: {
+  UserSearchField: {
     props: ['modelValue', 'takenIds', 'allowCreate'],
     emits: ['update:modelValue'],
     template: '<button type="button" data-testid="member-search" :data-taken="(takenIds ?? []).join(\',\')" @click="$emit(\'update:modelValue\', { id: \'\', name: \'Petras Petraitis\', isNew: true })" />',

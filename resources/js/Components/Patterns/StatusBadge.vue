@@ -1,7 +1,7 @@
 <template>
   <span
     :class="cn(
-      'inline-flex w-fit items-center gap-1.5 border px-2 py-1 text-[11px] font-bold leading-none',
+      'inline-flex w-fit items-center gap-1.5 border px-2 py-1 text-[11px] font-semibold leading-none',
       isUppercase ? 'uppercase tracking-wide' : 'normal-case tracking-normal',
       statusRoleClasses[status.role],
       props.class,

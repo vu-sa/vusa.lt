@@ -17,9 +17,9 @@
         <Link
           v-if="backHref"
           :href="backHref"
-          class="group inline-flex shrink-0 items-center gap-2 text-sm font-bold text-foreground transition-colors hover:text-brand"
+          class="group inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-brand"
         >
-          <span class="flex size-9 items-center justify-center border border-border transition-colors group-hover:border-brand pointer-coarse:size-11">
+          <span class="flex size-9 items-center justify-center rounded-md border border-(--button-outline-border) bg-(--button-outline-fill) backdrop-blur-sm transition-colors group-hover:border-(--button-outline-hover-border) group-hover:bg-(--button-outline-hover-fill) group-active:bg-(--button-outline-active-fill) pointer-coarse:size-11">
             <ArrowLeft class="size-4" />
           </span>
           <span :class="shellFocus ? 'sr-only lg:not-sr-only' : ''">{{ backLabel ?? $t('Grįžti') }}</span>
@@ -27,7 +27,7 @@
 
         <div class="min-w-0 flex-1 border-l border-border pl-3">
           <div class="flex items-center gap-2 min-w-0">
-            <p class="truncate text-sm font-bold text-foreground" data-testid="form-page-bar-title">
+            <p class="truncate text-sm font-semibold text-foreground" data-testid="form-page-bar-title">
               <slot name="bar-title">
                 {{ barTitle ?? title }}
               </slot>
@@ -81,14 +81,14 @@
       ]"
     >
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <EntityTypeMark v-if="entityType" :type="entityType" size="sm" class="text-xs font-bold uppercase tracking-[0.2em]" />
+        <EntityTypeMark v-if="entityType" :type="entityType" size="sm" class="text-xs font-semibold uppercase tracking-[0.06em]" />
         <span v-if="entityType" class="h-3 border-l border-border" aria-hidden="true" />
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand" data-testid="form-page-eyebrow">
+        <p class="text-xs font-semibold uppercase tracking-[0.06em] text-brand" data-testid="form-page-eyebrow">
           {{ mode === 'create' ? $t('Kuri naują') : mode === 'view' ? $t('Peržiūri') : $t('Redaguoji') }}
         </p>
       </div>
 
-      <h1 class="u-display text-balance text-4xl leading-[0.95] text-foreground sm:text-5xl">
+      <h1 class="u-display text-balance text-4xl leading-[1.08] text-foreground sm:text-5xl">
         <slot name="title">
           {{ title }}
         </slot>
@@ -125,7 +125,7 @@
           v-if="availableLocales.length > 1"
           :class="[
             'flex h-11 shrink-0 items-center gap-2 border px-3 text-xs font-medium pointer-coarse:h-12',
-            'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+            'border-status-attention-border bg-status-attention-surface text-status-attention',
             !missingInCurrentLocale && 'invisible',
           ]"
           :aria-hidden="!missingInCurrentLocale"
@@ -146,7 +146,7 @@
       ref="summary"
       role="alert"
       tabindex="-1"
-      class="mt-8 border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-4 text-[var(--status-danger)] outline-none"
+      class="mt-8 border border-status-danger-border bg-status-danger-surface p-4 text-status-danger outline-none"
       data-testid="form-page-errors"
     >
       <p class="text-sm font-semibold">
@@ -381,14 +381,14 @@ const SaveState: FunctionalComponent<{ state: SaveStateKind }> = ({ state }) => 
   return h('span', {
     'class': [
       'flex items-center gap-1.5 text-xs',
-      state === 'dirty' ? 'text-[var(--status-attention)]' : 'text-muted-foreground',
+      state === 'dirty' ? 'text-status-attention' : 'text-muted-foreground',
     ],
     'role': 'status',
     'aria-live': 'polite',
     'data-save-state': state,
   }, [
     state === 'saving' && h(Loader2, { class: 'size-3 animate-spin' }),
-    state === 'dirty' && h('span', { class: 'size-1.5 bg-[var(--status-attention)] motion-safe:animate-pulse' }),
+    state === 'dirty' && h('span', { class: 'size-1.5 bg-status-attention motion-safe:animate-pulse' }),
     label,
   ]);
 };

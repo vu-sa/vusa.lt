@@ -134,7 +134,7 @@ export const stubIcon = (className: string) => defineComponent({
 /**
  * Popover stubs — NOT part of `commonStubs` (unlike Dialog/Tooltip): most of this
  * codebase already mounts real `Popover`/`PopoverTrigger` successfully in jsdom (date
- * pickers, DutyCard, …), so blanket-stubbing it in the shared registry broke those
+ * pickers, …), so blanket-stubbing it in the shared registry broke those
  * unrelated tests (a stubbed `Popover` removes the `PopoverRootContext` a real, unstubbed
  * `PopoverTrigger` elsewhere still injects). Opt in locally — `import { stubPopover,
  * stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs'` — only where the test

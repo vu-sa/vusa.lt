@@ -63,3 +63,81 @@ html[data-surface="admin"] #nprogress .peg {
 [data-slot="form-page"] [data-slot="select-trigger"]:focus-within:not([aria-invalid="true"]) {
   border-color: var(--brand);
 }
+
+/* Action and caps-label weight per surface: public keeps its bold poster voice, admin speaks
+   one step quieter. Variables rather than an `admin:` variant, so a caller's own `font-*`
+   still wins through tailwind-merge. */
+:root {
+  --action-weight: 700;
+  --caps-weight: 700;
+  --caps-tracking: 0.18em;
+  /* Buttons: public keeps transparent outlines that turn brand on hover and fills that fade 10%. */
+  --button-fill-tint: transparent;
+  --button-hover-mix: 90%;
+  --button-active-mix: 90%;
+  --button-outline-fill: transparent;
+  --button-outline-border: var(--border);
+  --button-outline-hover-fill: transparent;
+  --button-outline-hover-border: var(--brand);
+  --button-outline-hover-text: var(--brand);
+  --button-outline-active-fill: transparent;
+}
+
+[data-surface="admin"] {
+  --action-weight: 600;
+  --caps-weight: 600;
+  --caps-tracking: 0.06em;
+  /* Admin buttons: no fill at rest (blurring a future background), an input-weight edge, an ink
+     tint and ink-weight edge on hover, a deeper tint on press, without movement. Fills deepen toward ink (light) or paper (dark). */
+  --button-fill-tint: var(--foreground);
+  --button-hover-mix: 86%;
+  --button-active-mix: 76%;
+  --button-outline-fill: transparent;
+  --button-outline-border: color-mix(in oklab, var(--input) 50%, var(--border));
+  --button-outline-hover-fill: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --button-outline-hover-border: color-mix(in oklab, var(--foreground) 38%, transparent);
+  --button-outline-hover-text: var(--foreground);
+  --button-outline-active-fill: color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+
+/* Rich-content previews inside admin stamp the public surface and keep its voice. */
+[data-surface="admin"] [data-surface="public"] {
+  --action-weight: 700;
+  --caps-weight: 700;
+  --caps-tracking: 0.18em;
+  --button-fill-tint: transparent;
+  --button-hover-mix: 90%;
+  --button-active-mix: 90%;
+  --button-outline-fill: transparent;
+  --button-outline-border: var(--border);
+  --button-outline-hover-fill: transparent;
+  --button-outline-hover-border: var(--brand);
+  --button-outline-hover-text: var(--brand);
+  --button-outline-active-fill: transparent;
+}
+
+/* Admin corners: a small radius makes a working tool feel less like a form to fill in. Public
+   stays square — the scale is 0 there — and pills (`rounded-full`) are literals either way. */
+[data-surface="admin"] {
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 7px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius: 0.3125rem;
+}
+
+[data-surface="admin"] [data-surface="public"] {
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius: 0rem;
+}
+
+html[data-surface="admin"] [data-sonner-toast][data-styled='true'] {
+  border-radius: var(--radius-md);
+}

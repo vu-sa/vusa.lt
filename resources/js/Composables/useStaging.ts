@@ -1,13 +1,6 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-export interface StagingState {
-  isStaging: boolean;
-  filesReadOnly: boolean;
-  sharepointReadOnly: boolean;
-  mailToRequester?: boolean;
-}
-
 export type StagingTopic = 'reset' | 'files' | 'sharepoint' | 'mail';
 
 export interface StagingNote {
@@ -21,7 +14,7 @@ export interface StagingNote {
  */
 export function useStaging() {
   const page = usePage();
-  const staging = computed(() => page.props.staging as StagingState | undefined);
+  const staging = computed(() => page.props.staging);
   const isStaging = computed(() => staging.value?.isStaging ?? false);
 
   const notes = computed<StagingNote[]>(() => {

@@ -10,7 +10,7 @@
       <nav :aria-label="$t('learning.wiki.jump_to_letter')">
         <ul class="flex gap-1 overflow-x-auto pb-1">
           <li v-for="group in groups" :key="group.letter">
-            <a :href="`#${letterAnchor(group.letter)}`" class="flex size-11 shrink-0 items-center justify-center border border-border text-sm font-bold text-foreground transition-colors hover:border-foreground sm:size-9">{{ group.letter }}</a>
+            <a :href="`#${letterAnchor(group.letter)}`" class="flex size-11 shrink-0 items-center justify-center border border-border text-sm font-semibold text-foreground transition-colors hover:border-foreground sm:size-9">{{ group.letter }}</a>
           </li>
         </ul>
       </nav>

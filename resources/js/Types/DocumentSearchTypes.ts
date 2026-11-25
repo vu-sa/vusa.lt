@@ -10,7 +10,7 @@ export type DocumentSearchSort = 'relevance' | 'date_desc' | 'date_asc';
 export type DocumentEffectStatusValue = 'true' | 'false' | 'unknown';
 
 // Core search interfaces
-export interface DocumentSearchFilters {
+export type DocumentSearchFilters = {
   query: string;
   tenants: string[];
   contentTypes: string[];
@@ -24,7 +24,7 @@ export interface DocumentSearchFilters {
   sort?: DocumentSearchSort;
   /** Defaults to `['true', 'unknown']` — hides "Negalioja" until explicitly selected. */
   effectStatuses?: DocumentEffectStatusValue[];
-}
+};
 
 export interface DocumentFacet {
   field: string;

@@ -25,7 +25,7 @@ const stubs = {
 
 beforeEach(() => {
   localStorage.clear();
-  vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: null } }));
+  vi.mocked(usePage).mockReturnValue(createMockPage({ auth: null }));
 });
 
 describe('public page headings', () => {
@@ -76,7 +76,7 @@ describe('public page headings', () => {
 
 it('excludes public chrome from snippets while keeping page content available', async () => {
   vi.mocked(usePage).mockReturnValue(createMockPage({
-    auth: { user: null },
+    auth: null,
     tenant: { banners: [{ id: 1 }] },
   }));
   const wrapper = mount(PublicLayout, {

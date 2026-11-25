@@ -194,12 +194,14 @@ describe('InstitutionsNeedingAttention', () => {
     active_check_in_until: null,
   };
 
-  it('marks an overdue institution with its canonical status and offers to record its activity', async () => {
+  it('states an overdue institution status in its sub-line and offers one action to record its activity', async () => {
     const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions: [institution] } });
+    const row = wrapper.get('[data-slot="institution-attention-row"]');
 
-    expect(wrapper.find('[data-slot="status-badge"]').attributes('data-status-role')).toBe('danger');
+    expect(row.get('[data-slot="status-text"]').attributes('data-status-role')).toBe('danger');
+    expect(row.find('[data-slot="status-badge"]').exists()).toBe(false);
 
-    await wrapper.find('button').trigger('click');
+    await row.get('[data-collection-row-action="primary"]').trigger('click');
     expect(wrapper.emitted('record')).toEqual([[institution]]);
   });
 
@@ -224,16 +226,15 @@ describe('InstitutionsNeedingAttention', () => {
     expect(dialogList().findAll('li')).toHaveLength(1);
   });
 
-  it('puts the ask button first and the show-all button second, both below the list and without a border', () => {
+  it('keeps the ask button under the list and moves show-all into the section header', () => {
     const institutions = Array.from({ length: 7 }, (_, i) => ({ ...institution, id: `i${i}` }));
     const wrapper = mount(InstitutionsNeedingAttention, {
       props: { institutions, limit: 5, askable: true },
       global: { stubs: { ...commonStubs, SpotlightPopover: { template: '<div><slot /></div>' } } },
     });
 
-    const buttons = wrapper.get('[data-slot="institutions-needing-attention-actions"]').findAll('button');
-    expect(buttons.map(button => button.attributes('data-slot'))).toEqual(['institutions-needing-attention-ask', 'institutions-needing-attention-more']);
-    expect(buttons.every(button => !button.classes().includes('border'))).toBe(true);
+    expect(wrapper.get('[data-slot="institutions-needing-attention-actions"]').find('[data-slot="institutions-needing-attention-ask"]').exists()).toBe(true);
+    expect(wrapper.get('header').find('[data-slot="institutions-needing-attention-more"]').exists()).toBe(true);
     wrapper.unmount();
   });
 
@@ -242,7 +243,7 @@ describe('InstitutionsNeedingAttention', () => {
     const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions, limit: 5 }, global: { stubs: commonStubs } });
 
     await wrapper.get('[data-slot="institutions-needing-attention-more"]').trigger('click');
-    await wrapper.get('[data-slot="institutions-needing-attention-dialog-list"] button').trigger('click');
+    await wrapper.get('[data-slot="institutions-needing-attention-dialog-list"] [data-collection-row-action="primary"]').trigger('click');
 
     expect(wrapper.emitted('record')).toEqual([[institutions[0]]]);
     expect(wrapper.find('[data-slot="institutions-needing-attention-dialog-list"]').exists()).toBe(false);

@@ -1,7 +1,7 @@
 <template>
   <section data-slot="dutiable-timeline-suggestions" class="flex h-full min-h-0 flex-col gap-2 overflow-hidden p-3">
     <div class="flex items-center justify-between gap-2">
-      <p class="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+      <p class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         {{ $t('dutiables.timeline.dock.suggestions') }}
         <span v-if="findings.length > 0">({{ findings.length }})</span>
       </p>

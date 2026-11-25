@@ -3,8 +3,7 @@
  */
 import { ref, computed } from 'vue';
 
-import { useApiMutation } from './useApi';
-import { globalProgress, updateProgress, removeProgress } from './useTutorialProgress';
+import { globalProgress, completeProgress, resetProgress } from './useTutorialProgress';
 
 // Prefix for spotlight IDs to distinguish from tours
 const SPOTLIGHT_PREFIX = 'spotlight-';
@@ -61,50 +60,17 @@ export function useFeatureSpotlight(spotlightId: string, options: FeatureSpotlig
   async function dismiss(): Promise<void> {
     if (isDismissed.value) return;
 
-    // Update shared state
-    updateProgress(internalId, new Date().toISOString());
-
-    // Close popover
-    isPopoverOpen.value = false;
-
-    // Callback
-    onDismiss?.();
-
-    // Sync to backend using useApiMutation (handles auth automatically)
-    try {
-      const { execute } = useApiMutation(
-        route('api.v1.admin.tutorials.complete'),
-        'POST',
-        { tour_id: internalId },
-        { showSuccessToast: false, showErrorToast: false },
-      );
-      await execute();
-    }
-    catch (error) {
-      console.warn('Failed to sync spotlight dismissal to server:', error);
-    }
+    await completeProgress(internalId, 'Failed to sync spotlight dismissal to server:', () => {
+      isPopoverOpen.value = false;
+      onDismiss?.();
+    });
   }
 
   /**
    * Reset the spotlight (allow it to show again)
    */
   async function reset(): Promise<void> {
-    // Update shared state
-    removeProgress(internalId);
-
-    // Sync to backend using useApiMutation (handles auth automatically)
-    try {
-      const { execute } = useApiMutation(
-        route('api.v1.admin.tutorials.reset'),
-        'POST',
-        { tour_id: internalId },
-        { showSuccessToast: false, showErrorToast: false },
-      );
-      await execute();
-    }
-    catch (error) {
-      console.warn('Failed to sync spotlight reset to server:', error);
-    }
+    await resetProgress(internalId, 'Failed to sync spotlight reset to server:');
   }
 
   /**

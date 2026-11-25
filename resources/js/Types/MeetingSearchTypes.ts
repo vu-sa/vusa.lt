@@ -3,7 +3,7 @@
 export type MeetingSearchSort = 'relevance' | 'date_desc' | 'date_asc';
 
 // Core search interfaces
-export interface MeetingSearchFilters {
+export type MeetingSearchFilters = {
   query: string;
   tenants: string[];
   institutionTypes: string[];
@@ -16,7 +16,7 @@ export interface MeetingSearchFilters {
   };
   /** Optional so existing partial-filter object literals elsewhere keep type-checking. */
   sort?: MeetingSearchSort;
-}
+};
 
 export interface MeetingFacet {
   field: string;
@@ -39,7 +39,7 @@ export interface MeetingSearchPreferences {
 
 // Meeting search result processing
 export interface ProcessedMeetingSearchResult {
-  hits: any[];
+  hits: Record<string, unknown>[];
   totalHits: number;
   facets: MeetingFacet[];
   currentPage: number;

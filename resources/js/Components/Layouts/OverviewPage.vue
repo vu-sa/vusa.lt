@@ -2,17 +2,16 @@
   <div class="mx-auto flex w-full max-w-7xl flex-col gap-10 lg:gap-14" data-slot="overview-page">
     <Head :title="headTitle ?? title" />
 
-    <div v-if="$slots.hero" class="pt-6 sm:pt-10">
-      <slot name="hero" />
-    </div>
+    <!-- The hero owns its spacing: Pradžia's band sits straight under the chrome. -->
+    <slot v-if="$slots.hero" name="hero" />
 
     <header v-else class="flex flex-col gap-4 pt-3 md:pt-5 lg:pt-8 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
       <div class="min-w-0">
-        <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
+        <p v-if="eyebrow" class="text-xs font-semibold uppercase tracking-[0.06em] text-brand">
           {{ eyebrow }}
         </p>
         <slot name="heading">
-          <h1 class="u-display mt-3 text-balance text-4xl leading-[0.95] text-foreground sm:text-5xl">
+          <h1 class="u-display mt-3 text-balance text-4xl leading-[1.08] text-foreground sm:text-5xl">
             {{ title }}
           </h1>
         </slot>

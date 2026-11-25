@@ -40,7 +40,7 @@
             <Link :href="route('knowledgeItems.show', item.id)" class="font-medium text-foreground hover:text-brand">
               {{ item.title }}
             </Link>
-            <span v-if="item.abbreviation" class="text-xs font-bold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
+            <span v-if="item.abbreviation" class="text-xs font-semibold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
             <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
@@ -68,7 +68,7 @@
           <Link :href="route('knowledgeItems.show', item.id)" class="font-medium text-foreground hover:text-brand">
             {{ item.title }}
           </Link>
-          <span v-if="item.abbreviation" class="text-xs font-bold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
+          <span v-if="item.abbreviation" class="text-xs font-semibold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
           <StatusBadge v-if="!item.isActive" :status="bannerStatuses.inactive" voice="sentence" data-testid="step-inactive-badge" />
         </div>
         <div v-if="item.canUpdate && item.flags.length" class="flex flex-wrap items-center gap-1.5">

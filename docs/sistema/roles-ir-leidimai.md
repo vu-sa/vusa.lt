@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Atsakomybės ir leidimai
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-25
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Permissions/OwnScopeTest.php
@@ -87,7 +87,8 @@ kurti, redaguoti, perkelti į šiukšlinę, trinti negrįžtamai – pasirink ap
 Plačiame ekrane slenkant lentelę stulpelių antraštės lieka matomos po pagrindiniu meniu.
 Užraktu **Visi nariai** pažymėtus veiksmus pagal
 [bazinę prieigą](/pagrindai/teises#bazine-prieiga) jau turi kiekvienas narys; prie išteklių
-parašyta, ką kiekvienas narys gali be jokios atsakomybės.
+parašyta, ką galima be jokios atsakomybės. Tikslų peržiūra pažymėta **Piloto dalyviai**.
+Dalyvaujančių padalinių nariai mato visų į pilotą įtrauktų padalinių tikslus.
 
 Apimtis **Savo** siūloma tik ten, kur ji ką nors reiškia, ir tinklelyje vadinama pagal tai, ką apima:
 
@@ -96,9 +97,12 @@ Apimtis **Savo** siūloma tik ten, kur ji ką nors reiškia, ir tinklelyje vadin
 | Posėdžiai | **Savo institucijų, visų kadencijų** – institucijų, kuriose yra atsakomybę suteikiančios pareigybės, posėdžiai |
 | Dokumentai | **Savo institucijų** – tų pačių institucijų dokumentai |
 | Pareigybės | **Savo pareigybių** – pačios atsakomybę suteikiančios pareigybės |
-| Pareigybių laikotarpiai | **Savo pareigybių** – visi tų pareigybių laikotarpiai |
 
-Kitur jos nėra. Užduotis, rezervacijas, kuriose dalyvauji, ir save matai ir tvarkai be jokios
+**Pareigybių laikotarpiai** tinklelyje yra ViSAK. Laikotarpio redagavimą lemia teisė tvarkyti
+pareigybę ar jos narius. Padalinį, kurio kvotai priskiriama vieta, galima pasirinkti turint
+atskirą laikotarpių redagavimo teisę **Padalinyje** arba **Visur**.
+
+Kitur apimties **Savo** nėra. Užduotis, rezervacijas, kuriose dalyvauji, ir save matai ir tvarkai be jokios
 atsakomybės, o kitų žmonių įrašams reikia apimties **Padalinyje** arba **Visur**.
 
 Posėdžių apimtis **Savo institucijų, visų kadencijų** reiškia institucijas tų pareigybių, kurios suteikia

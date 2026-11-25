@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="true" @update:open="(open) => !open && $emit('close')">
-    <DialogContent class="rounded-none sm:max-w-lg">
+    <DialogContent class="sm:max-w-lg">
       <DialogHeader>
         <DialogTitle>
           {{ paths.length > 1

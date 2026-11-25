@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-2" data-slot="form-field">
     <div class="flex items-baseline justify-between gap-2">
-      <Label :for="id" :class="cn('flex items-center gap-1.5 text-sm font-bold text-muted-foreground', labelClass)">
+      <Label :for="id" :class="cn('flex items-center gap-1.5 text-sm font-(--action-weight) text-muted-foreground', labelClass)">
         {{ label }}
         <span v-if="required" class="text-destructive">*</span>
         <!-- Validation status indicators -->
@@ -16,7 +16,7 @@
         </span>
         <span
           v-else-if="valid"
-          class="ml-1 text-[var(--status-success)]"
+          class="ml-1 text-status-success"
           role="status"
           aria-live="polite"
           :aria-label="$t('validation.valid')"
@@ -40,8 +40,8 @@
 
     <slot />
 
-    <p v-if="hint || helperText" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
-      {{ hint ?? helperText }}
+    <p v-if="hint" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
+      {{ hint }}
     </p>
     <p v-if="error" class="text-xs text-destructive">
       {{ error }}
@@ -65,8 +65,6 @@ const props = defineProps<{
   required?: boolean;
   /** One line under the field — never hover-only (.ai/rules/admin-forms.md). */
   hint?: string;
-  /** @deprecated Use `hint` instead. Kept for backwards compatibility. */
-  helperText?: string;
   error?: string;
   charCount?: number;
   maxLength?: number;
@@ -87,10 +85,10 @@ const charCountClass = computed(() => {
     return 'text-destructive font-medium';
   }
   if (ratio >= 0.8) {
-    return 'text-[var(--status-attention)]';
+    return 'text-status-attention';
   }
   if (ratio >= 0.5) {
-    return 'text-[var(--status-success)]';
+    return 'text-status-success';
   }
   return 'text-muted-foreground';
 });

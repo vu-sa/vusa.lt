@@ -2,15 +2,15 @@
   <div class="flex flex-col gap-4" data-slot="representative-list">
     <div class="grid gap-3 border-y border-border py-4 sm:grid-cols-3">
       <label class="space-y-2">
-        <span class="text-xs font-bold uppercase tracking-wide">{{ $t('representatives.list.search') }}</span>
+        <span class="text-xs font-semibold uppercase tracking-wide">{{ $t('representatives.list.search') }}</span>
         <Input v-model="search" type="search" :placeholder="$t('representatives.list.search_placeholder')" data-testid="rep-search" />
       </label>
       <label class="space-y-2">
-        <span class="text-xs font-bold uppercase tracking-wide">{{ $t('representatives.list.institution') }}</span>
+        <span class="text-xs font-semibold uppercase tracking-wide">{{ $t('representatives.list.institution') }}</span>
         <NativeSelect v-model="institution" :options="institutionOptions" :placeholder="$t('representatives.list.all_institutions')" placeholder-selectable data-testid="rep-institution" />
       </label>
       <label class="space-y-2">
-        <span class="text-xs font-bold uppercase tracking-wide">{{ $t('representatives.list.activity') }}</span>
+        <span class="text-xs font-semibold uppercase tracking-wide">{{ $t('representatives.list.activity') }}</span>
         <NativeSelect v-model="filter" :options="filterOptions" data-testid="rep-filter" />
       </label>
     </div>
@@ -23,7 +23,7 @@
       <li v-for="rep in shown" :key="rep.id" class="py-3" :data-rep="rep.id">
         <CollectionRow>
           <template #lead>
-            <UserAvatar :user="{ name: rep.name, profile_photo_path: rep.photo }" :size="36" />
+            <UserPopover :user="{ id: rep.id, name: rep.name, email: rep.email, profile_photo_path: rep.photo }" :size="36" />
           </template>
           <Link :href="route('representatives.show', rep.id)" class="flex min-h-11 flex-col gap-2 focus-visible:outline-2 focus-visible:outline-ring md:flex-row md:items-center md:gap-6">
             <span class="min-w-0 flex-1">
@@ -74,7 +74,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
 
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import EmptyState from '@/Components/Patterns/EmptyState.vue';
 import { Button } from '@/Components/ui/button';

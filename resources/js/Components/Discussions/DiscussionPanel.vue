@@ -1,7 +1,7 @@
 <template>
   <section class="flex flex-col gap-5" data-slot="discussion-panel" :data-layout="layout" :aria-labelledby="showTitle ? titleId : undefined">
     <header v-if="showTitle || otherViewers.length" class="flex min-h-6 flex-wrap items-center justify-between gap-x-4 gap-y-2">
-      <h2 v-if="showTitle" :id="titleId" class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+      <h2 v-if="showTitle" :id="titleId" class="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-foreground">
         <MessagesSquare class="size-4 shrink-0 text-brand" aria-hidden="true" />
         {{ resolvedTitle }}
         <span v-if="rootCount" class="font-semibold text-muted-foreground">{{ rootCount }}</span>
@@ -74,7 +74,7 @@
 
       <!-- Topics -->
       <div v-if="layout !== 'conversation' && topics.length" class="space-y-2" data-slot="discussion-topics">
-        <h3 v-if="plainComments.length" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h3 v-if="plainComments.length" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {{ $t('discussions.topic.heading') }} · {{ topics.length }}
         </h3>
         <DiscussionTopic
@@ -109,7 +109,7 @@
 
       <!-- Comments -->
       <div v-if="plainComments.length" data-slot="discussion-comments">
-        <h3 v-if="layout !== 'conversation' && topics.length" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h3 v-if="layout !== 'conversation' && topics.length" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {{ $t('discussions.comments_heading') }} · {{ plainComments.length }}
         </h3>
         <div class="divide-y divide-border">
@@ -168,7 +168,7 @@ const props = withDefaults(defineProps<{
 });
 
 const titleId = useId();
-const currentUser = computed(() => (usePage().props.auth as { user?: App.Entities.User } | undefined)?.user ?? null);
+const currentUser = computed(() => usePage().props.auth?.user ?? null);
 const discussion = useDiscussionThread(props.commentableType, props.commentableId);
 const { comments, mentionables, meta, loading, posting, mutating, members } = discussion;
 

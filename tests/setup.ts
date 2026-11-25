@@ -1,6 +1,8 @@
 import { afterAll, vi } from 'vitest';
 import { config } from '@vue/test-utils';
 
+import { defaultMockPage } from '../resources/js/mocks/defaultPageProps';
+
 // Note: Icon auto-imports now handled by unplugin-icons in vitest.config.ts
 // No need to manually mock individual icons anymore
 
@@ -77,6 +79,8 @@ vi.mock('@inertiajs/vue3', async () => {
     Link: inertiaMock.Link,
     Head: inertiaMock.Head,
     Deferred: inertiaMock.Deferred,
+    WhenVisible: inertiaMock.WhenVisible,
+    useRemember: inertiaMock.useRemember,
     usePage: inertiaMock.usePage,
     router: inertiaMock.router,
     useForm: inertiaMock.useForm,
@@ -107,51 +111,7 @@ config.global.mocks = {
   // Add route helper as a global property if used in templates
   route: (name: string, params: any) => `/mocked-route/${name}`,
   // Add $page using centralized mock data
-  $page: {
-    props: {
-      app: {
-        locale: 'lt',
-        subdomain: 'www',
-        name: 'VU SA',
-        url: 'http://www.vusa.test',
-      },
-      auth: {
-        user: {
-          id: 1,
-          name: 'Test User',
-          email: 'test@vusa.lt',
-          current_duties: [
-            {
-              institution: {
-                id: 'vusa',
-                name: 'VU SA',
-                shortname: 'VU SA',
-              },
-              role: 'admin',
-            },
-          ],
-        },
-        can: {
-          create: { meeting: true, document: true },
-          read: { meeting: true, document: true },
-          update: { meeting: true, document: true },
-          delete: { meeting: true, document: true },
-        },
-      },
-      tenants: [
-        { id: 'vusa', name: 'VU SA', shortname: 'VU SA' },
-        { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
-        { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
-      ],
-      flash: {
-        success: null,
-        error: null,
-        info: null,
-        warning: null,
-      },
-      errors: {},
-    },
-  },
+  $page: defaultMockPage(),
 };
 
 // Mock fetch for any remaining network calls

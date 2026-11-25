@@ -15,7 +15,7 @@
   >
     <template #identity>
       <span
-        class="flex size-14 items-center justify-center border border-border text-2xl font-bold tabular-nums text-foreground sm:size-16 sm:text-3xl"
+        class="flex size-14 items-center justify-center border border-border text-2xl font-semibold tabular-nums text-foreground sm:size-16 sm:text-3xl"
         :aria-label="`${$t('Punktas')} ${currentPosition}`"
       >
         {{ currentPosition }}

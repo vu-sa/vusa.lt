@@ -32,38 +32,24 @@
     </div>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('navigation.form.delete_link') }}
-      </Button>
+      <FormDangerZone
+        :label="$t('navigation.form.delete_link')"
+        :title="$t('Ištrinti navigacijos elementą?')"
+        :description="$t('Ar tikrai nori perkelti šį elementą į šiukšliadėžę?')"
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Ištrinti navigacijos elementą?')"
-    :description="$t('Ar tikrai nori perkelti šį elementą į šiukšliadėžę?')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="emit('delete')"
-  />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
-import { Button } from '@/Components/ui/button';
+import { FormDangerZone } from '@/Components/Patterns';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 
@@ -87,7 +73,6 @@ if (!form.extra_attributes) {
 }
 
 const isCreate = computed(() => !form.id);
-const isDeleteDialogOpen = ref(false);
 
 const barTitle = computed(() =>
   isCreate.value ? $t('navigation.builder.add_root') : (props.navigation.name?.trim() || $t('navigation.title')),

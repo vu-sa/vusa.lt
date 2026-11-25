@@ -71,7 +71,7 @@ import {
   DialogTrigger,
 } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 const props = defineProps<{
   open: boolean;

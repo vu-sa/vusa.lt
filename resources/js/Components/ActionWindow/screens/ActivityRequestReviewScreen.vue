@@ -21,7 +21,7 @@
 
     <template v-if="preview">
       <section class="mt-6">
-        <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em]">
+        <h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em]">
           <Send class="size-4 shrink-0 text-brand" aria-hidden="true" />{{ $t('activity_requests.send_section') }}
         </h2>
         <p class="mt-1 text-xs text-muted-foreground">
@@ -39,7 +39,7 @@
         </div>
         <div class="mt-3 divide-y divide-border border-y border-border" data-slot="activity-request-preview">
           <div v-for="group in sendGroups" :key="group.key" class="py-4">
-            <p class="text-sm font-bold">
+            <p class="text-sm font-semibold">
               {{ group.title }}
             </p>
             <ul class="mt-1">
@@ -66,12 +66,12 @@
       </section>
 
       <section v-if="skipGroups.length" class="mt-8">
-        <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em]">
+        <h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em]">
           <MailX class="size-4 shrink-0 text-brand" aria-hidden="true" />{{ $t('activity_requests.skip_section') }}
         </h2>
         <div class="mt-3 divide-y divide-border border-y border-border" data-slot="activity-request-exclusions">
           <div v-for="group in skipGroups" :key="group.key" class="py-4 text-sm">
-            <p class="font-bold">
+            <p class="font-semibold">
               {{ group.title }}
             </p>
             <p v-for="line in group.lines" :key="line" class="mt-1 text-xs text-muted-foreground">

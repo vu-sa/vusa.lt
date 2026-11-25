@@ -235,22 +235,10 @@
     </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti instituciją') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti instituciją')"
         :title="$t('Ištrinti instituciją?')"
         :description="$t('Institucija bus perkelta į šiukšlinę; pareigybės ir posėdžiai liks.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -260,7 +248,7 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, Layers, Trash2 } from '@lucide/vue';
+import { Building2, Layers } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import { operatingStatuses } from '@/Constants/statusIcons';
@@ -272,7 +260,7 @@ import PublicUrlHistoryCard from '@/Components/AdminForms/PublicUrlHistoryCard.v
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import FormDangerZone from '@/Components/Patterns/FormDangerZone.vue';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -317,7 +305,6 @@ const emit = defineEmits<{
 const isEditing = computed(() => !props.rememberKey);
 const { formatDate } = useDateFormatter();
 const activeLocale = ref<'lt' | 'en'>('lt');
-const deleteConfirmOpen = ref(false);
 
 // A never-set translatable arrives as null (or `[]` for an empty JSON object).
 const asTranslated = (value: unknown): Translated => {

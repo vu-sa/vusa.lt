@@ -13,18 +13,19 @@ each arrow fails when that step is missed. `QuickLink` is the smallest complete 
 `QuickLink`, `quickLinks` and `quick_link`.
 
 1. **Model, migration, factory** → `MorphMap::MAP` alias (`MorphMapTest`).
-2. **`ModelEnum` case**, and its scopes in `ModelEnum::getAllowedScopes` (see `.ai/rules/permissions.md`).
+2. **`ModelEnum` case**, and its explicit scopes in `ModelEnum::allowedScopes()` (see `.ai/rules/permissions.md`), with granted-vs-excluded record coverage in `PermissionScopeMatrixTest`.
 3. **Policy**: `class FooPolicy extends ModelPolicy {}` is enough. The permission resource
    (`foos`) comes from the class name, and the padalinys scope reads the model's `tenants`
    relation, or `tenant` when it has none. Override methods only for custom rules.
-4. **`PermissionCatalog::RESOURCE_AREAS`** entry in navigation order (`PermissionCatalogTest`),
+4. **`PermissionMatrixPresenter::RESOURCE_AREAS`** entry in navigation order (`PermissionCatalogTest`),
    then `vendor/bin/sail artisan permissions:sync`. Default grants for a role go in its seeder
    (`RoleCommunicationCoordinatorSeeder`, …), optional.
 5. **Requests and controller**, each action authorized with `#[Authorize]` (`.ai/rules/controllers.md`)
    → `routes/admin.php`: `Route::resource`, plus `Route::softDeletes` when the controller uses
    `HandlesSoftDeletes` (`SoftDeleteRoutesConventionTest`, `RouteAuthorizationCoverageTest`).
-6. **Navigation**: a `Section` in `AdminNavigationCatalog` with its `lang/admin/{lt,en}/shell.php`
-   title and description (`AdminNavigationCatalogTest`, `TranslationIntegrityTest`).
+6. **Navigation**: a `Section` in `AdminNavigationCatalog` consuming the policy via `Visibility`
+   (never conferring a grant), with its `lang/admin/{lt,en}/shell.php` title and description, plus
+   route-ownership and persona coverage (`AdminNavigationCatalogTest`, `TranslationIntegrityTest`).
 7. **Entity names**: `lang/admin/{lt,en}/entities.php` with plural forms and gender, used by
    `TranslatesEntityMessages::entityMessage()` (`AdminEntityTranslationsTest`).
 8. **Frontend**: run `vendor/bin/sail artisan typescript:transform` for `resources/js/Types/enums.ts`,

@@ -6,6 +6,7 @@ import { router } from '@inertiajs/vue3';
 import CollectionResults from '@/Components/Collection/CollectionResults.vue';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { commonStubs } from '@/tests/stubs';
+import { defaultPageProps } from '@/mocks/defaultPageProps';
 
 import CollectionPage from '../CollectionPage.vue';
 
@@ -299,7 +300,7 @@ describe('CollectionPage', () => {
       expect(wrapper.findAll('table td .cell').map(cell => cell.text())).toEqual(['Pirmas', 'Antras']);
       expect(wrapper.find('th').text()).toBe('Pavadinimas');
       expect(new URLSearchParams(window.location.search).get('view')).toBe('table');
-      expect(localStorage.getItem('admin-collection-view:1:test')).toBe('table');
+      expect(localStorage.getItem(`admin-collection-view:${defaultPageProps().auth?.user?.id}:test`)).toBe('table');
     });
 
     it('lets the URL win over the remembered view (U1)', () => {

@@ -1,10 +1,10 @@
 <template>
-  <dl v-if="createdAt || updatedAt" class="border border-border bg-background text-sm" data-slot="model-timestamps">
+  <dl v-if="createdAt || updatedAt" class="rounded-md border border-border bg-background text-sm" data-slot="model-timestamps">
     <div v-if="createdAt" class="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
       <dt class="text-muted-foreground">
         {{ $t('Sukurta') }}
       </dt>
-      <dd class="text-right font-bold text-foreground tabular-nums">
+      <dd class="text-right font-semibold text-foreground tabular-nums">
         <time :datetime="createdAt">{{ formatDateTime(createdAt) }}</time>
       </dd>
     </div>
@@ -12,7 +12,7 @@
       <dt class="text-muted-foreground">
         {{ $t('Atnaujinta') }}
       </dt>
-      <dd class="text-right font-bold text-foreground tabular-nums">
+      <dd class="text-right font-semibold text-foreground tabular-nums">
         <time :datetime="updatedAt">{{ formatDateTime(updatedAt) }}</time>
       </dd>
     </div>

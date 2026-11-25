@@ -8,7 +8,7 @@
         <button
           v-if="canGoBack"
           type="button"
-          class="flex size-8 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+          class="flex size-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
           :aria-label="$t('action_window.common.back')"
           @click="back"
         >
@@ -28,19 +28,19 @@
         <div class="min-w-0 flex-1">
           <p
             v-if="progress"
-            class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand"
+            class="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand"
           >
             {{ $t('action_window.common.step') }} {{ progress.step }} / {{ progress.total }}
           </p>
           <p
             v-else-if="isReview"
-            class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand"
+            class="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand"
           >
             {{ $t('action_window.common.review') }}
           </p>
           <p
             v-else-if="identity"
-            class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand"
+            class="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand"
           >
             {{ $t(identity.label) }}
           </p>
@@ -48,9 +48,9 @@
             v-if="identity"
             :type="identity.entity"
             :label="$t(identity.label)"
-            class="min-w-0 truncate text-base font-bold text-foreground sm:text-lg [&>span:first-child]:hidden"
+            class="min-w-0 truncate text-base font-semibold text-foreground sm:text-lg [&>span:first-child]:hidden"
           />
-          <h2 v-else class="min-w-0 truncate text-base font-bold text-foreground sm:text-lg">
+          <h2 v-else class="min-w-0 truncate text-base font-semibold text-foreground sm:text-lg">
             {{ $t('action_window.personas.title') }}
           </h2>
         </div>
@@ -59,7 +59,7 @@
       <!-- Close button -->
       <button
         type="button"
-        class="flex size-8 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+        class="flex size-8 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-brand hover:text-brand"
         :aria-label="$t('action_window.common.close')"
         @click="close"
       >

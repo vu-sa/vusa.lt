@@ -5,11 +5,13 @@ namespace App\Services\MailPreview;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\MeetingType;
+use App\Enums\NotificationType;
 use App\Enums\SupportRequestStatus;
 use App\Enums\SupportRequestVisibility;
 use App\Mail;
 use App\Models;
 use App\Notifications;
+use Closure;
 use Illuminate\Database\Eloquent\Collection;
 
 class MailPreviewSamples
@@ -52,57 +54,57 @@ class MailPreviewSamples
             ->setRelation('institutions', new Collection([$institution]))->setRelation('agendaItems', new Collection($agendaItems));
     }
 
-    public function notifications(): array
+    /** @return array<string, Closure(): Notifications\BaseNotification> */
+    public function notificationFactories(): array
     {
-        $user = $this->user();
-        $institution = $this->institution();
-        $task = $this->task('Parengti ataskaitą', 'Prepare the report', $institution);
-        $meeting = $this->meeting($institution);
-        $duty = $this->duty($institution, $user);
-        $request = (new Models\InstitutionActivityRequest)->forceFill([
+        $user = fn () => $this->user();
+        $institution = fn () => $this->institution();
+        $task = fn () => $this->task('Parengti ataskaitą', 'Prepare the report', $institution());
+        $meeting = fn () => $this->meeting($institution());
+        $duty = fn () => $this->duty($institution(), $user());
+        $request = fn () => (new Models\InstitutionActivityRequest)->forceFill([
             'id' => self::ID, 'period_start' => '2026-10-01', 'period_end' => '2026-10-31',
             'expires_at' => '2026-12-01', 'campaign_type' => InstitutionActivityCampaign::ActivityConfirmation,
             'locale' => app()->getLocale(), 'note' => $this->text('Pavyzdinis klausimas apie tarybos veiklą.', 'A sample question about the council.'),
-        ])->setRelation('institution', $institution)->setRelation('recipient', $user)
-            ->setRelation('requestedBy', $user)->setRelation('task', $task);
-        $support = (new Models\SupportRequest)->forceFill([
+        ])->setRelation('institution', $institution())->setRelation('recipient', $user())
+            ->setRelation('requestedBy', $user())->setRelation('task', $task());
+        $support = fn () => (new Models\SupportRequest)->forceFill([
             'id' => self::ID, 'title' => $this->text('Pavyzdinė pagalbos užklausa', 'Sample support request'), 'visibility' => SupportRequestVisibility::Private,
-        ])->setRelation('creator', $user)->setRelation('type', (new Models\SupportRequestType)->forceFill([
+        ])->setRelation('creator', $user())->setRelation('type', (new Models\SupportRequestType)->forceFill([
             'name' => ['lt' => 'Pagalba', 'en' => 'Help'],
         ]));
-        $actor = ['modelClass' => 'User', 'name' => $user->name];
-        $object = ['modelClass' => 'Meeting', 'name' => $institution->name, 'url' => 'https://example.org/meeting', 'id' => self::ID];
-        $changes = $this->reservationChanges();
+        $actor = fn () => ['modelClass' => 'User', 'name' => $user()->name];
+        $object = fn () => ['modelClass' => 'Meeting', 'name' => $institution()->name, 'url' => 'https://example.org/meeting', 'id' => self::ID];
 
         return [
-            new Notifications\TaskAssignedNotification($task, $user),
-            new Notifications\TaskReminderNotification($task, 2),
-            new Notifications\TaskOverdueNotification(collect([$task, $this->task('Atnaujinti kontaktus', 'Update the contacts', $institution)])),
-            new Notifications\TaskAutoCompletedNotification($task, $this->text('Sprendimas priimtas', 'Decision made'), $user),
-            new Notifications\MeetingCreatedNotification($meeting),
-            new Notifications\MeetingAgendaCompletedNotification($meeting, $user),
-            new Notifications\MeetingCreatedNotification($meeting)->viaFollow(),
-            new Notifications\MeetingReminderNotification($meeting, 2),
-            new Notifications\InstitutionActivityNotification(new Collection([$request])),
-            new Notifications\InstitutionActivityNotMineNotification($request),
-            new Notifications\ApprovalRequestedNotification($changes[0]['resource']->reservation),
-            new Notifications\ReservationStatusChangedNotification([$changes[0]], $user),
-            new Notifications\AssignedToResourceNotification($actor, $object),
-            new Notifications\ReservationDraftItemTakenNotification([$this->text('Projektorius', 'Projector')], '2026-11-05'),
-            new Notifications\CommentPostedNotification($this->text('<p>Manau, 3 punktą reikėtų perkelti į kitą posėdį.</p><p>Ar pritariate?</p>', '<p>I think item 3 should move to the next meeting.</p><p>Do you agree?</p>'), $object, $actor),
-            new Notifications\CommentPostedNotification($this->text('<p>@Ona, ar gali patikslinti siūlomą datą?</p>', '<p>@Ona, could you clarify the proposed date?</p>'), $object, $actor, true),
-            new Notifications\DutyExpiringNotification($duty, (new Models\Pivots\Dutiable)->forceFill(['end_date' => '2026-11-30']), 30),
-            new Notifications\AccessChangedNotification([[
-                'kind' => 'started', 'dutyName' => $this->text('Atstovas', 'Representative'), 'institutionName' => $institution->name,
+            NotificationType::TaskAssigned->value => fn () => new Notifications\TaskAssignedNotification($task(), $user()),
+            NotificationType::TaskReminder->value => fn () => new Notifications\TaskReminderNotification($task(), 2),
+            NotificationType::TaskOverdue->value => fn () => new Notifications\TaskOverdueNotification(collect([$task(), $this->task('Atnaujinti kontaktus', 'Update the contacts', $institution())])),
+            NotificationType::TaskAutoCompleted->value => fn () => new Notifications\TaskAutoCompletedNotification($task(), $this->text('Sprendimas priimtas', 'Decision made'), $user()),
+            NotificationType::MeetingCreated->value => fn () => new Notifications\MeetingCreatedNotification($meeting()),
+            NotificationType::MeetingAgendaCompleted->value => fn () => new Notifications\MeetingAgendaCompletedNotification($meeting(), $user()),
+            NotificationType::FollowedInstitutionActivity->value => fn () => new Notifications\MeetingCreatedNotification($meeting())->viaFollow(),
+            NotificationType::MeetingReminder->value => fn () => new Notifications\MeetingReminderNotification($meeting(), 2),
+            NotificationType::InstitutionActivity->value => fn () => new Notifications\InstitutionActivityNotification(new Collection([$request()])),
+            NotificationType::InstitutionActivityNotMine->value => fn () => new Notifications\InstitutionActivityNotMineNotification($request()),
+            NotificationType::ApprovalRequested->value => fn () => new Notifications\ApprovalRequestedNotification($this->reservationChanges()[0]['resource']->reservation),
+            NotificationType::ReservationStatusChanged->value => fn () => new Notifications\ReservationStatusChangedNotification([$this->reservationChanges()[0]], $user()),
+            NotificationType::AssignedToResource->value => fn () => new Notifications\AssignedToResourceNotification($actor(), $object()),
+            NotificationType::ReservationDraftItemTaken->value => fn () => new Notifications\ReservationDraftItemTakenNotification([$this->text('Projektorius', 'Projector')], '2026-11-05'),
+            NotificationType::CommentActivity->value => fn () => new Notifications\CommentPostedNotification($this->text('<p>Manau, 3 punktą reikėtų perkelti į kitą posėdį.</p><p>Ar pritariate?</p>', '<p>I think item 3 should move to the next meeting.</p><p>Do you agree?</p>'), $object(), $actor()),
+            NotificationType::CommentMention->value => fn () => new Notifications\CommentPostedNotification($this->text('<p>@Ona, ar gali patikslinti siūlomą datą?</p>', '<p>@Ona, could you clarify the proposed date?</p>'), $object(), $actor(), true),
+            NotificationType::DutyExpiring->value => fn () => new Notifications\DutyExpiringNotification($duty(), (new Models\Pivots\Dutiable)->forceFill(['end_date' => '2026-11-30']), 30),
+            NotificationType::AccessChanged->value => fn () => new Notifications\AccessChangedNotification([[
+                'kind' => 'started', 'dutyName' => $this->text('Atstovas', 'Representative'), 'institutionName' => $institution()->name,
                 'date' => '2026-10-01', 'effectiveOn' => '2026-10-01', 'isExOfficio' => false,
             ]], '2026-10-01'),
-            new Notifications\MemberRegistrationNotification(1, $user->name, $institution, $user->email, self::ID),
-            new Notifications\StudentRepRegistrationNotification(self::ID, $user->name, $institution, self::ID),
-            new Notifications\SupportRequestCreatedNotification($support),
-            new Notifications\SupportRequestAssignedNotification($support, $user),
-            new Notifications\SupportRequestInvolvedNotification($support, $user),
-            new Notifications\SupportRequestStatusChangedNotification($support, SupportRequestStatus::New, SupportRequestStatus::InProgress, $user),
-            new Notifications\WelcomeNotification,
+            NotificationType::MemberRegistration->value => fn () => new Notifications\MemberRegistrationNotification(1, $user()->name, $institution(), $user()->email, self::ID),
+            NotificationType::StudentRepRegistration->value => fn () => new Notifications\StudentRepRegistrationNotification(self::ID, $user()->name, $institution(), self::ID),
+            NotificationType::SupportRequestCreated->value => fn () => new Notifications\SupportRequestCreatedNotification($support()),
+            NotificationType::SupportRequestAssigned->value => fn () => new Notifications\SupportRequestAssignedNotification($support(), $user()),
+            NotificationType::SupportRequestInvolved->value => fn () => new Notifications\SupportRequestInvolvedNotification($support(), $user()),
+            NotificationType::SupportRequestStatusChanged->value => fn () => new Notifications\SupportRequestStatusChangedNotification($support(), SupportRequestStatus::New, SupportRequestStatus::InProgress, $user()),
+            NotificationType::Welcome->value => fn () => new Notifications\WelcomeNotification,
         ];
     }
 
@@ -140,8 +142,8 @@ class MailPreviewSamples
 
     public function digestItems(string $scenario): array
     {
-        $notifications = collect($this->notifications())->keyBy(fn ($notification) => $notification->type()->value);
-        $item = fn (string $type): array => $notifications[$type]->toDigestItem($this->user());
+        $factories = $this->notificationFactories();
+        $item = fn (string $type): array => $factories[$type]()->toDigestItem($this->user());
         $meeting = $item('meeting_created');
         $meetings = collect([
             ['Pavyzdinė taryba', 'Sample council'], ['Studijų programos komitetas', 'Study programme committee'],

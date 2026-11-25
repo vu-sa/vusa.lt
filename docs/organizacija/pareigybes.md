@@ -42,11 +42,8 @@ tests:
   - tests/Browser/DutyResponsibilitiesLayoutTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowUser.component.test.ts
-  - resources/js/Components/Duties/__tests__/DutyCurrentHoldersCard.component.test.ts
   - resources/js/Components/Duties/__tests__/DutyHolderCard.component.test.ts
   - resources/js/Components/Duties/__tests__/DutyLabel.component.test.ts
-  - resources/js/Components/Duties/__tests__/DutyLineageCard.component.test.ts
-  - resources/js/Components/Duties/__tests__/DutyOtherDutiesCard.component.test.ts
   - resources/js/Components/Duties/__tests__/DutySummaryCard.component.test.ts
   - resources/js/Components/Duties/__tests__/InflectedDutyName.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
@@ -56,7 +53,7 @@ tests:
   - resources/js/Features/Admin/Occupancy/__tests__/AssignDutyUserSheet.component.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/DutySearchField.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
-  - resources/js/Features/Admin/Occupancy/__tests__/MemberSearchField.component.test.ts
+  - resources/js/Components/Pickers/__tests__/UserSearchField.component.test.ts
   - resources/js/Components/Duties/__tests__/DutyPreview.component.test.ts
   - resources/js/Components/AdminForms/__tests__/useDuplicateDutyCheck.test.ts
 ---
@@ -335,11 +332,12 @@ suskirstytas į skirtukus:
    - *Būsimi nariai*: nariai, kurių pareigos prasidės ateityje (rodoma, tik jei tokių yra).
    - *Laikotarpių istorija*: pasibaigę laikotarpiai – kas ir kada šias pareigas ėjo anksčiau,
      įskaitant [pirmtakės](#istorija) narius. Jei tuo metu pareigybė vadinosi kitaip, rodomas tas pavadinimas.
+   - Turint prieigą prie narių, vardas narių sąraše yra nuoroda į nario puslapį.
    - Mygtukas **Priskirti** atidaro nario priskyrimo formą. Prie kiekvieno nario rasi
      **Redaguoti**, o prie dabartinių – ir **Užbaigti pareigas**.
 2. **Apie pareigybę**:
    - Pareigybės aprašymas.
-   - Kitos tos pačios institucijos pareigybės ir kiek narių jas eina.
+   - Kitos tos pačios institucijos pareigybės ir kiek narių jas eina. Paspaudus eilutę, taip pat ir ties **+N** žyma, atveriamas tos pareigybės puslapis.
    - *Pareigybės istorija*: datuota laiko juosta – pervadinimai, pirmtakės ir pareigybės, perėmusios šios darbą
      (žr. [Istorija](#istorija)). Mygtukas **Susieti ankstesnę pareigybę** leidžia pasirinkti ir nebeveikiančias pareigybes.
 3. **Atsakomybės**:

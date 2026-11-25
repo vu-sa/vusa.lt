@@ -85,7 +85,7 @@
         <summary
           :class="[
             'u-touch inline-flex cursor-pointer items-center gap-1.5',
-            'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
+            'text-xs font-semibold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
           ]"
         >
           <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
@@ -218,22 +218,10 @@
     </template>
 
     <template v-if="!isCreate && enableDelete" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
-        @click="deleteConfirmOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti naujieną') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteConfirmOpen"
+      <FormDangerZone
+        :label="$t('Ištrinti naujieną')"
         :title="$t('Ištrinti naujieną?')"
         :description="$t('Naujiena bus perkelta į šiukšlinę.')"
-        :confirm-label="$t('Ištrinti')"
-        destructive
         @confirm="emit('delete')"
       />
     </template>
@@ -241,18 +229,17 @@
 </template>
 
 <script setup lang="ts">
-import { provide, computed, ref } from 'vue';
+import { provide, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, LayoutTemplate, Tags, Trash2 } from '@lucide/vue';
+import { ChevronDown, LayoutTemplate, Tags } from '@lucide/vue';
 
 import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useContentEditor } from '@/Composables/useContentEditor';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
-import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
@@ -298,7 +285,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<(event: 'delete') => void>();
 
 const isCreate = computed(() => props.rememberKey === 'CreateNews');
-const deleteConfirmOpen = ref(false);
 
 const fieldIds: Record<string, string> = {
   title: 'title',

@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   entityTypeRegistry,
   getEntityTypeDefinition,
-  getModelIcon,
 } from '@/Constants/entityTypes';
 import { ModelEnum } from '@/Types/enums';
 
@@ -32,10 +31,5 @@ describe('entity type registry', () => {
   it('resolves the camelCase translation keys pages name types by', () => {
     expect(getEntityTypeDefinition('eventType')).toBe(entityTypeRegistry[ModelEnum.EVENT_TYPE]);
     expect(getEntityTypeDefinition('StudyProgram')).toBe(entityTypeRegistry[ModelEnum.STUDY_PROGRAM]);
-  });
-
-  it('keeps the compatibility icon helper backed by the registry', () => {
-    expect(getModelIcon('MEETING')).toBe(entityTypeRegistry[ModelEnum.MEETING].icon);
-    expect(getModelIcon('MEETING', 'filled')).toBe(entityTypeRegistry[ModelEnum.MEETING].iconFilled);
   });
 });

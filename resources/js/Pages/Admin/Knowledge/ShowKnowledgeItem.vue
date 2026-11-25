@@ -2,15 +2,15 @@
   <OverviewPage :title="item.title" class="gap-8! lg:gap-10! sm:[&>[data-slot=overview-title-band]]:items-start">
     <template #heading>
       <div :class="['grid gap-y-3', canTrack && 'grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3']" data-slot="step-heading">
-        <p :class="['text-xs font-bold uppercase tracking-[0.2em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">
+        <p :class="['text-xs font-semibold uppercase tracking-[0.06em] text-brand', canTrack && 'col-start-2']" data-slot="step-eyebrow">
           {{ $t(`learning.kinds.${item.kind}`) }}
         </p>
         <LearningCompletionControl v-if="canTrack" v-model="checked" :step="viewerItem" :disabled="saving" class="mt-1.5 sm:mt-2.5" />
         <div class="min-w-0">
-          <h1 class="text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+          <h1 class="text-balance text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
             {{ item.title }}
             <!-- Inline and middle-aligned: on the baseline, the box hung below the title's letters. -->
-            <abbr v-if="item.abbreviation" :title="item.title" class="ml-3 inline-block border border-border px-2 py-0.5 align-middle text-base leading-tight font-bold tracking-wide no-underline sm:text-lg" data-testid="article-abbreviation">{{ item.abbreviation }}</abbr>
+            <abbr v-if="item.abbreviation" :title="item.title" class="ml-3 inline-block border border-border px-2 py-0.5 align-middle text-base leading-tight font-semibold tracking-wide no-underline sm:text-lg" data-testid="article-abbreviation">{{ item.abbreviation }}</abbr>
           </h1>
           <p v-if="inPath || item.section" class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
             <span v-if="inPath" :class="item.importance === 'essential' ? 'font-semibold text-brand' : 'font-semibold text-foreground'">{{ $t(`learning.importance.${item.importance}`) }}</span>
@@ -41,7 +41,7 @@
         <WikiProse v-if="articleHtml" :html="articleHtml" :pages="linkedPages" />
         <LearningAudienceNotes v-if="inPath" :notes="item.audienceNotes" />
         <section v-if="placements.length" aria-labelledby="article-structure" class="space-y-6" data-slot="article-structure">
-          <h2 id="article-structure" class="text-xl font-bold leading-tight text-foreground">
+          <h2 id="article-structure" class="text-xl font-semibold leading-tight text-foreground">
             {{ $t('learning.wiki.structure') }}
           </h2>
           <figure v-for="place in placements" :key="place.graph" class="space-y-2" :data-graph="place.graph">
@@ -52,7 +52,7 @@
           </figure>
         </section>
         <section v-if="materials.length" aria-labelledby="article-materials" class="space-y-3" data-slot="article-materials">
-          <h2 id="article-materials" class="text-xl font-bold leading-tight text-foreground">
+          <h2 id="article-materials" class="text-xl font-semibold leading-tight text-foreground">
             {{ $t('learning.wiki.materials_about') }}
           </h2>
           <WikiMaterialList :materials :done-ids="done" />
@@ -68,7 +68,7 @@
           {{ $t('learning.path.about_item') }}
         </h2>
         <div v-if="sourceLabel && thumbnailUrl" class="space-y-2" data-slot="source-preview">
-          <p class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {{ $t('learning.path.source') }}
           </p>
           <component
@@ -89,7 +89,7 @@
           </component>
         </div>
         <div v-else-if="sourceLabel" class="space-y-1">
-          <p class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {{ $t('learning.path.source') }}
           </p>
           <a v-if="sourceHref" :href="sourceHref" target="_blank" rel="noopener noreferrer" class="group inline-flex items-start gap-1.5 text-sm font-semibold leading-snug text-foreground hover:text-brand">
@@ -109,7 +109,7 @@
 
         <div v-if="subjects.length || canUpdate" class="space-y-2" data-slot="article-subjects">
           <div class="flex items-center justify-between gap-2">
-            <p class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               {{ $t('learning.wiki.subjects') }}
             </p>
             <Button v-if="canUpdate" type="button" variant="ghost" voice="sentence" size="sm" class="-my-1" data-testid="edit-subjects" @click="subjectsOpen = true">
@@ -130,7 +130,7 @@
         </div>
 
         <section v-if="related.length" aria-labelledby="article-related" class="space-y-2" data-slot="article-related">
-          <h2 id="article-related" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <h2 id="article-related" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {{ $t('learning.wiki.related') }}
           </h2>
           <WikiLinkPreview :pages="relatedPages">

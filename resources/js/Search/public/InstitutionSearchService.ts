@@ -1,6 +1,9 @@
+import type { RawFacet } from '@/Search/core/facets';
+import type { TypesenseClient } from '@/Search/core/services/SearchClientFactory';
 import type { InstitutionSearchFilters, InstitutionFacet } from '@/Types/InstitutionSearchTypes';
 
-interface SearchParams {
+interface SearchParams extends Record<string, unknown> {
+  facetFilters?: Record<string, string>;
   q: string;
   query_by: string;
   query_by_weights?: string;
@@ -20,7 +23,7 @@ interface SearchParams {
   drop_tokens_threshold?: number;
 }
 
-interface RawInstitutionDocument {
+export interface RawInstitutionDocument {
   name_lt?: string;
   name_en?: string;
   short_name_lt?: string;
@@ -40,21 +43,7 @@ interface RawInstitutionDocument {
   [key: string]: unknown;
 }
 
-interface SearchResponse {
-  hits?: Array<{ document: RawInstitutionDocument }>;
-  found?: number;
-  facet_counts?: Array<{
-    field_name: string;
-    counts: Array<{
-      value: string;
-      count: number;
-    }>;
-  }>;
-}
-
-interface SearchClient {
-  search: (collection: string, searchParams: SearchParams, signal?: AbortSignal) => Promise<SearchResponse>;
-}
+type SearchClient = Pick<TypesenseClient<RawInstitutionDocument>, 'search'>;
 
 interface ContactHit {
   id: string;
@@ -89,7 +78,12 @@ export class InstitutionSearchService {
   private typeDescendants: Record<string, string[]>;
 
   /** `typeDescendants` maps a type slug to its sub-type slugs, so filtering by a parent includes them. */
-  constructor(typesenseClient: SearchClient | null, collectionName?: string, typeDescendants: Record<string, string[]> = {}) {
+  constructor(
+    typesenseClient: SearchClient | null,
+    collectionName?: string,
+    typeDescendants: Record<string, string[]> = {},
+    private getLocale = () => 'lt',
+  ) {
     this.typesenseClient = typesenseClient;
     this.collectionName = collectionName || 'public_institutions';
     this.typeDescendants = typeDescendants;
@@ -114,7 +108,7 @@ export class InstitutionSearchService {
     perPage: number,
     isLoadMore = false,
     currentPage = 0,
-    locale = 'lt',
+    locale = this.getLocale(),
   ): Promise<{
     hits: Array<Record<string, unknown>>;
     totalHits: number;
@@ -310,10 +304,7 @@ export class InstitutionSearchService {
     };
   }
 
-  private processFacets(facetCounts: Array<{
-    field_name: string;
-    counts: Array<{ value: string; count: number }>;
-  }>): InstitutionFacet[] {
+  private processFacets(facetCounts: RawFacet[]): InstitutionFacet[] {
     return facetCounts.map(facetData => ({
       field: facetData.field_name,
       label: this.getFacetLabel(facetData.field_name),

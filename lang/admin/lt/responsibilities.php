@@ -89,12 +89,13 @@ return [
     ],
 
     'matrix' => [
-        'intro' => 'Kiekvienam veiksmui pasirink, kur jis galioja: savo įrašuose, visame padalinyje ar visur. Užrakintus veiksmus visi nariai jau turi.',
+        'intro' => 'Kiekvienam veiksmui pasirink, kur jis galioja: savo įrašuose, visame padalinyje ar visur. Užrakinti veiksmai prieinami be atsakomybės. Tinklelyje matysi, kam jie prieinami.',
         'search' => 'Ieškoti srities',
         'only_granted' => 'Tik suteiktos',
         'nothing_found' => 'Tokių sričių nėra.',
         'resource' => 'Sritis',
         'everyone' => 'Visi nariai',
+        'pilot_members' => 'Piloto dalyviai',
         'not_applicable' => 'Netaikoma',
         'discard' => 'Atšaukti',
         'changes' => ':added pridėta, :removed atimta|:added pridėta, :removed atimta|:added pridėta, :removed atimta',

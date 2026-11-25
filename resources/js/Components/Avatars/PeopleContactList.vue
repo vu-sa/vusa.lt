@@ -8,7 +8,7 @@
       <div class="flex min-w-0 flex-1 basis-56 items-center gap-3">
         <UserAvatar :user="{ name: person.name, profile_photo_path: person.profile_photo_path }" :size="compact ? 32 : 40" />
         <div class="min-w-0">
-          <p class="truncate font-bold text-foreground">
+          <p class="truncate font-semibold text-foreground">
             {{ person.name }}
           </p>
           <slot name="details" :person />

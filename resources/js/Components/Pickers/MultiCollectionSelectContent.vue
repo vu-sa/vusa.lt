@@ -14,6 +14,7 @@
     </div>
 
     <SearchSplitView
+      v-model:selected-hit="selectedHit"
       :hits
       :is-loading="isSearching"
       :has-searched
@@ -42,16 +43,12 @@ import { LoaderCircle, Search } from '@lucide/vue';
 
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import type { MultiSearchResults } from '@/Search/core/types';
-import { createEmptyMultiSearchResults } from '@/Search/core/utils/createEmptyMultiSearchResults';
-import { collectAllTabHits, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
-import type { AdminCollection } from '@/Search/admin/Types/AdminSearchTypes';
+import { adminSearchRequests, collectAllTabHits, type AdminSearchCollectionId, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import SearchSplitView from '../Search/SearchSplitView.vue';
 
 const props = defineProps<{
-  /** Which collections to search and offer — everything else is filtered out of the
-   * results, since a multi-search hits every collection the user can access. */
-  collections: AdminCollection[];
+  collections: AdminSearchCollectionId[];
   multiple: boolean;
   selectedIds: Set<string>;
   emptyMessage: string;
@@ -71,37 +68,11 @@ const query = ref('');
 const isSearching = ref(false);
 const hasSearched = ref(false);
 const errorMessage = ref<string | null>(null);
-const results = ref<MultiSearchResults>(createEmptyMultiSearchResults());
+const results = ref<MultiSearchResults<AdminSearchCollectionId>>({});
 
-/** multiSearch's per-collection limit option, keyed by the collection it caps. */
-const LIMIT_OPTION: Record<AdminCollection, string> = {
-  meetings: 'meetingsLimit',
-  agenda_items: 'agendaItemsLimit',
-  news: 'newsLimit',
-  pages: 'pagesLimit',
-  calendar: 'calendarLimit',
-  institutions: 'institutionsLimit',
-  documents: 'documentsLimit',
-  resources: 'resourcesLimit',
-  duties: 'dutiesLimit',
-  users: 'usersLimit',
-};
+const selectedHit = ref<NormalizedSearchHit | null>(null);
 
-const allowedCollections = new Set(props.collections);
-
-/**
- * Ask only for what this picker offers — everything else is filtered out anyway.
- * These limits used to be hardcoded for the link-target picker, so a picker over any
- * other collection (users, duties, …) searched and came back empty.
- */
-const searchLimits = Object.fromEntries(
-  (Object.entries(LIMIT_OPTION) as Array<[AdminCollection, string]>)
-    .map(([collection, option]) => [option, allowedCollections.has(collection) ? 15 : 0]),
-);
-
-const resultHits = computed<NormalizedSearchHit[]>(() =>
-  collectAllTabHits(results.value, { query: query.value })
-    .filter(hit => allowedCollections.has(hit.collection)));
+const resultHits = computed(() => collectAllTabHits(results.value, { query: query.value }));
 
 // While browsing (no query) the currently-selected hits are pinned to the top, same
 // behaviour as the single-collection picker (SearchSelectView).
@@ -129,7 +100,7 @@ const runSearch = useDebounceFn(async () => {
   errorMessage.value = null;
 
   try {
-    results.value = await adminSearch.multiSearch(query.value, searchLimits);
+    results.value = await adminSearch.multiSearch(query.value, adminSearchRequests(props.collections, 15));
     hasSearched.value = true;
   }
   catch (err) {

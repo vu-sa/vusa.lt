@@ -170,24 +170,12 @@
     </template>
 
     <template v-if="cart" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        voice="sentence"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
+      <FormDangerZone
         data-testid="reservation-draft-delete"
-        @click="deleteDraftOpen = true"
-      >
-        <Trash2 class="size-4" aria-hidden="true" />
-        {{ $t('reservations.cart.delete_draft') }}
-      </Button>
-
-      <ConfirmDialog
-        v-model:open="deleteDraftOpen"
+        :label="$t('reservations.cart.delete_draft')"
         :title="$t('reservations.cart.delete_draft_title')"
         :description="$t('reservations.cart.clear_description')"
         :confirm-label="$t('reservations.cart.delete_draft')"
-        destructive
         @confirm="deleteDraft"
       />
     </template>
@@ -198,11 +186,11 @@
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send, Trash2 } from '@lucide/vue';
+import { CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send } from '@lucide/vue';
 import { capitalize, computed, onMounted, ref, watch } from 'vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, StatusBadge } from '@/Components/Patterns';
+import { FormDangerZone, FormPanel, StatusBadge } from '@/Components/Patterns';
 import ReservationCartItemRow from '@/Components/Reservations/ReservationCartItemRow.vue';
 import ReservationPeriodFields, { type ReservationPeriod } from '@/Components/Reservations/ReservationPeriodFields.vue';
 import type { ReservationCart } from '@/Components/Reservations/types';
@@ -217,7 +205,7 @@ import { useDocsHref } from '@/Composables/useDocsHref';
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import type { StatusPresentation } from '@/Constants/statusIcons';
 import { ResourceSelectDialog } from '@/Components/Pickers';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { ModelEnum } from '@/Types/enums';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
@@ -259,8 +247,6 @@ const fieldIds = {
 
 const textsChanged = () => (form.name || null) !== (props.cart?.name ?? null)
   || (form.description || null) !== (props.cart?.description ?? null);
-
-const deleteDraftOpen = ref(false);
 
 // Set once the draft is deleted, so a text save still waiting on its debounce cannot recreate it.
 let discarded = false;

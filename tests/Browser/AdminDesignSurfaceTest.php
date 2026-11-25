@@ -7,7 +7,7 @@ pest()->use(RefreshDatabase::class);
 
 /**
  * Mirrors PublicDesignSurfaceTest.php for admin pages: the attribute is stamped on a hard
- * navigation and the shared radius scale and typeface resolve in a real browser.
+ * navigation and the admin radius scale and typeface resolve in a real browser.
  */
 it('resolves the admin token scope in the browser', function (): void {
     $user = makeUser(Tenant::query()->first());
@@ -27,9 +27,9 @@ it('resolves the admin token scope in the browser', function (): void {
         })()
     JS);
 
-    expect($radii)->each->toBe('0px');
+    expect($radii)->toBe(['3px', '5px', '7px', '10px', '12px']);
 
-    // A real element must land at 0 too — proves the utility references the variable rather
+    // A real element must follow the scope too — proves the utility references the variable rather
     // than an inlined calc().
     $borderRadius = $page->script(<<<'JS'
         (() => {
@@ -42,7 +42,7 @@ it('resolves the admin token scope in the browser', function (): void {
         })()
     JS);
 
-    expect($borderRadius)->toBe('0px')
+    expect($borderRadius)->toBe('10px')
         ->and($page->script('getComputedStyle(document.documentElement).fontFamily'))->toContain('Atkinson Hyperlegible Next');
 
     // The admin surface's 100% reset keeps the root at a readable size.

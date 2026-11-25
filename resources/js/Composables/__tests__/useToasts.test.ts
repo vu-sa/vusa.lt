@@ -10,6 +10,7 @@ vi.mock('vue-sonner', () => ({
     success: vi.fn(),
     error: vi.fn(),
     info: vi.fn(),
+    warning: vi.fn(),
   },
 }));
 
@@ -21,7 +22,8 @@ const mockPageProps = reactive({
     success: null,
     error: null,
     info: null,
-  },
+    warning: null,
+  } as Partial<Record<'success' | 'error' | 'info' | 'warning', string | null>>,
   app: {
     env: 'local',
   },
@@ -42,6 +44,7 @@ describe('useToasts', () => {
     mockPageProps.flash.success = null;
     mockPageProps.flash.error = null;
     mockPageProps.flash.info = null;
+    mockPageProps.flash.warning = null;
     mockPageProps.errors = {};
     mockPageProps.app.env = 'local';
   });
@@ -116,6 +119,27 @@ describe('useToasts', () => {
       await nextTick();
       expect(mockToast.info).toHaveBeenCalledWith('Flash info');
       expect(mockPageProps.flash.info).toBeNull();
+    });
+
+    test('shows a flash already present when the layout mounts (a full page load)', async () => {
+      mockPageProps.flash = { success: 'Saved before load', error: null, info: null, warning: null };
+      const { initializeToasts } = useToasts();
+      scope.run(() => initializeToasts());
+      await nextTick();
+
+      expect(mockToast.success).toHaveBeenCalledWith('Saved before load');
+    });
+
+    test('shows a flashed warning alongside a success message', async () => {
+      const { initializeToasts } = useToasts();
+      scope.run(() => initializeToasts());
+      await nextTick();
+
+      mockPageProps.flash = { success: 'Moved', error: null, info: null, warning: 'Some files were skipped' };
+      await nextTick();
+      expect(mockToast.success).toHaveBeenCalledWith('Moved');
+      expect(mockToast.warning).toHaveBeenCalledWith('Some files were skipped');
+      expect(mockPageProps.flash.warning).toBeNull();
     });
   });
 

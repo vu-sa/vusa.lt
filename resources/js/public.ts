@@ -8,7 +8,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 // Static, as in ssr.ts: an async wrapper adds a boundary that shifts every `useId()` (reka ids,
 // aria-controls) away from the server-rendered values.
-import PublicLayout from './Layouts/PersistentPublicLayout.vue';
+import PublicLayout from './Components/Public/Layouts/PublicLayout.vue';
 import { mountTranslatedApp } from './Utils/mountTranslatedApp';
 import { isReducedMotionActive } from './Composables/useAccessibilityPreferences';
 

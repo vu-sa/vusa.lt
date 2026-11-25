@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import type { TypesenseClient } from '@/Search/core/services/SearchClientFactory';
 import type { InstitutionSearchFilters } from '@/Types/InstitutionSearchTypes';
 
-import { InstitutionSearchService } from '../InstitutionSearchService';
+import { InstitutionSearchService, type RawInstitutionDocument } from '../InstitutionSearchService';
 
+type Search = TypesenseClient<RawInstitutionDocument>['search'];
 interface MockSearchClient {
-  search: ReturnType<typeof vi.fn>;
+  search: ReturnType<typeof vi.fn<Search>>;
 }
 
 describe('InstitutionSearchService', () => {
@@ -14,7 +16,7 @@ describe('InstitutionSearchService', () => {
 
   beforeEach(() => {
     mockClient = {
-      search: vi.fn().mockResolvedValue({
+      search: vi.fn<Search>().mockResolvedValue({
         hits: [
           {
             document: {

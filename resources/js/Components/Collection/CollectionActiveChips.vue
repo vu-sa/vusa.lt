@@ -5,7 +5,7 @@
         <span
           v-for="chip in chips"
           :key="chip.id"
-          class="inline-flex h-8 shrink-0 items-center gap-1 border border-border bg-background pl-2.5 text-xs font-medium text-foreground pointer-coarse:min-h-11"
+          class="inline-flex h-8 shrink-0 items-center gap-1 rounded-md border border-border bg-background pl-2.5 text-xs font-medium text-foreground pointer-coarse:min-h-11"
         >
           {{ capitalize(chip.label) }}
           <button
@@ -19,7 +19,7 @@
         </span>
         <button
           type="button"
-          class="inline-flex h-8 shrink-0 items-center gap-1.5 px-1 text-xs font-bold text-brand hover:text-foreground pointer-coarse:min-h-11"
+          class="inline-flex h-8 shrink-0 items-center gap-1.5 px-1 text-xs font-semibold text-brand hover:text-foreground pointer-coarse:min-h-11"
           @click="emit('clear')"
         >
           <X class="size-3.5" aria-hidden="true" />

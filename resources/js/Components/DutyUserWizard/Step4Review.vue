@@ -8,7 +8,7 @@
           <Building2 class="size-4 text-foreground" />
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {{ $t('Institucija') }}
           </p>
           <p class="font-semibold text-sm text-foreground truncate">
@@ -23,7 +23,7 @@
           <DutyIcon class="size-4 text-foreground" />
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {{ $t('Pareigybė') }}
           </p>
           <p class="min-w-0 font-semibold text-sm text-foreground truncate">
@@ -37,7 +37,7 @@
           <Users class="size-4 text-foreground" />
         </div>
         <div class="min-w-0">
-          <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {{ $t('Nariai') }}
           </p>
           <p class="font-semibold text-sm text-foreground truncate">
@@ -54,11 +54,11 @@
       <!-- Users being added -->
       <div class="border border-status-success-border bg-card">
         <div class="border-b border-status-success-border bg-status-success-surface/40 px-4 py-2.5 flex items-center justify-between">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-status-success flex items-center gap-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-status-success flex items-center gap-2">
             <UserPlus class="size-4" />
             {{ $t('Pridedami nariai') }}
           </h3>
-          <span class="inline-flex items-center border border-status-success-border bg-status-success-surface px-1.5 py-0.5 text-[10px] font-bold text-status-success">
+          <span class="inline-flex items-center border border-status-success-border bg-status-success-surface px-1.5 py-0.5 text-[10px] font-semibold text-status-success">
             {{ usersToAdd.length }}
           </span>
         </div>
@@ -79,7 +79,7 @@
                 :alt="change.userName"
                 class="size-full object-cover"
               >
-              <span v-else class="text-xs font-bold text-status-success">{{ change.userName?.charAt(0) }}</span>
+              <span v-else class="text-xs font-semibold text-status-success">{{ initials(change.userName) }}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-sm truncate text-foreground">
@@ -105,11 +105,11 @@
       <!-- Users being removed -->
       <div class="border border-destructive/30 bg-card">
         <div class="border-b border-destructive/30 bg-destructive/5 px-4 py-2.5 flex items-center justify-between">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-destructive flex items-center gap-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-destructive flex items-center gap-2">
             <UserMinus class="size-4" />
             {{ $t('Šalinami nariai') }}
           </h3>
-          <span class="inline-flex items-center border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">
+          <span class="inline-flex items-center border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
             {{ usersToRemove.length }}
           </span>
         </div>
@@ -130,7 +130,7 @@
                 :alt="change.userName"
                 class="size-full object-cover opacity-50"
               >
-              <span v-else class="text-xs font-bold text-destructive">{{ change.userName?.charAt(0) }}</span>
+              <span v-else class="text-xs font-semibold text-destructive">{{ initials(change.userName) }}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-sm truncate line-through text-destructive">
@@ -149,11 +149,11 @@
     <!-- New users to create -->
     <div v-if="newUsersToCreate.length > 0" class="border border-border bg-card">
       <div class="border-b border-border bg-muted/40 px-4 py-2.5 flex items-center justify-between">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
           <UserPlus class="size-4" />
           {{ $t('Nauji naudotojai bus sukurti') }}
         </h3>
-        <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-bold text-foreground">
+        <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
           {{ newUsersToCreate.length }}
         </span>
       </div>
@@ -165,7 +165,7 @@
           class="p-3 flex items-center gap-3"
         >
           <div class="size-8 border border-border bg-muted flex items-center justify-center shrink-0">
-            <span class="text-xs font-bold text-foreground">{{ user.name?.charAt(0) }}</span>
+            <span class="text-xs font-semibold text-foreground">{{ initials(user.name) }}</span>
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-sm truncate text-foreground">
@@ -206,6 +206,7 @@ import { formatDateForDisplay } from '@/Composables/useDutyUserWizard';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
 import { DutyIcon } from '@/Components/icons';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import { initials } from '@/Utils/String';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 

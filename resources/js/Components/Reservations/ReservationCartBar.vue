@@ -8,7 +8,7 @@
   >
     <div class="flex flex-wrap items-center justify-between gap-3 p-3">
       <div class="min-w-0">
-        <p class="text-xs font-bold uppercase tracking-wide">
+        <p class="text-xs font-semibold uppercase tracking-wide">
           {{ $t('reservations.cart.title') }} ·
           <span class="tabular-nums text-brand">{{ $tChoice('reservations.cart.items', items.length, { count: String(items.length) }) }}</span>
         </p>

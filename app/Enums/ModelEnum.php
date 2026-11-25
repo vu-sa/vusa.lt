@@ -53,6 +53,20 @@ enum ModelEnum: string
     case USER = 'user';
 
     /**
+     * Resolve the enum case for a pluralized permission resource name (e.g. "studyPrograms").
+     */
+    public static function tryFromPlural(string $pluralizedModel): ?self
+    {
+        foreach (self::cases() as $case) {
+            if (Str::plural($case->label()) === $pluralizedModel) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Resolve the Eloquent model class for a pluralized permission resource name.
      *
      * e.g. "studyPrograms" => App\Models\StudyProgram::class. Returns null when no
@@ -62,9 +76,17 @@ enum ModelEnum: string
      */
     public static function getModelClass(string $pluralizedModel): ?string
     {
-        $class = 'App\\Models\\'.Str::studly(Str::singular($pluralizedModel));
+        $studly = Str::studly(Str::singular($pluralizedModel));
 
-        return class_exists($class) && is_subclass_of($class, Model::class) ? $class : null;
+        foreach (['App\\Models\\', 'App\\Models\\Pivots\\'] as $namespace) {
+            $class = $namespace.$studly;
+
+            if (class_exists($class) && is_subclass_of($class, Model::class)) {
+                return $class;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -81,40 +103,63 @@ enum ModelEnum: string
     }
 
     /**
-     * Get the allowed permission scopes for a specific model.
-     * Models not listed here will have all scopes (own, padalinys, *).
+     * Scopes this model's policy reads. Exhaustive so a new case cannot fail open to grantable
+     * scopes before its record-level semantics are decided.
+     *
+     * @return list<string>
+     */
+    public function allowedScopes(): array
+    {
+        return match ($this) {
+            self::RESERVATION_RESOURCE,
+            self::TENANT => [],
+
+            self::DUTY_TYPE,
+            self::EVENT_TYPE,
+            self::INSTITUTION_TYPE,
+            self::NAVIGATION,
+            self::PERMISSION,
+            self::RELATIONSHIP,
+            self::ROLE,
+            self::TAG => ['*'],
+
+            self::AGENDA_ITEM,
+            self::BANNER,
+            self::CALENDAR,
+            self::COMMENT,
+            self::DUTIABLE,
+            self::FILE,
+            self::FORM,
+            self::GOAL,
+            self::INSTITUTION,
+            self::KNOWLEDGE_ITEM,
+            self::LEARNING_STEP,
+            self::MAILING_LIST,
+            self::NEWS,
+            self::PAGE,
+            self::PROBLEM,
+            self::QUICK_LINK,
+            self::RESERVATION,
+            self::RESOURCE,
+            self::STUDY_PROGRAM,
+            self::STUDY_SET,
+            self::TASK,
+            self::USER => ['padalinys', '*'],
+
+            self::DOCUMENT,
+            self::DUTY,
+            self::MEETING => ['own', 'padalinys', '*'],
+        };
+    }
+
+    /**
+     * Get the allowed permission scopes for a pluralized permission resource.
+     *
+     * @return list<string>
      */
     public static function getAllowedScopes(string $model): array
     {
-        $scopeRestrictions = [
-            // Global/system-wide models that don't belong to users or padaliniai
-            'tags' => ['*'],
-            'institutionTypes' => ['*'],
-            'dutyTypes' => ['*'],
-            'eventTypes' => ['*'],
-            'permissions' => ['*'],
-            'roles' => ['*'],
-            'navigations' => ['*'],
-            'relationships' => ['*'],
-
-            // Models that belong to padaliniai but not to individual users
-            'studyPrograms' => ['padalinys', '*'],
-            'studySets' => ['padalinys', '*'],
-            'quickLinks' => ['padalinys', '*'],
-            'learningSteps' => ['padalinys', '*'],
-            'knowledgeItems' => ['padalinys', '*'],
-            'problems' => ['padalinys', '*'],
-            // `own` is reserved for a member's personal goals; no policy reads it yet.
-            'goals' => ['own', 'padalinys', '*'],
-            'mailingLists' => ['padalinys', '*'],
-
-            // Members already read their own institutions (InstitutionPolicy::view), so `own` grants nothing.
-            'institutions' => ['padalinys', '*'],
-
-            // Add more restrictions as needed
-        ];
-
-        return $scopeRestrictions[$model] ?? ['own', 'padalinys', '*'];
+        return self::tryFromPlural($model)?->allowedScopes() ?? [];
     }
 
     /**
@@ -122,6 +167,6 @@ enum ModelEnum: string
      */
     public static function hasScope(string $model, string $scope): bool
     {
-        return in_array($scope, self::getAllowedScopes($model));
+        return in_array($scope, self::getAllowedScopes($model), true);
     }
 }

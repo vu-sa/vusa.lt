@@ -5,7 +5,7 @@ export { default as Textarea } from './Textarea.vue';
 
 export const textareaVariants = cva(
   [
-    'flex field-sizing-content min-h-16 w-full border transition-colors outline-none',
+    'flex field-sizing-content min-h-16 w-full rounded-md border transition-colors outline-none',
     'placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground',
     'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
     'aria-invalid:border-destructive aria-invalid:ring-destructive/20',

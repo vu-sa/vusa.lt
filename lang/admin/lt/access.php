@@ -70,6 +70,7 @@ return [
         'meetings' => 'Matai viešus posėdžius, nepasibaigusių pareigybių institucijų posėdžius, ryšiais pasiekiamų institucijų ir institucijų, kurioms esi paskirtas sekretoriumi, posėdžius. Savo institucijų posėdžius, kurių data patenka į :period, gali matyti ir redaguoti ir pareigoms pasibaigus.',
         'agendaItems' => 'Matai viešų posėdžių viešus klausimus. Savo institucijų posėdžių, kurių data patenka į :period, klausimus ir balsavimus matai, kuri, redaguoji ir trini ir pareigoms pasibaigus. Nepasibaigusių pareigybių, ryšiais pasiekiamų ir sekretoriumi prižiūrimų institucijų klausimus matai. Posėdžio redagavimo teisė leidžia tvarkyti jo klausimus.',
         'problems' => 'Mato visų padalinių problemas.',
+        'goals' => 'Į eksperimentą įtrauktų padalinių nariai mato visų dalyvaujančių padalinių tikslus.',
         'resources' => 'Mato visus išteklius.',
         'documents' => 'ViSAK paskelbtus dokumentus naršo visi nariai. Šios teisės skirtos dokumentų tvarkymui: laukiančių ir paslėptų failų matymui, paskelbimui ir slėpimui.',
         'duties' => 'Mato savo dabartines ir buvusias pareigybes bei kadencijas.',

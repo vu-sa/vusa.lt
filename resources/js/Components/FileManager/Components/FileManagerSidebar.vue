@@ -29,7 +29,7 @@
 
     <div class="hidden min-h-0 flex-1 flex-col border-t border-border lg:flex">
       <div class="flex items-center justify-between py-1 pr-1 pl-4">
-        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
           {{ $t('files.ui.folders') }}
         </p>
         <Button

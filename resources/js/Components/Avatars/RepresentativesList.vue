@@ -1,10 +1,10 @@
 <template>
   <ul v-if="users.length <= NAMED_LIMIT" class="flex flex-col gap-1" data-slot="representatives-list">
     <li v-for="user in users" :key="user.id">
-      <UserPopover :user show-name :size="28" clickable />
+      <UserPopover :user show-name :size="28" />
     </li>
   </ul>
-  <UsersAvatarGroup v-else :users :max="10" :size="32" expandable clickable />
+  <UsersAvatarGroup v-else :users :max="10" :size="32" expandable />
 </template>
 
 <script setup lang="ts">

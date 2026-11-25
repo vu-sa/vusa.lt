@@ -284,7 +284,7 @@ const inflectDutyName = (name: string, gender: DutyNameGender): string => {
   return name.slice(0, head.start + head.stem.length) + ending + name.slice(head.end);
 };
 
-export type DutyPronouns = string | { lt?: string | null; en?: string | null } | null | undefined;
+export type DutyPronouns = string | { lt?: string | null; en?: string | null } | [] | null | undefined;
 
 export interface DutyNameHolder {
   name?: string | null;
@@ -301,6 +301,7 @@ const pronounGender = (pronouns: string | null | undefined): DutyNameGender | nu
 
 export const resolveDutyPronouns = (pronouns: DutyPronouns, locale: string): string => {
   if (typeof pronouns === 'string') return pronouns;
+  if (Array.isArray(pronouns)) return '';
   const preferred = pronouns?.[locale === 'en' ? 'en' : 'lt'];
   if (pronounGender(preferred)) return preferred ?? '';
   return [pronouns?.lt, pronouns?.en].find(value => pronounGender(value)) ?? '';
@@ -551,4 +552,24 @@ export const camelCase = (str: string): string => {
   return str
     .toLowerCase()
     .replace(/[-_]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''));
+};
+
+/** Two-letter uppercase initials (first + last word, or first two letters of one word). */
+export const initials = (name: string | null | undefined): string => {
+  if (!name || typeof name !== 'string') {
+    return '';
+  }
+
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const first = words[0];
+
+  if (!first) {
+    return '';
+  }
+
+  if (words.length === 1) {
+    return first.substring(0, 2).toUpperCase();
+  }
+
+  return `${first.charAt(0)}${words.at(-1)?.charAt(0) ?? ''}`.toUpperCase();
 };

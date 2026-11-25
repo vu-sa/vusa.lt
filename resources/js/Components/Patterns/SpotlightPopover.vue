@@ -41,7 +41,7 @@
       :align
       :side-offset="8"
       :collision-padding="12"
-      class="w-80 max-w-[calc(100vw-1.5rem)] rounded-none border border-t-2 border-border border-t-brand p-0 shadow-none"
+      class="w-80 max-w-[calc(100vw-1.5rem)] border border-t-2 border-border border-t-brand p-0 shadow-none"
       @open-auto-focus="handleOpenAutoFocus"
       @close-auto-focus.prevent
       @pointerenter="handlePointerEnter"

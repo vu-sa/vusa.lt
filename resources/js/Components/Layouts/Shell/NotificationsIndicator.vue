@@ -2,9 +2,9 @@
   <Popover v-model:open="isOpen">
     <PopoverTrigger as-child>
       <Button
-        variant="ghost"
+        variant="outline"
         size="icon"
-        class="relative size-8 shrink-0 border border-border text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+        class="relative size-8 shrink-0 text-muted-foreground pointer-coarse:size-11"
         data-tour="notifications-indicator"
         :aria-label="$t('Pranešimai')"
       >
@@ -16,7 +16,7 @@
         </Transition>
         <span
           v-if="unreadNotificationsCount > 0"
-          class="absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center bg-brand-fill px-0.5 text-[10px] font-bold text-brand-foreground"
+          class="absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center bg-brand-fill px-0.5 text-[10px] font-semibold text-brand-foreground"
           aria-live="polite"
         >
           {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
@@ -27,7 +27,7 @@
     <PopoverContent
       :class="[
         'flex max-h-[min(36rem,var(--reka-popover-content-available-height))] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden',
-        'rounded-none border border-border bg-popover p-0 shadow-xl sm:w-96',
+        'rounded-md border border-border bg-popover p-0 shadow-xl sm:w-96',
       ]"
       align="end"
       :collision-padding="16"
@@ -35,7 +35,7 @@
     >
       <!-- Header -->
       <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <h2 class="text-sm font-bold text-foreground">
+        <h2 class="text-sm font-semibold text-foreground">
           {{ $t('Pranešimai') }}
         </h2>
         <div class="flex items-center gap-1.5">
@@ -44,7 +44,7 @@
             variant="ghost"
             size="xs"
             voice="sentence"
-            class="text-xs font-bold uppercase tracking-wide text-brand hover:text-foreground pointer-coarse:min-h-11"
+            class="text-xs font-semibold uppercase tracking-wide text-brand hover:text-foreground pointer-coarse:min-h-11"
             @click="markAllAsRead"
           >
             {{ $t('Žymėti skaitytais') }}
@@ -53,8 +53,8 @@
             :href="route('profile.notifications')"
             :title="$t('shell.account.notifications')"
             :class="[
-              'flex size-7 items-center justify-center border border-border text-muted-foreground',
-              'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
+              'flex size-7 items-center justify-center rounded-md border border-(--button-outline-border) bg-(--button-outline-fill) text-muted-foreground',
+              'transition-colors hover:border-(--button-outline-hover-border) hover:bg-(--button-outline-hover-fill) hover:text-foreground pointer-coarse:size-11',
             ]"
             @click="isOpen = false"
           >
@@ -76,7 +76,7 @@
             <!-- Square category icon box -->
             <div
               :class="[
-                'mt-0.5 flex size-8 shrink-0 items-center justify-center border border-border',
+                'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border border-border',
                 getNotificationColorClasses(notification).combined,
               ]"
             >
@@ -91,7 +91,7 @@
             >
               <!-- Eyebrow: Tag & Unread marker dot -->
               <div class="flex items-center gap-1.5">
-                <span class="text-[10px] font-bold uppercase tracking-wide text-brand">
+                <span class="text-[10px] font-semibold uppercase tracking-wide text-brand">
                   {{ getNotificationCategoryTag(notification) }}
                 </span>
                 <span
@@ -149,7 +149,7 @@
                 variant="outline"
                 size="icon-sm"
                 voice="sentence"
-                class="size-7 text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+                class="size-7 text-muted-foreground pointer-coarse:size-11"
                 :title="getPrimaryAction(notification)!.label"
                 :aria-label="getPrimaryAction(notification)!.label"
               >
@@ -161,8 +161,8 @@
                 v-if="!notification.read_at"
                 type="button"
                 :class="[
-                  'flex size-7 items-center justify-center border border-border text-muted-foreground',
-                  'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
+                  'flex size-7 items-center justify-center rounded-md border border-(--button-outline-border) bg-(--button-outline-fill) text-muted-foreground',
+                  'transition-colors hover:border-(--button-outline-hover-border) hover:bg-(--button-outline-hover-fill) hover:text-foreground pointer-coarse:size-11',
                 ]"
                 :title="$t('Pažymėti kaip skaitytą')"
                 :aria-label="$t('Pažymėti kaip skaitytą')"
@@ -179,7 +179,7 @@
           v-else
           class="flex flex-col items-center justify-center p-8 text-center"
         >
-          <div class="mb-3 flex size-10 items-center justify-center border border-border bg-secondary">
+          <div class="mb-3 flex size-10 items-center justify-center rounded-md border border-border bg-secondary">
             <Bell class="size-5 text-muted-foreground" />
           </div>
           <p class="text-sm font-semibold text-foreground">
@@ -195,7 +195,7 @@
       <Link
         :href="route('notifications.index')"
         :class="[
-          'block shrink-0 border-t border-border px-4 py-3 text-center text-xs font-bold uppercase tracking-wide',
+          'block shrink-0 border-t border-border px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide',
           'text-brand transition-colors hover:bg-secondary/60 pointer-coarse:min-h-11',
         ]"
         @click="isOpen = false"

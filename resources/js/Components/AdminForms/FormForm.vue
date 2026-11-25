@@ -91,7 +91,7 @@
                 <Type v-else class="size-4" />
               </span>
 
-              <span v-if="model.is_required" class="text-destructive font-bold" :title="$t('Privalomas laukas')">*</span>
+              <span v-if="model.is_required" class="text-destructive font-semibold" :title="$t('Privalomas laukas')">*</span>
 
               <span class="truncate font-medium">
                 {{ model.label?.lt || model.label?.en || model.label || '—' }}
@@ -184,7 +184,7 @@
             v-if="pathChangedOnExistingForm"
             :class="[
               'flex items-center gap-2 border p-2.5 text-xs font-medium',
-              'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+              'border-status-attention-border bg-status-attention-surface text-status-attention',
             ]"
           >
             <AlertTriangle class="size-4 shrink-0" />

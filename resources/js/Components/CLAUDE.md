@@ -50,7 +50,7 @@ ui/  →  Brand/ + Shared/  →  Patterns/     →  <Entity>/       →  Layouts
 
 The two never import each other; what both need lives in `Brand/`, `Shared/` or `ui/`. Two
 exceptions are deliberate: `RichContent/` renders public blocks inside the admin editor, and the
-navigation builder and Pradžia's site lists preview the public site. Where both surfaces have a
+navigation builder previews the public site. Where both surfaces have a
 component for the same idea, that is deliberate too: `Patterns/DateBadge` is a muted inline badge,
 `Brand/DatePlate` a square plate with a brand rule sized to sit on a photograph.
 
@@ -93,7 +93,7 @@ Rules for anything added there:
   and other variants to sentence case. An explicit `voice` wins on every variant. Public buttons that retain
   uppercase use `voice="brand"`; in admin, uppercase is only for primary actions
   (`.ai/rules/js-pages-admin.md`). `voice="sentence"` is the admin's sentence-case button for
-  outline, ghost, row actions, chips and Pradžia quick actions: at the default size it is 40px
+  outline, ghost, row actions and chips: at the default size it is 40px
   (44px on touch) — don't pass `size="lg"` or a height class. `voice="plain"` is for calendar cells
   and pagination numbers. Sizes: `lg` 48px for a page's primary,
   `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
@@ -125,7 +125,6 @@ Rules for anything added there:
 | An entity type's icon + category colour | `EntityTypeMark` / `getEntityTypeDefinition` | `@/Components/Patterns/EntityTypeMark.vue`, `@/Constants/entityTypes` |
 | A settings screen with several independent saves | `OverviewPage` + a `SectionCard` per block | `@/Components/Layouts/OverviewPage.vue`, `@/Components/Patterns` |
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
-| Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
 | A ruled grid of destinations (icon, label, description) — Visi skyriai, overview sections, quick access | `NavigationTiles` (`WorkspaceSectionTiles` for a workspace's catalog sections) | `@/Components/Patterns`, `@/Components/Overview/WorkspaceSectionTiles.vue` |
 | A short list whose order the user changes (drag handle + arrows) | `SortableRowList` | `@/Components/Collection/SortableRowList.vue` |

@@ -6,7 +6,7 @@
         <InstitutionIcon class="size-4 text-foreground" />
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {{ $t('Pasirinkta institucija') }}
         </p>
         <p class="font-semibold text-sm text-foreground truncate">
@@ -240,7 +240,7 @@
                     <div
                       v-for="user in duty.current_users.slice(0, 3)"
                       :key="user.id"
-                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-bold overflow-hidden"
+                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-semibold overflow-hidden"
                       :title="user.name"
                     >
                       <img
@@ -249,11 +249,11 @@
                         :alt="user.name"
                         class="size-full object-cover"
                       >
-                      <span v-else>{{ user.name?.charAt(0) }}</span>
+                      <span v-else>{{ initials(user.name) }}</span>
                     </div>
                     <div
                       v-if="duty.current_users.length > 3"
-                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-bold"
+                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-semibold"
                     >
                       +{{ duty.current_users.length - 3 }}
                     </div>
@@ -311,6 +311,7 @@ import { useDuplicateDutyCheck } from '@/Components/AdminForms/useDuplicateDutyC
 import { DutyIcon, InstitutionIcon } from '@/Components/icons';
 import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import { initials } from '@/Utils/String';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const dutyTypesRef = inject<ComputedRef<App.Entities.DutyType[]> | App.Entities.DutyType[]>('dutyTypes', []);

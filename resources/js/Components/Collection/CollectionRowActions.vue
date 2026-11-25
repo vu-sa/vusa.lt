@@ -23,11 +23,11 @@
         ]"
         @click="event => activate(action, event)"
       >
-        <component :is="action.icon" v-if="action.icon" :class="['size-4 shrink-0', action.loading && 'animate-spin']" aria-hidden="true" />
+        <component :is="action.icon" v-if="action.icon" :class="[action === labelledAction ? 'size-3' : 'size-4', 'shrink-0', action.loading && 'animate-spin']" aria-hidden="true" />
         <span v-if="action === labelledAction" class="min-w-0 truncate">{{ fullLabels || stacked ? action.label : (action.shortLabel ?? action.label) }}</span>
       </component>
     </template>
-    <RecordActionMenu :actions="overflowActions" :spotlight trigger-size="compact" @select="emit('select', $event)" @navigate="emit('navigate', $event)" />
+    <RecordActionMenu :actions="overflowActions" :spotlight trigger-size="row" @select="emit('select', $event)" @navigate="emit('navigate', $event)" />
   </div>
 </template>
 
@@ -102,7 +102,7 @@ function actionHoverClass(action: CollectionRowAction): string {
   }
 
   return [
-    labelled && 'border-border text-foreground',
+    labelled && 'border-(--button-outline-border) bg-(--button-outline-fill) text-foreground active:bg-(--button-outline-active-fill)',
     action.destructive ? 'hover:border-destructive hover:text-destructive' : rowActionHoverClass,
   ].filter(Boolean).join(' ');
 }

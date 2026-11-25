@@ -1,12 +1,12 @@
 <template>
   <section
     :aria-labelledby="headingId"
-    :class="cn('border border-border bg-background', props.class)"
+    :class="cn('rounded-lg border border-border bg-background', props.class)"
     data-slot="form-panel"
   >
     <header class="flex items-center gap-2 border-b border-border px-4 py-3">
       <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
-      <h2 :id="headingId" :class="cn('text-[11px] font-bold uppercase tracking-[0.18em] text-brand', titleClass)">
+      <h2 :id="headingId" :class="cn('text-[11px] font-semibold uppercase tracking-[0.06em] text-brand', titleClass)">
         {{ title }}
       </h2>
       <div v-if="$slots.action" class="ml-auto">

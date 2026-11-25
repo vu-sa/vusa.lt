@@ -14,6 +14,7 @@ import {
   type ActivityLevel,
 } from '@/Components/Graphs/composables/useActivityStatus';
 import type { RepresentativeActivityCategory } from '@/Components/Graphs/types';
+import { initials } from '@/Utils/String';
 
 import type { GanttColors } from '../ganttColors';
 import { isDarkModeActive } from '../ganttColors';
@@ -136,14 +137,6 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
           .attr('decoding', 'async');
       }
       else {
-        // Show initials
-        const initials = (member.user.name ?? '')
-          .split(' ')
-          .map(n => n.charAt(0))
-          .slice(0, 2)
-          .join('')
-          .toUpperCase();
-
         memberG.append('text')
           .attr('x', avatarSize / 2)
           .attr('y', avatarSize / 2)
@@ -152,7 +145,7 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
           .attr('fill', isDark ? '#d1d5db' : '#374151')
           .style('font-size', '8px')
           .style('font-weight', '500')
-          .text(initials);
+          .text(initials(member.user.name));
       }
 
       // Hover events for tooltip - use unified tooltip manager if available

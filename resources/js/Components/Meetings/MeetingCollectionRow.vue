@@ -12,7 +12,7 @@
       data-collection-open
       class="group/row block min-w-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
-      <span class="line-clamp-2 font-bold text-foreground group-hover/row:text-brand">
+      <span class="line-clamp-2 font-semibold text-foreground group-hover/row:text-brand">
         {{ heading }}
       </span>
       <span class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">

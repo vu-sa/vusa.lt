@@ -20,7 +20,7 @@
       >
         <component :is="activeWorkspace ? workspaceIcon(activeWorkspace.key) : LayoutGrid" class="size-4 shrink-0 text-brand" aria-hidden="true" />
         <span class="min-w-0 truncate">
-          <span class="font-bold text-foreground">{{ workspaceLabel }}</span>
+          <span class="font-semibold text-foreground">{{ workspaceLabel }}</span>
           <template v-if="placeLabel">
             <span class="px-1.5 text-muted-foreground" aria-hidden="true">·</span>
             <span class="text-foreground">{{ placeLabel }}</span>
@@ -43,7 +43,7 @@
     <Sheet v-if="activeWorkspace" v-model:open="switcherOpen">
       <SheetContent side="bottom" class="max-h-[85svh] gap-0 rounded-none pb-[env(safe-area-inset-bottom,0px)]" data-slot="mobile-section-switcher">
         <SheetHeader class="border-b border-border px-4 py-3">
-          <SheetTitle class="flex items-center gap-2 text-sm font-bold uppercase tracking-wide">
+          <SheetTitle class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
             <component :is="workspaceIcon(activeWorkspace.key)" class="size-4 shrink-0 text-brand" aria-hidden="true" />
             {{ $t(activeWorkspace.label) }}
           </SheetTitle>

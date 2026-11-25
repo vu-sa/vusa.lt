@@ -91,38 +91,26 @@
     </template>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Ištrinti banerį') }}
-      </Button>
+      <FormDangerZone
+        :label="$t('Ištrinti banerį')"
+        :title="$t('Ištrinti banerį?')"
+        :description="$t('Ar tikrai nori perkelti šį banerį į šiukšliadėžę?')"
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Ištrinti banerį?')"
-    :description="$t('Ar tikrai nori perkelti šį banerį į šiukšliadėžę?')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="emit('delete')"
-  />
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref } from 'vue';
-import { ExternalLink, Trash2 } from '@lucide/vue';
+import { computed } from 'vue';
+import { ExternalLink } from '@lucide/vue';
 
 import ContentPublishPanel from '@/Components/AdminForms/ContentPublishPanel.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, StatusBadge } from '@/Components/Patterns';
+import { FormDangerZone, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
@@ -144,7 +132,6 @@ const emit = defineEmits<{
 }>();
 
 const isCreate = computed(() => !props.banner?.id || props.rememberKey === 'CreateBanner');
-const isDeleteDialogOpen = ref(false);
 
 const initial = { image_media: null, ...props.banner } as Record<string, unknown>;
 

@@ -1,7 +1,7 @@
 <template>
   <OverviewPage :title="$t('Mano VU SA')">
     <template #hero>
-      <HomeHero :greeting :image="heroImage" :summary="taskSummary">
+      <HomeHero :greeting :image="heroImage">
         <template v-if="seasonCountdown" #aside>
           <SeasonCountdown :starts-at="seasonCountdown.startsAt" />
         </template>
@@ -11,6 +11,7 @@
     <!-- Phones have no hero band, so the countdown sits right under the greeting. -->
     <SeasonCountdown v-if="seasonCountdown" :starts-at="seasonCountdown.startsAt" variant="row" class="md:hidden" />
 
+    <!-- One grid: the sidebar keeps its place whatever the main column holds; phones stack it after. -->
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-primary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <AttentionQueue
@@ -32,30 +33,26 @@
           />
         </Deferred>
 
-        <ReservationDraftSummary v-if="reservationDraft" :draft="reservationDraft" variant="home" />
-
-        <QuickAccess v-if="!hasPrimaryContent" :registration-forms :columns="2" data-slot="home-destinations-section" />
-      </div>
-
-      <aside class="min-w-0">
-        <CreateShortcuts />
-      </aside>
-    </div>
-
-    <QuickAccess v-if="hasPrimaryContent" :registration-forms data-slot="home-destinations-section" />
-
-    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-secondary-section">
-      <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <UpcomingMeetingsList
           v-if="hasAtstovavimas"
           :meetings="upcomingMeetings"
           :total="upcomingMeetingsTotal"
           :href="route('dashboard.atstovavimas')"
         />
+
+        <Deferred :data="deferredProps">
+          <template #fallback>
+            <CollectionSkeleton :rows="3" />
+          </template>
+          <SiteContentLists :events="upcomingCalendarEvents ?? []" :news="latestNews ?? []" />
+        </Deferred>
+
         <OverviewStatusList />
       </div>
 
-      <aside class="flex min-w-0 flex-col gap-10 lg:gap-14">
+      <aside class="flex min-w-0 flex-col gap-10 lg:gap-14" data-slot="home-sidebar">
+        <CreateShortcuts :reservation-draft />
+
         <Deferred :data="deferredProps">
           <template #fallback>
             <CollectionSkeleton :rows="3" />
@@ -65,13 +62,11 @@
             :followed="followedInstitutions"
           />
           <RecentlyEditedList :records="recentlyEdited ?? []" />
-          <SiteContentLists
-            :events="upcomingCalendarEvents ?? []"
-            :news="latestNews ?? []"
-          />
         </Deferred>
       </aside>
     </div>
+
+    <QuickAccess :registration-forms data-slot="home-destinations-section" />
   </OverviewPage>
 </template>
 
@@ -81,6 +76,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
+import type { PageProps } from '@/Types/index';
 import MyActivityRequests, { type ActiveActivityRequests } from '@/Components/Home/MyActivityRequests.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
@@ -104,7 +100,6 @@ import type {
 } from '@/Components/Home/types';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import type { ReservationCartSummary } from '@/Components/Reservations/types';
-import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import { CollectionSkeleton, OverviewStatusList } from '@/Components/Patterns';
 import { SeasonCountdown } from '@/Features/Admin/Seasons';
 import { addressivize } from '@/Utils/String';
@@ -150,13 +145,6 @@ const page = usePage<PageProps>();
 const hasAtstovavimas = computed(() => Boolean(
   props.upcomingMeetings?.length
   || page.props.auth?.can?.create?.meeting,
-));
-
-const hasPrimaryContent = computed(() => Boolean(
-  visibleTasks.value.length
-  || props.activeActivityRequests?.total
-  || props.reservationDraft
-  || (hasAtstovavimas.value && (props.institutionsNeedingAttention === undefined || props.institutionsNeedingAttention.length > 0)),
 ));
 
 const actionWindow = useActionWindow();
@@ -225,18 +213,6 @@ const greeting = computed(() => {
   const firstName = page.props.auth?.user?.name?.split(' ')[0];
   if (!firstName) return $t('Labas');
   return `${$t('Labas')}, ${page.props.app.locale === 'lt' ? addressivize(firstName) : firstName}`;
-});
-
-const taskSummary = computed(() => {
-  if (props.taskStats.total === 0) {
-    return null;
-  }
-
-  const waiting = $t('home.summary.waiting', { count: String(props.taskStats.total) });
-
-  return props.taskStats.overdue > 0
-    ? `${waiting} · ${$t('home.summary.overdue', { count: String(props.taskStats.overdue) })}`
-    : waiting;
 });
 
 const recordActivityFor = (institution: InstitutionActivityInsight) => {

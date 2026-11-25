@@ -229,14 +229,14 @@ const hasTaskBadge = (section: AdminSection) => props.workspace?.key === 'pradzi
 const startsGroup = (section: AdminSection, index: number) => index > 0 && section.startsGroup;
 
 const crumbTabClass = (active: boolean) => [
-  'flex h-10 items-stretch whitespace-nowrap border-b-2 text-sm font-bold transition-colors pointer-coarse:h-11',
+  'flex h-10 items-stretch whitespace-nowrap border-b-2 text-sm font-semibold transition-colors pointer-coarse:h-11',
   active
     ? 'border-brand-fill text-foreground'
     : 'border-transparent text-muted-foreground hover:border-brand-fill focus-within:border-brand-fill',
 ];
 
 const tabClass = (active: boolean) => [
-  'flex h-10 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-sm font-bold transition-colors pointer-coarse:h-11',
+  'flex h-10 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-sm font-semibold transition-colors pointer-coarse:h-11',
   active
     ? 'border-brand-fill text-foreground'
     : 'border-transparent text-muted-foreground hover:border-brand-fill hover:text-foreground focus-visible:border-brand-fill',

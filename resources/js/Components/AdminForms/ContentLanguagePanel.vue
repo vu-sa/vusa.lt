@@ -100,7 +100,8 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from '@lucide/vue';
 
-import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
+import { apiRequest } from '@/Composables/apiRequest';
+import { contentEditorRequestError } from '@/Composables/useContentEditor';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
@@ -110,7 +111,7 @@ import LocaleFlag from '@/Components/Shared/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { CollectionSelectDialog } from '@/Components/Pickers';
-import { normalizeHit, type NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';
@@ -170,12 +171,22 @@ const pairingConfirmation = defineModel<string | undefined>('pairingConfirmation
 let pendingId: number | null = null;
 let pendingToken: string | undefined;
 watch(otherLangId, async (id) => {
-  if (!id) { selected.value = null; return; }
-  try {
-    const { data } = await http.get(route('api.v1.admin.contentEditor.show', { kind: props.collection, record: id }));
-    if (otherLangId.value === id) selected.value = data.data;
+  if (!id) {
+    selected.value = null;
+    return;
   }
-  catch { pairError.value = $t('editor.counterpart_unavailable'); }
+  try {
+    const result = await apiRequest<OtherLangCandidate>(route('api.v1.admin.contentEditor.show', { kind: props.collection, record: id }));
+    if (!result.ok || !result.data) {
+      pairError.value = $t('editor.counterpart_unavailable');
+    }
+    else if (otherLangId.value === id) {
+      selected.value = result.data;
+    }
+  }
+  catch {
+    pairError.value = $t('editor.counterpart_unavailable');
+  }
 }, { immediate: true });
 
 // Tenant filtering is a convenience; the save endpoint checks every affected record.
@@ -197,15 +208,31 @@ async function onConfirm(hits: NormalizedSearchHit[]) {
   pendingId = hits[0] ? Number(hits[0].recordId) : null;
   pairError.value = '';
   try {
-    const { data } = await http.post(route('api.v1.admin.contentEditor.pairing', { kind: props.collection }), { record_id: props.recordId, target_id: pendingId, lang: lang.value });
-    pendingToken = data.data.token;
-    if (data.data.confirmation_required) {
-      pairDescription.value = `${$t('editor.pairing_changes')}\n${data.data.records.map((record: { title: string; lang: string; other_lang_id?: number; id: number }) => `${record.title} (${record.lang}) → ${data.data.records.find((candidate: { id: number }) => candidate.id === record.other_lang_id)?.title ?? $t('editor.unpaired')}`).join('\n')}`;
+    const result = await apiRequest<{
+      token: string;
+      confirmation_required: boolean;
+      records: { id: number; title: string; lang: string; other_lang_id: number | null }[];
+    }>(route('api.v1.admin.contentEditor.pairing', { kind: props.collection }), {
+      method: 'POST',
+      body: { record_id: props.recordId, target_id: pendingId, lang: lang.value },
+    });
+    if (!result.ok || !result.data) {
+      pairError.value = contentEditorRequestError(result);
+      return;
+    }
+    const { token, confirmation_required, records } = result.data;
+    pendingToken = token;
+    if (confirmation_required) {
+      pairDescription.value = `${$t('editor.pairing_changes')}\n${records.map(record => `${record.title} (${record.lang}) → ${records.find(candidate => candidate.id === record.other_lang_id)?.title ?? $t('editor.unpaired')}`).join('\n')}`;
       confirmOpen.value = true;
     }
-    else applySelection();
+    else {
+      applySelection();
+    }
   }
-  catch (error) { pairError.value = http.isError(error) ? error.response?.data?.message ?? error.message : String(error); }
+  catch (error) {
+    pairError.value = String(error);
+  }
 }
 function openWorkspace() {
   workspaceOpen.value = true;

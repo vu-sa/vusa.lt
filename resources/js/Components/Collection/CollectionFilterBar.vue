@@ -48,7 +48,7 @@
       <div class="flex flex-col gap-5 px-4 pb-4">
         <CollectionQuickFilters :filters="quickFilters" wrap @toggle="id => emit('quickFilter', id)" />
         <section v-for="facet in facets" :key="facet.field">
-          <h3 class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          <h3 class="mb-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {{ capitalize(facet.label) }}
           </h3>
           <CollectionFacetOptions :facet @toggle="(field, value) => emit('toggle', field, value)" />

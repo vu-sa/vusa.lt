@@ -2,7 +2,7 @@
   <!-- stackOnPhone sizes buttons only below sm; inside the fixed-height frame they would overflow its padding. -->
   <div
     :class="cn(
-      'grid w-full border border-border bg-secondary/50 p-0.5 transition-colors',
+      'grid w-full rounded-md border border-border bg-secondary/50 p-0.5 transition-colors',
       stackOnPhone
         ? 'grid-cols-2 max-sm:[&>button]:min-h-10 max-sm:pointer-coarse:[&>button]:min-h-11 sm:h-11 sm:grid-cols-[repeat(var(--segments),minmax(0,1fr))] sm:pointer-coarse:h-12'
         : 'h-11 grid-cols-[repeat(var(--segments),minmax(0,1fr))] pointer-coarse:h-12',

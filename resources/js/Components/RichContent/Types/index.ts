@@ -1,36 +1,39 @@
+import {
+  Building2,
+  Calendar,
+  CalendarClock,
+  CalendarDays,
+  CalendarRange,
+  CaseUpper,
+  Columns3,
+  Film,
+  GalleryHorizontalEnd,
+  GalleryVerticalEnd,
+  Hash,
+  Heading1,
+  Images,
+  Layers,
+  LayoutList,
+  Link,
+  ListOrdered,
+  MonitorPlay,
+  Newspaper,
+  Quote,
+  Share2,
+  TextCursorInput,
+  Workflow,
+} from '@lucide/vue';
 import { defineAsyncComponent, type Component } from 'vue';
 
 import { displayTypeRegistry, type ContentDisplayType } from './display';
+
+import SpotifyIcon from '~icons/simple-icons/spotify';
 
 export { getSkeletonForType } from './display';
 export type { BlockWidth } from './display';
 
 // Re-export all type definitions
 export * from './types';
-import TextCaseUppercase20Filled from '~icons/fluent/text-case-uppercase20-filled';
-import AppsListDetail24Regular from '~icons/fluent/apps-list-detail24-regular';
-import CalendarDay24Regular from '~icons/fluent/calendar-day24-regular';
-import ImageMultiple24Regular from '~icons/fluent/image-multiple24-regular';
-import SpotifyIcon from '~icons/simple-icons/spotify';
-import NewsIcon from '~icons/fluent/news24-regular';
-import CalendarIcon from '~icons/fluent/calendar-ltr24-regular';
-import FlowIcon from '~icons/fluent/flow24-regular';
-import NumberIcon from '~icons/fluent/number-symbol24-regular';
-import HeroIcon from '~icons/fluent/slide-play24-regular';
-import GridIcon from '~icons/fluent/table-simple24-regular';
-import SocialIcon from '~icons/fluent/share-24-regular';
-import TextBoxIcon from '~icons/fluent/text-field24-regular';
-import CarouselIcon from '~icons/fluent/swipe-right24-regular';
-import HeroCarouselIcon from '~icons/fluent/filmstrip-image24-regular';
-import StackIcon from '~icons/fluent/stack24-regular';
-import GalleryIcon from '~icons/fluent/collections24-regular';
-import LinkListIcon from '~icons/fluent/link-multiple24-regular';
-import EventListIcon from '~icons/fluent/calendar-multiple24-regular';
-import PersonQuoteIcon from '~icons/fluent/text-quote24-regular';
-import SectionIcon from '~icons/fluent/text-header-1-24-regular';
-import TimetableIcon from '~icons/fluent/calendar-clock20-regular';
-import ProcessStepsIcon from '~icons/fluent/text-number-list-ltr-24-regular';
-import InstitutionListIcon from '~icons/fluent/building-multiple24-regular';
 
 /** Picker grouping — `special` is for rare, very-specific-rendering blocks (news/calendar/flow-graph). */
 export type BlockCategory = 'text' | 'media' | 'section' | 'embed' | 'special';
@@ -59,7 +62,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     ...displayTypeRegistry['tiptap'],
     editableDisplay: defineAsyncComponent(() => import('./TiptapEditable.vue')),
     label: 'Tekstas',
-    icon: TextCaseUppercase20Filled,
+    icon: CaseUpper,
     description: 'Redaguojamas teksto blokas su formatavimo galimybėmis',
     category: 'text',
     defaultContent: () => ({}),
@@ -69,7 +72,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'shadcn-accordion': {
     ...displayTypeRegistry['shadcn-accordion'],
     label: 'Išsiskleidžiantis sąrašas',
-    icon: AppsListDetail24Regular,
+    icon: LayoutList,
     description: 'Išsiskleidžiantis turinio blokas, kur rodomas tik pavadinimas',
     category: 'text',
     // Full-bleed is the default, not a lock — these render their own section chrome
@@ -84,7 +87,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'shadcn-card': {
     ...displayTypeRegistry['shadcn-card'],
     label: 'Kortelė',
-    icon: CalendarDay24Regular,
+    icon: CalendarDays,
     description: 'Specialiai apipavidalintas tekstas su antrašte',
     category: 'text',
     defaultContent: () => ({}),
@@ -98,7 +101,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'image-grid': {
     ...displayTypeRegistry['image-grid'],
     label: 'Nuotraukų tinklelis',
-    icon: ImageMultiple24Regular,
+    icon: Images,
     description: 'Kelių nuotraukų išdėstymas tinkleliu',
     category: 'media',
     inlineEditable: true,
@@ -110,7 +113,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'hero': {
     ...displayTypeRegistry['hero'],
     label: 'Hero',
-    icon: HeroIcon,
+    icon: MonitorPlay,
     description: 'Didelis turinio blokas su paveiksliuku',
     category: 'section',
     // Full-bleed is the default, not a lock — these render their own section chrome
@@ -144,7 +147,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'news': {
     ...displayTypeRegistry['news'],
     label: 'Naujienos',
-    icon: NewsIcon,
+    icon: Newspaper,
     description: 'Naujienų blokas',
     category: 'special',
     // Full-bleed is the default, not a lock — these render their own section chrome
@@ -157,7 +160,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'calendar': {
     ...displayTypeRegistry['calendar'],
     label: 'Kalendorius',
-    icon: CalendarIcon,
+    icon: Calendar,
     description: 'Kalendoriaus blokas',
     category: 'special',
     // Full-bleed is the default, not a lock — these render their own section chrome
@@ -170,7 +173,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'institution-list': {
     ...displayTypeRegistry['institution-list'],
     label: 'Institucijų sąrašas',
-    icon: InstitutionListIcon,
+    icon: Building2,
     description: 'Institucijų ar iniciatyvų sąrašo blokas pagal tipą',
     category: 'special',
     inlineEditable: true,
@@ -201,7 +204,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'social-embed': {
     ...displayTypeRegistry['social-embed'],
     label: 'Facebook / Instagram',
-    icon: SocialIcon,
+    icon: Share2,
     description: 'Facebook arba Instagram įrašo įterpimas',
     category: 'embed',
     defaultContent: () => ({ url: '', platform: null, postId: '' }),
@@ -212,7 +215,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'flow-graph': {
     ...displayTypeRegistry['flow-graph'],
     label: 'Flow Graph',
-    icon: FlowIcon,
+    icon: Workflow,
     description: 'Proceso eigos schema',
     category: 'special',
     defaultContent: () => ({ preset: 'vusa-structure' }),
@@ -222,7 +225,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'number-stat-section': {
     ...displayTypeRegistry['number-stat-section'],
     label: 'Skaitinės statistikos',
-    icon: NumberIcon,
+    icon: Hash,
     description: 'Skaičių statistikos sekcija',
     category: 'section',
     // Full-bleed is the default, not a lock — these render their own section chrome
@@ -238,7 +241,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'text-box': {
     ...displayTypeRegistry['text-box'],
     label: 'Teksto laukas',
-    icon: TextBoxIcon,
+    icon: TextCursorInput,
     description: 'Teksto įvedimo laukas su pateikimo mygtuku',
     category: 'embed',
     defaultContent: () => ({}),
@@ -254,7 +257,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'content-grid': {
     ...displayTypeRegistry['content-grid'],
     label: 'Tinklelis',
-    icon: GridIcon,
+    icon: Columns3,
     description: 'Lankstus turinys stulpeliais ir eilutėmis',
     category: 'section',
     defaultContent: () => ([
@@ -288,7 +291,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'carousel-slide-deck': {
     ...displayTypeRegistry['carousel-slide-deck'],
     label: 'Karuselė',
-    icon: CarouselIcon,
+    icon: GalleryHorizontalEnd,
     description: 'Skaidrių karuselė su paveiksliukais ir turiniu',
     isNew: false,
     category: 'section',
@@ -318,7 +321,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'hero-carousel': {
     ...displayTypeRegistry['hero-carousel'],
     label: 'Hero karuselė',
-    icon: HeroCarouselIcon,
+    icon: Film,
     description: 'Viso pločio karuselė su didelėmis nuotraukomis ir tekstu ant jų',
     isNew: false,
     category: 'section',
@@ -339,7 +342,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'card-stack': {
     ...displayTypeRegistry['card-stack'],
     label: 'Kortelių krūva',
-    icon: StackIcon,
+    icon: Layers,
     description: 'Interaktyvi kortelių krūva su 3D efektu',
     isNew: false,
     category: 'section',
@@ -360,7 +363,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'photo-gallery': {
     ...displayTypeRegistry['photo-gallery'],
     label: 'Nuotraukų galerija',
-    icon: GalleryIcon,
+    icon: GalleryVerticalEnd,
     description: 'Nuotraukų galerija su švieslente',
     isNew: false,
     category: 'media',
@@ -380,7 +383,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'link-list': {
     ...displayTypeRegistry['link-list'],
     label: 'Nuorodų sąrašas',
-    icon: LinkListIcon,
+    icon: Link,
     description: 'Kelios nuorodos į naujienas, puslapius ar rankiniu būdu įvestas nuorodas',
     isNew: false,
     category: 'section',
@@ -399,7 +402,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'event-list': {
     ...displayTypeRegistry['event-list'],
     label: 'Renginių sąrašas',
-    icon: EventListIcon,
+    icon: CalendarRange,
     description: 'Filtruotas, po padalinius grupuojamas renginių sąrašas',
     isNew: false,
     category: 'section',
@@ -417,7 +420,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'section': {
     ...displayTypeRegistry['section'],
     label: 'Sekcija',
-    icon: SectionIcon,
+    icon: Heading1,
     description: 'Sekcijos antraštė, kuri apima sekančius blokus iki kitos sekcijos',
     isNew: false,
     category: 'section',
@@ -436,7 +439,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'process-steps': {
     ...displayTypeRegistry['process-steps'],
     label: 'Žingsniai',
-    icon: ProcessStepsIcon,
+    icon: ListOrdered,
     description: 'Sunumeruoti proceso žingsniai',
     isNew: false,
     category: 'section',
@@ -452,7 +455,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'person-quote': {
     ...displayTypeRegistry['person-quote'],
     label: 'Asmens citata',
-    icon: PersonQuoteIcon,
+    icon: Quote,
     description: 'Citata su nurodyto asmens nuotrauka ir pareigomis',
     isNew: false,
     category: 'text',
@@ -467,7 +470,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
   'timetable': {
     ...displayTypeRegistry['timetable'],
     label: 'Tvarkaraštis',
-    icon: TimetableIcon,
+    icon: CalendarClock,
     description: 'Laikų ir pavadinimų tvarkaraščio kortelė',
     isNew: false,
     category: 'section',

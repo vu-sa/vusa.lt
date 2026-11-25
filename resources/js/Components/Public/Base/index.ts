@@ -25,13 +25,16 @@ export { default as DatePlate } from '../../Brand/DatePlate.vue';
 export { default as HairlineList } from './HairlineList.vue';
 export { default as HairlineRow } from './HairlineRow.vue';
 export { default as HeaderWordmark } from './HeaderWordmark.vue';
-export { default as MediaFrame } from './MediaFrame.vue';
+export { default as MediaFrame } from '@/Components/Brand/MediaFrame.vue';
 export { default as PageTitleBand } from './PageTitleBand.vue';
 export { default as ReadingSizeControl } from './ReadingSizeControl.vue';
 export { default as SectionBand } from './SectionBand.vue';
 export { default as ShareButton } from './ShareButton.vue';
 export { default as StatCell } from './StatCell.vue';
 export { default as PublicFilterPopover, type FilterOption } from './PublicFilterPopover.vue';
+export { default as PublicSearchInput } from './PublicSearchInput.vue';
+export { default as PublicSortMenu, type PublicSortOption } from './PublicSortMenu.vue';
+export { default as PublicEmptyState } from './PublicEmptyState.vue';
 
 // Shared with the admin surface; re-exported so public callers keep one import path.
 export { DisplayHeading, EyebrowLabel, TagChip } from '@/Components/Brand';

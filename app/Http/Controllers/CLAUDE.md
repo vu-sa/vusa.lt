@@ -1,6 +1,6 @@
 # Controllers
 
-The enforced rules live in [.ai/rules/controllers.md](../../../.ai/rules/controllers.md): validation in Form Requests, reading `validated()`/`safe()` instead of raw input, check ordering, index-listing helpers and route-segment allowlists. This file shows the shape those rules produce. `Admin/NewsController.php` is the reference controller.
+The enforced rules live in [.ai/rules/controllers.md](../../../.ai/rules/controllers.md): validation in Form Requests, reading `validated()`/`safe()` instead of raw input, check ordering, index-listing helpers and route-segment allowlists. This file shows the shape those rules produce. See the collection and write actions in [NewsController](Admin/NewsController.php) and the [StoreNewsRequest](../Requests/StoreNewsRequest.php) it uses for creation.
 
 ## The shape of an admin controller
 
@@ -53,6 +53,6 @@ Policies extend `ModelPolicy` and resolve permissions through `ModelAuthorizer` 
 
 - Refuse before the first write where practical. Save multi-step changes in one transaction. Write files outside the database last and allow orphaned files if the transaction rolls back.
 - A class-level create policy grants the ability to create somewhere. `StoreDutyRequest` checks whether the selected institution belongs to a tenant where the actor can create duties. `DutyInstitutionScopeTest` exercises both allowed and refused destinations.
-- `FormController::update()` checks the policy for the bound form, and `UpdateFormRequest` checks the selected tenant. The controller rechecks the locked form and resolves submitted field IDs through its own relation.
+- [`FormController::update()`](Admin/FormController.php) checks the policy for the bound form, and `UpdateFormRequest` checks the selected tenant. The controller rechecks the locked form and resolves submitted field IDs through its own relation.
 - Put the form save and all field writes in one transaction. `FormControllerTest` checks that a refused edit preserves the form, its fields, and saved responses.
 - When a page and the API both create a record, both call one action (`App\Actions\Duties\CreateDuty`, `App\Actions\Institutions\CreateInstitution`) and keep only the response. The "create the same" tests send one payload to both.

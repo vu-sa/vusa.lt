@@ -33,40 +33,7 @@
       </FormFieldWrapper>
 
       <template v-if="!isNameless">
-        <FormFieldWrapper id="link_target" :label="$t('navigation.form.link_target')">
-          <div class="flex flex-wrap items-center gap-2">
-            <MultiCollectionSelectDialog
-              v-model:open="pickerOpen"
-              :collections="['pages', 'news', 'calendar', 'institutions', 'documents']"
-              :title="$t('navigation.form.link_target')"
-              :confirm-label="$t('Pasirinkti')"
-              :search-placeholder="$t('navigation.form.link_target_search')"
-              @confirm="onTargetConfirm"
-            >
-              <template #trigger>
-                <Button type="button" variant="outline" class="justify-between font-normal">
-                  <span class="truncate" :class="{ 'text-muted-foreground': !lastPickedLabel }">
-                    {{ lastPickedLabel ?? $t('navigation.form.link_target_placeholder') }}
-                  </span>
-                  <ChevronDown class="ml-2 size-4 opacity-50" />
-                </Button>
-              </template>
-            </MultiCollectionSelectDialog>
-
-            <span class="text-xs text-muted-foreground">{{ $t('navigation.form.or') }}</span>
-
-            <NativeSelect
-              class="w-auto min-w-40"
-              size="sm"
-              :placeholder="$t('navigation.form.link_target_topic')"
-              :model-value="topicSelectValue"
-              :options="topicSelectOptions"
-              @update:model-value="onTopicSelected"
-            />
-
-            <Loader2 v-if="isResolvingUrl" class="size-4 animate-spin text-muted-foreground" />
-          </div>
-        </FormFieldWrapper>
+        <LinkTargetField :topic-options @select="url => form.url = url" />
 
         <FormFieldWrapper id="url" :label="$t('navigation.form.url')" :required="!isFooterRoot" :error="form.errors.url"
           :hint="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
@@ -295,39 +262,28 @@
     </template>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        type="button"
-        variant="outline"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('navigation.form.delete_link') }}
-      </Button>
+      <FormDangerZone
+        :label="$t('navigation.form.delete_link')"
+        :title="$t('Ištrinti navigacijos elementą?')"
+        :description="$t('Ar tikrai nori perkelti šį elementą į šiukšliadėžę?')"
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Ištrinti navigacijos elementą?')"
-    :description="$t('Ar tikrai nori perkelti šį elementą į šiukšliadėžę?')"
-    :confirm-label="$t('Ištrinti')"
-    destructive
-    @confirm="emit('delete')"
-  />
 </template>
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, ExternalLink, Loader2, Palette, SlidersHorizontal, Trash2 } from '@lucide/vue';
+import { ChevronDown, ExternalLink, Palette, SlidersHorizontal } from '@lucide/vue';
 
-import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FluentIconSelect from '@/Components/AdminForms/FluentIconSelect.vue';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import LinkTargetField, { type LinkTargetTopicOption } from '@/Components/AdminForms/LinkTargetField.vue';
 import VisualOptionSelect from '@/Components/AdminForms/VisualOptionSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { FormDangerZone } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
@@ -340,29 +296,17 @@ import { ButtonGroup } from '@/Components/ui/button-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
-import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
-import { useApiMutation } from '@/Composables/useApi';
 import { bannerStatuses } from '@/Constants/statusIcons';
-import { MultiCollectionSelectDialog } from '@/Components/Pickers';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
 import { safeHref } from '@/Utils/safeHref';
-
-interface TopicOption {
-  id: number;
-  name: string;
-  alias: string | null;
-}
 
 const props = withDefaults(defineProps<{
   navigation: App.Entities.Navigation;
   parentElements: App.Entities.Navigation[];
-  topicOptions?: TopicOption[];
+  topicOptions?: LinkTargetTopicOption[];
   rememberKey?: 'CreateNavigation';
   enableDelete?: boolean;
 }>(), {
@@ -384,7 +328,6 @@ if (!form.extra_attributes) {
 }
 
 const isCreate = computed(() => !form.id);
-const isDeleteDialogOpen = ref(false);
 
 const fieldIds = ['name', 'url', 'parent_id', 'is_active'];
 
@@ -467,53 +410,11 @@ const isDivider = computed(() => linkType.value === 'divider');
 const isHeading = computed(() => linkType.value === 'heading');
 const isNameless = computed(() => isDivider.value || isHeading.value);
 
-const pickerOpen = ref(false);
-const lastPickedLabel = ref<string | null>(null);
-
-const resolveUrlBody = ref<{ collection: string; id: string | number } | null>(null);
-const { execute: executeResolveUrl, data: resolveUrlData, isFetching: isResolvingUrl } = useApiMutation<{ url: string }, { collection: string; id: string | number }>(
-  route('api.v1.admin.navigation.resolveUrl'),
-  'POST',
-  resolveUrlBody,
-  { showSuccessToast: false },
-);
-
-const resolveAndFillUrl = async (collection: string, id: string | number, label: string) => {
-  resolveUrlBody.value = { collection, id };
-  await executeResolveUrl();
-  if (resolveUrlData.value?.url) {
-    form.url = resolveUrlData.value.url;
-    lastPickedLabel.value = label;
-  }
-};
-
-const onTargetConfirm = (hits: NormalizedSearchHit[]) => {
-  const hit = hits[0];
-  if (!hit) {
-    return;
-  }
-  resolveAndFillUrl(hit.collection, hit.recordId, hit.title);
-};
-
 const columnOptions: FormSegmentOption<number>[] = [
   { value: 1, label: '1' },
   { value: 2, label: '2' },
   { value: 3, label: '3' },
 ];
-
-const topicSelectOptions = computed(() =>
-  props.topicOptions.map(t => ({ value: String(t.id), label: t.name })),
-);
-
-const topicSelectValue = ref<string | undefined>(undefined);
-const onTopicSelected = (val: unknown) => {
-  const value = val as string | undefined;
-  topicSelectValue.value = value;
-  const topic = props.topicOptions?.find(t => String(t.id) === value);
-  if (topic) {
-    resolveAndFillUrl('topics', topic.id, topic.name);
-  }
-};
 
 const badgeVariantOptions = ['default', 'secondary', 'outline', 'destructive'];
 

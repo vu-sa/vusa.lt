@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
+import { MultiCollectionSelectDialog } from '@/Components/Pickers';
 import { commonStubs } from '@/tests/stubs';
 
 import SecretariesSection from '../SecretariesSection.vue';
@@ -71,6 +72,22 @@ describe('SecretariesSection', () => {
     expect(history.text()).toContain('Ona Onaitė');
     expect(history.text()).not.toContain('2023–2024');
     expect(history.find('[data-slot="remove-secretary"]').exists()).toBe(false);
+  });
+
+  it('preselects the current roster and submits only the confirmed user IDs', () => {
+    const wrapper = mountSection([makeRoster({ secretaries: [makeUser()] })]);
+    const picker = wrapper.getComponent(MultiCollectionSelectDialog);
+    const initialHits = picker.props('initialHits') ?? [];
+
+    expect(initialHits.map(hit => hit.recordId)).toEqual(['user-1']);
+
+    picker.vm.$emit('confirm', []);
+
+    expect(router.put).toHaveBeenCalledWith(
+      expect.anything(),
+      { cadence_id: 'cadence-1', user_ids: [] },
+      expect.anything(),
+    );
   });
 
   it('removes a nominee without touching the rest of the roster', async () => {

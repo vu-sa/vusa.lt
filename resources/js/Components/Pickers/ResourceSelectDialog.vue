@@ -29,7 +29,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { DateTimeRange } from '@/Search/admin/Composables/useResourceAvailability';
-import type { NormalizedSearchHit } from '@/Search/admin/Utils/searchHitMappers';
+import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
 import SearchSelectDialog from './SearchSelectDialog.vue';
 import ResourceSelectContent from './ResourceSelectContent.vue';

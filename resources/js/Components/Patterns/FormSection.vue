@@ -8,13 +8,13 @@
         <div class="flex items-center gap-2">
           <span
             v-if="missingCount && missingCount > 0"
-            class="text-xs text-[var(--status-attention)]"
+            class="text-xs text-status-attention"
           >
             {{ $t('Trūksta :count laukų', { count: String(missingCount) }) }}
           </span>
           <span
             v-if="badge"
-            class="inline-flex items-center gap-1 border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground"
+            class="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground"
           >
             <Globe v-if="publicMarker" class="size-3" />
             {{ badge }}

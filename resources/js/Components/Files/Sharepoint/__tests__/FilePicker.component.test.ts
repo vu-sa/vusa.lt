@@ -28,7 +28,7 @@ describe('FilePicker', () => {
 
     const button = wrapper.get('button');
     expect(button.text()).toBe('Įkelti');
-    expect(button.classes()).toContain('border-border');
+    expect(button.classes()).toContain('border-(--button-outline-border)');
     expect(button.attributes('disabled')).toBeDefined();
   });
 });

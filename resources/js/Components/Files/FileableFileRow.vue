@@ -10,7 +10,7 @@
         target="_blank"
         rel="noopener noreferrer"
         data-collection-open
-        class="block truncate font-bold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        class="block truncate font-semibold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >{{ file.name }}</a>
       <p class="mt-0.5 truncate text-xs text-muted-foreground">
         {{ meta }}

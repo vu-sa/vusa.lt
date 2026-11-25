@@ -23,6 +23,7 @@ use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Permissions\PermissionMatrixPresenter;
 use App\Services\Permissions\ResponsibilityPermissionGaps;
 use App\Services\PostCreateRedirect;
 use App\Support\MorphMap;
@@ -111,7 +112,7 @@ class ResponsibilityController extends AdminController
                 'updated_at' => $role->updated_at?->toDateTimeString(),
             ],
             'facts' => $this->facts($role),
-            'catalog' => PermissionCatalog::toFrontend(),
+            'catalog' => PermissionMatrixPresenter::toFrontend(),
             'grantedPermissions' => $held->filter(PermissionCatalog::isGrantable(...))->values(),
             'legacyPermissions' => $held->reject(PermissionCatalog::isGrantable(...))->values(),
             'attachableTypes' => $role->attachable_types->modelKeys(),

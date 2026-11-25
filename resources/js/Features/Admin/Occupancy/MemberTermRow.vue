@@ -1,15 +1,17 @@
 <template>
   <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between" data-slot="member-term-row">
     <div class="flex min-w-0 items-start gap-3">
-      <UserAvatar :user :size="40" class="shrink-0" />
+      <UserPopover :user :size="40" class="shrink-0" />
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
-          <Link
-            :href="route('users.show', user.id)"
-            class="truncate text-sm font-semibold text-foreground hover:underline"
+          <component
+            :is="href ? Link : 'span'"
+            :href
+            class="truncate text-sm font-semibold text-foreground"
+            :class="href && 'hover:underline'"
           >
             {{ user.name }}
-          </Link>
+          </component>
           <span v-if="user.pivot?.via_dutiable_id" :class="chipClass">{{ $t('Ex-officio') }}</span>
           <span v-if="user.pivot?.tenant_id" :class="chipClass">{{ quotaTenantName ? `${$t('Deleguota')} · ${quotaTenantName}` : $t('Deleguota') }}</span>
         </div>
@@ -45,7 +47,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Calendar, CalendarCheck, Edit3 } from '@lucide/vue';
 import { computed } from 'vue';
 
-import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import UserPopover from '@/Components/Avatars/UserPopover.vue';
+import { useUserLink } from '@/Components/Avatars/useUserLink';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { formatDateWith } from '@/Utils/dateTime';
@@ -77,6 +80,8 @@ const emit = defineEmits<{
   (e: 'edit'): void;
   (e: 'end'): void;
 }>();
+
+const { href } = useUserLink(() => props.user);
 
 const chipClass = 'border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground';
 

@@ -12,7 +12,7 @@ Develop at `https://www.vusa.test` (include `www.`). Test login is `test@test.co
 
 ## Admin UI (Mano VU SA)
 
-**Calm, direct, square** — paper, ink, VU SA red/amber, hairlines and working density. Answer *what needs me?* before *where can I go?*
+**Calm, direct, softly cornered** — paper, ink, VU SA red/amber, light hairlines, small radii (public stays square) and working density. Answer *what needs me?* before *where can I go?*
 
 1. **Permissions shape the product** — workspaces, sections and actions appear on `viewAny`/`create`; hidden, never disabled.
 2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.

@@ -40,6 +40,10 @@ class InstitutionTypeController extends AdminController
             'typeKind' => 'institutionType',
             'types' => $this->appendForceDeleteBlockedReason($types, $request)->values(),
             'deletedCount' => InstitutionType::onlyTrashed()->count(),
+            'abilities' => [
+                'delete' => $request->user()->can('delete', new InstitutionType),
+                'restore' => $request->user()->can('restore', new InstitutionType),
+            ],
         ]);
     }
 

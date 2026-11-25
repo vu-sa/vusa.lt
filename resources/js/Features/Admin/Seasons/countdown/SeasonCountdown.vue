@@ -5,7 +5,7 @@
     :class="['flex items-center gap-2', variant === 'hero' ? 'h-full items-end pb-7' : 'border-b border-border pb-4']"
     :data-slot="`season-countdown-${variant}`"
   >
-    <span class="flex items-center gap-2 text-sm font-bold text-foreground tabular-nums">
+    <span class="flex items-center gap-2 text-sm font-semibold text-foreground tabular-nums">
       <!-- The easter egg: touch the fir and it snows, for you alone. -->
       <button
         type="button"

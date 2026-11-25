@@ -50,7 +50,18 @@ describe('Public/Search.vue', () => {
         json: async () => fakeMultiSearchResponse(searches),
       };
     });
-    vi.mocked(usePage).mockReturnValue(createMockPage() as any);
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { path: 'lt/paieska' },
+      auth: null,
+      typesenseConfig: {
+        apiKey: 'search-only-test-key',
+        nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
+        collections: {},
+        searchProfiles: {},
+        searchProfileVersion: 1,
+        searchLocale: 'lt',
+      },
+    }));
   });
 
   const mountPage = () =>
@@ -66,7 +77,7 @@ describe('Public/Search.vue', () => {
 
   it('renders the search input', () => {
     const wrapper = mountPage();
-    expect(wrapper.find('input[type="text"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="public-search-input"] input').exists()).toBe(true);
   });
 
   it('renders a toggle for every content type', () => {
@@ -124,7 +135,7 @@ describe('Public/Search.vue', () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    const input = wrapper.find('input[type="text"]');
+    const input = wrapper.find('[data-slot="public-search-input"] input');
     await input.setValue('studentai');
     await input.trigger('keydown.enter');
     await flushPromises();

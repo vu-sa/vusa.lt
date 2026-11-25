@@ -1,7 +1,7 @@
 <?php
 
 /**
- * `own` reaches only what `PermissionCatalog::OWN_SCOPES` names. It used to follow any Duty relation
+ * `own` reaches only what `PermissionCatalog::ownRelation()` names. It used to follow any Duty relation
  * named like the resource, so a stored `reservations.update.own` reached, through Duty::reservations(),
  * the reservations of everyone who ever held the duty.
  */
@@ -35,12 +35,12 @@ test('a stored own permission without a catalog meaning reaches nobody else\'s r
     expect($this->holder->can($ability, $this->reservation))->toBeFalse();
 })->with(['update', 'delete']);
 
-test('own still reaches the records its catalog relation names', function (): void {
+test('a retired own grant no longer reaches duty terms', function (): void {
     $role = Role::factory()->create();
     $role->givePermissionTo(Permission::firstOrCreate(['name' => 'dutiables.update.own', 'guard_name' => 'web']));
     $this->duty->assignRole($role);
 
     $formerTerm = Dutiable::query()->where('duty_id', $this->duty->id)->where('dutiable_id', $this->formerHolder->id)->firstOrFail();
 
-    expect($this->holder->can('update', $formerTerm))->toBeTrue();
+    expect($this->holder->can('update', $formerTerm))->toBeFalse();
 });
