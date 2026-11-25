@@ -87,17 +87,17 @@ html[data-surface="admin"] #nprogress .peg {
   --action-weight: 600;
   --caps-weight: 600;
   --caps-tracking: 0.06em;
-  /* Admin buttons are objects: translucent paper (blurred over a future background), an input-weight
-     edge, a neutral lift on hover and a deeper press. Fills deepen toward ink (light) or paper (dark). */
+  /* Admin buttons: no fill at rest (blurring a future background), an input-weight edge, an ink
+     tint and ink-weight edge on hover, a deeper tint on press. Fills deepen toward ink (light) or paper (dark). */
   --button-fill-tint: var(--foreground);
   --button-hover-mix: 86%;
   --button-active-mix: 76%;
-  --button-outline-fill: color-mix(in oklab, var(--card) 72%, transparent);
+  --button-outline-fill: transparent;
   --button-outline-border: var(--input);
-  --button-outline-hover-fill: color-mix(in oklab, var(--secondary) 92%, transparent);
+  --button-outline-hover-fill: color-mix(in oklab, var(--foreground) 5%, transparent);
   --button-outline-hover-border: color-mix(in oklab, var(--foreground) 38%, transparent);
   --button-outline-hover-text: var(--foreground);
-  --button-outline-active-fill: color-mix(in oklab, var(--foreground) 10%, var(--card));
+  --button-outline-active-fill: color-mix(in oklab, var(--foreground) 10%, transparent);
 }
 
 /* Rich-content previews inside admin stamp the public surface and keep its voice. */
