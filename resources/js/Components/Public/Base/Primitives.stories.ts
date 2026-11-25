@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { ref } from 'vue';
 
 import { TagChip } from '@/Components/Brand';
@@ -246,6 +247,29 @@ export const Share: Story = {
 
 /** The controls above a public listing: the search field, the sort menu and the empty result. */
 export const ListingControls: Story = {
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole('button', { name: 'Rikiuoti' });
+    const body = within(canvasElement.ownerDocument.body);
+    trigger.focus();
+    await userEvent.keyboard('{Enter}');
+
+    const relevance = await body.findByRole('menuitemradio', { name: 'Pagal aktualumą' });
+    const newest = body.getByRole('menuitemradio', { name: 'Naujausi viršuje' });
+    await waitFor(() => expect(relevance).toHaveFocus());
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowUp}');
+    await expect(newest).toHaveFocus();
+    await expect(relevance).toHaveAttribute('aria-checked', 'true');
+    await expect(newest).toHaveAttribute('aria-checked', 'false');
+
+    await userEvent.keyboard(' ');
+    await waitFor(() => expect(trigger).toHaveFocus());
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.keyboard('{ArrowDown}');
+    await expect(await body.findByRole('menuitemradio', { name: 'Naujausi viršuje' })).toHaveAttribute('aria-checked', 'true');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(trigger).toHaveFocus());
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  },
   render: () => ({
     components: { PublicEmptyState, PublicSearchInput, PublicSortMenu, SectionBand, Button },
     setup: () => ({
