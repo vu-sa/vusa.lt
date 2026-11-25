@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2434,
+  "total": 2432,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -504,8 +504,6 @@
     "resources/js/Components/Public/FullWidth/__tests__/PartnersBanner.component.test.ts | TS2353 | Object literal may only specify known properties, and 'image_url' does not exist in type 'Partial<Banner>'.": 4,
     "resources/js/Components/Public/Institutions/StudentRepInstitutionCard.vue | TS2339 | Property 'pivot' does not exist on type 'User'.": 1,
     "resources/js/Components/Public/Institutions/useInstitutionCard.ts | TS2769 | No overload matches this call.": 3,
-    "resources/js/Components/Public/Layouts/PublicLayout.vue | TS2322 | Type 'unknown' is not assignable to type 'PublicEditLink | null | undefined'.": 1,
-    "resources/js/Components/Public/Layouts/PublicLayout.vue | TS2322 | Type 'unknown' is not assignable to type 'PublicStagingState | null | undefined'.": 1,
     "resources/js/Components/Public/MeetingCard.vue | TS2345 | Argument of type 'models.AgendaItem' is not assignable to parameter of type 'import(\"resources/js/Composables/useAgendaItemStyling\").AgendaItem'.": 3,
     "resources/js/Components/Public/MeetingCard.vue | TS2769 | No overload matches this call.": 1,
     "resources/js/Components/Public/Nav/PadalinysMap.vue | TS18047 | 'L' is possibly 'null'.": 5,
