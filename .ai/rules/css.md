@@ -9,7 +9,7 @@ paths:
 ## Public surface: --brand vs --accent, --ink, radius trap
 - `--accent` is shadcn's hover/muted surface (`hover:bg-accent`, `focus:bg-accent` on dropdown items/ghost buttons) — never repurpose it as the brand colour. Brand red (light) / amber (dark) lives in `--brand` / `--brand-fill` / `--brand-foreground` (`text-brand`, `bg-brand-fill`).
 - `--ink` (`:root`) is the fixed-dark ground for surfaces that lay white type over a photo — hero, mega-menu featured card, calendar scrims. Deliberately NOT theme-swapped (stays dark in light mode too, since the scrim is what keeps the copy legible). Use `bg-ink` / `from-ink` / `via-ink`, never raw `black` / `zinc-900`, for that treatment.
-- The radius scale (`--radius-*`, all `0px`) lives in plain `@theme` in `theme/base-tokens.css`, not `@theme inline`. An `inline` block precomputes the value into a literal at build time, so a scoped override of the same var does nothing. `rounded-full` is a literal too and survives the zeroed scale regardless; override it explicitly with `rounded-none` per component (`Avatar` is the recurring offender).
+- The radius scale (`--radius-*`, `0px` by default; admin sets a small scale in `admin/surface.css`) lives in plain `@theme` in `theme/base-tokens.css`, not `@theme inline`. An `inline` block precomputes the value into a literal at build time, so a scoped override of the same var does nothing. `rounded-full` is a literal too and survives the zeroed scale regardless; override it explicitly with `rounded-none` per component (`Avatar` is the recurring offender).
 - A `dark:`-prefixed class beats an unprefixed one regardless of source order, so a colour override needs its `dark:` twin (see public.md).
 
 ## Surfaces: one palette, `data-surface` only for real differences

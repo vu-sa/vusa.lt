@@ -1,7 +1,7 @@
 <template>
   <section
     :aria-labelledby="headingId"
-    :class="cn('border border-border bg-background', props.class)"
+    :class="cn('rounded-lg border border-border bg-background', props.class)"
     data-slot="form-panel"
   >
     <header class="flex items-center gap-2 border-b border-border px-4 py-3">

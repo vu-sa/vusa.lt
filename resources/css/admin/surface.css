@@ -85,3 +85,25 @@ html[data-surface="admin"] #nprogress .peg {
   --caps-weight: 700;
   --caps-tracking: 0.18em;
 }
+
+/* Admin corners: a small radius makes a working tool feel less like a form to fill in. Public
+   stays square — the scale is 0 there — and pills (`rounded-full`) are literals either way. */
+[data-surface="admin"] {
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 7px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius: 0.3125rem;
+}
+
+[data-surface="admin"] [data-surface="public"] {
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius: 0rem;
+}

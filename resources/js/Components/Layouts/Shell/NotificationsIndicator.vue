@@ -27,7 +27,7 @@
     <PopoverContent
       :class="[
         'flex max-h-[min(36rem,var(--reka-popover-content-available-height))] w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden',
-        'rounded-none border border-border bg-popover p-0 shadow-xl sm:w-96',
+        'border border-border bg-popover p-0 shadow-xl sm:w-96',
       ]"
       align="end"
       :collision-padding="16"

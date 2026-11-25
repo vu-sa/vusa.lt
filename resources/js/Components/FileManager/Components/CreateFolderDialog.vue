@@ -20,7 +20,7 @@
   </form>
 
   <Dialog v-else-if="!inline" :open @update:open="(next) => !next && close()">
-    <DialogContent class="rounded-none sm:max-w-md">
+    <DialogContent class="sm:max-w-md">
       <form class="grid gap-4" @submit.prevent="create">
         <DialogHeader>
           <DialogTitle>{{ $t('files.ui.add_folder_title') }}</DialogTitle>

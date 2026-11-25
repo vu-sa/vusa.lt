@@ -14,7 +14,7 @@
         v-if="active"
         side="bottom"
         align="start"
-        :class="[active.thumbnailUrl ? 'w-96' : 'w-80', 'max-w-[calc(100vw-2rem)] rounded-none p-0']"
+        :class="[active.thumbnailUrl ? 'w-96' : 'w-80', 'max-w-[calc(100vw-2rem)] p-0']"
         :trap-focus="false"
         @open-auto-focus.prevent
         @close-auto-focus.prevent

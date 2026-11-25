@@ -10,7 +10,7 @@ export { default as CardHeader } from './CardHeader.vue';
 export { default as CardTitle } from './CardTitle.vue';
 
 export const cardVariants = cva(
-  'flex flex-col border transition-colors',
+  'flex flex-col rounded-lg border transition-colors',
   {
     variants: {
       variant: {

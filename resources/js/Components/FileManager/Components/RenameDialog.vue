@@ -1,6 +1,6 @@
 <template>
   <Dialog open @update:open="(open) => !open && $emit('close')">
-    <DialogContent class="rounded-none sm:max-w-md">
+    <DialogContent class="sm:max-w-md">
       <form class="grid gap-4" @submit.prevent="submit">
         <DialogHeader>
           <DialogTitle>{{ isFolder ? $t('files.ui.rename_folder_title') : $t('files.ui.rename_file_title') }}</DialogTitle>

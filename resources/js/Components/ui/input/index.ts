@@ -6,7 +6,7 @@ export { default as InputWithOverlappingLabel } from './InputWithOverlappingLabe
 
 export const inputVariants = cva(
   [
-    'w-full min-w-0 border transition-colors outline-none',
+    'w-full min-w-0 rounded-md border transition-colors outline-none',
     'file:inline-flex file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',
     'placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground',
     'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',

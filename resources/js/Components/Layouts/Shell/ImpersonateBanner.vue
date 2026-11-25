@@ -52,7 +52,7 @@
             {{ $t('Apsimesti nariu') }}
           </Button>
         </PopoverTrigger>
-        <PopoverContent class="w-[min(20rem,calc(100vw-2rem))] rounded-none border-border p-0 shadow-none" align="end" side="bottom">
+        <PopoverContent class="w-[min(20rem,calc(100vw-2rem))] border-border p-0 shadow-none" align="end" side="bottom">
           <div class="border-b border-border p-3">
             <div class="mb-2 flex items-center justify-between">
               <h4 class="text-sm font-semibold text-foreground">

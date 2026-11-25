@@ -2,7 +2,7 @@
   <section
     :class="[
       'relative isolate flex flex-col overflow-hidden text-foreground',
-      'sm:min-h-40 sm:justify-end sm:bg-background sm:p-7',
+      'sm:min-h-40 sm:justify-end sm:rounded-lg sm:bg-background sm:p-7',
     ]"
     data-slot="home-hero"
   >

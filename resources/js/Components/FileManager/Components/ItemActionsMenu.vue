@@ -13,7 +13,7 @@
         <MoreHorizontal class="size-4" aria-hidden="true" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" class="w-56 rounded-none" @click.stop>
+    <DropdownMenuContent align="end" class="w-56" @click.stop>
       <template v-for="action in actions" :key="action.key">
         <DropdownMenuSeparator v-if="action.destructive" />
         <DropdownMenuItem
