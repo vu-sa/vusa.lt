@@ -44,6 +44,45 @@ function pollForGlobal<T>(
   });
 }
 
+/** Appends a script and settles once: any failure or timeout removes the tag so a later call retries. */
+function injectScript<T>(
+  id: string,
+  src: string,
+  attrs: Partial<HTMLScriptElement>,
+  timeoutMessage: string,
+  start: (script: HTMLScriptElement, resolve: (value: T) => void, reject: (error: Error) => void) => void,
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const script = document.createElement('script');
+    let settled = false;
+    const timeoutId = setTimeout(() => fail(new Error(timeoutMessage)), SDK_TIMEOUT_MS);
+
+    function settle(): boolean {
+      if (settled) {
+        return false;
+      }
+      settled = true;
+      clearTimeout(timeoutId);
+      return true;
+    }
+
+    function fail(error: Error): void {
+      if (settle()) {
+        script.remove();
+        reject(error);
+      }
+    }
+
+    Object.assign(script, attrs, { id, src, async: true });
+    start(script, (value) => {
+      if (settle()) {
+        resolve(value);
+      }
+    }, fail);
+    document.body.appendChild(script);
+  });
+}
+
 /**
  * Single-flight loader for the Facebook XFBML SDK: concurrent embeds share one script tag
  * and promise, and a failed load removes the failed tag so a later retry can succeed.
@@ -58,49 +97,26 @@ export function loadFacebookSdk(): Promise<FacebookSDK> {
 
   const promise = document.getElementById(FACEBOOK_SCRIPT_ID)
     ? pollForGlobal(() => window.FB, 100, SDK_TIMEOUT_MS, 'Facebook SDK load timeout')
-    : new Promise<FacebookSDK>((resolve, reject) => {
-        let settled = false;
-        const finish = (cb: () => void) => {
-          if (settled) {
-            return;
-          }
-          settled = true;
-          clearTimeout(timeoutId);
-          cb();
-        };
-
-        const timeoutId = setTimeout(() => {
-          finish(() => reject(new Error('Facebook SDK load timeout')));
-        }, SDK_TIMEOUT_MS);
-
-        const previousInit = window.fbAsyncInit;
-        window.fbAsyncInit = () => {
-          previousInit?.();
-          const fb = window.FB;
-          if (fb) {
-            fb.init({
-              xfbml: true,
-              version: 'v21.0',
-            });
-            finish(() => resolve(fb));
-          }
-          else {
-            finish(() => reject(new Error('Facebook SDK failed to initialize')));
-          }
-        };
-
-        const script = document.createElement('script');
-        script.id = FACEBOOK_SCRIPT_ID;
-        script.src = FACEBOOK_SCRIPT_SRC;
-        script.async = true;
-        script.defer = true;
-        script.crossOrigin = 'anonymous';
-        script.onerror = () => {
-          script.remove();
-          finish(() => reject(new Error('Failed to load Facebook SDK')));
-        };
-        document.body.appendChild(script);
-      });
+    : injectScript<FacebookSDK>(
+        FACEBOOK_SCRIPT_ID,
+        FACEBOOK_SCRIPT_SRC,
+        { defer: true, crossOrigin: 'anonymous' },
+        'Facebook SDK load timeout',
+        (script, resolve, reject) => {
+          // Assigned, not chained: a failed attempt's hook must not run FB.init() a second time.
+          window.fbAsyncInit = () => {
+            const fb = window.FB;
+            if (fb) {
+              fb.init({ xfbml: true, version: 'v21.0' });
+              resolve(fb);
+            }
+            else {
+              reject(new Error('Facebook SDK failed to initialize'));
+            }
+          };
+          script.onerror = () => reject(new Error('Failed to load Facebook SDK'));
+        },
+      );
 
   const tracked = promise.finally(() => {
     if (facebookSdkPromise === tracked) {
@@ -126,21 +142,19 @@ export function loadInstagramSdk(): Promise<InstagramSDK> {
 
   const promise = document.getElementById(INSTAGRAM_SCRIPT_ID)
     ? pollForGlobal(() => window.instgrm, 100, SDK_TIMEOUT_MS, 'Instagram embed load timeout')
-    : new Promise<InstagramSDK>((resolve, reject) => {
-        const script = document.createElement('script');
-        script.id = INSTAGRAM_SCRIPT_ID;
-        script.src = INSTAGRAM_SCRIPT_SRC;
-        script.async = true;
-        script.onload = () => {
-          pollForGlobal(() => window.instgrm, 50, INSTAGRAM_INIT_TIMEOUT_MS, 'Instagram embed init timeout')
-            .then(resolve, reject);
-        };
-        script.onerror = () => {
-          script.remove();
-          reject(new Error('Failed to load Instagram embed'));
-        };
-        document.body.appendChild(script);
-      });
+    : injectScript<InstagramSDK>(
+        INSTAGRAM_SCRIPT_ID,
+        INSTAGRAM_SCRIPT_SRC,
+        {},
+        'Instagram embed load timeout',
+        (script, resolve, reject) => {
+          script.onload = () => {
+            pollForGlobal(() => window.instgrm, 50, INSTAGRAM_INIT_TIMEOUT_MS, 'Instagram embed init timeout')
+              .then(resolve, reject);
+          };
+          script.onerror = () => reject(new Error('Failed to load Instagram embed'));
+        },
+      );
 
   const tracked = promise.finally(() => {
     if (instagramSdkPromise === tracked) {

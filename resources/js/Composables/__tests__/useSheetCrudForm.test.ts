@@ -48,7 +48,7 @@ describe('useSheetCrudForm', () => {
     expect(isOpen.value).toBe(false);
   });
 
-  it('posts a new record, clears dirtiness before the visit, and closes on success', async () => {
+  it('posts a new record, then clears dirtiness and closes on success', async () => {
     const isOpen = ref(true);
     const onUpdateOpen = vi.fn((value: boolean) => {
       isOpen.value = value;
@@ -70,21 +70,43 @@ describe('useSheetCrudForm', () => {
     await nextTick();
     expect(form.isDirty).toBe(true);
 
-    let wasDirtyAtPost = true;
     const post = vi.spyOn(form, 'post').mockImplementation((_url, opts) => {
-      wasDirtyAtPost = form.isDirty;
       (opts?.onSuccess as (() => void) | undefined)?.();
     });
 
     submit();
+    await nextTick();
 
-    expect(wasDirtyAtPost).toBe(false);
+    expect(form.isDirty).toBe(false);
     expect(post).toHaveBeenCalledWith('/items', expect.objectContaining({
       preserveScroll: true,
       headers: { 'X-Sheet': 'true' },
     }));
     expect(onUpdateOpen).toHaveBeenCalledWith(false);
     expect(onSaved).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a rejected save dirty so cancel restores the original values', async () => {
+    const { form, submit, reset } = useSheetCrudForm<ItemForm, ItemRecord>({
+      open: () => true,
+      onUpdateOpen: vi.fn(),
+      onSaved: vi.fn(),
+      record: () => ({ id: 3, name: { lt: 'Pradinis', en: '' }, notes: null }),
+      blank: () => ({ name: { lt: '', en: '' }, notes: '' }),
+      fromRecord: raw => ({ id: raw.id, name: raw.name, notes: raw.notes ?? '' }),
+      storeUrl: () => '/items',
+      updateUrl: id => `/items/${id}`,
+    });
+
+    form.name.lt = 'Atmestas';
+    vi.spyOn(form, 'patch').mockImplementation(() => {});
+
+    submit();
+    await nextTick();
+
+    expect(form.isDirty).toBe(true);
+    reset();
+    expect(form.name.lt).toBe('Pradinis');
   });
 
   it('patches an existing record without mutating the reactive source', async () => {

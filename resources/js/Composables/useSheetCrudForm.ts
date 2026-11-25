@@ -72,13 +72,12 @@ export function useSheetCrudForm<
       ...options.visitOptions,
       preserveScroll: true,
       onSuccess: () => {
+        // Only a saved value becomes the reset point; a rejected save must stay dirty.
+        form.defaults();
         open.value = false;
         options.onSaved();
       },
     };
-
-    // Clear dirtiness synchronously before the visit so unsaved-changes guards let it proceed.
-    form.defaults();
 
     const id = options.record()?.id;
     if (id) {

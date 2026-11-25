@@ -54,6 +54,40 @@ describe('socialEmbedSdk', () => {
     window.fbAsyncInit?.();
 
     await expect(retry).resolves.toBe(sdk);
+    expect(sdk.init).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes a timed-out Facebook script so the retry makes a fresh request', async () => {
+    vi.useFakeTimers();
+    const timedOut = loadFacebookSdk();
+    const assertion = expect(timedOut).rejects.toThrow('Facebook SDK load timeout');
+    await vi.advanceTimersByTimeAsync(10000);
+    await assertion;
+
+    expect(document.getElementById('facebook-jssdk')).toBeNull();
+    loadFacebookSdk().catch(() => {});
+    expect(document.querySelectorAll('#facebook-jssdk')).toHaveLength(1);
+  });
+
+  it('removes an Instagram script that loads without exposing the SDK', async () => {
+    vi.useFakeTimers();
+    const failed = loadInstagramSdk();
+    const assertion = expect(failed).rejects.toThrow('Instagram embed init timeout');
+    (document.getElementById('instagram-embed-js') as HTMLScriptElement).onload?.(new Event('load'));
+    await vi.advanceTimersByTimeAsync(5000);
+    await assertion;
+
+    expect(document.getElementById('instagram-embed-js')).toBeNull();
+  });
+
+  it('bounds a stalled Instagram download', async () => {
+    vi.useFakeTimers();
+    const stalled = loadInstagramSdk();
+    const assertion = expect(stalled).rejects.toThrow('Instagram embed load timeout');
+    await vi.advanceTimersByTimeAsync(10000);
+    await assertion;
+
+    expect(document.getElementById('instagram-embed-js')).toBeNull();
   });
 
   it('loads the Instagram SDK single-flight across concurrent callers', async () => {

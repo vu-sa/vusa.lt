@@ -39,7 +39,7 @@
     <!-- Instagram embed -->
     <div
       v-else-if="platform === 'instagram'"
-      :key="`ig-${instagramEmbedUrl}-${showCaption}`"
+      :key="`ig-${instagramEmbedUrl}`"
       ref="igContainer"
       :class="['instagram-embed w-full max-w-lg', editable && 'pointer-events-none']"
     >

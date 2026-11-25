@@ -45,7 +45,7 @@ import { MultiCollectionSelectDialog } from '@/Components/Pickers';
 import type { AdminSearchCollectionId, NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { useApiMutation } from '@/Composables/useApi';
+import { apiRequest } from '@/Composables/useApi';
 
 export interface LinkTargetTopicOption {
   id: number;
@@ -75,23 +75,30 @@ const pickerOpen = ref(false);
 const lastPickedLabel = ref<string | null>(null);
 const topicSelectValue = ref<string | undefined>(undefined);
 
-const resolveUrlBody = ref<{ collection: string; id: string | number } | null>(null);
-const { execute: executeResolveUrl, data: resolveUrlData, isFetching: isResolvingUrl } = useApiMutation<
-  { url: string },
-  { collection: string; id: string | number } | null
->(
-  route('api.v1.admin.navigation.resolveUrl'),
-  'POST',
-  resolveUrlBody,
-  { showSuccessToast: false },
-);
+const isResolvingUrl = ref(false);
+let latestResolve = 0;
 
-async function resolveTarget(collection: string, id: string | number, label: string): Promise<void> {
-  resolveUrlBody.value = { collection, id };
-  await executeResolveUrl();
-  if (resolveUrlData.value?.url) {
+/** Only the newest successful lookup updates the URL, label and topic together. */
+async function resolveTarget(collection: string, id: string | number, label: string, topicValue?: string): Promise<void> {
+  const request = ++latestResolve;
+  isResolvingUrl.value = true;
+  try {
+    const result = await apiRequest<{ url: string }>(route('api.v1.admin.navigation.resolveUrl'), {
+      method: 'POST',
+      body: { collection, id },
+      showErrorToast: true,
+    });
+    if (request !== latestResolve || !result.ok || !result.data?.url) {
+      return;
+    }
     lastPickedLabel.value = label;
-    emit('select', resolveUrlData.value.url);
+    topicSelectValue.value = topicValue;
+    emit('select', result.data.url);
+  }
+  finally {
+    if (request === latestResolve) {
+      isResolvingUrl.value = false;
+    }
   }
 }
 
@@ -100,7 +107,6 @@ function onTargetConfirm(hits: NormalizedSearchHit[]): void {
   if (!hit) {
     return;
   }
-  topicSelectValue.value = undefined;
   void resolveTarget(hit.collection, hit.recordId, hit.title);
 }
 
@@ -110,10 +116,12 @@ const topicSelectOptions = computed(() =>
 
 function onTopicSelected(val: string | number | null | undefined): void {
   const value = val == null || val === '' ? undefined : String(val);
-  topicSelectValue.value = value;
   const topic = props.topicOptions.find(item => String(item.id) === value);
   if (topic) {
-    void resolveTarget('topics', topic.id, topic.name);
+    void resolveTarget('topics', topic.id, topic.name, value);
+  }
+  else {
+    topicSelectValue.value = undefined;
   }
 }
 </script>

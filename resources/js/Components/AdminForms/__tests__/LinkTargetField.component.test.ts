@@ -1,22 +1,15 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ref } from 'vue';
 
 import LinkTargetField from '@/Components/AdminForms/LinkTargetField.vue';
 
-const resolveUrlData = ref<{ url: string } | null>(null);
-const isFetching = ref(false);
-const executeResolveUrl = vi.fn(async (_body?: unknown) => {});
+interface ResolveResult { ok: boolean; data: { url: string } | null }
+
+let nextResult: ResolveResult = { ok: false, data: null };
+const executeResolveUrl = vi.fn(async (_body?: unknown): Promise<ResolveResult> => nextResult);
 
 vi.mock('@/Composables/useApi', () => ({
-  useApiMutation: vi.fn((_url, _method, bodyRef) => ({
-    execute: async () => {
-      await executeResolveUrl(bodyRef?.value);
-    },
-    isFetching,
-    data: resolveUrlData,
-    error: ref(null),
-  })),
+  apiRequest: vi.fn((_url: string, options: { body?: unknown }) => executeResolveUrl(options.body)),
 }));
 
 const stubs = {
@@ -49,13 +42,12 @@ function mountField(props: Record<string, unknown> = {}) {
 describe('LinkTargetField.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    resolveUrlData.value = null;
-    isFetching.value = false;
+    nextResult = { ok: false, data: null };
   });
 
   it('resolves a picked search hit, updates trigger text, and emits select', async () => {
     const wrapper = mountField();
-    resolveUrlData.value = { url: '/lt/stipendijos-ir-parama' };
+    nextResult = { ok: true, data: { url: '/lt/stipendijos-ir-parama' } };
 
     await wrapper.get('[data-testid="confirm-hit"]').trigger('click');
     await flushPromises();
@@ -68,7 +60,7 @@ describe('LinkTargetField.vue', () => {
 
   it('resolves a selected topic and emits select', async () => {
     const wrapper = mountField();
-    resolveUrlData.value = { url: '/lt/tema/renginiai' };
+    nextResult = { ok: true, data: { url: '/lt/tema/renginiai' } };
 
     const select = wrapper.get('select');
     await select.setValue('5');
@@ -94,11 +86,28 @@ describe('LinkTargetField.vue', () => {
     wrapper.unmount();
   });
 
-  it('forwards custom dialogTitle and displays the spinner while resolving', () => {
-    isFetching.value = true;
+  it('keeps the previous target when a later lookup fails', async () => {
+    const wrapper = mountField();
+    nextResult = { ok: true, data: { url: '/lt/tema/renginiai' } };
+    await wrapper.get('select').setValue('5');
+    await flushPromises();
+
+    nextResult = { ok: false, data: null };
+    await wrapper.get('[data-testid="confirm-hit"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.emitted('select')).toEqual([['/lt/tema/renginiai']]);
+    expect((wrapper.get('select').element as HTMLSelectElement).value).toBe('5');
+    expect(wrapper.text()).not.toContain('Stipendijos ir parama');
+    wrapper.unmount();
+  });
+
+  it('forwards custom dialogTitle and displays the spinner while resolving', async () => {
+    executeResolveUrl.mockImplementationOnce(() => new Promise(() => {}));
     const wrapper = mountField({ dialogTitle: 'Pasirink objektą' });
 
     expect(wrapper.get('[data-testid="picker-dialog"]').attributes('data-title')).toBe('Pasirink objektą');
+    await wrapper.get('[data-testid="confirm-hit"]').trigger('click');
     expect(wrapper.find('.animate-spin').exists()).toBe(true);
     wrapper.unmount();
   });

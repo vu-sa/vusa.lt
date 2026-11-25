@@ -40,6 +40,10 @@ vi.mock('@/Composables/useApi', () => ({
     data: resolveUrlData,
     error: ref(null),
   })),
+  apiRequest: vi.fn(async () => {
+    await executeResolveUrl();
+    return { ok: resolveUrlData.value !== null, data: resolveUrlData.value };
+  }),
 }));
 
 const formStubs = {
