@@ -67,4 +67,3 @@ export const TenantIcon = UserSearch;
 export const StudySetIcon = NotebookPen;
 export const TypeIcon = DocumentSettings20Regular;
 export const UserIcon = User;
-
