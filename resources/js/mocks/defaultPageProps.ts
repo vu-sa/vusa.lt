@@ -9,6 +9,7 @@ export function defaultPageProps(): PageProps {
     success: null,
     error: null,
     info: null,
+    warning: null,
     toast_duration: null,
     toast_description: null,
     access_change_warning: null,
