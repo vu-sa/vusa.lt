@@ -1,24 +1,13 @@
 <template>
   <div class="relative" data-slot="file-manager">
-    <!-- The picker lives inside a dialog, so its create-folder form is inline rather than a second dialog. -->
-    <form
-      v-if="props.selectionMode && showCreateFolder"
-      class="mb-3 flex flex-col gap-2 border border-border bg-secondary/30 p-3 sm:flex-row sm:items-end"
-      @submit.prevent="createDirectory"
-    >
-      <div class="grid flex-1 gap-1.5">
-        <Label for="folderNameInline">{{ $t('files.ui.new_folder_name') }}</Label>
-        <Input id="folderNameInline" v-model="newFolderName" :placeholder="$t('files.ui.name_placeholder')" />
-      </div>
-      <div class="flex gap-2">
-        <Button type="submit" :disabled="busy || !newFolderName.trim()">
-          {{ $t('files.ui.create') }}
-        </Button>
-        <Button type="button" variant="outline" voice="sentence" @click="closeCreateFolder">
-          {{ $t('files.ui.cancel') }}
-        </Button>
-      </div>
-    </form>
+    <CreateFolderDialog
+      v-model:open="showCreateFolder"
+      v-model:busy="busy"
+      :inline="props.selectionMode"
+      :path="props.path"
+      :folder-label="currentFolderLabel"
+      @created="afterMutation"
+    />
 
     <div
       :class="[
@@ -36,7 +25,7 @@
         :files-count="(props.files ?? []).length"
         :total-size
         :can-create-folder="abilities.createDirectory"
-        :actions-for="folderActionsFor"
+        :actions-for="folderActions"
         @update:active-view="setActiveView"
         @open-folder="openFolderPath"
         @folder-action="handleFolderAction"
@@ -110,8 +99,8 @@
           :accepts-drop="abilities.upload && (!props.selectionMode || props.allowUploadInSelection)"
           :folder-name="currentFolderLabel"
           :can-preview="(file) => previewKind(file.name) !== null"
-          :file-actions-for="props.selectionMode ? undefined : fileActionsFor"
-          :folder-actions-for="props.selectionMode ? undefined : folderActionsFor"
+          :file-actions-for="props.selectionMode ? undefined : fileActions"
+          :folder-actions-for="props.selectionMode ? undefined : folderActions"
           @file-click="handleFileClick"
           @file-dblclick="handleFileDoubleClick"
           @toggle-check="handleToggleCheck"
@@ -121,7 +110,7 @@
           @open-folder="(directory) => openFolderPath(directory.path)"
           @folder-action="handleFolderAction"
           @drop-files="handleFileUpload"
-          @load-more="visibleCount += PAGE_SIZE"
+          @load-more="visibleCount += FILE_PAGE_SIZE"
           @clear-filters="clearFilters"
         />
       </section>
@@ -180,33 +169,6 @@
       @copy-link="copyLink"
     />
 
-    <Dialog v-if="!props.selectionMode" :open="showCreateFolder" @update:open="(open) => !open && closeCreateFolder()">
-      <DialogContent class="rounded-none sm:max-w-md">
-        <form class="grid gap-4" @submit.prevent="createDirectory">
-          <DialogHeader>
-            <DialogTitle>{{ $t('files.ui.add_folder_title') }}</DialogTitle>
-            <DialogDescription>
-              {{ $t('files.ui.add_folder_in', { folder: currentFolderLabel }) }}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div class="grid gap-2">
-            <Label for="folderName">{{ $t('files.ui.new_folder_name') }}</Label>
-            <Input id="folderName" v-model="newFolderName" :placeholder="$t('files.ui.folder_name_placeholder')" autocomplete="off" />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" voice="sentence" @click="closeCreateFolder">
-              {{ $t('files.ui.cancel') }}
-            </Button>
-            <Button type="submit" variant="brand" :disabled="busy || !newFolderName.trim()">
-              {{ $t('files.ui.create') }}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-
     <ConfirmDialog
       :open="pendingDelete?.kind === 'folder'"
       :title="$t('files.ui.confirm_delete_folder_title')"
@@ -245,42 +207,20 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useClipboard, useStorage } from '@vueuse/core';
-import { useFuse } from '@vueuse/integrations/useFuse';
 import { trans as $t } from 'laravel-vue-i18n';
-import {
-  ArrowLeft,
-  Download,
-  ExternalLink,
-  Eye,
-  FolderInput,
-  Info,
-  Link2,
-  PencilLine,
-  Star,
-  StarOff,
-  Trash2,
-} from '@lucide/vue';
+import { ArrowLeft, Download, FolderInput, Star, Trash2 } from '@lucide/vue';
 
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import FileUploadArea from '@/Components/FileUpload/FileUploadArea.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import TopProgressBar from '@/Components/Patterns/TopProgressBar.vue';
 import { Button } from '@/Components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/Components/ui/dialog';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import { SessionExpiredError } from '@/Composables/apiRequest';
 import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
 import { useToasts } from '@/Composables/useToasts';
-import { getFileExtension, getFileKind } from '@/Utils/fileIcons';
+import { getFileExtension } from '@/Utils/fileIcons';
 
+import CreateFolderDialog from './Components/CreateFolderDialog.vue';
 import DeleteFilesDialog from './Components/DeleteFilesDialog.vue';
 import FileGrid from './Components/FileGrid.vue';
 import FileManagerHeader from './Components/FileManagerHeader.vue';
@@ -289,23 +229,12 @@ import FilePreviewModal from './Components/FilePreviewModal.vue';
 import FilePropertiesDrawer from './Components/FilePropertiesDrawer.vue';
 import MoveDialog from './Components/MoveDialog.vue';
 import RenameDialog from './Components/RenameDialog.vue';
-import type {
-  ActiveView,
-  DirectoryEntry,
-  FileEntry,
-  FileManagerAbilities,
-  FileManagerViewState,
-  FileViewMode,
-  ItemAction,
-  SortDir,
-  SortKey,
-  TypeFilter,
-} from './types';
+import { downloadPaths, fileActionsFor, folderActionsFor, type FolderLike } from './fileActions';
+import type { ActiveView, DirectoryEntry, FileEntry, FileManagerAbilities, FileManagerViewState, FileViewMode } from './types';
 import { useFileChecks } from './useFileChecks';
 import { useStarredFiles } from './useStarredFiles';
-import { matchesTypeFilter, previewKind, publicUrl, relativeToRoot, TYPE_FILTER_KINDS } from './utils';
-
-type FolderLike = Pick<DirectoryEntry, 'path' | 'name' | 'items'>;
+import { FILE_PAGE_SIZE, useFileView } from './useFileView';
+import { previewKind, publicUrl, relativeToRoot } from './utils';
 
 interface PendingDelete { kind: 'file' | 'files' | 'folder'; paths: string[] }
 
@@ -346,23 +275,42 @@ const emit = defineEmits<{
   stateChange: [state: FileManagerViewState];
 }>();
 
-const PAGE_SIZE = 50;
-
 const toasts = useToasts();
 const { copy } = useClipboard({ legacy: true });
 
 const headerRef = ref<InstanceType<typeof FileManagerHeader> | null>(null);
 const uploadAreaRef = ref<InstanceType<typeof FileUploadArea> | null>(null);
 
-const [initialSortKey, initialSortDir] = (props.initialState.sort ?? 'name:asc').split(':') as [SortKey, SortDir];
+const starred = useStarredFiles();
+const starredEntries = starred.entries;
+const starredSet = starred.paths;
 
-const search = ref(props.initialState.q ?? '');
-const searchEverywhere = ref(false);
-const typeFilter = ref<TypeFilter>(props.initialState.type ?? 'all');
-const sortKey = ref<SortKey>(initialSortKey);
-const sortDir = ref<SortDir>(initialSortDir);
-const activeView = ref<ActiveView>('browse');
-const visibleCount = ref(PAGE_SIZE);
+const {
+  search,
+  searchEverywhere,
+  typeFilter,
+  sortKey,
+  sortDir,
+  activeView,
+  visibleCount,
+  isRecursiveSearch,
+  shownDirectories,
+  displayedDirectories,
+  baseFiles,
+  typeCounts,
+  displayedFiles,
+  visibleFiles,
+  isFiltered,
+  setSort,
+  clearFilters,
+} = useFileView({
+  files: () => props.files ?? [],
+  directories: () => props.directories ?? [],
+  searchResults: () => props.searchResults,
+  starredEntries,
+  initialState: props.initialState,
+});
+
 const storedView = useStorage<FileViewMode>('fileManager-view', 'cards');
 const view = ref<FileViewMode>(props.initialState.view ?? storedView.value);
 
@@ -372,65 +320,12 @@ const previewPath = ref<string | null>(null);
 const isUploadMode = ref(false);
 const busy = ref(false);
 const showCreateFolder = ref(false);
-const newFolderName = ref('');
 const pendingDelete = ref<PendingDelete | null>(null);
 const renameTarget = ref<{ path: string; name: string; isFolder: boolean } | null>(null);
 const moveTarget = ref<string[] | null>(null);
 
-const starred = useStarredFiles();
-const starredEntries = starred.entries;
-const starredSet = starred.paths;
-
 const hasSidebar = computed(() => !props.small && !props.selectionMode);
 const abilities = computed(() => props.abilities);
-
-const fuseOptions = { fuseOptions: { keys: ['name'], threshold: 0.4 }, matchAllWhenSearchEmpty: true };
-const { results: fileSearchResults } = useFuse(search, () => props.files ?? [], fuseOptions);
-const { results: directorySearchResults } = useFuse(search, () => props.directories ?? [], fuseOptions);
-
-const isRecursiveSearch = computed(() => searchEverywhere.value && search.value.trim().length >= 2);
-
-const shownDirectories = computed<DirectoryEntry[]>(() => {
-  if (isRecursiveSearch.value || activeView.value !== 'browse') return [];
-  return search.value === '' ? (props.directories ?? []) : directorySearchResults.value.map(result => result.item);
-});
-
-const displayedDirectories = computed(() => (typeFilter.value === 'all' || typeFilter.value === 'folder' ? shownDirectories.value : []));
-
-/** Files before the type filter, which the filter menu counts. */
-const baseFiles = computed<FileEntry[]>(() => {
-  if (activeView.value === 'starred') {
-    const needle = search.value.trim().toLowerCase();
-    return starredEntries.value.filter(entry => !needle || entry.name.toLowerCase().includes(needle));
-  }
-  if (isRecursiveSearch.value) return props.searchResults ?? [];
-  return search.value === '' ? (props.files ?? []) : fileSearchResults.value.map(result => result.item);
-});
-
-const typeCounts = computed(() => {
-  const counts: Partial<Record<TypeFilter, number>> = {};
-  for (const file of baseFiles.value) {
-    const kind = getFileKind(file.name) as TypeFilter;
-    counts[kind] = (counts[kind] ?? 0) + 1;
-  }
-  return counts;
-});
-
-const displayedFiles = computed<FileEntry[]>(() => {
-  if (typeFilter.value === 'folder') return [];
-
-  const list = baseFiles.value.filter(file => matchesTypeFilter(file, typeFilter.value));
-  const key = activeView.value === 'recent' ? 'modified' : sortKey.value;
-  const dir = activeView.value === 'recent' ? -1 : sortDir.value === 'asc' ? 1 : -1;
-
-  return [...list].sort((a, b) => {
-    if (key === 'name') return a.name.localeCompare(b.name, 'lt', { numeric: true }) * dir;
-    if (key === 'size') return ((a.size || 0) - (b.size || 0)) * dir;
-    return ((a.modified || 0) - (b.modified || 0)) * dir;
-  });
-});
-
-const visibleFiles = computed(() => displayedFiles.value.slice(0, visibleCount.value));
 
 const previewableFiles = computed(() => displayedFiles.value.filter(file => previewKind(file.name) !== null));
 
@@ -442,8 +337,6 @@ const selectedEntry = computed<FileEntry | null>(() => {
 });
 
 const totalSize = computed(() => (props.files ?? []).reduce((sum, file) => sum + (file.size || 0), 0));
-
-const isFiltered = computed(() => search.value.trim() !== '' || typeFilter.value !== 'all');
 
 const checks = useFileChecks(displayedFiles);
 const { checked, allChecked } = checks;
@@ -471,10 +364,6 @@ watch(view, (next) => {
   storedView.value = next;
 });
 
-watch([search, searchEverywhere, typeFilter, sortKey, sortDir, activeView], () => {
-  visibleCount.value = PAGE_SIZE;
-});
-
 watch([search, searchEverywhere], ([query, recursive]) => {
   emit('search', query.trim(), recursive);
 });
@@ -482,7 +371,7 @@ watch([search, searchEverywhere], ([query, recursive]) => {
 watch(() => props.path, () => {
   selectedFile.value = null;
   clearChecked();
-  visibleCount.value = PAGE_SIZE;
+  visibleCount.value = FILE_PAGE_SIZE;
   isUploadMode.value = false;
 });
 
@@ -517,16 +406,6 @@ function setActiveView(next: ActiveView) {
   clearChecked();
 }
 
-function setSort(key: SortKey, dir: SortDir) {
-  sortKey.value = key;
-  sortDir.value = dir;
-}
-
-function clearFilters() {
-  search.value = '';
-  typeFilter.value = 'all';
-}
-
 function openFolderPath(path: string) {
   activeView.value = 'browse';
   search.value = '';
@@ -535,33 +414,11 @@ function openFolderPath(path: string) {
   }
 }
 
-function closeCreateFolder() {
-  showCreateFolder.value = false;
-  newFolderName.value = '';
-}
-
 /** Inertia mutations redirect back, which already refreshes the page's listing; the picker fetches its own. */
 function afterMutation() {
   if (props.selectionMode) {
     emit('update', props.path);
   }
-}
-
-function createDirectory() {
-  if (busy.value || !newFolderName.value.trim()) return;
-
-  busy.value = true;
-  router.post(route('files.createDirectory'), { path: props.path, name: newFolderName.value.trim() }, {
-    preserveScroll: true,
-    preserveState: true,
-    onSuccess: () => {
-      closeCreateFolder();
-      afterMutation();
-    },
-    onFinish: () => {
-      busy.value = false;
-    },
-  });
 }
 
 /* --- Selection --------------------------------------------------------- */
@@ -622,32 +479,8 @@ function clearChecked() {
 
 /* --- Actions ------------------------------------------------------------ */
 
-function fileActionsFor(file: FileEntry): ItemAction[] {
-  const isStarred = starredSet.value.has(file.path);
-  const actions: ItemAction[] = [];
-
-  if (previewKind(file.name) !== null) {
-    actions.push({ key: 'preview', label: $t('files.ui.preview'), icon: Eye });
-  }
-  actions.push(
-    { key: 'details', label: $t('files.ui.details'), icon: Info },
-    { key: 'copyLink', label: $t('files.ui.copy_link'), icon: Link2 },
-    { key: 'open', label: $t('files.ui.open_original'), icon: ExternalLink },
-    { key: 'download', label: $t('files.ui.download'), icon: Download },
-    { key: 'star', label: isStarred ? $t('files.ui.unstar') : $t('files.ui.star'), icon: isStarred ? StarOff : Star },
-  );
-  if (abilities.value.update) {
-    actions.push(
-      { key: 'rename', label: $t('files.ui.rename'), icon: PencilLine },
-      { key: 'move', label: $t('files.ui.move'), icon: FolderInput },
-    );
-  }
-  if (abilities.value.delete) {
-    actions.push({ key: 'delete', label: $t('files.ui.delete'), icon: Trash2, destructive: true });
-  }
-
-  return actions;
-}
+const fileActions = (file: FileEntry) => fileActionsFor(file, starredSet.value.has(file.path), abilities.value);
+const folderActions = (directory: FolderLike) => folderActionsFor(directory, abilities.value);
 
 function handleFileAction(key: string, file: FileEntry) {
   switch (key) {
@@ -681,25 +514,6 @@ function handleFileAction(key: string, file: FileEntry) {
   }
 }
 
-function folderActionsFor(directory: FolderLike): { actions: ItemAction[]; note?: string } {
-  const actions: ItemAction[] = [];
-  let note: string | undefined;
-
-  if (abilities.value.update) {
-    actions.push({ key: 'rename', label: $t('files.ui.rename'), icon: PencilLine });
-  }
-  if (abilities.value.deleteDirectory) {
-    if ((directory.items ?? 0) === 0) {
-      actions.push({ key: 'delete', label: $t('files.ui.delete_folder'), icon: Trash2, destructive: true });
-    }
-    else {
-      note = $t('files.ui.delete_folder_not_empty', { count: String(directory.items) });
-    }
-  }
-
-  return { actions, note };
-}
-
 function handleFolderAction(key: string, directory: FolderLike) {
   if (key === 'rename') {
     renameTarget.value = { path: directory.path, name: directory.name, isFolder: true };
@@ -721,20 +535,6 @@ function starChecked() {
 function copyLink(file: FileEntry) {
   void copy(`${window.location.origin}${publicUrl(file.path)}`).then(() => {
     toasts.success($t('files.ui.link_copied'));
-  });
-}
-
-/** Browsers drop all but the first of several downloads started in one tick. */
-function downloadPaths(paths: string[]) {
-  paths.forEach((path, index) => {
-    window.setTimeout(() => {
-      const anchor = document.createElement('a');
-      anchor.href = publicUrl(path);
-      anchor.download = path.split('/').pop() ?? '';
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-    }, index * 300);
   });
 }
 
@@ -877,8 +677,4 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
 });
 
-// Kinds the type menu offers; kept here so a stale `?type=` from an old link falls back to all.
-if (typeFilter.value !== 'all' && typeFilter.value !== 'folder' && !(TYPE_FILTER_KINDS as readonly string[]).includes(typeFilter.value)) {
-  typeFilter.value = 'all';
-}
 </script>
