@@ -6,13 +6,15 @@ import { toast } from 'vue-sonner';
  * Unified toast notification composable
  * Handles flash messages, validation errors, and prevents duplicate toasts
  */
+type ToastType = 'success' | 'info' | 'warning' | 'error';
+
 export function useToasts() {
   const recentToasts = new Set<string>();
 
   /**
    * Show toast with deduplication and optional custom duration/description
    */
-  const showToast = (type: 'success' | 'info' | 'error', message: string, options?: { duration?: number; description?: string }) => {
+  const showToast = (type: ToastType, message: string, options?: { duration?: number; description?: string }) => {
     // Prevent duplicate toasts within 1 second
     const key = `${type}:${message}`;
     if (recentToasts.has(key)) return;
@@ -45,7 +47,7 @@ export function useToasts() {
    */
   const watchFlashMessages = () => {
     watch(() => usePage().props.flash, (flash, oldFlash) => {
-      const types = ['success', 'info', 'error'] as const;
+      const types = ['success', 'info', 'warning', 'error'] as const;
 
       types.forEach((type) => {
         if (flash[type] && flash[type] !== oldFlash?.[type]) {
@@ -104,5 +106,6 @@ export function useToasts() {
     success: (message: string, options?: { duration?: number; description?: string }) => showToast('success', message, options),
     error: (message: string, options?: { duration?: number; description?: string }) => showToast('error', message, options),
     info: (message: string, options?: { duration?: number; description?: string }) => showToast('info', message, options),
+    warning: (message: string, options?: { duration?: number; description?: string }) => showToast('warning', message, options),
   };
 }

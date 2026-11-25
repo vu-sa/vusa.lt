@@ -70,6 +70,16 @@ test('admin pages share the data the admin shell needs', function (): void {
         );
 });
 
+test('a warning flashed by a controller reaches the page', function (): void {
+    asUser($this->user)
+        ->withSession(['warning' => 'Kai kurie failai praleisti.'])
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('flash.warning', 'Kai kurie failai praleisti.')
+        );
+});
+
 test('admin pages share the tenants of current and upcoming terms', function (): void {
     $currentDuty = $this->user->duties()->sole();
     $current = $currentDuty->institution->tenant;

@@ -63,7 +63,11 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     data: any;
     info: string | null;
     success: string | null;
+    warning: string | null;
     error: string | null;
+    toast_duration?: number | null;
+    toast_description?: string | null;
+    access_change_warning?: string | null;
   };
   // The generated `App.Entities.Navigation` model type lacks `links`/`cols` — this
   // prop's actual shape comes from `NavigationService::getNavigationForPublic()`, not

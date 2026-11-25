@@ -547,12 +547,6 @@ function afterMutation() {
   }
 }
 
-function flashWarning(page: { props: { flash?: { warning?: string | null } } }) {
-  if (page.props.flash?.warning) {
-    toasts.info(page.props.flash.warning);
-  }
-}
-
 function createDirectory() {
   if (busy.value || !newFolderName.value.trim()) return;
 
@@ -783,8 +777,7 @@ function confirmDelete() {
   const options = {
     preserveScroll: true,
     preserveState: true,
-    onSuccess: (page: { props: { flash?: { warning?: string | null } } }) => {
-      flashWarning(page);
+    onSuccess: () => {
       if (selectedFile.value && removed.has(selectedFile.value)) {
         selectedFile.value = null;
       }
