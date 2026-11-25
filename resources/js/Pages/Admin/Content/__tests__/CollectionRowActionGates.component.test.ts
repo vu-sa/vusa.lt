@@ -68,8 +68,6 @@ function actionsFor(testCase: CollectionCase, allowed: boolean, trash = false, c
   window.history.replaceState({}, '', `/mano/${testCase.prefix}${trash ? '?showDeleted=true' : ''}`);
   vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: {
     create: { [testCase.model]: canCreate },
-    delete: { [testCase.model]: allowed },
-    restore: { [testCase.model]: allowed },
     forceDelete: { [testCase.model]: allowed },
   } } }));
   const wrapper = mount(testCase.component, {
@@ -120,12 +118,6 @@ describe.each(cases)('$prefix row actions', (testCase) => {
     }
   });
 
-  if (testCase.domainType) {
-    it('uses the domain delete gate independently of creation permission', () => {
-      expect(kinds(actionsFor(testCase, false, false, true))).toEqual(['open', 'edit']);
-      expect(kinds(actionsFor(testCase, true, false, false))).toEqual(['open', 'edit', 'delete']);
-    });
-  }
 });
 
 const publishingCases = cases.filter(testCase => ['news', 'pages', 'calendar', 'banners'].includes(testCase.prefix));

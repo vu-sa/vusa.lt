@@ -125,8 +125,8 @@ const actions = useCollectionRecordActions({
   source,
   routePrefix: resource,
   openHref: id => route(`${resource}.show`, id),
-  canDelete: () => Boolean(page.props.auth?.can?.delete?.[props.typeKind]),
-  canRestore: () => Boolean(page.props.auth?.can?.restore?.[props.typeKind]),
+  canDelete: () => canCreate.value,
+  canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,
 });
 const actionsFor = (type: TypeRow) => actions.rowActions(type, titleOf(type), isTrash);
