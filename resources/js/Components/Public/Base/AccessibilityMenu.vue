@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type HTMLAttributes } from 'vue';
+import { computed, defineAsyncComponent, type HTMLAttributes } from 'vue';
 import { useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -31,9 +31,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 import { cn } from '@/Utils/Shadcn/utils';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
-import AccessibilitySettings from '../../Shared/AccessibilitySettings.vue';
-
 import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
+
+const AccessibilitySettings = defineAsyncComponent(() => import('../../Shared/AccessibilitySettings.vue'));
 
 const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class'];
