@@ -350,7 +350,6 @@ import DutyAssignableTenantsSection from './Duty/DutyAssignableTenantsSection.vu
 import DutyFormerNamesField from './Duty/DutyFormerNamesField.vue';
 import { visibleAssignableTenantRows, type AssignableTenantRow, type FormerNameRow } from './Duty/dutyFormRows';
 
-
 interface DutyPropType {
   id?: string;
   name?: { lt?: string; en?: string } | string;
