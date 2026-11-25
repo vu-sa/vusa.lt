@@ -12,12 +12,13 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import type { PageProps } from '@/Types/index';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 
 const modelValue = defineModel<string | undefined>();
 
-const page = usePage();
-const types = computed(() => (page.props.institutionTypes as Array<{ id: number; title: string; slug: string | null; parent_id?: number | null }> | undefined) ?? []);
+const page = usePage<PageProps>();
+const types = computed(() => page.props.institutionTypes ?? []);
 
 // The block stores the slug; the picker works on ids.
 const typeId = computed({

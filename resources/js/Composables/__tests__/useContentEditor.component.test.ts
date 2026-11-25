@@ -4,11 +4,24 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { router, type InertiaForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 
+import type { ApiRequestOptions, ApiResult } from '../apiRequest';
 import { useContentEditor, blankTranslation, cloneTranslation, type ContentEditorData, type ContentKind } from '../useContentEditor';
 
-const http = vi.hoisted(() => ({ get: vi.fn(), put: vi.fn(), delete: vi.fn(), request: vi.fn(), isError: vi.fn(() => false) }));
+const requests = vi.hoisted(() => ({
+  get: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
+  save: vi.fn(),
+}));
 const storage = vi.hoisted(() => vi.fn());
-vi.mock('../contentEditorHttp', () => ({ contentEditorHttp: http }));
+vi.mock('../apiRequest', () => ({
+  apiRequest: (url: string, options?: ApiRequestOptions) => {
+    if (options?.method === 'PUT') return requests.put(url, options);
+    if (options?.method === 'DELETE') return requests.delete(url, options);
+    if (options?.method === 'PATCH' || options?.method === 'POST') return requests.save(url, options);
+    return requests.get(url, options);
+  },
+}));
 vi.mock('../contentEditorStorage', () => ({ recoveryStorage: storage }));
 vi.mock('vue-sonner', () => ({ toast: { success: vi.fn() } }));
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -34,14 +47,21 @@ function session(data: ContentEditorData = { id: 1, title: 'Original', content_v
   };
 }
 
+function success<T>(data: T, meta: Record<string, unknown> | null = null): ApiResult<T> {
+  return { ok: true, status: 200, headers: null, data, body: { success: true, ...(data === null ? {} : { data }), ...(meta && { meta }) }, message: null, errors: null, meta };
+}
+
+function failure(status: number, message: string, errors: Record<string, string[]> | null = null): ApiResult<never> {
+  return { ok: false, status, headers: null, data: null, body: status ? { message, errors } : null, message, errors, meta: null };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
-  http.get.mockResolvedValue({ data: { data: null } });
-  http.put.mockResolvedValue({ data: { data: { revision: 1 } } });
-  http.delete.mockResolvedValue({ data: { data: null } });
+  requests.get.mockResolvedValue(success(null));
+  requests.put.mockResolvedValue(success({ revision: 1 }));
+  requests.delete.mockResolvedValue(success(null));
   storage.mockResolvedValue(undefined);
-  http.isError.mockReturnValue(false);
 });
 afterEach(() => {
   wrappers.splice(0).forEach(wrapper => wrapper.unmount());
@@ -53,7 +73,7 @@ describe('content recovery and saves', () => {
     const active = session(undefined, kind);
     await flushPromises();
     active.form.title = 'Saved';
-    http.request.mockResolvedValue({ data: { data: { ...active.form.data(), content_version: 'new' } } });
+    requests.save.mockResolvedValue(success({ ...active.form.data(), content_version: 'new' }));
 
     await active.editor.save();
 
@@ -73,7 +93,7 @@ describe('content recovery and saves', () => {
 
       await vi.advanceTimersByTimeAsync(2000);
 
-      expect(http.put).toHaveBeenCalled();
+      expect(requests.put).toHaveBeenCalled();
       expect(toast.success).not.toHaveBeenCalled();
     }
     finally {
@@ -85,8 +105,8 @@ describe('content recovery and saves', () => {
     const active = session();
     await flushPromises();
     active.form.title = 'Saved';
-    http.request.mockResolvedValue({ data: { data: { ...active.form.data(), content_version: 'new' } } });
-    http.delete.mockRejectedValue(new Error('Offline'));
+    requests.save.mockResolvedValue(success({ ...active.form.data(), content_version: 'new' }));
+    requests.delete.mockResolvedValue(failure(0, 'Offline'));
 
     await active.editor.save();
 
@@ -99,8 +119,7 @@ describe('content recovery and saves', () => {
     const active = session();
     await flushPromises();
     active.form.title = 'Unsaved';
-    http.isError.mockReturnValue(true);
-    http.request.mockRejectedValue({ response: { status, data: { message: 'Save rejected', errors: { title: ['Invalid title'] } } } });
+    requests.save.mockResolvedValue(failure(status, 'Save rejected', { title: ['Invalid title'] }));
 
     await active.editor.save();
 
@@ -118,19 +137,19 @@ describe('content recovery and saves', () => {
     const canonical = { ...original, id: 20, url: '/owned.jpg', thumb: '/owned.jpg' };
     const active = session({ id: 1, title: 'Original', content_version: 'old', [field]: original, content: { parts: [] } });
     await flushPromises();
-    http.request.mockResolvedValue({ data: { data: { ...active.form.data(), content_version: 'new', [field]: canonical } } });
+    requests.save.mockResolvedValue(success({ ...active.form.data(), content_version: 'new', [field]: canonical }));
     await active.editor.save();
     expect(active.form[field]).toEqual(canonical);
     expect(active.form.defaults).toHaveBeenCalledWith(expect.objectContaining({ [field]: canonical }));
     await active.editor.save();
-    expect(http.request).toHaveBeenLastCalledWith(expect.objectContaining({ data: expect.objectContaining({ [field]: canonical }) }));
+    expect(requests.save).toHaveBeenLastCalledWith(expect.any(String), expect.objectContaining({ body: expect.objectContaining({ [field]: canonical }) }));
   });
 
   it.each(['metadata', 'replacement', 'removal'])('preserves concurrent image %s while reconciling saved references', async (change) => {
     const original = { id: 10, url: '/source.jpg', thumb: '/source.jpg', srcset: null, width: null, height: null, focal_point: null, alt: null, author: null };
     const canonical = { ...original, id: 20, url: '/owned.jpg', thumb: '/owned.jpg' };
     let finish!: (value: unknown) => void;
-    http.request.mockImplementation(() => new Promise((resolve) => {
+    requests.save.mockImplementation(() => new Promise((resolve) => {
       finish = resolve;
     }));
     const active = session({ id: 1, title: 'Original', content_version: 'old', image_media: original, content: { parts: [] } });
@@ -141,11 +160,11 @@ describe('content recovery and saves', () => {
       ? { ...original, alt: 'New alt', focal_point: '20% 30%', author: 'New author' }
       : change === 'replacement' ? { ...original, id: 30, url: '/replacement.jpg' } : null;
     active.form.image_media = edited;
-    finish({ data: { data: { id: 1, title: 'Original', content_version: 'new', image_media: canonical, content: { parts: [] } } } });
+    finish(success({ id: 1, title: 'Original', content_version: 'new', image_media: canonical, content: { parts: [] } }));
     await saving;
     expect(active.form.image_media).toEqual(change === 'metadata' ? { ...canonical, alt: 'New alt', focal_point: '20% 30%', author: 'New author' } : edited);
     expect(active.form.defaults).toHaveBeenCalledWith(expect.objectContaining({ image_media: canonical }));
-    expect(http.delete).not.toHaveBeenCalled();
+    expect(requests.delete).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -154,7 +173,7 @@ describe('content recovery and saves', () => {
   ])('opens the %s after creating a page', async (_label, meta, destination) => {
     const active = session({ title: 'New page', content: { parts: [] } }, 'pages', false);
     await flushPromises();
-    http.request.mockResolvedValue({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta } });
+    requests.save.mockResolvedValue(success({ id: 7, title: 'New page', content: { parts: [] } }, meta));
 
     await active.editor.save();
 
@@ -165,7 +184,7 @@ describe('content recovery and saves', () => {
   it('keeps an explicit in-place creation save in its current context', async () => {
     const active = session({ title: 'New page', content: { parts: [] } });
     await flushPromises();
-    http.request.mockResolvedValue({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta: { redirect_url: '/mano/pages' } } });
+    requests.save.mockResolvedValue(success({ id: 7, title: 'New page', content: { parts: [] } }, { redirect_url: '/mano/pages' }));
 
     await active.editor.save();
 
@@ -176,13 +195,13 @@ describe('content recovery and saves', () => {
     let finish!: (value: unknown) => void;
     const active = session({ title: 'New page', content: { parts: [] } }, 'pages', false);
     await flushPromises();
-    http.request.mockImplementation(() => new Promise((resolve) => {
+    requests.save.mockImplementation(() => new Promise((resolve) => {
       finish = resolve;
     }));
     const saving = active.editor.save();
     await flushPromises();
     active.form.title = 'Newer edits';
-    finish({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta: { redirect_url: '/mano/pages' } } });
+    finish(success({ id: 7, title: 'New page', content: { parts: [] } }, { redirect_url: '/mano/pages' }));
 
     await saving;
 
@@ -197,34 +216,34 @@ describe('content recovery and saves', () => {
     const active = session({ title: '', content: { parts: [] } });
     await flushPromises();
     expect(active.editor.ready.value).toBe(true);
-    expect(http.get).toHaveBeenCalled();
+    expect(requests.get).toHaveBeenCalled();
   });
 
   it('keeps edits and reports failure when the current record cannot be loaded', async () => {
     const active = session();
     await flushPromises();
     active.form.title = 'Still editing';
-    http.get.mockRejectedValue(new Error('Offline'));
+    requests.get.mockResolvedValue(failure(0, 'Offline'));
     await active.editor.loadCurrent();
     expect(active.form.title).toBe('Still editing');
     expect(active.form.content_version).toBe('old');
-    expect(active.editor.saveError.value).toBe('Error: Offline');
+    expect(active.editor.saveError.value).toBe('TypeError: Offline');
   });
 
   it('offers distinct device and server copies without overwriting them', async () => {
     storage.mockResolvedValue({ snapshot: { title: 'Device' }, updated_at: new Date().toISOString() });
-    http.get.mockResolvedValue({ data: { data: { snapshot: { title: 'Server' }, updated_at: new Date().toISOString(), revision: 4 } } });
+    requests.get.mockResolvedValue(success({ snapshot: { title: 'Server' }, updated_at: new Date().toISOString(), revision: 4 }));
     const active = session();
     await flushPromises();
     expect(active.editor.copies.value.map(copy => copy.source)).toEqual(['local', 'server']);
     expect(active.form.title).toBe('Original');
     expect(active.editor.ready.value).toBe(false);
-    expect(http.put).not.toHaveBeenCalled();
+    expect(requests.put).not.toHaveBeenCalled();
   });
 
   it('preserves typing during a save and retains recovery for those newer changes', async () => {
     let finish!: (value: unknown) => void;
-    http.request.mockImplementation(() => new Promise((resolve) => {
+    requests.save.mockImplementation(() => new Promise((resolve) => {
       finish = resolve;
     }));
     const active = session();
@@ -233,24 +252,24 @@ describe('content recovery and saves', () => {
     const saving = active.editor.save();
     await flushPromises();
     active.form.title = 'Newer';
-    finish({ data: { data: { id: 1, title: 'Sent', content_version: 'new', content: { parts: [] } } } });
+    finish(success({ id: 1, title: 'Sent', content_version: 'new', content: { parts: [] } }));
     await saving;
     expect(active.form.title).toBe('Newer');
     expect(toast.success).toHaveBeenCalledExactlyOnceWith('Išsaugota');
     expect(active.form.defaults).toHaveBeenCalledWith(expect.objectContaining({ title: 'Sent' }));
-    expect(http.delete).not.toHaveBeenCalled();
+    expect(requests.delete).not.toHaveBeenCalled();
     expect(storage).toHaveBeenCalledWith(expect.any(String), 'put', expect.objectContaining({ snapshot: expect.objectContaining({ title: 'Newer' }) }));
   });
 
   it('keeps failed edits and does not change their saved baseline', async () => {
-    http.request.mockRejectedValue(new Error('Offline'));
+    requests.save.mockResolvedValue(failure(0, 'Offline'));
     const active = session();
     await flushPromises();
     active.form.title = 'Unfinished';
     await active.editor.save();
     expect(active.form.defaults).not.toHaveBeenCalled();
     expect(active.form.title).toBe('Unfinished');
-    expect(http.delete).not.toHaveBeenCalled();
+    expect(requests.delete).not.toHaveBeenCalled();
     expect(active.editor.saveError.value).toContain('Offline');
     expect(toast.success).not.toHaveBeenCalled();
   });
@@ -259,7 +278,7 @@ describe('content recovery and saves', () => {
     const active = session({ id: 1, title: 'Original', content_version: 'old', content: { parts: [{ key: 'new-block', type: 'tiptap', json_content: {} }] } });
     await flushPromises();
     active.form.title = 'Saved';
-    http.request.mockResolvedValue({ data: { data: { id: 1, title: 'Saved', content_version: 'new', content: { parts: [{ id: 42, key: 'new-block' }] } } } });
+    requests.save.mockResolvedValue(success({ id: 1, title: 'Saved', content_version: 'new', content: { parts: [{ id: 42, key: 'new-block' }] } }));
     await active.editor.save();
     expect(active.form.content?.parts[0]?.id).toBe(42);
   });
@@ -289,9 +308,9 @@ describe('content recovery and saves', () => {
     const active = session({ id: undefined, title: '', content_version: undefined, content: { parts: [] } });
     await flushPromises();
     await active.editor.restore(0);
-    http.request.mockResolvedValue({ data: { data: { id: 7, title: 'Recovered', content_version: 'next', content: { parts: [] } } } });
+    requests.save.mockResolvedValue(success({ id: 7, title: 'Recovered', content_version: 'next', content: { parts: [] } }));
     await active.editor.save();
-    expect(http.request).toHaveBeenCalledWith(expect.objectContaining({ method: 'patch' }));
+    expect(requests.save).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ method: 'PATCH' }));
     expect(active.editor.currentId.value).toBe(7);
   });
 

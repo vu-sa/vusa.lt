@@ -1,78 +1,4 @@
-import type { Page } from '@inertiajs/core';
-
-/**
- * Default mock page props matching the global inertia.mock.ts shape.
- */
-const defaultPageProps = {
-  app: {
-    locale: 'lt',
-    subdomain: 'www',
-    name: 'VU SA',
-    url: 'http://www.vusa.test',
-    path: '',
-  },
-  organization: {
-    contacts: { it: 'it@vusa.lt', accounting: 'saskaitos@vusa.lt', phone: '+37052687144' },
-    social: {
-      facebook: 'https://www.facebook.com/vieningai.vu.sa',
-      instagram: 'https://www.instagram.com/vu.studentu.atstovybe',
-      linkedin: 'https://www.linkedin.com/company/vusa-lt',
-    },
-    legal: {
-      company_code: '193077294',
-      vat_code: 'LT100015645710',
-      address: { street: 'Universiteto g. 3, Observatorijos kiemelis', city: '01513, Vilnius, Lietuva' },
-    },
-  },
-  auth: {
-    user: {
-      id: 1,
-      name: 'Test User',
-      email: 'test@vusa.lt',
-      current_duties: [
-        {
-          institution: {
-            id: 'vusa',
-            name: 'VU SA',
-            shortname: 'VU SA',
-          },
-          role: 'admin',
-        },
-      ],
-    },
-    can: {
-      index: {},
-      create: { meeting: true, document: true },
-      forceDelete: {},
-    },
-  },
-  tenants: [
-    { id: 'vusa', name: 'VU SA', shortname: 'VU SA' },
-    { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
-    { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
-  ],
-  curatorDutyTypeIds: [8, 9],
-  eventTypes: [
-    { id: 1, slug: 'stovykla', name: 'Stovykla' },
-    { id: 2, slug: 'konferencija', name: 'Konferencija' },
-  ],
-  tags: [
-    { id: 1, alias: 'akademine-informacija', name: 'Akademinė informacija', is_topic: true },
-    { id: 2, alias: 'renginys', name: 'Renginys', is_topic: false },
-  ],
-  flash: {
-    success: null,
-    error: null,
-    info: null,
-    warning: null,
-  },
-  errors: {},
-  otherLangURL: '/en',
-  typesenseConfig: {
-    apiKey: 'storybook-api-key',
-    nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
-  },
-};
+import { defaultPageProps } from '@/mocks/defaultPageProps';
 
 /**
  * Create a mock Inertia page object for use in tests.
@@ -90,7 +16,7 @@ const defaultPageProps = {
  */
 export function createMockPage(overrides: Record<string, any> = {}): any {
   return {
-    props: deepMerge(defaultPageProps, overrides),
+    props: deepMerge(defaultPageProps(), overrides),
   };
 }
 

@@ -1,140 +1,50 @@
-import { fn } from 'storybook/test';
 import { vi } from 'vitest';
 import { defineComponent, h, reactive, ref } from 'vue';
 
-/**
- * Centralized Inertia.js mock for Storybook and Vitest
- * Used across all stories and tests that need Inertia functionality
- */
+import { defaultPageProps } from './defaultPageProps';
 
-// Detect if we're in a Vitest environment
-const isVitest = typeof vi !== 'undefined';
+export const useRemember = vi.fn((data: object) => ref(data));
 
-// Use a unified mock function type to avoid TypeScript conflicts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockFn = (isVitest ? vi.fn : fn) as <T extends (...args: any[]) => any>(impl?: T) => T;
-
-// Mock usePage() function returning commonly used page props
-export const useRemember = mockFn((data: object) => ref(data));
-
-export const usePage = mockFn(() => ({
-  props: {
-    app: {
-      locale: 'lt',
-      subdomain: 'www',
-      name: 'VU SA',
-      url: 'http://www.vusa.test',
-    },
-    organization: {
-      contacts: { it: 'it@vusa.lt', accounting: 'saskaitos@vusa.lt', phone: '+37052687144' },
-      social: {
-        facebook: 'https://www.facebook.com/vieningai.vu.sa',
-        instagram: 'https://www.instagram.com/vu.studentu.atstovybe',
-        linkedin: 'https://www.linkedin.com/company/vusa-lt',
-      },
-      legal: {
-        company_code: '193077294',
-        vat_code: 'LT100015645710',
-        address: { street: 'Universiteto g. 3, Observatorijos kiemelis', city: '01513, Vilnius, Lietuva' },
-      },
-    },
-    auth: {
-      user: {
-        id: 1,
-        name: 'Test User',
-        email: 'test@vusa.lt',
-        current_duties: [
-          {
-            institution: {
-              id: 'vusa',
-              name: 'VU SA',
-              shortname: 'VU SA',
-            },
-            role: 'admin',
-          },
-        ],
-      },
-      can: {
-        create: { meeting: true, document: true },
-        read: { meeting: true, document: true },
-        update: { meeting: true, document: true },
-        delete: { meeting: true, document: true },
-      },
-    },
-    tenants: [
-      { id: 'vusa', name: 'VU SA', shortname: 'VU SA' },
-      { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
-      { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
-    ],
-    curatorDutyTypeIds: [8, 9],
-    eventTypes: [
-      { id: 1, slug: 'stovykla', name: 'Stovykla' },
-      { id: 2, slug: 'konferencija', name: 'Konferencija' },
-    ],
-    tags: [
-      { id: 1, alias: 'akademine-informacija', name: 'Akademinė informacija', is_topic: true },
-      { id: 2, alias: 'renginys', name: 'Renginys', is_topic: false },
-    ],
-    flash: {
-      success: null,
-      error: null,
-      info: null,
-      warning: null,
-    },
-    errors: {},
-    otherLangURL: '/en',
-    // Add Typesense config for document search stories
-    typesenseConfig: {
-      apiKey: 'storybook-api-key',
-      nodes: [
-        {
-          protocol: 'http',
-          host: 'localhost',
-          port: 8108,
-        },
-      ],
-    },
-  },
-}));
+export const usePage = vi.fn(() => ({ props: defaultPageProps() }));
 
 // Registry for router event listeners (used in tests)
 const listeners: Record<string, Array<(event: any) => void>> = {};
 
 // Mock router for Inertia
 export const router = {
-  visit: mockFn((url: string, options?: any) => {
+  visit: vi.fn((url: string, options?: any) => {
     console.log('Inertia router visit:', url, options);
     return Promise.resolve();
   }),
-  get: mockFn((url: string, data?: any, options?: any) => {
+  get: vi.fn((url: string, data?: any, options?: any) => {
     console.log('Inertia router get:', url, data, options);
     return Promise.resolve();
   }),
-  post: mockFn((url: string, data?: any, options?: any) => {
+  post: vi.fn((url: string, data?: any, options?: any) => {
     console.log('Inertia router post:', url, data, options);
     return Promise.resolve();
   }),
-  put: mockFn((url: string, data?: any, options?: any) => {
+  put: vi.fn((url: string, data?: any, options?: any) => {
     console.log('Inertia router put:', url, data, options);
     return Promise.resolve();
   }),
-  patch: mockFn((url: string, data?: any, options?: any) => {
+  patch: vi.fn((url: string, data?: any, options?: any) => {
     console.log('Inertia router patch:', url, data, options);
     return Promise.resolve();
   }),
-  delete: mockFn((url: string, options?: any) => {
+  delete: vi.fn((url: string, options?: any) => {
     console.log('Inertia router delete:', url, options);
     return Promise.resolve();
   }),
-  restore: mockFn(),
-  remember: mockFn(),
-  push: mockFn(),
-  replace: mockFn(),
-  reload: mockFn((options?: any) => {
+  restore: vi.fn(),
+  remember: vi.fn(),
+  push: vi.fn(),
+  replace: vi.fn(),
+  reload: vi.fn((options?: any) => {
     console.log('Inertia router reload:', options);
     return Promise.resolve();
   }),
-  on: mockFn((event: string, callback: any) => {
+  on: vi.fn((event: string, callback: any) => {
     (listeners[event] ??= []).push(callback);
     return () => {
       const callbacks = listeners[event] ?? [];
@@ -154,7 +64,7 @@ export const router = {
 };
 
 // Mock useForm for Inertia forms
-export const useForm = mockFn((keyOrData: any = {}, rememberedData?: any) => {
+export const useForm = vi.fn((keyOrData: any = {}, rememberedData?: any) => {
   // `useForm('RememberKey', data)` keeps a draft across navigations; the mock only needs the data.
   const data = typeof keyOrData === 'string' ? (rememberedData ?? {}) : keyOrData;
   const form: Record<string, any> = reactive({
@@ -167,27 +77,27 @@ export const useForm = mockFn((keyOrData: any = {}, rememberedData?: any) => {
     progress: null,
     wasSuccessful: false,
     recentlySuccessful: false,
-    defaults: mockFn(),
-    reset: mockFn(),
-    clearErrors: mockFn(),
-    setError: mockFn(),
-    submit: mockFn(),
-    get: mockFn(),
-    post: mockFn(),
-    put: mockFn(),
-    patch: mockFn(),
-    delete: mockFn(),
-    cancel: mockFn(),
+    defaults: vi.fn(),
+    reset: vi.fn(),
+    clearErrors: vi.fn(),
+    setError: vi.fn(),
+    submit: vi.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    cancel: vi.fn(),
     validating: false,
-    valid: mockFn(() => false),
-    invalid: mockFn(() => false),
+    valid: vi.fn(() => false),
+    invalid: vi.fn(() => false),
   });
 
   // Inertia's transform() is chainable: form.transform(fn).post(...).
-  form.transform = mockFn(() => form);
-  form.withPrecognition = mockFn(() => form);
-  form.validate = mockFn(() => form);
-  form.setValidationTimeout = mockFn(() => form);
+  form.transform = vi.fn(() => form);
+  form.withPrecognition = vi.fn(() => form);
+  form.validate = vi.fn(() => form);
+  form.setValidationTimeout = vi.fn(() => form);
 
   return form;
 });
@@ -195,20 +105,20 @@ export const useForm = mockFn((keyOrData: any = {}, rememberedData?: any) => {
 // Mock useHttp, Inertia v3's standalone XHR hook. Reactive so components that read
 // `http.processing` in a computed re-render; callers drive the callbacks themselves via
 // the spy, e.g. vi.mocked(http.get).mock.calls[0][1].onSuccess(payload).
-export const useHttp = mockFn((data: any = {}) => reactive({
+export const useHttp = vi.fn((data: any = {}) => reactive({
   ...data,
   processing: false,
   errors: {},
   hasErrors: false,
   response: null,
-  get: mockFn(),
-  post: mockFn(),
-  put: mockFn(),
-  patch: mockFn(),
-  delete: mockFn(),
-  cancel: mockFn(),
-  reset: mockFn(),
-  clearErrors: mockFn(),
+  get: vi.fn(),
+  post: vi.fn(),
+  put: vi.fn(),
+  patch: vi.fn(),
+  delete: vi.fn(),
+  cancel: vi.fn(),
+  reset: vi.fn(),
+  clearErrors: vi.fn(),
 }));
 
 // Mock Head component for document meta

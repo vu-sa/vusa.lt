@@ -8,6 +8,7 @@ import { ref, computed, nextTick, watch, type ComputedRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
+import type { PageProps } from '@/Types/index';
 import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
 import { FilterUtils } from '@/Search/core/services/FilterUtils';
 import { createSearchReporter } from '@/Search/core/searchReporter';
@@ -131,10 +132,10 @@ export const useDocumentSearch = (): DocumentSearchController => {
   // ============================================================================
 
   const initializeSearchClient = async () => {
-    const page = usePage();
-    const typesenseConfig = page.props.typesenseConfig as any;
+    const page = usePage<PageProps<{ importantContentTypes?: string[]; hasDocumentRecommendations?: boolean }>>();
+    const typesenseConfig = page.props.typesenseConfig;
 
-    if (!typesenseConfig?.apiKey) {
+    if (Array.isArray(typesenseConfig) || !typesenseConfig?.apiKey) {
       console.warn('Typesense not configured - document search unavailable');
       return null;
     }
@@ -179,7 +180,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
 
       // Create document service and adapter
       documentService.value = new DocumentSearchService(typesenseClient.value, collectionName, {
-        importantContentTypes: page.props.importantContentTypes as string[] ?? [],
+        importantContentTypes: page.props.importantContentTypes ?? [],
         recommendationsUrl: page.props.hasDocumentRecommendations ? route('api.v1.documents.recommendations') : undefined,
       });
       const adapter = new DocumentSearchServiceAdapter(documentService.value);

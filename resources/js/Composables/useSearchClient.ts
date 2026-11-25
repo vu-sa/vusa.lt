@@ -1,17 +1,5 @@
-import type { SearchProfileConfig } from '@/Search/core/profiles';
+import type { TypesenseConfig } from '@/Search/core/types';
 import { SearchClientFactory } from '@/Search/core/services/SearchClientFactory';
-
-interface TypesenseNode {
-  protocol: string;
-  host: string;
-  port: number;
-}
-
-interface TypesenseConfig extends SearchProfileConfig {
-  apiKey: string;
-  nodes: TypesenseNode[];
-  collections?: Record<string, string>;
-}
 
 interface TypesenseClientOptions {
   additionalSearchParameters: Record<string, unknown>;

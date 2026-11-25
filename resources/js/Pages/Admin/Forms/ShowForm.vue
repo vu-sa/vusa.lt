@@ -20,7 +20,6 @@
           enable-pagination
           :page-size="15"
           enable-filtering
-          :enable-column-visibility="false"
           :empty-message="$t('forms.registrations.none')"
           :row-class-name="() => ''"
         >

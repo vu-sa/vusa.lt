@@ -147,10 +147,11 @@ describe('AdminShell on phones', () => {
 describe('AdminShell staging warning', () => {
   it('keeps the collapsed state across shell mounts and lets the topbar reopen it', async () => {
     localStorage.clear();
+    const storageKey = `admin-staging-warning:${usePage().props.auth?.user.id}`;
     const first = mountShell();
     await first.wrapper.findAll('[data-testid="staging"]')[0].trigger('click');
 
-    expect(localStorage.getItem('admin-staging-warning:1')).toBe('true');
+    expect(localStorage.getItem(storageKey)).toBe('true');
     first.wrapper.unmount();
 
     const second = mountShell();
@@ -158,7 +159,7 @@ describe('AdminShell staging warning', () => {
     expect(topbarWarning.attributes('data-dismissed')).toBe('true');
     await topbarWarning.trigger('click');
 
-    expect(localStorage.getItem('admin-staging-warning:1')).toBe('false');
+    expect(localStorage.getItem(storageKey)).toBe('false');
     second.wrapper.unmount();
     localStorage.clear();
   });

@@ -66,10 +66,6 @@ describe('DataTable.vue', () => {
             template: '<input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" />',
             props: ['modelValue', 'disabled'],
           },
-          DropdownMenu: { template: '<div><slot /></div>' },
-          DropdownMenuTrigger: { template: '<div><slot /></div>' },
-          DropdownMenuContent: { template: '<div><slot /></div>' },
-          DropdownMenuCheckboxItem: { template: '<div><slot /></div>' },
           // Table components
           Table: { template: '<table><slot /></table>' },
           TableBody: { template: '<tbody><slot /></tbody>' },
@@ -84,7 +80,6 @@ describe('DataTable.vue', () => {
           ChevronRightIcon: { template: '<span>→</span>' },
           ChevronsLeftIcon: { template: '<span>«</span>' },
           ChevronsRightIcon: { template: '<span>»</span>' },
-          SlidersIcon: { template: '<span>⚙</span>' },
           Button: {
             template: '<button type="button" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>',
             props: ['variant', 'size', 'disabled'],
@@ -186,11 +181,6 @@ describe('DataTable.vue', () => {
       const events = wrapper.emitted('update:global-filter')!;
       expect(events[events.length - 1]![0]).toBe('Alice');
     });
-
-    it('hides search when manualFiltering is true', () => {
-      wrapper = createWrapper({ enableFiltering: true, manualFiltering: true });
-      expect(wrapper.find('input').exists()).toBe(false);
-    });
   });
 
   describe('sorting', () => {
@@ -258,7 +248,7 @@ describe('DataTable.vue', () => {
     it('starts on page index 0', () => {
       wrapper = createWrapper({ pagination: true, pageSize: 2 });
       const vm = wrapper.vm as any;
-      expect(vm.table.getState().pagination.pageIndex).toBe(0);
+      expect(vm.table.store.get().pagination.pageIndex).toBe(0);
     });
 
     it('can navigate to next page via table API', async () => {
@@ -271,7 +261,7 @@ describe('DataTable.vue', () => {
       vm.table.nextPage();
       await nextTick();
 
-      expect(vm.table.getState().pagination.pageIndex).toBe(1);
+      expect(vm.table.store.get().pagination.pageIndex).toBe(1);
       expect(vm.table.getCanNextPage()).toBe(false);
     });
 
@@ -436,27 +426,6 @@ describe('DataTable.vue', () => {
       expect(rows[0]!.text()).toContain('Alice');
     });
 
-    it('syncs external sorting prop', async () => {
-      wrapper = createWrapper({ externalSorting: [{ id: 'name', desc: true }] });
-      await nextTick();
-
-      const rows = wrapper.findAll('tbody tr');
-      // With desc sort by name, first should be Diana or similar
-      expect(rows.length).toBe(4);
-    });
-
-    it('syncs external pagination prop', async () => {
-      wrapper = createWrapper({
-        pagination: true,
-        pageSize: 2,
-        externalPagination: { pageIndex: 1, pageSize: 2 },
-      });
-      await nextTick();
-
-      const rows = wrapper.findAll('tbody tr');
-      expect(rows.length).toBe(2);
-    });
-
     it('syncs external rowSelection prop', async () => {
       wrapper = createWrapper({
         columns: [
@@ -495,7 +464,7 @@ describe('DataTable.vue', () => {
   describe('slots', () => {
     it('renders filters slot', () => {
       wrapper = mount(DataTable, {
-        props: { columns, data, enableFiltering: true },
+        props: { columns, data },
         slots: {
           filters: '<div data-testid="filters-slot">Filters</div>',
         },
@@ -518,7 +487,7 @@ describe('DataTable.vue', () => {
 
     it('renders actions slot', () => {
       wrapper = mount(DataTable, {
-        props: { columns, data, enableColumnVisibility: true },
+        props: { columns, data },
         slots: {
           actions: '<div data-testid="actions-slot">Actions</div>',
         },

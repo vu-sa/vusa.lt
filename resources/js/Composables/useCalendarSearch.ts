@@ -2,6 +2,7 @@ import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
+import type { PageProps } from '@/Types/index';
 import { provideFacetSearch } from '@/Search/core/facets';
 import { SearchClientFactory, type TypesenseClient } from '@/Search/core/services/SearchClientFactory';
 
@@ -48,14 +49,8 @@ export interface UseCalendarSearchOptions {
 export type CalendarSearchTab = 'upcoming' | 'past' | 'all';
 export type CalendarSearchSort = 'relevance' | 'date_asc' | 'date_desc';
 
-interface TypesensePageConfig {
-  apiKey: string;
-  nodes: Array<{ protocol: string; host: string; port: number }>;
-  collections?: Record<string, string>;
-}
-
 export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
-  const page = usePage();
+  const page = usePage<PageProps>();
   const perPage = options.perPage ?? 18;
 
   const query = ref('');
@@ -81,7 +76,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
   let abortController: AbortController | null = null;
   let client: TypesenseClient | null = null;
 
-  const locale = computed(() => (page.props.app as { locale?: string })?.locale || 'lt');
+  const locale = computed(() => page.props.app?.locale || 'lt');
   const hasMore = computed(() => events.value.length < totalHits.value);
   const hasActiveFilters = computed(() =>
     Boolean(query.value.trim())
@@ -99,8 +94,8 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
 
   const getClient = (): TypesenseClient | null => {
     if (client) return client;
-    const config = page.props.typesenseConfig as TypesensePageConfig | undefined;
-    if (!config?.apiKey || !config?.nodes?.length) {
+    const config = page.props.typesenseConfig;
+    if (Array.isArray(config) || !config?.apiKey || !config.nodes?.length) {
       return null;
     }
     client = SearchClientFactory.createPublicClient(config, locale.value);
@@ -108,8 +103,8 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
   };
 
   const getCollectionName = (): string => {
-    const config = page.props.typesenseConfig as TypesensePageConfig | undefined;
-    return config?.collections?.calendar || 'calendar';
+    const config = page.props.typesenseConfig;
+    return (Array.isArray(config) ? undefined : config?.collections?.calendar) || 'calendar';
   };
 
   provideFacetSearch(async (field, text, signal) => getClient()?.searchFacet(field, text, signal) ?? []);

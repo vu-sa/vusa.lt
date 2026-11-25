@@ -1,104 +1,10 @@
 import { fn } from 'storybook/test';
 import { defineComponent, h, reactive } from 'vue';
 
-/**
- * Inertia.js mock specifically for Storybook
- * This file does NOT import from vitest to avoid browser compatibility issues
- *
- * Use this in .storybook/preview.ts and story files
- * Use inertia.mock.ts for Vitest tests
- */
+import { defaultPageProps } from './defaultPageProps';
 
-// Mock usePage() function returning commonly used page props
-export const usePage = fn(() => ({
-  props: {
-    app: {
-      locale: 'lt',
-      subdomain: 'www',
-      name: 'VU SA',
-      url: 'http://www.vusa.test',
-      // Required: useTenantOptions reads `app.path` to decide whether tenant switching applies
-      // to the current page, so a story rendering any header component throws without it.
-      path: 'lt',
-    },
-    organization: {
-      contacts: { it: 'it@vusa.lt', accounting: 'saskaitos@vusa.lt', phone: '+37052687144' },
-      social: {
-        facebook: 'https://www.facebook.com/vieningai.vu.sa',
-        instagram: 'https://www.instagram.com/vu.studentu.atstovybe',
-        linkedin: 'https://www.linkedin.com/company/vusa-lt',
-      },
-      legal: {
-        company_code: '193077294',
-        vat_code: 'LT100015645710',
-        address: { street: 'Universiteto g. 3, Observatorijos kiemelis', city: '01513, Vilnius, Lietuva' },
-      },
-    },
-    auth: {
-      user: {
-        id: 1,
-        name: 'Test User',
-        email: 'test@vusa.lt',
-        current_duties: [
-          {
-            institution: {
-              id: 'inst1',
-              name: 'VU SA Fakulteto taryba',
-              shortname: 'VU SA FT',
-              types: [{ title: 'Taryba' }],
-              last_meeting_date: '2024-01-15',
-              active_check_in: false,
-              meetings: [],
-            },
-            role: 'admin',
-          },
-          {
-            institution: {
-              id: 'inst2',
-              name: 'VU SA Parlamentas',
-              shortname: 'VU SA P',
-              types: [{ title: 'Parlamentas' }],
-              last_meeting_date: '2024-01-10',
-              active_check_in: false,
-              meetings: [],
-            },
-            role: 'member',
-          },
-        ],
-      },
-      can: {
-        create: { meeting: true, document: true },
-        read: { meeting: true, document: true },
-        update: { meeting: true, document: true },
-        delete: { meeting: true, document: true },
-      },
-    },
-    tenants: [
-      { id: 'vusa', name: 'VU SA', shortname: 'VU SA' },
-      { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
-      { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
-    ],
-    flash: {
-      success: null,
-      error: null,
-      info: null,
-      warning: null,
-    },
-    errors: {},
-    otherLangURL: '/en',
-    // Add Typesense config for document search stories
-    typesenseConfig: {
-      apiKey: 'storybook-api-key',
-      nodes: [
-        {
-          protocol: 'http',
-          host: 'localhost',
-          port: 8108,
-        },
-      ],
-    },
-  },
-}));
+// Stories can override the default page with the props their example needs.
+export const usePage = fn((): { props: Record<string, unknown> } => ({ props: defaultPageProps() }));
 
 // Mock router for Inertia
 export const router = {

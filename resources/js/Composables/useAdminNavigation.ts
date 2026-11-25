@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import type { PageProps } from '@/Types/index';
 
 type Catalog = NonNullable<PageProps['adminNavigation']>;
 export type AdminWorkspace = Catalog['workspaces'][number];

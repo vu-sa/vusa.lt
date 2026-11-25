@@ -2,6 +2,7 @@ import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
+import type { PageProps } from '@/Types/index';
 import { imageFromSearch } from '@/Types/media';
 import { provideFacetSearch } from '@/Search/core/facets';
 import { SearchClientFactory, type TypesenseClient } from '@/Search/core/services/SearchClientFactory';
@@ -46,14 +47,8 @@ export interface UseNewsSearchOptions {
   perPage?: number;
 }
 
-interface TypesensePageConfig {
-  apiKey: string;
-  nodes: Array<{ protocol: string; host: string; port: number }>;
-  collections?: Record<string, string>;
-}
-
 export function useNewsSearch(options: UseNewsSearchOptions = {}) {
-  const page = usePage();
+  const page = usePage<PageProps>();
   const perPage = options.perPage ?? 15;
 
   const query = ref('');
@@ -77,7 +72,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
   let abortController: AbortController | null = null;
   let client: TypesenseClient | null = null;
 
-  const locale = computed(() => (page.props.app as { locale?: string })?.locale || 'lt');
+  const locale = computed(() => page.props.app?.locale || 'lt');
   const hasMore = computed(() => news.value.length < totalHits.value);
   const hasActiveFilters = computed(() =>
     Boolean(query.value.trim())
@@ -94,8 +89,8 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
   const getClient = (): TypesenseClient | null => {
     if (client) return client;
-    const config = page.props.typesenseConfig as TypesensePageConfig | undefined;
-    if (!config?.apiKey || !config?.nodes?.length) {
+    const config = page.props.typesenseConfig;
+    if (Array.isArray(config) || !config?.apiKey || !config.nodes?.length) {
       return null;
     }
     client = SearchClientFactory.createPublicClient(config, locale.value);
@@ -103,8 +98,8 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
   };
 
   const getCollectionName = (): string => {
-    const config = page.props.typesenseConfig as TypesensePageConfig | undefined;
-    return config?.collections?.public_news || 'public_news';
+    const config = page.props.typesenseConfig;
+    return (Array.isArray(config) ? undefined : config?.collections?.public_news) || 'public_news';
   };
 
   provideFacetSearch(async (field, text, signal) => getClient()?.searchFacet(field, text, signal) ?? []);

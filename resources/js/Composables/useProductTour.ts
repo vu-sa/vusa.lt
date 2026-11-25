@@ -3,9 +3,8 @@ import { ref, computed, onUnmounted, watch } from 'vue';
 import type { Driver, DriveStep, Config } from 'driver.js';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useApiMutation } from './useApi';
 import { useAccessibilityPreferences } from './useAccessibilityPreferences';
-import { globalProgress, updateProgress, removeProgress, initProgress, isInitialized } from './useTutorialProgress';
+import { globalProgress, completeProgress, resetProgress, initProgress, isInitialized } from './useTutorialProgress';
 
 export interface ProductTourOptions {
   /**
@@ -71,44 +70,14 @@ export function useProductTour(options: ProductTourOptions) {
    * Mark the tour as completed both locally and on the server
    */
   async function markCompleted(): Promise<void> {
-    // Update shared state and localStorage
-    updateProgress(tourId, new Date().toISOString());
-
-    // Sync to backend using useApiMutation (handles auth automatically)
-    try {
-      const { execute } = useApiMutation(
-        route('api.v1.admin.tutorials.complete'),
-        'POST',
-        { tour_id: tourId },
-        { showSuccessToast: false, showErrorToast: false },
-      );
-      await execute();
-    }
-    catch (error) {
-      console.warn('Failed to sync tour completion to server:', error);
-    }
+    await completeProgress(tourId, 'Failed to sync tour completion to server:');
   }
 
   /**
    * Reset the tour (allow replay)
    */
   async function resetTour(): Promise<void> {
-    // Update shared state and localStorage
-    removeProgress(tourId);
-
-    // Sync to backend using useApiMutation (handles auth automatically)
-    try {
-      const { execute } = useApiMutation(
-        route('api.v1.admin.tutorials.reset'),
-        'POST',
-        { tour_id: tourId },
-        { showSuccessToast: false, showErrorToast: false },
-      );
-      await execute();
-    }
-    catch (error) {
-      console.warn('Failed to sync tour reset to server:', error);
-    }
+    await resetProgress(tourId, 'Failed to sync tour reset to server:');
   }
 
   /**

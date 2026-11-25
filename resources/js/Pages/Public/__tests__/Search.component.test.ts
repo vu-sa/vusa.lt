@@ -50,7 +50,18 @@ describe('Public/Search.vue', () => {
         json: async () => fakeMultiSearchResponse(searches),
       };
     });
-    vi.mocked(usePage).mockReturnValue(createMockPage() as any);
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { path: 'lt/paieska' },
+      auth: null,
+      typesenseConfig: {
+        apiKey: 'search-only-test-key',
+        nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
+        collections: {},
+        searchProfiles: {},
+        searchProfileVersion: 1,
+        searchLocale: 'lt',
+      },
+    }));
   });
 
   const mountPage = () =>

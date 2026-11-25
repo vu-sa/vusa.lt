@@ -11,7 +11,7 @@ import { atstovavimas, pradzia } from './fixtures';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const withUnread = (count: number) => vi.mocked(usePage).mockReturnValue(createMockPage({
-  auth: { user: { unreadNotifications: Array.from({ length: count }, (_, index) => ({ id: String(index), read_at: null, data: {} })) } },
+  auth: { user: { unreadNotificationsCount: count } },
 }) as ReturnType<typeof usePage>);
 
 beforeEach(() => withUnread(0));

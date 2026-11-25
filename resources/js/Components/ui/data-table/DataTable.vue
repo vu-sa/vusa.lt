@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div
-      v-if="enableFiltering || enableColumnVisibility || (showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0)"
+      v-if="enableFiltering || $slots.filters || $slots.actions || (showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0)"
       class="flex w-full flex-wrap items-center justify-between gap-2"
     >
       <div class="flex flex-wrap items-center gap-2">
@@ -19,7 +19,7 @@
           </Button>
         </div>
 
-        <div v-if="enableFiltering && !manualFiltering" class="flex items-center gap-2">
+        <div v-if="enableFiltering" class="flex items-center gap-2">
           <Input
             class="max-w-sm"
             :placeholder="$t('tables.search_placeholder')"
@@ -33,28 +33,6 @@
 
       <div class="flex items-center gap-2">
         <slot name="actions" />
-
-        <!-- Column visibility temporarily hidden -->
-        <DropdownMenu v-if="false">
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" size="sm" class="ml-auto">
-              <Sliders class="mr-2 size-4" />
-              {{ $t('tables.columns') }}
-              <ChevronDown class="ml-2 size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="bg-popover border border-border">
-            <DropdownMenuCheckboxItem
-              v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-              :key="column.id"
-              :model-value="column.getIsVisible()"
-              @click="column.toggleVisibility()"
-              @select.prevent
-            >
-              {{ column.id }}
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
 
@@ -134,7 +112,6 @@
         </Table>
       </div>
 
-      <!-- Use custom pagination slot if available (for server-side mode) -->
       <slot name="pagination">
         <div v-if="pagination === true && table.getPageCount() > 1" class="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-secondary/20 px-4 py-2.5">
           <div class="text-xs text-muted-foreground shrink-0 tabular-nums">
@@ -186,7 +163,7 @@
   </div>
 </template>
 
-<script setup lang="tsx" generic="TData, TValue">
+<script setup lang="ts" generic="TData extends RowData, TValue">
 import {
   columnFilteringFeature,
   columnVisibilityFeature,
@@ -202,23 +179,21 @@ import {
   useTable,
   FlexRender,
   type ColumnDef,
+  type ColumnVisibilityState,
   type PaginationState,
+  type RowData,
   type RowSelectionState,
   type SortingState,
-  type VisibilityState,
 } from '@tanstack/vue-table';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, h, nextTick, onMounted, ref, watch } from 'vue';
 import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Sliders,
-  X,
 } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -226,7 +201,6 @@ import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferenc
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -254,16 +228,8 @@ const props = defineProps<{
   pagination?: boolean;
   emptyMessage?: string;
   enableFiltering?: boolean;
-  enableColumnVisibility?: boolean;
   initialSort?: { id: string; desc: boolean }[];
   globalFilter?: string;
-  manualSorting?: boolean;
-  manualFiltering?: boolean;
-  manualPagination?: boolean;
-  externalSorting?: SortingState;
-  externalPagination?: PaginationState;
-  rowCount?: number;
-  pageCount?: number;
   // Row selection props
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   enableRowSelection?: boolean | ((row: any) => boolean);
@@ -298,21 +264,15 @@ const features = tableFeatures({
   columnVisibilityFeature,
 });
 
-// Use external sorting if provided, otherwise use initialSort or empty array
-const sorting = ref<SortingState>(props.externalSorting || props.initialSort || []);
+const sorting = ref<SortingState>(props.initialSort || []);
 const globalFilter = ref(props.globalFilter || '');
-const columnVisibility = ref<VisibilityState>({});
+const columnVisibility = ref<ColumnVisibilityState>({});
 const rowSelection = ref<RowSelectionState>(props.rowSelectionState || props.initialRowSelection || {});
 
-/**
- * Local pagination state. Deliberately NOT named `pagination`: a setup binding of that name
- * shadows the `pagination` prop inside the template, which silently made the
- * `v-if="pagination === true"` on the pagination controls compare a state object to `true` —
- * so client-side pagination controls never rendered.
- */
+// Keep the local state under a different name so it cannot shadow the pagination prop.
 const paginationState = ref<PaginationState>({
-  pageIndex: props.externalPagination?.pageIndex || 0,
-  pageSize: props.externalPagination?.pageSize || props.pageSize || 10,
+  pageIndex: 0,
+  pageSize: props.pageSize || 10,
 });
 
 // Ref to the scrollable table container
@@ -337,23 +297,6 @@ watch(paginationState, (newVal, oldVal) => {
   }
 });
 
-// Watch for external sorting changes
-watch(() => props.externalSorting, (newVal) => {
-  if (newVal && JSON.stringify(newVal) !== JSON.stringify(sorting.value)) {
-    sorting.value = newVal;
-  }
-}, { immediate: true });
-
-// Watch for external pagination changes
-watch(() => props.externalPagination, (newVal) => {
-  if (newVal && (
-    newVal.pageIndex !== paginationState.value.pageIndex
-    || newVal.pageSize !== paginationState.value.pageSize
-  )) {
-    paginationState.value = newVal;
-  }
-}, { immediate: true });
-
 // Watch for external global filter changes
 watch(() => props.globalFilter, (newVal) => {
   if (newVal !== undefined && newVal !== globalFilter.value) {
@@ -376,26 +319,22 @@ const selectionColumn = computed<ColumnDef<typeof features, TData, any>>(() => {
     header: ({ table }) => {
       const allSelected = table.getIsAllPageRowsSelected();
       const someSelected = table.getIsSomePageRowsSelected() && !allSelected;
-      return (
-        <div class="px-1">
-          <Checkbox
-            modelValue={allSelected ? true : someSelected ? 'indeterminate' : false}
-            onUpdate:modelValue={value => table.toggleAllPageRowsSelected(!!value)}
-            aria-label={$t('tables.select_all')}
-          />
-        </div>
-      );
+      return h('div', { class: 'px-1' }, [
+        h(Checkbox, {
+          'modelValue': allSelected ? true : someSelected ? 'indeterminate' : false,
+          'onUpdate:modelValue': (value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value),
+          'aria-label': $t('tables.select_all'),
+        }),
+      ]);
     },
-    cell: ({ row }) => (
-      <div class="px-1">
-        <Checkbox
-          modelValue={row.getIsSelected()}
-          onUpdate:modelValue={value => row.toggleSelected(!!value)}
-          aria-label={$t('tables.select_row')}
-          disabled={!row.getCanSelect()}
-        />
-      </div>
-    ),
+    cell: ({ row }) => h('div', { class: 'px-1' }, [
+      h(Checkbox, {
+        'modelValue': row.getIsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+        'aria-label': $t('tables.select_row'),
+        'disabled': !row.getCanSelect(),
+      }),
+    ]),
     enableSorting: false,
     enableHiding: false,
     size: 40,
@@ -414,11 +353,6 @@ const table = useTable<typeof features, TData>({
   features,
   get data() { return props.data; },
   get columns() { return tableColumns.value; },
-  manualSorting: props.manualSorting || false,
-  manualFiltering: props.manualFiltering || false,
-  manualPagination: props.manualPagination || false,
-  pageCount: props.pageCount,
-  rowCount: props.rowCount,
   enableRowSelection: typeof props.enableRowSelection === 'function'
     ? props.enableRowSelection
     : props.enableRowSelection,
@@ -473,14 +407,8 @@ const table = useTable<typeof features, TData>({
   },
 });
 
-// Backward compatibility aliases for v8
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(table as any).getPrePaginationRowModel = table.getPrePaginatedRowModel;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(table as any).getState = () => table.store.get();
-
 watch(() => props.pageSize, (newVal) => {
-  if (newVal && !props.manualPagination) {
+  if (newVal) {
     table.setPageSize(newVal);
   }
 }, { immediate: true });

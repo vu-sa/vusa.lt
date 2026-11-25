@@ -207,6 +207,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import type { PageProps } from '@/Types/index';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';

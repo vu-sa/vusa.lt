@@ -8,6 +8,7 @@ import { ref, computed, nextTick, type Ref } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
+import type { PageProps } from '@/Types/index';
 import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
 import { FilterUtils } from '@/Search/core/services/FilterUtils';
 import type { ProcessedSearchResult } from '@/Search/core/types';
@@ -129,10 +130,10 @@ export const useMeetingSearch = (): MeetingSearchController => {
   // ============================================================================
 
   const initializeSearchClient = async () => {
-    const page = usePage();
-    const typesenseConfig = page.props.typesenseConfig as any;
+    const page = usePage<PageProps>();
+    const typesenseConfig = page.props.typesenseConfig;
 
-    if (!typesenseConfig?.apiKey) {
+    if (Array.isArray(typesenseConfig) || !typesenseConfig?.apiKey) {
       console.warn('Typesense not configured - meeting search unavailable');
       return null;
     }

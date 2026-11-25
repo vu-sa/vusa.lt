@@ -7,6 +7,7 @@ import { ref, computed, nextTick, type ComputedRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
+import type { PageProps } from '@/Types/index';
 import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
 import { FilterUtils } from '@/Search/core/services/FilterUtils';
 import type { ProcessedSearchResult } from '@/Search/core/types';
@@ -94,8 +95,8 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
 
   // Get current locale
   const getCurrentLocale = (): string => {
-    const page = usePage();
-    return (page.props.app as any)?.locale || 'lt';
+    const page = usePage<PageProps>();
+    return page.props.app?.locale || 'lt';
   };
 
   // Default filters for institution search
@@ -136,10 +137,10 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
   // ============================================================================
 
   const initializeSearchClient = async () => {
-    const page = usePage();
-    const typesenseConfig = page.props.typesenseConfig as any;
+    const page = usePage<PageProps>();
+    const typesenseConfig = page.props.typesenseConfig;
 
-    if (!typesenseConfig?.apiKey) {
+    if (Array.isArray(typesenseConfig) || !typesenseConfig?.apiKey) {
       console.warn('Typesense not configured - institution search unavailable');
       return null;
     }

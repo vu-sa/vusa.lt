@@ -1,10 +1,10 @@
-import type { ColumnDef } from '@tanstack/vue-table';
+import type { ColumnDef, RowData } from '@tanstack/vue-table';
 
 /**
  * Configuration for basic client-side tables (`SimpleDataTable`). Full admin collections use
  * `CollectionPage` instead.
  */
-export interface SimpleTableProps<TData> {
+export interface SimpleTableProps<TData extends RowData> {
   /** The data array to display in the table */
   data: TData[];
   /** The columns configuration for the table */
@@ -16,11 +16,6 @@ export interface SimpleTableProps<TData> {
   pageSize?: number;
   /** Whether to enable filtering UI (defaults to true) */
   enableFiltering?: boolean;
-  /** Whether to enable column visibility toggles (defaults to false) */
-  enableColumnVisibility?: boolean;
-  /** Custom message when table is empty */
+  rowClassName?: (row: TData) => string;
   emptyMessage?: string;
-  /** Custom icon when table is empty */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  emptyIcon?: any;
 }

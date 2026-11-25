@@ -174,7 +174,7 @@ describe('ShowInstitution.vue', () => {
     localStorage.clear();
     vi.mocked(router.reload).mockClear();
     vi.mocked(usePage).mockReturnValue({
-      ...createMockPage({ auth: { can: { 'meetings.create.padalinys': true } } }),
+      ...createMockPage({ auth: { can: { create: { meeting: true } } } }),
       url: '/mano/institutions/inst1',
     });
   });

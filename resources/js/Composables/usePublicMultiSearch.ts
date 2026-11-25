@@ -16,8 +16,9 @@ import { reactive, ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useLocalStorage, useDebounceFn } from '@vueuse/core';
 
+import type { PageProps } from '@/Types/index';
 import { documentWithMatch, type HighlightedHit } from '@/Search/core/matches';
-import { buildProfileParams, type SearchProfileConfig } from '@/Search/core/profiles';
+import { buildProfileParams } from '@/Search/core/profiles';
 import { ErrorUtils } from '@/Search/core/services/SearchErrorUtils';
 import { createSearchReporter } from '@/Search/core/searchReporter';
 
@@ -28,19 +29,6 @@ export type SearchCollectionId
     | 'news'
     | 'pages'
     | 'calendar';
-
-interface TypesenseNode {
-  protocol: string;
-  host: string;
-  port: number;
-  path?: string;
-}
-
-interface TypesenseConfig extends SearchProfileConfig {
-  apiKey: string;
-  nodes: TypesenseNode[];
-  collections?: Record<string, string>;
-}
 
 export interface SectionState {
   /** Raw Typesense documents (consumed directly by the `*Results.vue` wrappers). */
@@ -184,7 +172,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
   // ...but once the user filters down to specific types, they expect a real result list for
   // those types rather than the same 3-item preview.
   const filteredPerPage = options.filteredPerPage ?? DEFAULT_FILTERED_PER_PAGE;
-  const page = usePage();
+  const page = usePage<PageProps>();
 
   const query = ref('');
   /** What the search box should show — `''` while browsing, since `query` holds `'*'` then. */
@@ -211,8 +199,11 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
 
   let abortController: AbortController | null = null;
 
-  const config = (): TypesenseConfig | undefined => page.props.typesenseConfig as TypesenseConfig | undefined;
-  const locale = (): string => (page.props.app as { locale?: string })?.locale || 'lt';
+  const config = () => {
+    const shared = page.props.typesenseConfig;
+    return Array.isArray(shared) ? undefined : shared;
+  };
+  const locale = (): string => page.props.app?.locale || 'lt';
 
   /** Whether the collection's checkbox is checked (not the same as whether it's currently shown). */
   const isEnabled = (id: SearchCollectionId): boolean => enabledCollections.value.includes(id);

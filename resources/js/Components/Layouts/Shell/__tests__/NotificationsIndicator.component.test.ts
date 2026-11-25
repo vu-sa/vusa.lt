@@ -63,6 +63,7 @@ describe('NotificationsIndicator', () => {
         user: {
           id: 'user-1',
           name: 'Test Rep',
+          unreadNotificationsCount: 1,
           unreadNotifications: [
             {
               id: 'notif-1',
