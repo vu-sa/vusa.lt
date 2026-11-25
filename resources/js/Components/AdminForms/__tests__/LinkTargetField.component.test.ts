@@ -6,7 +6,7 @@ import LinkTargetField from '@/Components/AdminForms/LinkTargetField.vue';
 
 const resolveUrlData = ref<{ url: string } | null>(null);
 const isFetching = ref(false);
-const executeResolveUrl = vi.fn(async () => {});
+const executeResolveUrl = vi.fn(async (_body?: unknown) => {});
 
 vi.mock('@/Composables/useApi', () => ({
   useApiMutation: vi.fn((_url, _method, bodyRef) => ({

@@ -45,9 +45,9 @@ export function useSheetCrudForm<
     set: (value: boolean) => options.onUpdateOpen(value),
   });
 
-  const form = useForm(
-    options.blank() as unknown as Record<string, FormDataConvertible>,
-  ) as unknown as InertiaForm<TForm>;
+  // Widened on purpose: useForm's generic over a caller's form type exceeds tsc's instantiation depth.
+  const createForm = useForm as unknown as (data: Record<string, FormDataConvertible>) => InertiaForm<TForm>;
+  const form = createForm(options.blank() as unknown as Record<string, FormDataConvertible>);
 
   watch(options.record, (record) => {
     if (record) {
