@@ -30,6 +30,7 @@ export { default as SectionHeaderAction } from './SectionHeaderAction.vue';
 export { default as SectionHeading } from './SectionHeading.vue';
 export { default as StatusMark } from './StatusMark.vue';
 export { default as StatusBadge } from './StatusBadge.vue';
+export { default as StatusText } from './StatusText.vue';
 export { default as EmptyState } from './EmptyState.vue';
 export { default as FocusModeFrame } from './FocusModeFrame.vue';
 export { default as CollectionSkeleton } from './Skeletons/CollectionSkeleton.vue';

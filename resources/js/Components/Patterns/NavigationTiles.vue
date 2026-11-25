@@ -1,35 +1,38 @@
 <template>
-  <RuledGrid as="ul" :columns="{ base: 2, lg: columns }" top-rule="cells" data-slot="navigation-tiles">
-    <li v-for="item in items" :key="item.key" class="flex">
-      <Link
-        :href="item.href"
-        prefetch
-        :class="[
-          'group flex w-full items-start gap-3 p-4 text-left sm:p-5',
-          'transition-colors hover:bg-secondary',
-          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-        ]"
-        :data-tile="item.key"
-        @click="emit('navigate', item.key)"
-      >
-        <component :is="item.icon" class="size-5 shrink-0 text-brand" aria-hidden="true" />
-        <span class="min-w-0 flex-1">
-          <span class="block text-sm font-semibold text-foreground" data-tile-label>{{ item.label }}</span>
-          <span v-if="item.description" class="mt-1 block text-xs text-pretty text-muted-foreground" data-tile-description>
-            {{ item.description }}
-          </span>
-        </span>
-        <component
-          :is="arrowIcon ?? ArrowRight"
+  <!-- Framed: the cells' outer rules tuck under a rounded border (-m-px), so only the inner rules show. -->
+  <div :class="framed && 'overflow-hidden rounded-lg border border-border'" data-slot="navigation-tiles-frame">
+    <RuledGrid as="ul" :columns="{ base: 2, lg: columns }" top-rule="cells" :class="framed && '-m-px'" data-slot="navigation-tiles">
+      <li v-for="item in items" :key="item.key" class="flex">
+        <Link
+          :href="item.href"
+          prefetch
           :class="[
-            'mt-0.5 size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all',
-            'group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100',
+            'group flex w-full items-start gap-3 p-4 text-left sm:p-5',
+            'transition-colors hover:bg-secondary/40',
+            'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
           ]"
-          aria-hidden="true"
-        />
-      </Link>
-    </li>
-  </RuledGrid>
+          :data-tile="item.key"
+          @click="emit('navigate', item.key)"
+        >
+          <component :is="item.icon" class="size-5 shrink-0 text-brand" aria-hidden="true" />
+          <span class="min-w-0 flex-1">
+            <span class="block text-sm font-semibold text-foreground" data-tile-label>{{ item.label }}</span>
+            <span v-if="item.description" class="mt-1 block text-xs text-pretty text-muted-foreground" data-tile-description>
+              {{ item.description }}
+            </span>
+          </span>
+          <component
+            :is="arrowIcon ?? ArrowRight"
+            :class="[
+              'mt-0.5 size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all',
+              'group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100',
+            ]"
+            aria-hidden="true"
+          />
+        </Link>
+      </li>
+    </RuledGrid>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -52,6 +55,8 @@ withDefaults(defineProps<{
   items: NavigationTileItem[];
   columns?: 2 | 3 | 4;
   arrowIcon?: Component;
+  /** A rounded outer border, for tiles that sit among the boxed lists on Pradžia. */
+  framed?: boolean;
 }>(), {
   columns: 4,
 });
