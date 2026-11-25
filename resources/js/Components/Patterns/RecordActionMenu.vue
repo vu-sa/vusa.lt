@@ -11,7 +11,7 @@
       <DropdownMenuTrigger as-child>
         <Button
           variant="outline" size="icon" voice="sentence"
-          :class="['hidden pointer-coarse:size-11 md:inline-flex', triggerSize === 'default' && 'size-11']"
+          :class="['hidden pointer-coarse:size-11 md:inline-flex', triggerSize === 'default' && 'size-11', triggerSize === 'row' && 'size-8']"
           :aria-label="menuLabel" :title="menuLabel" data-testid="record-overflow-trigger"
         >
           <MoreHorizontal class="size-4" aria-hidden="true" />
@@ -50,7 +50,7 @@
       <SheetTrigger as-child>
         <Button
           variant="outline" size="icon" voice="sentence"
-          :class="['pointer-coarse:size-11 md:hidden', triggerSize === 'default' && 'size-11']"
+          :class="['pointer-coarse:size-11 md:hidden', triggerSize === 'default' && 'size-11', triggerSize === 'row' && 'size-8']"
           :aria-label="menuLabel" :title="menuLabel"
         >
           <MoreHorizontal class="size-4" aria-hidden="true" />
@@ -105,7 +105,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Co
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import { safeHref } from '@/Utils/safeHref';
 
-const props = defineProps<{ actions: AdminRecordAction[]; triggerSize?: 'compact' | 'default'; label?: string; spotlight?: boolean }>();
+const props = defineProps<{ actions: AdminRecordAction[]; triggerSize?: 'compact' | 'default' | 'row'; label?: string; spotlight?: boolean }>();
 const emit = defineEmits<{ select: [key: string]; navigate: [key: string] }>();
 const sheetOpen = ref(false);
 const featureSpotlight = useFeatureSpotlight('collection-row-actions-v1');

@@ -246,7 +246,7 @@ class DashboardController extends AdminController
     }
 
     /**
-     * Upcoming published calendar events for the compact EventCard.
+     * Upcoming published calendar events for Pradžia's events and news list.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -255,15 +255,17 @@ class DashboardController extends AdminController
         return Calendar::query()
             ->where('is_draft', false)
             ->where('date', '>=', now())
+            ->with('media')
             ->orderBy('date')
             ->take(3)
-            ->get(['id', 'title', 'date', 'end_date', 'is_all_day', 'permalink'])
+            ->get()
             ->map(fn (Calendar $event) => [
                 'id' => $event->id,
                 'title' => $event->title,
                 'date' => $event->date->toISOString(),
                 'end_date' => $event->end_date?->toISOString(),
                 'is_all_day' => (bool) $event->is_all_day,
+                'image' => ($event->imageData('main_image') ?? $event->imageData('images'))['thumb'] ?? null,
                 'public_url' => $event->publicUrl(app()->getLocale()),
             ])
             ->all();
@@ -286,7 +288,7 @@ class DashboardController extends AdminController
                 'permalink' => $news->permalink,
                 'lang' => $news->lang,
                 'publish_time' => $news->publish_time,
-                'image' => $news->getImageUrl(),
+                'image' => $news->imageData('image')['thumb'] ?? null,
                 'public_url' => $news->publicUrl(),
             ])
             ->all();

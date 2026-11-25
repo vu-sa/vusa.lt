@@ -32,7 +32,6 @@ const stubs = {
   InstitutionsNeedingAttention: true,
   RecentlyEditedList: true,
   SiteContentLists: true,
-  ReservationDraftSummary: { name: 'ReservationDraftSummary', props: ['draft'], template: '<div data-stub="reservation-draft">{{ draft.count }}</div>' },
 };
 
 const baseProps = {
@@ -127,16 +126,12 @@ describe('ShowAdminHome', () => {
     expect(queue.props('remainingCount')).toBe(4);
   });
 
-  it('shows an unfinished reservation as its own section under the tasks, only when there is one', () => {
-    expect(mountPage().find('[data-stub="reservation-draft"]').exists()).toBe(false);
+  it('hands an unfinished reservation to the quick actions instead of giving it a section', () => {
+    const reservationDraft = { name: null, count: 2, start_time: null, end_time: null };
+    const wrapper = mountPage({ reservationDraft });
 
-    const wrapper = mountPage({ reservationDraft: { name: null, count: 2, start_time: null, end_time: null } });
-    const column = wrapper.find('[data-slot="home-primary-section"]').element.firstElementChild!;
-    const draft = wrapper.find('[data-stub="reservation-draft"]');
-
-    expect(draft.text()).toBe('2');
-    expect(draft.element.parentElement).toBe(column);
-    expect(wrapper.find('attention-queue-stub [data-stub="reservation-draft"]').exists()).toBe(false);
+    expect(wrapper.findComponent({ name: 'CreateShortcuts' }).props('reservationDraft')).toEqual(reservationDraft);
+    expect(wrapper.find('[data-slot="reservation-draft-summary"]').exists()).toBe(false);
   });
 
   it('starts the welcome tour for someone who has not seen it', () => {

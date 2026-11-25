@@ -97,5 +97,6 @@ export interface HomeCalendarPreview {
   date: string;
   end_date: string | null;
   is_all_day: boolean;
+  image: string | null;
   public_url: string | null;
 }

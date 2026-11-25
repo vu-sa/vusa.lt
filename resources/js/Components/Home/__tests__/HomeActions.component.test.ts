@@ -63,6 +63,25 @@ describe('home actions', () => {
     expect(state.actions[3].action).toHaveBeenCalledOnce();
   });
 
+  it('puts an unfinished reservation first, in place of a new one, and links it to the reservation form', () => {
+    state.actions = [
+      createAction('create-new_meeting', 'atstovavimas'),
+      createAction('create-new_problem', 'atstovavimas'),
+      createAction('create-new_reservation', 'rezervacijos'),
+    ];
+
+    const wrapper = mount(CreateShortcuts, {
+      props: { reservationDraft: { name: 'Mokymai', count: 2, start_time: null, end_time: null } },
+    });
+    const rows = wrapper.findAll('[data-shortcut]');
+
+    expect(rows.map(row => row.attributes('data-shortcut'))).toEqual(['finish-reservation', 'create-new_meeting', 'create-new_problem']);
+    expect(rows[0].text()).toContain('reservations.cart.finish');
+    expect(rows[0].text()).toContain('Mokymai');
+    expect(rows[0].attributes('data-leading')).toBe('true');
+    expect(rows[0].attributes('href')).toBe('/mocked-route/reservations.create');
+  });
+
   it('fills the shortcuts with one action per workspace when the user records no meetings', () => {
     state.actions = [
       createAction('create-new_reservation', 'rezervacijos'),

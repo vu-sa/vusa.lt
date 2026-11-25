@@ -33,8 +33,6 @@
           />
         </Deferred>
 
-        <ReservationDraftSummary v-if="reservationDraft" :draft="reservationDraft" variant="home" />
-
         <UpcomingMeetingsList
           v-if="hasAtstovavimas"
           :meetings="upcomingMeetings"
@@ -53,7 +51,7 @@
       </div>
 
       <aside class="flex min-w-0 flex-col gap-10 lg:gap-14" data-slot="home-sidebar">
-        <CreateShortcuts />
+        <CreateShortcuts :reservation-draft />
 
         <Deferred :data="deferredProps">
           <template #fallback>
@@ -102,7 +100,6 @@ import type {
 } from '@/Components/Home/types';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import type { ReservationCartSummary } from '@/Components/Reservations/types';
-import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import { CollectionSkeleton, OverviewStatusList } from '@/Components/Patterns';
 import { SeasonCountdown } from '@/Features/Admin/Seasons';
 import { addressivize } from '@/Utils/String';
