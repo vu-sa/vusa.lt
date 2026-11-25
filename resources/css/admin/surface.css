@@ -107,3 +107,19 @@ html[data-surface="admin"] #nprogress .peg {
   --radius-2xl: 0px;
   --radius: 0rem;
 }
+
+/* Admin reads in Figtree: friendlier at working sizes than Atkinson's legibility-first shapes,
+   which stay the public voice (and that of public previews inside admin). */
+html[data-surface="admin"],
+html[data-surface="admin"] body {
+  font-family: var(--font-admin);
+}
+
+[data-surface="admin"] [data-surface="public"] {
+  font-family: var(--font-public);
+}
+
+html[data-surface="admin"] [data-sonner-toast][data-styled='true'] {
+  border-radius: var(--radius-md);
+  font-family: var(--font-admin);
+}
