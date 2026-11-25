@@ -138,7 +138,6 @@
 
 <script setup lang="tsx">
 import { router, usePage } from '@inertiajs/vue3';
-import type { CellContext, ColumnDef, HeaderContext, TableFeatures } from '@tanstack/vue-table';
 import { useClipboard } from '@vueuse/core';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Copy, Download, Edit, ExternalLink, Eye, Inbox, Trash2 } from '@lucide/vue';
@@ -151,6 +150,7 @@ import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import type { DataTableColumn } from '@/Components/ui/data-table/dataTableFeatures';
 import { DateCell, TruncatedText } from '@/Components/ui/data-table/cells';
 import {
   Dialog,
@@ -421,12 +421,12 @@ const formatFieldValue = (field: { key?: string; id?: string | number; type?: st
   return String(value);
 };
 
-const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unknown>, unknown>[]>(() => {
-  const columns: ColumnDef<TableFeatures, Record<string, unknown>, unknown>[] = [
+const registrationColumns = computed<DataTableColumn<Record<string, unknown>>[]>(() => {
+  const columns: DataTableColumn<Record<string, unknown>>[] = [
     {
       id: 'actions',
       header: () => '',
-      cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => (
+      cell: ({ row }) => (
         <div class="flex justify-center">
           <Button
             variant="ghost"
@@ -446,7 +446,7 @@ const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unk
     {
       accessorKey: 'created_at',
       header: () => $t('Sukūrimo laikas'),
-      cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => {
+      cell: ({ row }) => {
         const date = parseDate(row.original.created_at as string);
         return date
           ? <DateCell date={date} mode="absolute" format={{ year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }} />
@@ -457,10 +457,10 @@ const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unk
     {
       accessorKey: 'id',
       header: () => 'ID',
-      cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => <TruncatedText text={String(row.original.id)} />,
+      cell: ({ row }) => <TruncatedText text={String(row.original.id)} />,
       size: 60,
     },
-    ...props.form.form_fields.map((field) => {
+    ...props.form.form_fields.map((field): DataTableColumn<Record<string, unknown>> => {
       const columnWidth = field.type === 'enum' ? 180 : 130;
 
       return {
@@ -468,7 +468,7 @@ const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unk
         id: String(field.id),
         size: columnWidth,
         enableSorting: true,
-        header: (info: HeaderContext<TableFeatures, Record<string, unknown>, unknown>) => {
+        header: (info) => {
           return (
             <TooltipProvider>
               <Tooltip>
@@ -489,7 +489,7 @@ const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unk
             </TooltipProvider>
           );
         },
-        cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => {
+        cell: ({ row }) => {
           const value = row.getValue(String(field.id));
           const formattedValue = formatFieldValue(field, value);
 

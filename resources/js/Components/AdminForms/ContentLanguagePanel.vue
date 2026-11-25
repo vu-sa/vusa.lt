@@ -171,13 +171,22 @@ const pairingConfirmation = defineModel<string | undefined>('pairingConfirmation
 let pendingId: number | null = null;
 let pendingToken: string | undefined;
 watch(otherLangId, async (id) => {
-  if (!id) { selected.value = null; return; }
+  if (!id) {
+    selected.value = null;
+    return;
+  }
   try {
     const result = await apiRequest<OtherLangCandidate>(route('api.v1.admin.contentEditor.show', { kind: props.collection, record: id }));
-    if (!result.ok || !result.data) pairError.value = $t('editor.counterpart_unavailable');
-    else if (otherLangId.value === id) selected.value = result.data;
+    if (!result.ok || !result.data) {
+      pairError.value = $t('editor.counterpart_unavailable');
+    }
+    else if (otherLangId.value === id) {
+      selected.value = result.data;
+    }
   }
-  catch { pairError.value = $t('editor.counterpart_unavailable'); }
+  catch {
+    pairError.value = $t('editor.counterpart_unavailable');
+  }
 }, { immediate: true });
 
 // Tenant filtering is a convenience; the save endpoint checks every affected record.
@@ -217,9 +226,13 @@ async function onConfirm(hits: NormalizedSearchHit[]) {
       pairDescription.value = `${$t('editor.pairing_changes')}\n${records.map(record => `${record.title} (${record.lang}) → ${records.find(candidate => candidate.id === record.other_lang_id)?.title ?? $t('editor.unpaired')}`).join('\n')}`;
       confirmOpen.value = true;
     }
-    else applySelection();
+    else {
+      applySelection();
+    }
   }
-  catch (error) { pairError.value = String(error); }
+  catch (error) {
+    pairError.value = String(error);
+  }
 }
 function openWorkspace() {
   workspaceOpen.value = true;

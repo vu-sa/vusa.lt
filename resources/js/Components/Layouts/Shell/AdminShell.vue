@@ -62,7 +62,6 @@
           </MobileContextBar>
           <SectionTabs :workspace="activeWorkspace" :active-section class="max-md:hidden" />
         </template>
-        <SystemAnnouncement :message="systemMessage" />
       </div>
 
       <main id="main-content" tabindex="-1" class="min-w-0 flex-1 outline-none">
@@ -110,7 +109,6 @@ import { useStartFm } from '@/Composables/useStartFm';
 import { SeasonSnowGust, useSeasonSnow } from '@/Features/Admin/Seasons';
 import { SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 
-import SystemAnnouncement from './SystemAnnouncement.vue';
 import ShellTopBar from './ShellTopBar.vue';
 import SectionTabs from './SectionTabs.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
@@ -141,7 +139,6 @@ const menuOpen = ref(false);
 const canCreate = computed(() => workspaces.value.some(workspace => workspace.createActions.length > 0));
 // Visi skyriai lists only what the user may open, so it is never a dead end and is offered to everyone.
 const showAllSections = true;
-const systemMessage = computed(() => page.props.app?.systemMessage ?? null);
 
 // iOS can leave the window scrolled after the keyboard closes, even with overflow hidden.
 const resetWindowScroll = () => {

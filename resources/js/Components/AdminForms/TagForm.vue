@@ -83,7 +83,6 @@ import { computed, ref } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, Star, Tags, Trash2 } from '@lucide/vue';
-import type { ColumnDef } from '@tanstack/vue-table';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/AdminForms/MultiLocaleInput.vue';
@@ -95,6 +94,7 @@ import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
+import type { DataTableColumn } from '@/Components/ui/data-table/dataTableFeatures';
 import { Input } from '@/Components/ui/input';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { StatusPresentation } from '@/Constants/statusIcons';
@@ -156,8 +156,7 @@ const topicStatus: StatusPresentation = {
   icon: Star,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const columns: ColumnDef<any, NewsItem, unknown>[] = [
+const columns: DataTableColumn<NewsItem>[] = [
   {
     accessorKey: 'title',
     header: () => $t('forms.fields.title'),

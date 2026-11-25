@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
-import { nextTick, h } from 'vue';
-import type { ColumnDef } from '@tanstack/vue-table';
+import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 
 import DataTable from '@/Components/ui/data-table/DataTable.vue';
+import type { DataTableColumn } from '@/Components/ui/data-table/dataTableFeatures';
 import { commonStubs } from '@/tests/stubs';
 
 interface TestRow {
@@ -12,7 +12,10 @@ interface TestRow {
   age: number;
 }
 
-const columns: ColumnDef<any, TestRow, any>[] = [
+const TestDataTable = DataTable<TestRow>;
+type TestTableProps = Parameters<typeof TestDataTable>[0];
+
+const columns: DataTableColumn<TestRow>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
@@ -40,8 +43,8 @@ const data: TestRow[] = [
 describe('DataTable.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
-  const createWrapper = (props: Record<string, any> = {}) => {
-    return mount(DataTable, {
+  const createWrapper = (props: Partial<TestTableProps> = {}) => {
+    return mount(TestDataTable, {
       props: {
         columns,
         data,
@@ -136,7 +139,7 @@ describe('DataTable.vue', () => {
     });
 
     it('renders empty slot when provided', () => {
-      wrapper = mount(DataTable, {
+      wrapper = mount(TestDataTable, {
         props: { columns, data: [] },
         slots: {
           empty: '<div data-testid="custom-empty">Custom Empty</div>',
@@ -266,7 +269,7 @@ describe('DataTable.vue', () => {
     });
 
     it('uses custom pagination slot when provided', () => {
-      wrapper = mount(DataTable, {
+      wrapper = mount(TestDataTable, {
         props: { columns, data, pagination: true, pageSize: 2 },
         slots: {
           pagination: '<div data-testid="custom-pagination">Custom Pagination</div>',
@@ -290,7 +293,7 @@ describe('DataTable.vue', () => {
   });
 
   describe('row selection', () => {
-    const columnsWithSelection: ColumnDef<any, TestRow, any>[] = [
+    const columnsWithSelection: DataTableColumn<TestRow>[] = [
       {
         accessorKey: 'id',
         header: 'ID',
@@ -463,7 +466,7 @@ describe('DataTable.vue', () => {
 
   describe('slots', () => {
     it('renders filters slot', () => {
-      wrapper = mount(DataTable, {
+      wrapper = mount(TestDataTable, {
         props: { columns, data },
         slots: {
           filters: '<div data-testid="filters-slot">Filters</div>',
@@ -486,7 +489,7 @@ describe('DataTable.vue', () => {
     });
 
     it('renders actions slot', () => {
-      wrapper = mount(DataTable, {
+      wrapper = mount(TestDataTable, {
         props: { columns, data },
         slots: {
           actions: '<div data-testid="actions-slot">Actions</div>',

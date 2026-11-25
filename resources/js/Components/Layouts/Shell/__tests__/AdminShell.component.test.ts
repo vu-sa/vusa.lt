@@ -30,7 +30,6 @@ const stubs = {
     template: '<button data-testid="staging" :data-compact="compact" :data-dismissed="dismissed" @click="$emit(\'update:dismissed\', !dismissed)" />',
   },
   ImpersonateBanner: true,
-  SystemAnnouncement: true,
   MobileMenuPanel: true,
   SectionTabs: { template: '<nav data-testid="section-tabs" v-bind="$attrs" />' },
   MobileBottomBar: { template: '<nav data-testid="bottom-bar" />' },

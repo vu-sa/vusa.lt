@@ -57,7 +57,9 @@ try {
 catch { /* Server recovery remains available when browser storage is blocked. */ }
 watch(() => source?.form.id, (id) => {
   if (!id) return;
-  try { localStorage.setItem(`content-translation:${userId}:${source?.kind}:${id}`, draftIdentity); }
+  try {
+    localStorage.setItem(`content-translation:${userId}:${source?.kind}:${id}`, draftIdentity);
+  }
   catch { /* The existing recovery identity still belongs to this editor session. */ }
 });
 watch(open, async (value) => {
@@ -66,28 +68,46 @@ watch(open, async (value) => {
   try {
     if (props.counterpartId) {
       const result = await apiRequest<ContentEditorData>(route('api.v1.admin.contentEditor.show', { kind: source.kind, record: props.counterpartId }));
-      if (result.ok && result.data) target.value = result.data;
-      else error.value = contentEditorRequestError(result);
+      if (result.ok && result.data) {
+        target.value = result.data;
+      }
+      else {
+        error.value = contentEditorRequestError(result);
+      }
       return;
     }
     target.value = blankTranslation(source.form);
     if (source.kind === 'pages' && source.form.parent_id) {
       const result = await apiRequest<ContentEditorData>(route('api.v1.admin.contentEditor.show', { kind: 'pages', record: source.form.parent_id }));
-      if (result.ok && result.data) target.value!.parent_id = result.data.other_lang_id ?? null;
-      else error.value = contentEditorRequestError(result);
+      if (result.ok && result.data) {
+        target.value!.parent_id = result.data.other_lang_id ?? null;
+      }
+      else {
+        error.value = contentEditorRequestError(result);
+      }
     }
   }
-  catch (failure) { error.value = String(failure); }
+  catch (failure) {
+    error.value = String(failure);
+  }
 }, { immediate: true });
 async function paired() {
   if (!source?.form.id) return;
   pairingInProgress.value = true;
   try {
     const result = await apiRequest<ContentEditorData>(route('api.v1.admin.contentEditor.show', { kind: source.kind, record: source.form.id }));
-    if (result.ok && result.data) source.acknowledgePairing?.(result.data);
-    else error.value = $t('editor.counterpart_unavailable');
+    if (result.ok && result.data) {
+      source.acknowledgePairing?.(result.data);
+    }
+    else {
+      error.value = $t('editor.counterpart_unavailable');
+    }
   }
-  catch { error.value = $t('editor.counterpart_unavailable'); }
-  finally { pairingInProgress.value = false; }
+  catch {
+    error.value = $t('editor.counterpart_unavailable');
+  }
+  finally {
+    pairingInProgress.value = false;
+  }
 }
 </script>

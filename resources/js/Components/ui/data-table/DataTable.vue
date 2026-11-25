@@ -48,7 +48,7 @@
                 :class="{
                   'cursor-pointer select-none hover:bg-secondary transition-colors': header.column.getCanSort(),
                 }"
-                :style="{ width: header.column.columnDef.size ? `${header.column.columnDef.size}px` : 'auto' }"
+                :style="{ width: columnWidth(header.column.columnDef) }"
                 :aria-sort="header.column.getIsSorted() ? (header.column.getIsSorted() === 'asc' ? 'ascending' : 'descending') : undefined"
                 @click="header.column.getCanSort() ? header.column.getToggleSortingHandler()?.($event) : undefined"
               >
@@ -93,7 +93,7 @@
                   v-for="cell in row.getVisibleCells()"
                   :key="cell.id"
                   class="min-w-0"
-                  :style="{ width: cell.column.columnDef.size ? `${cell.column.columnDef.size}px` : 'auto' }"
+                  :style="{ width: columnWidth(cell.column.columnDef) }"
                 >
                   <FlexRender :cell />
                 </TableCell>
@@ -163,24 +163,13 @@
   </div>
 </template>
 
-<script setup lang="ts" generic="TData extends RowData, TValue">
+<script setup lang="ts" generic="TData extends RowData">
 import {
-  columnFilteringFeature,
-  columnVisibilityFeature,
-  createFilteredRowModel,
-  createPaginatedRowModel,
-  createSortedRowModel,
-  filterFn_includesString,
-  globalFilteringFeature,
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  tableFeatures,
-  useTable,
   FlexRender,
-  type ColumnDef,
+  useTable,
   type ColumnVisibilityState,
   type PaginationState,
+  type Row,
   type RowData,
   type RowSelectionState,
   type SortingState,
@@ -219,9 +208,10 @@ import {
   PaginationLast,
 } from '@/Components/ui/pagination';
 
+import { dataTableFeatures, type DataTableColumn, type DataTableFeatures } from './dataTableFeatures';
+
 const props = defineProps<{
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  columns: ColumnDef<any, TData, TValue>[];
+  columns: DataTableColumn<TData>[];
   data: TData[];
   rowClassName?: (row: TData) => string;
   pageSize?: number;
@@ -231,13 +221,11 @@ const props = defineProps<{
   initialSort?: { id: string; desc: boolean }[];
   globalFilter?: string;
   // Row selection props
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  enableRowSelection?: boolean | ((row: any) => boolean);
+  enableRowSelection?: boolean | ((row: Row<DataTableFeatures, TData>) => boolean);
   enableMultiRowSelection?: boolean;
   initialRowSelection?: RowSelectionState;
   rowSelectionState?: RowSelectionState;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getRowId?: (originalRow: TData, index: number, parent?: any) => string;
+  getRowId?: (originalRow: TData, index: number, parent?: Row<DataTableFeatures, TData>) => string;
   enableRowSelectionColumn?: boolean;
   showSelectionCount?: boolean;
 }>();
@@ -249,20 +237,9 @@ const emit = defineEmits([
   'update:rowSelection',
 ]);
 
-const features = tableFeatures({
-  rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
-  columnFilteringFeature,
-  filteredRowModel: createFilteredRowModel(),
-  globalFilteringFeature,
-  filterFns: {
-    includesString: filterFn_includesString,
-  },
-  rowPaginationFeature,
-  paginatedRowModel: createPaginatedRowModel(),
-  rowSelectionFeature,
-  columnVisibilityFeature,
-});
+function columnWidth(column: object): string {
+  return 'size' in column && typeof column.size === 'number' && column.size ? `${column.size}px` : 'auto';
+}
 
 const sorting = ref<SortingState>(props.initialSort || []);
 const globalFilter = ref(props.globalFilter || '');
@@ -312,8 +289,7 @@ watch(() => props.rowSelectionState, (newVal) => {
 }, { immediate: true });
 
 // Generate a selection column definition
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const selectionColumn = computed<ColumnDef<typeof features, TData, any>>(() => {
+const selectionColumn = computed<DataTableColumn<TData>>(() => {
   return {
     id: 'select',
     header: ({ table }) => {
@@ -349,8 +325,8 @@ const tableColumns = computed(() => {
   return props.columns;
 });
 
-const table = useTable<typeof features, TData>({
-  features,
+const table = useTable<typeof dataTableFeatures, TData>({
+  features: dataTableFeatures,
   get data() { return props.data; },
   get columns() { return tableColumns.value; },
   enableRowSelection: typeof props.enableRowSelection === 'function'
