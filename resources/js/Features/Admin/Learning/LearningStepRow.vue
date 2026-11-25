@@ -7,7 +7,7 @@
     <div class="min-w-0">
       <div class="flex min-h-9 items-center gap-2 pointer-coarse:min-h-11" data-slot="step-title-row">
         <FileText v-if="isDocument" class="size-5 shrink-0 text-muted-foreground" role="img" :aria-label="$t('learning.path.kind_document')" />
-        <Link :href="route('source' in step ? 'knowledgeItems.show' : 'learningSteps.show', step.id)" :class="['min-w-0 text-lg font-bold leading-6 underline decoration-border underline-offset-4 hover:decoration-foreground', isResolved ? 'text-muted-foreground' : 'text-foreground']">
+        <Link :href="route('source' in step ? 'knowledgeItems.show' : 'learningSteps.show', step.id)" :class="['min-w-0 text-lg font-semibold leading-6 underline decoration-border underline-offset-4 hover:decoration-foreground', isResolved ? 'text-muted-foreground' : 'text-foreground']">
           {{ step.title }}
         </Link>
       </div>

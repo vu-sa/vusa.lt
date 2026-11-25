@@ -63,7 +63,7 @@
           @dismiss="linkSpotlight.dismiss()"
         >
           <p class="inline-flex items-center gap-2 text-xs text-muted-foreground" data-slot="wiki-link-hint">
-            <kbd class="border border-border bg-background px-1.5 font-mono text-[11px] font-bold text-foreground">[[</kbd>
+            <kbd class="border border-border bg-background px-1.5 font-mono text-[11px] font-semibold text-foreground">[[</kbd>
             {{ $t('learning.wiki.link_button') }}
           </p>
         </SpotlightPopover>

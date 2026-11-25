@@ -85,7 +85,7 @@
         <summary
           :class="[
             'u-touch inline-flex cursor-pointer items-center gap-1.5',
-            'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
+            'text-xs font-semibold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
           ]"
         >
           <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />

@@ -23,7 +23,7 @@
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <p v-if="selectedSection" class="text-xs font-bold tracking-[0.12em] uppercase" :style="{ color: sectionColors.get(selectedSection.id) }">
+            <p v-if="selectedSection" class="text-xs font-semibold tracking-[0.12em] uppercase" :style="{ color: sectionColors.get(selectedSection.id) }">
               {{ selectedSection.title }}
             </p>
             <h2 class="mt-1 text-base leading-snug font-semibold text-foreground">

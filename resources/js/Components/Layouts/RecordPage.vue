@@ -192,7 +192,7 @@
             :data-section="section.value"
             :class="[
               '-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 pointer-coarse:h-11',
-              'text-xs font-bold uppercase tracking-wide whitespace-nowrap',
+              'text-xs font-semibold uppercase tracking-wide whitespace-nowrap',
               section.value === currentSection
                 ? 'border-brand text-foreground'
                 : 'border-transparent text-muted-foreground hover:text-foreground',

@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-2" data-slot="form-field">
-    <Label :for="id" :class="cn('flex items-center gap-1.5 text-sm font-bold text-muted-foreground', labelClass)">
+    <Label :for="id" :class="cn('flex items-center gap-1.5 text-sm font-semibold text-muted-foreground', labelClass)">
       {{ label ?? $t('Nuoroda') }}
     </Label>
 

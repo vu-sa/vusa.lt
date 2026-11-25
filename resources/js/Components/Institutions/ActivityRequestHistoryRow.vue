@@ -4,7 +4,7 @@
     data-slot="activity-request-recipient"
   >
     <div class="min-w-0 space-y-1">
-      <p class="font-bold text-foreground">
+      <p class="font-semibold text-foreground">
         <template v-if="request.institution">
           <Link
             v-if="request.institution.url"

@@ -48,9 +48,9 @@
             v-if="identity"
             :type="identity.entity"
             :label="$t(identity.label)"
-            class="min-w-0 truncate text-base font-bold text-foreground sm:text-lg [&>span:first-child]:hidden"
+            class="min-w-0 truncate text-base font-semibold text-foreground sm:text-lg [&>span:first-child]:hidden"
           />
-          <h2 v-else class="min-w-0 truncate text-base font-bold text-foreground sm:text-lg">
+          <h2 v-else class="min-w-0 truncate text-base font-semibold text-foreground sm:text-lg">
             {{ $t('action_window.personas.title') }}
           </h2>
         </div>

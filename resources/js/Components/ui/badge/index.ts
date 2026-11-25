@@ -4,7 +4,7 @@ import { cva } from 'class-variance-authority';
 export { default as Badge } from './Badge.vue';
 
 export const badgeVariants = cva(
-  'inline-flex items-center gap-1 rounded-sm border font-bold transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
+  'inline-flex items-center gap-1 rounded-sm border font-(--action-weight) transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
   {
     variants: {
       variant: {

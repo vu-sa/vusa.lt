@@ -70,7 +70,7 @@
           v-else
           class="flex h-full w-full items-center justify-center bg-muted"
         >
-          <span class="text-2xl font-bold text-muted-foreground">{{ initials(user.name) }}</span>
+          <span class="text-2xl font-semibold text-muted-foreground">{{ initials(user.name) }}</span>
         </div>
       </div>
 

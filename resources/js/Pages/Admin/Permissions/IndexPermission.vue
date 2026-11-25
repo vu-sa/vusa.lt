@@ -17,7 +17,7 @@
     </template>
 
     <template #cell="{ item, column }">
-      <span v-if="column.key === 'name'" class="font-mono text-sm font-bold">{{ item.name }}</span>
+      <span v-if="column.key === 'name'" class="font-mono text-sm font-semibold">{{ item.name }}</span>
       <span v-else-if="column.key === 'resource'" class="text-muted-foreground">{{ part(item, 0) }}</span>
       <span v-else-if="column.key === 'action'" class="text-muted-foreground">{{ part(item, 1) }}</span>
       <span v-else-if="column.key === 'scope'" class="text-muted-foreground">{{ scopeLabel(item) }}</span>

@@ -12,7 +12,7 @@
       <span class="text-lg leading-none font-semibold tabular-nums">{{ day(meeting.start_time) }}</span>
     </time>
     <span class="min-w-0 flex-1">
-      <span class="block truncate font-bold">{{ meeting.title }}</span>
+      <span class="block truncate font-semibold">{{ meeting.title }}</span>
       <span class="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
         <span v-if="meeting.is_followed" class="inline-flex shrink-0 items-center gap-1 text-foreground" data-slot="upcoming-meeting-followed">
           <Eye class="size-3.5" aria-hidden="true" />

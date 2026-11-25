@@ -8,7 +8,7 @@
           prefetch
           class="flex flex-col gap-1 px-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
-          <span class="line-clamp-2 text-pretty font-bold text-foreground">{{ record.title }}</span>
+          <span class="line-clamp-2 text-pretty font-semibold text-foreground">{{ record.title }}</span>
           <span class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
             <EntityTypeMark :type="record.type" class="text-xs" />
             <span aria-hidden="true">·</span>

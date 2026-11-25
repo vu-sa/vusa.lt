@@ -9,7 +9,7 @@
       <div class="flex min-w-0 items-center gap-3">
         <AlertTriangle class="size-4 shrink-0 text-status-attention" aria-hidden="true" />
         <span class="min-w-0 truncate">
-          <span class="font-bold uppercase">{{ $t('staging.title') }}</span>
+          <span class="font-semibold uppercase">{{ $t('staging.title') }}</span>
           <span class="hidden text-muted-foreground sm:inline"> · {{ $t('staging.summary') }}</span>
         </span>
       </div>

@@ -8,7 +8,7 @@
       <li v-for="entry in rows" :key="entry.id" class="flex items-start gap-3 py-3 text-sm">
         <component :is="entry.icon ?? CircleCheck" class="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <span class="min-w-0 flex-1">
-          <span class="font-bold text-foreground">{{ entry.title }}</span>
+          <span class="font-semibold text-foreground">{{ entry.title }}</span>
           <span v-if="entry.emptyText" class="text-muted-foreground"> — {{ entry.emptyText }}</span>
         </span>
       </li>

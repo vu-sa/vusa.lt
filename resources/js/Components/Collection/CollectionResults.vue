@@ -6,9 +6,9 @@
     <div class="mb-3 flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3" data-slot="collection-results-toolbar">
       <div class="flex min-h-9 min-w-0 items-center gap-3 sm:gap-4">
         <p v-if="hasSearched && !error" class="text-xs text-muted-foreground" aria-live="polite">
-          {{ $t('Rasta') }} <span class="font-bold tabular-nums text-foreground">{{ total }}</span>
+          {{ $t('Rasta') }} <span class="font-semibold tabular-nums text-foreground">{{ total }}</span>
         </p>
-        <label v-if="selectable && view !== 'table' && allItems.length > 0" class="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <label v-if="selectable && view !== 'table' && allItems.length > 0" class="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Checkbox
             :model-value="allSelectedState"
             :aria-label="$t('Pažymėti visus rodomus')"

@@ -23,7 +23,7 @@
     </span>
 
     <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-      <span class="text-base font-bold leading-snug text-foreground">
+      <span class="text-base font-semibold leading-snug text-foreground">
         <slot name="title">{{ title }}</slot>
       </span>
       <span v-if="description || $slots.description" class="text-xs leading-snug text-muted-foreground mt-0.5">

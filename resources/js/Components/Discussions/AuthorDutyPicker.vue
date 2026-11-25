@@ -23,7 +23,7 @@
       </DropdownMenuLabel>
       <DropdownMenuRadioGroup :model-value="model ?? undefined" @update:model-value="value => model = String(value)">
         <DropdownMenuGroup v-for="group in groups" :key="group.key">
-          <DropdownMenuLabel v-if="groups.length > 1" class="pt-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <DropdownMenuLabel v-if="groups.length > 1" class="pt-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {{ group.label }}
           </DropdownMenuLabel>
           <DropdownMenuRadioItem

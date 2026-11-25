@@ -4,7 +4,7 @@
       <dt class="text-muted-foreground">
         {{ $t('Sukurta') }}
       </dt>
-      <dd class="text-right font-bold text-foreground tabular-nums">
+      <dd class="text-right font-semibold text-foreground tabular-nums">
         <time :datetime="createdAt">{{ formatDateTime(createdAt) }}</time>
       </dd>
     </div>
@@ -12,7 +12,7 @@
       <dt class="text-muted-foreground">
         {{ $t('Atnaujinta') }}
       </dt>
-      <dd class="text-right font-bold text-foreground tabular-nums">
+      <dd class="text-right font-semibold text-foreground tabular-nums">
         <time :datetime="updatedAt">{{ formatDateTime(updatedAt) }}</time>
       </dd>
     </div>

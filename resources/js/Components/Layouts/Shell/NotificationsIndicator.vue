@@ -16,7 +16,7 @@
         </Transition>
         <span
           v-if="unreadNotificationsCount > 0"
-          class="absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center bg-brand-fill px-0.5 text-[10px] font-bold text-brand-foreground"
+          class="absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center bg-brand-fill px-0.5 text-[10px] font-semibold text-brand-foreground"
           aria-live="polite"
         >
           {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
@@ -35,7 +35,7 @@
     >
       <!-- Header -->
       <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <h2 class="text-sm font-bold text-foreground">
+        <h2 class="text-sm font-semibold text-foreground">
           {{ $t('Pranešimai') }}
         </h2>
         <div class="flex items-center gap-1.5">
@@ -44,7 +44,7 @@
             variant="ghost"
             size="xs"
             voice="sentence"
-            class="text-xs font-bold uppercase tracking-wide text-brand hover:text-foreground pointer-coarse:min-h-11"
+            class="text-xs font-semibold uppercase tracking-wide text-brand hover:text-foreground pointer-coarse:min-h-11"
             @click="markAllAsRead"
           >
             {{ $t('Žymėti skaitytais') }}
@@ -91,7 +91,7 @@
             >
               <!-- Eyebrow: Tag & Unread marker dot -->
               <div class="flex items-center gap-1.5">
-                <span class="text-[10px] font-bold uppercase tracking-wide text-brand">
+                <span class="text-[10px] font-semibold uppercase tracking-wide text-brand">
                   {{ getNotificationCategoryTag(notification) }}
                 </span>
                 <span
@@ -195,7 +195,7 @@
       <Link
         :href="route('notifications.index')"
         :class="[
-          'block shrink-0 border-t border-border px-4 py-3 text-center text-xs font-bold uppercase tracking-wide',
+          'block shrink-0 border-t border-border px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide',
           'text-brand transition-colors hover:bg-secondary/60 pointer-coarse:min-h-11',
         ]"
         @click="isOpen = false"

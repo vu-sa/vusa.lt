@@ -17,7 +17,7 @@
         <Link
           v-if="backHref"
           :href="backHref"
-          class="group inline-flex shrink-0 items-center gap-2 text-sm font-bold text-foreground transition-colors hover:text-brand"
+          class="group inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-brand"
         >
           <span class="flex size-9 items-center justify-center rounded-md border border-border transition-colors group-hover:border-brand pointer-coarse:size-11">
             <ArrowLeft class="size-4" />
@@ -27,7 +27,7 @@
 
         <div class="min-w-0 flex-1 border-l border-border pl-3">
           <div class="flex items-center gap-2 min-w-0">
-            <p class="truncate text-sm font-bold text-foreground" data-testid="form-page-bar-title">
+            <p class="truncate text-sm font-semibold text-foreground" data-testid="form-page-bar-title">
               <slot name="bar-title">
                 {{ barTitle ?? title }}
               </slot>

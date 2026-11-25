@@ -17,7 +17,7 @@
         :class="[ROW_ITEM_CLASS, ROW_PADDING_CLASS, 'flex-col gap-2 sm:flex-row sm:items-center']"
       >
         <div class="flex shrink-0 items-baseline gap-2 sm:w-36">
-          <span class="font-bold text-foreground">{{ roster.label }}</span>
+          <span class="font-semibold text-foreground">{{ roster.label }}</span>
           <span class="text-xs text-muted-foreground">
             {{ roster.is_current ? $t('secretaries.institution.current_term') : $t('secretaries.institution.next_term') }}
           </span>

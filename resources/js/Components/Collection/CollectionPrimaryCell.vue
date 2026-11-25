@@ -7,7 +7,7 @@
       data-collection-open
       :title
       :class="[
-        'block font-bold text-foreground hover:text-brand',
+        'block font-semibold text-foreground hover:text-brand',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
         titleClass,
       ]"
@@ -20,7 +20,7 @@
       data-collection-open
       :title
       :class="[
-        'block max-w-full text-left font-bold text-foreground hover:text-brand',
+        'block max-w-full text-left font-semibold text-foreground hover:text-brand',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
         titleClass,
       ]"
@@ -28,7 +28,7 @@
     >
       <slot><SearchMatch :match="titleMatch" :title /></slot>
     </button>
-    <p v-else :title :class="['font-bold text-foreground', titleClass]">
+    <p v-else :title :class="['font-semibold text-foreground', titleClass]">
       <slot><SearchMatch :match="titleMatch" :title /></slot>
     </p>
 

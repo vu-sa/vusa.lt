@@ -6,7 +6,7 @@
     >
       <h2
         v-if="title || $slots.title"
-        class="text-lg font-bold leading-snug tracking-tight text-foreground sm:text-xl text-balance"
+        class="text-lg font-semibold leading-snug tracking-tight text-foreground sm:text-xl text-balance"
       >
         <slot name="title">
           {{ title }}

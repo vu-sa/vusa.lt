@@ -11,11 +11,11 @@
       >
         <Avatar class="size-6">
           <AvatarImage v-if="user?.profile_photo_path" :src="user.profile_photo_path" :alt="user.name" />
-          <AvatarFallback class="bg-brand-fill text-xs font-bold text-brand-foreground dark:bg-brand-fill dark:text-brand-foreground">
+          <AvatarFallback class="bg-brand-fill text-xs font-semibold text-brand-foreground dark:bg-brand-fill dark:text-brand-foreground">
             {{ initials(user?.name) }}
           </AvatarFallback>
         </Avatar>
-        <span class="hidden max-w-28 truncate text-xs font-bold text-foreground lg:inline">{{ user?.name }}</span>
+        <span class="hidden max-w-28 truncate text-xs font-semibold text-foreground lg:inline">{{ user?.name }}</span>
         <ChevronDown
           class="hidden size-3.5 text-muted-foreground transition-transform duration-200 lg:inline"
           :class="{ 'rotate-180': isOpen }"
@@ -27,7 +27,7 @@
     <DropdownMenuContent align="end" class="w-72 rounded-md border border-border bg-popover p-0 shadow-none">
       <!-- User Identity Header -->
       <div class="border-b border-border px-4 py-3">
-        <p class="truncate text-sm font-bold text-foreground">
+        <p class="truncate text-sm font-semibold text-foreground">
           {{ user?.name }}
         </p>
         <p class="truncate text-xs text-muted-foreground">
@@ -128,7 +128,7 @@
             <span>{{ $t('shell.account.about') }}</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent class="w-56 rounded-md border border-border bg-popover p-1 shadow-none">
-            <DropdownMenuLabel class="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <DropdownMenuLabel class="px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ lastUpdateDate ?? 'VU SA' }}
             </DropdownMenuLabel>
             <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">

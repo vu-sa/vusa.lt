@@ -74,7 +74,7 @@
 
       <!-- Topics -->
       <div v-if="layout !== 'conversation' && topics.length" class="space-y-2" data-slot="discussion-topics">
-        <h3 v-if="plainComments.length" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h3 v-if="plainComments.length" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {{ $t('discussions.topic.heading') }} · {{ topics.length }}
         </h3>
         <DiscussionTopic
@@ -109,7 +109,7 @@
 
       <!-- Comments -->
       <div v-if="plainComments.length" data-slot="discussion-comments">
-        <h3 v-if="layout !== 'conversation' && topics.length" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h3 v-if="layout !== 'conversation' && topics.length" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {{ $t('discussions.comments_heading') }} · {{ plainComments.length }}
         </h3>
         <div class="divide-y divide-border">

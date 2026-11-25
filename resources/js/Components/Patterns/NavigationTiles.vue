@@ -14,7 +14,7 @@
       >
         <component :is="item.icon" class="size-5 shrink-0 text-brand" aria-hidden="true" />
         <span class="min-w-0 flex-1">
-          <span class="block text-sm font-bold text-foreground" data-tile-label>{{ item.label }}</span>
+          <span class="block text-sm font-semibold text-foreground" data-tile-label>{{ item.label }}</span>
           <span v-if="item.description" class="mt-1 block text-xs text-pretty text-muted-foreground" data-tile-description>
             {{ item.description }}
           </span>

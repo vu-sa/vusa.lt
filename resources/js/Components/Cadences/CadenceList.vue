@@ -33,7 +33,7 @@
             <DateBadge :date="cadence.start_date" />
           </template>
           <!-- Derived from the dates rather than typed: the two can never disagree. -->
-          <p class="truncate font-bold text-foreground">
+          <p class="truncate font-semibold text-foreground">
             {{ cadence.label }}
           </p>
           <p class="mt-0.5 truncate text-xs text-muted-foreground tabular-nums">

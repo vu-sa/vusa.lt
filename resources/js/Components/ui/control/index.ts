@@ -8,7 +8,7 @@ import { cva } from 'class-variance-authority';
 export const controlVariants = cva(
   [
     'inline-flex shrink-0 items-center justify-center gap-2 border',
-    'text-xs font-bold transition-colors',
+    'text-xs font-(--action-weight) transition-colors',
     'outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
     'disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0',
   ],
@@ -44,7 +44,7 @@ export const segmentGroupClass = 'inline-flex h-11 shrink-0 rounded-md border bo
 export const segmentVariants = cva(
   [
     'flex h-full items-center justify-center gap-1.5 rounded-sm px-3',
-    'text-xs font-bold uppercase tracking-wide transition-colors',
+    'text-xs font-(--caps-weight) uppercase tracking-wide transition-colors',
     'outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 [&_svg]:size-4 [&_svg]:shrink-0',
   ],
   {

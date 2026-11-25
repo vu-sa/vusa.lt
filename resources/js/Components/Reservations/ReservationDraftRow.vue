@@ -6,7 +6,7 @@
   >
     <ShoppingBasket class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
     <span class="min-w-0 flex-1">
-      <span class="block text-pretty font-bold text-foreground">
+      <span class="block text-pretty font-semibold text-foreground">
         {{ $t('reservations.cart.finish_named', { name: draft.name || $t('reservations.cart.untitled') }) }}
       </span>
       <span class="mt-0.5 block text-xs text-muted-foreground tabular-nums">
@@ -17,7 +17,7 @@
         {{ $t('reservations.cart.conflicts_title') }}
       </span>
     </span>
-    <span class="flex shrink-0 items-center gap-1 text-xs font-bold text-brand">
+    <span class="flex shrink-0 items-center gap-1 text-xs font-semibold text-brand">
       {{ $t('reservations.cart.continue_short') }}
       <ArrowRight class="size-3.5" aria-hidden="true" />
     </span>

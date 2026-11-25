@@ -3,7 +3,7 @@
     variant="brand"
     size="lg"
     data-slot="action-window-primary"
-    class="w-full text-xs font-bold uppercase tracking-wide pointer-coarse:h-11"
+    class="w-full text-xs font-semibold uppercase tracking-wide pointer-coarse:h-11"
     :disabled="disabled || loading"
   >
     <Loader2 v-if="loading" class="size-4 animate-spin" aria-hidden="true" />

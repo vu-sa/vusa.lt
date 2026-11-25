@@ -5,7 +5,7 @@
         <Link
           :href="route('institutions.show', institution.id)"
           prefetch
-          class="block text-pretty font-bold hover:text-brand"
+          class="block text-pretty font-semibold hover:text-brand"
         >
           {{ institution.name }}
         </Link>

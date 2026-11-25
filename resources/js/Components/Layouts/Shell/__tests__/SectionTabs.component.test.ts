@@ -117,7 +117,7 @@ describe('SectionTabs', () => {
       'shell.sections.atsakomybes',
     ]);
     expect(wrapper.findAll('li a svg')).toHaveLength(3);
-    expect(wrapper.findAll('li a').every(link => link.classes().includes('font-bold'))).toBe(true);
+    expect(wrapper.findAll('li a').every(link => link.classes().includes('font-semibold'))).toBe(true);
   });
 
   it('ends Pradžia\'s row with Visi skyriai, and no other workspace\'s', () => {

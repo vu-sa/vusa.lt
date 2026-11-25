@@ -5,11 +5,11 @@
         v-if="href"
         :href
         data-collection-open
-        class="truncate font-bold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        class="truncate font-semibold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         {{ title }}
       </Link>
-      <span v-else class="truncate font-bold text-muted-foreground">{{ title }}</span>
+      <span v-else class="truncate font-semibold text-muted-foreground">{{ title }}</span>
       <StatusBadge v-if="showStatus && status" :status class="shrink-0" />
     </div>
     <p v-if="facts.length" class="mt-0.5 truncate text-xs text-muted-foreground">

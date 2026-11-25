@@ -9,7 +9,7 @@
     <span class="text-[10px] font-medium uppercase text-muted-foreground">
       {{ monthLabel }}
     </span>
-    <span class="text-base font-bold text-foreground">
+    <span class="text-base font-semibold text-foreground">
       {{ dayLabel }}
     </span>
   </div>

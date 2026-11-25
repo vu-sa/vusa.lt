@@ -119,7 +119,7 @@
       <details class="group" data-testid="agenda-item-privacy-details">
         <summary :class="[
           'u-touch inline-flex cursor-pointer items-center gap-1.5',
-          'select-none text-xs font-bold uppercase tracking-wide text-foreground/80 transition-colors hover:text-foreground',
+          'select-none text-xs font-semibold uppercase tracking-wide text-foreground/80 transition-colors hover:text-foreground',
         ]">
           <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
           {{ $t('meetings.privacy.details_label') }}

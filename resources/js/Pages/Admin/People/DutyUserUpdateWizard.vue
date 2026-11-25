@@ -8,7 +8,7 @@
     <div class="flex min-w-0 flex-1 items-center gap-2 md:gap-3" data-testid="duty-wizard-bar">
       <button
         type="button"
-        class="group inline-flex shrink-0 items-center gap-2 text-sm font-bold text-foreground transition-colors hover:text-brand"
+        class="group inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground transition-colors hover:text-brand"
         @click="goBack"
       >
         <span class="flex size-9 items-center justify-center border border-border transition-colors group-hover:border-brand pointer-coarse:size-11">
@@ -19,7 +19,7 @@
 
       <div class="min-w-0 flex-1 border-l border-border pl-3">
         <div class="flex items-center gap-2 min-w-0">
-          <p class="truncate text-sm font-bold text-foreground">
+          <p class="truncate text-sm font-semibold text-foreground">
             {{ $t('Pareigybių atnaujinimas') }}
           </p>
           <span class="hidden sm:inline-block text-xs text-muted-foreground font-mono tabular-nums">
@@ -70,7 +70,7 @@
         </p>
       </div>
 
-      <h1 class="u-display text-balance text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+      <h1 class="u-display text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
         {{ $t('Pareigybių atnaujinimas') }}
       </h1>
     </header>
@@ -81,7 +81,7 @@
         <div class="flex items-center gap-2">
           <span class="font-mono tabular-nums text-muted-foreground">{{ $t('Žingsnis') }} {{ wizard.state.currentStep }} / {{ wizard.totalSteps.value }}</span>
           <span class="text-border">·</span>
-          <span class="font-bold text-foreground">{{ currentStep?.title }}</span>
+          <span class="font-semibold text-foreground">{{ currentStep?.title }}</span>
         </div>
         <span v-if="currentStep?.hint" class="truncate max-w-[140px] text-brand text-[11px]">
           {{ currentStep.hint }}
@@ -102,7 +102,7 @@
           class="flex-1 py-1 text-center text-[11px] font-medium border-b-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           :class="[
             step.active
-              ? 'border-brand-fill text-foreground font-bold'
+              ? 'border-brand-fill text-foreground font-semibold'
               : step.completed
                 ? 'border-status-success text-status-success'
                 : 'border-transparent text-muted-foreground'
@@ -120,7 +120,7 @@
       <aside class="hidden lg:block lg:col-span-4 xl:col-span-3">
         <div class="lg:sticky lg:top-24 space-y-4">
           <section class="border border-border bg-card">
-            <h2 class="border-b border-border px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <h2 class="border-b border-border px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ $t('Žingsniai') }}
             </h2>
             <nav class="flex flex-col divide-y divide-border">
@@ -137,7 +137,7 @@
                 @click="handleStepClick(step.id)"
               >
                 <div
-                  class="flex size-7 shrink-0 items-center justify-center border text-xs font-bold transition-colors"
+                  class="flex size-7 shrink-0 items-center justify-center border text-xs font-semibold transition-colors"
                   :class="{
                     'border-brand-fill bg-brand-fill text-brand-foreground': step.active,
                     'border-status-success bg-status-success-surface text-status-success': step.completed && !step.active,
@@ -176,7 +176,7 @@
                 <Lightbulb class="size-3.5" />
               </div>
               <div class="min-w-0 flex-1">
-                <p class="text-xs font-bold uppercase tracking-wider text-status-attention">
+                <p class="text-xs font-semibold uppercase tracking-wider text-status-attention">
                   {{ $t('Patarimas') }}
                 </p>
                 <p class="mt-1 text-xs text-foreground leading-relaxed">
@@ -209,7 +209,7 @@
                 <component :is="currentStep?.icon" class="size-3.5" />
               </div>
               <div class="min-w-0">
-                <h2 class="text-sm font-bold text-foreground truncate">
+                <h2 class="text-sm font-semibold text-foreground truncate">
                   {{ currentStep?.title }}
                 </h2>
                 <p class="text-[11px] text-muted-foreground truncate">

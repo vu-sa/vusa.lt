@@ -12,7 +12,7 @@
         <Link
           :href="route('institutions.show', institution.id)"
           prefetch
-          class="min-w-0 flex-1 truncate font-bold hover:text-brand"
+          class="min-w-0 flex-1 truncate font-semibold hover:text-brand"
         >
           {{ institution.name }}
         </Link>

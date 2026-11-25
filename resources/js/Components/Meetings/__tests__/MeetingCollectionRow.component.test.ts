@@ -46,7 +46,7 @@ describe('MeetingCollectionRow', () => {
   it('leads with the institution and leaves the date to the title', () => {
     const wrapper = mountRow({ meeting: meeting() });
 
-    expect(wrapper.find('a[data-collection-open] .font-bold').text()).toBe('VU SA Senato atstovai');
+    expect(wrapper.find('a[data-collection-open] .font-semibold').text()).toBe('VU SA Senato atstovai');
     expect(wrapper.find('time').exists()).toBe(false);
   });
 

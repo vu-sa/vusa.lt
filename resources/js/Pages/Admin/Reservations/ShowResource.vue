@@ -47,7 +47,7 @@
       <template #availability>
         <div class="space-y-10">
           <section v-if="period && resource.is_reservable" data-testid="resource-period-availability">
-            <p class="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ $t('reservations.resource.check_period') }}
             </p>
             <p class="mt-1 text-sm text-muted-foreground">

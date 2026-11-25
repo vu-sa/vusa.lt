@@ -11,7 +11,7 @@
       <li v-for="rep in visible" :key="rep.id" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-3" :data-rep="rep.id">
         <UserPopover :user="{ id: rep.id, name: rep.name, email: rep.email, profile_photo_path: rep.photo }" :size="36" class="shrink-0" />
         <span class="min-w-0 flex-1 basis-48">
-          <Link :href="route('representatives.show', rep.id)" class="block text-pretty font-bold hover:text-brand">
+          <Link :href="route('representatives.show', rep.id)" class="block text-pretty font-semibold hover:text-brand">
             {{ rep.name }}
           </Link>
           <span :class="['block text-sm', reasonClass(rep)]" data-slot="attention-reason">{{ attentionText(rep) }}</span>

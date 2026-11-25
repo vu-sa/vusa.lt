@@ -20,7 +20,7 @@
       >
         <span class="flex w-full min-w-0 items-baseline gap-2">
           <span class="truncate text-sm font-semibold text-foreground">{{ item.title }}</span>
-          <span v-if="item.abbreviation" class="shrink-0 text-xs font-bold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
+          <span v-if="item.abbreviation" class="shrink-0 text-xs font-semibold tracking-wide text-muted-foreground">{{ item.abbreviation }}</span>
         </span>
         <span v-if="item.summary" class="line-clamp-1 text-xs text-muted-foreground">{{ item.summary }}</span>
       </button>

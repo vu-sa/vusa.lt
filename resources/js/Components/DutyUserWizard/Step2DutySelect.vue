@@ -6,7 +6,7 @@
         <InstitutionIcon class="size-4 text-foreground" />
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {{ $t('Pasirinkta institucija') }}
         </p>
         <p class="font-semibold text-sm text-foreground truncate">
@@ -240,7 +240,7 @@
                     <div
                       v-for="user in duty.current_users.slice(0, 3)"
                       :key="user.id"
-                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-bold overflow-hidden"
+                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-semibold overflow-hidden"
                       :title="user.name"
                     >
                       <img
@@ -253,7 +253,7 @@
                     </div>
                     <div
                       v-if="duty.current_users.length > 3"
-                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-bold"
+                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-semibold"
                     >
                       +{{ duty.current_users.length - 3 }}
                     </div>

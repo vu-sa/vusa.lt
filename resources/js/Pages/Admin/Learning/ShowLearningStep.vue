@@ -4,7 +4,7 @@
       <div class="grid grid-cols-[2.75rem_minmax(0,1fr)] gap-x-3" data-slot="step-heading">
         <LearningCompletionControl v-model="checked" :step :disabled="saving || !inPath || step.kind === 'meeting_prep'" class="mt-1.5 sm:mt-2.5" />
         <div class="min-w-0">
-          <h1 class="text-balance text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+          <h1 class="text-balance text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
             {{ step.title }}
           </h1>
           <p class="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground" data-slot="step-meta">
@@ -39,7 +39,7 @@
         aria-labelledby="step-about-title"
         data-slot="step-about"
       >
-        <h2 id="step-about-title" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h2 id="step-about-title" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {{ $t('learning.path.about_step') }}
         </h2>
         <p class="text-xs text-muted-foreground">

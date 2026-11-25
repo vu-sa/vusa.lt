@@ -39,7 +39,7 @@
           >
         </div>
         <div class="max-w-md">
-          <h2 class="text-pretty text-3xl font-bold leading-tight text-brand-fixed-foreground">
+          <h2 class="text-pretty text-3xl font-semibold leading-tight text-brand-fixed-foreground">
             {{ $t('auth.sistema_subtitle') }}
           </h2>
         </div>
@@ -61,7 +61,7 @@
         <p class="text-xs font-semibold uppercase tracking-[0.06em] text-brand">
           {{ $t('Prisijungimas') }}
         </p>
-        <h1 class="mt-3 text-pretty text-3xl font-bold leading-tight text-foreground">
+        <h1 class="mt-3 text-pretty text-3xl font-semibold leading-tight text-foreground">
           {{ $t('auth.welcome_back') }}
         </h1>
         <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -76,7 +76,7 @@
         >
           <AlertCircle class="size-4 shrink-0 mt-0.5" />
           <div class="flex-1 space-y-1">
-            <p class="font-bold">
+            <p class="font-semibold">
               {{ $t('Prisijungimas nepavyko') }}
             </p>
             <ul class="list-disc pl-4 space-y-0.5 text-muted-foreground">
@@ -142,7 +142,7 @@
           @submit.prevent="handleSubmit"
         >
           <div class="space-y-1.5">
-            <label for="email" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <label for="email" class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ $t('forms.fields.email') }}
             </label>
             <div class="relative">
@@ -168,7 +168,7 @@
 
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <label for="password" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <label for="password" class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {{ $t('forms.fields.password') }}
               </label>
             </div>
@@ -211,7 +211,7 @@
             :disabled="form.processing"
             :class="[
               'flex w-full items-center justify-center gap-2',
-              'border border-brand-fill bg-brand-fill px-4 py-3 text-sm font-bold text-brand-foreground',
+              'border border-brand-fill bg-brand-fill px-4 py-3 text-sm font-semibold text-brand-foreground',
               'transition-opacity hover:opacity-90 disabled:opacity-70 rounded-none min-h-[44px]',
               'cursor-pointer disabled:cursor-not-allowed',
             ]"

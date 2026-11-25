@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-2">
           <component :is="currentDeviceIcon" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <p class="truncate text-sm font-bold text-foreground">
+          <p class="truncate text-sm font-semibold text-foreground">
             {{ $t('notifications.push_devices.this_device') }}
           </p>
         </div>
