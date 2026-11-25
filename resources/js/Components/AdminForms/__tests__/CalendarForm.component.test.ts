@@ -314,8 +314,9 @@ describe('CalendarForm.vue — public URL status link and meeting integration', 
       agenda_items_count: 3,
     });
 
-    expect(wrapper.text()).toContain('VU SA Valdyba');
-    expect(wrapper.text()).toContain('3 darbotvarkės punktai');
+    expect(wrapper.findComponent({ name: 'CalendarRelatedMeetingPanel' }).props()).toMatchObject({
+      meeting: expect.objectContaining({ institution_name: 'VU SA Valdyba', agenda_items_count: 3 }),
+    });
   });
 
   it('configures the end date picker as clearable', () => {
