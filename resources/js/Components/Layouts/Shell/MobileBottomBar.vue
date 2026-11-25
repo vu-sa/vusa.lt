@@ -5,6 +5,7 @@
     :aria-label="$t('shell.chrome.main_nav')"
     :class="[
       'flex h-(--shell-bottom-bar) shrink-0 items-stretch border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)] md:hidden',
+      'pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))]',
       'touch-manipulation select-none [-webkit-tap-highlight-color:transparent]',
       // Out of the root cross-fade, so a tapped tab's marker animates once (view-transitions.css).
       '[view-transition-name:admin-bottom-bar]',
@@ -16,7 +17,10 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'pradzia'"
       :class="tabClass(activeTab === 'pradzia')"
-      @click="press('pradzia', route('dashboard'))"
+      @network-error="clearPending('pradzia')"
+      @http-exception="clearPending('pradzia')"
+      @error="clearPending('pradzia')"
+      @start="press('pradzia', route('dashboard'))"
     >
       <span :class="markerClass(activeTab === 'pradzia')" aria-hidden="true" />
       <span :class="iconClass">
@@ -31,7 +35,10 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'uzduotys'"
       :class="tabClass(activeTab === 'uzduotys')"
-      @click="press('uzduotys', route('tasks.index'))"
+      @network-error="clearPending('uzduotys')"
+      @http-exception="clearPending('uzduotys')"
+      @error="clearPending('uzduotys')"
+      @start="press('uzduotys', route('tasks.index'))"
     >
       <span :class="markerClass(activeTab === 'uzduotys')" aria-hidden="true" />
       <span :class="['relative', iconClass]">
@@ -61,7 +68,10 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'pranesimai'"
       :class="tabClass(activeTab === 'pranesimai')"
-      @click="press('pranesimai', route('notifications.index'))"
+      @network-error="clearPending('pranesimai')"
+      @http-exception="clearPending('pranesimai')"
+      @error="clearPending('pranesimai')"
+      @start="press('pranesimai', route('notifications.index'))"
     >
       <span :class="markerClass(activeTab === 'pranesimai')" aria-hidden="true" />
       <span :class="['relative', iconClass]">
@@ -155,8 +165,15 @@ const pending = ref<{ tab: Tab; path: string } | null>(null);
 const activeTab = computed(() => pending.value?.tab ?? routeTab.value);
 const menuActive = computed(() => props.menuOpen || activeTab.value === 'menu');
 
+const clearPending = (tab: Tab) => {
+  if (pending.value?.tab === tab) pending.value = null;
+};
+
 const press = (tab: Tab, href: string) => {
-  if (tab !== routeTab.value) {
+  if (tab === routeTab.value) {
+    pending.value = null;
+  }
+  else {
     pending.value = { tab, path: new URL(href, window.location.origin).pathname };
   }
 };
@@ -171,7 +188,7 @@ watch(() => page.url, () => {
 const stopFinish = router.on('finish', (event) => {
   const { visit } = event.detail;
 
-  if (!visit.prefetch && visit.url.pathname === pending.value?.path) {
+  if ((visit.cancelled || visit.interrupted) && !visit.prefetch && visit.url.pathname === pending.value?.path) {
     pending.value = null;
   }
 });
@@ -193,7 +210,7 @@ const tabClass = (active: boolean) => [
 ];
 
 const markerClass = (active: boolean) => [
-  'absolute inset-x-0 top-0 h-0.5 origin-center bg-brand-fill transition-transform duration-200 ease-out',
+  'absolute inset-x-0 mx-auto w-8 top-0 h-0.5 origin-center bg-brand-fill transition-transform duration-200 ease-out',
   active ? 'scale-x-100' : 'scale-x-0',
 ];
 

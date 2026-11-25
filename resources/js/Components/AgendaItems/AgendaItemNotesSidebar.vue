@@ -12,7 +12,7 @@
           <Lock class="h-3 w-3" />
           {{ $t('PRIVATU') }}
         </span>
-        <Button v-if="!notes.loadFailed.value" variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expanded = true">
+        <Button v-if="!notes.loadFailed.value && !notes.recoveredDraft.value" variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expanded = true">
           <Maximize2 class="h-4 w-4" />
         </Button>
       </div>
@@ -58,6 +58,23 @@
         <Button variant="outline" size="sm" @click="notes.retryLoad()">
           {{ $t('Bandyti dar kartą') }}
         </Button>
+      </div>
+
+      <div v-else-if="notes.recoveredDraft.value" class="space-y-2 px-2">
+        <p class="text-sm">
+          {{ $t('meetings.note_draft.saved', { time: formatDateTime(notes.recoveredAt.value) }) }}
+        </p>
+        <p class="max-h-40 overflow-auto whitespace-pre-wrap text-sm">
+          {{ notes.recoveredText.value }}
+        </p>
+        <div class="flex gap-2">
+          <Button size="sm" @click="notes.resolveDraft(true)">
+            {{ $t('meetings.note_draft.restore') }}
+          </Button>
+          <Button size="sm" variant="ghost" @click="notes.resolveDraft(false)">
+            {{ $t('meetings.note_draft.discard') }}
+          </Button>
+        </div>
       </div>
 
       <!-- While the dialog holds the live editor, the sidebar shows a snapshot. -->
@@ -150,6 +167,7 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Lock, Maximize2, Users } from '@lucide/vue';
 
+import { formatDateTime } from '@/Utils/dateTime';
 import SaveStatusChip from '@/Components/AgendaItems/NotesSaveStatusChip.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Button } from '@/Components/ui/button';

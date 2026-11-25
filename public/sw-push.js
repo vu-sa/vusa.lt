@@ -46,7 +46,10 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    Promise.all([
+      self.registration.showNotification(data.title, options),
+      Number.isSafeInteger(options.data.unreadCount) && self.navigator.setAppBadge?.(options.data.unreadCount).catch(() => {}),
+    ])
   );
 });
 
@@ -55,19 +58,23 @@ self.addEventListener('notificationclick', (event) => {
   
   event.notification.close();
 
-  const url = event.notification.data?.url || '/mano';
+  let url = new URL('/mano', self.location.origin);
+  try {
+    const target = new URL(event.notification.data?.url || '/mano', self.location.origin);
+    if (target.origin === url.origin) url = target;
+  } catch { /* Malformed notification links open the dashboard. */ }
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       // Check if there's already a window open with this URL
       for (const client of clientList) {
-        if (client.url.includes(url) && 'focus' in client) {
+        if (client.url === url.href && 'focus' in client) {
           return client.focus();
         }
       }
       // If no window is open, open a new one
       if (clients.openWindow) {
-        return clients.openWindow(url);
+        return clients.openWindow(url.href);
       }
     })
   );

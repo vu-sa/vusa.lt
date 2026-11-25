@@ -293,6 +293,7 @@ describe('channel policy', function (): void {
         $push = $notification->toWebPush($this->user, null)->toArray();
 
         expect($push['title'])->toBe($notification->title($this->user))
+            ->and($push['data']['unreadCount'])->toBe($this->user->unreadNotifications()->count())
             ->and($push['data']['url'])->toBe($notification->primaryAction()['url'])
             ->and($push['actions'][0]['title'])->toBe($notification->primaryAction()['label']);
     });

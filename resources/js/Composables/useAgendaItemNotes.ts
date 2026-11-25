@@ -1,4 +1,5 @@
-import { onScopeDispose, ref, shallowRef } from 'vue';
+import { useStorage } from '@vueuse/core';
+import { nextTick, onScopeDispose, ref, shallowRef } from 'vue';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
@@ -54,6 +55,37 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     color: colorForUser(currentUser.id),
   });
 
+  const draft = useStorage(`agenda-note:${currentUser.id}:${agendaItemId}`, '', undefined, { flush: 'sync', writeDefaults: false });
+  const recoveredDraft = ref(draft.value);
+  const recoveredAt = ref(0);
+  const recoveredText = ref('');
+  if (recoveredDraft.value) {
+    const preview = new Y.Doc();
+    try {
+      const snapshot = JSON.parse(recoveredDraft.value);
+      Y.applyUpdate(preview, base64ToBytes(snapshot.state));
+      recoveredAt.value = snapshot.time;
+      recoveredText.value = new DOMParser().parseFromString(preview.getXmlFragment('default').toString(), 'text/html').body.textContent ?? '';
+    }
+    catch {
+      recoveredDraft.value = '';
+    }
+    finally {
+      preview.destroy();
+    }
+  }
+
+  async function resolveDraft(restore: boolean): Promise<void> {
+    if (!recoveredDraft.value) return;
+    const snapshot = recoveredDraft.value;
+    recoveredDraft.value = '';
+    if (restore) {
+      await nextTick();
+      Y.applyUpdate(doc, base64ToBytes(JSON.parse(snapshot).state));
+    }
+    if (draft.value === snapshot) draft.value = '';
+  }
+
   const provider = shallowRef<ReverbYjsProvider | null>(null);
   const participants = ref<NotesParticipant[]>([]);
   const connectionState = ref<'idle' | 'connecting' | 'connected' | 'error'>('idle');
@@ -78,7 +110,8 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
   let baseVersion: number | null = null;
   let saving = false;
   let saveAgain = false;
-  let channel: any = null;
+  let joinedChannel = false;
+  let authoredSnapshot = '';
   let destroyed = false;
 
   function bytesToBase64(bytes: Uint8Array): string {
@@ -108,6 +141,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
       saveAgain = true;
       return;
     }
+    const savingDraft = authoredSnapshot;
     saving = true;
     saveStatus.value = 'saving';
     try {
@@ -125,7 +159,8 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
         return;
       }
       if (result.ok && result.body !== null) {
-        dirty = false;
+        dirty = authoredSnapshot !== savingDraft;
+        if (!dirty && draft.value === savingDraft) draft.value = '';
         const version = result.data?.version;
         baseVersion = typeof version === 'number' ? version : baseVersion;
       }
@@ -159,7 +194,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     if (saveTimer) {
       clearTimeout(saveTimer);
     }
-    saveTimer = setTimeout(() => { void persist(); }, SAVE_DEBOUNCE_MS);
+    saveTimer = setTimeout(() => void persist(), SAVE_DEBOUNCE_MS);
   }
 
   /** Immediately flush any unsaved changes (navigation / unmount / tab hidden). */
@@ -180,6 +215,8 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     if (origin === HYDRATE_ORIGIN || (provider.value && origin === provider.value)) {
       return;
     }
+    authoredSnapshot = JSON.stringify({ time: Date.now(), state: bytesToBase64(Y.encodeStateAsUpdate(doc)) });
+    draft.value = authoredSnapshot;
     scheduleSave();
   };
   doc.on('update', onLocalUpdate);
@@ -226,8 +263,9 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
       const { initEcho } = await import('@/echo');
       const echo = initEcho();
 
-      channel = echo.join(`agenda-item-notes.${agendaItemId}`);
+      const channel = echo.join(`agenda-item-notes.${agendaItemId}`);
 
+      joinedChannel = true;
       const reverbProvider = new ReverbYjsProvider(doc, channel, awareness);
       reverbProvider.connect();
       provider.value = reverbProvider;
@@ -287,7 +325,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     }
     doc.off('update', onLocalUpdate);
     provider.value?.destroy();
-    if (channel) {
+    if (joinedChannel) {
       const echoPromise = import('@/echo');
       void echoPromise.then(({ getEcho }) => getEcho()?.leave(`agenda-item-notes.${agendaItemId}`));
     }
@@ -305,6 +343,10 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     saveStatus,
     isHydrating,
     loadFailed,
+    recoveredDraft,
+    recoveredAt,
+    recoveredText,
+    resolveDraft,
     retryLoad: hydrate,
     notesHtml,
     representatives,

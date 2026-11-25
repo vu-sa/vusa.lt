@@ -17,6 +17,7 @@ const notesState = {
   saveStatus: ref<'idle' | 'saving' | 'saved' | 'dirty'>('idle'),
   isHydrating: ref(false),
   loadFailed: ref(false),
+  recoveredDraft: ref(''),
   retryLoad: vi.fn(),
   notesHtml: ref(''),
   representatives: ref<Array<{ id: string; name: string }>>([]),

@@ -59,7 +59,7 @@ describe('AdminShell focus mode', () => {
 
     expect(scrollArea.classes()).toContain('overflow-auto');
     expect(scrollArea.attributes('scroll-region')).toBeDefined();
-    expect(scrollArea.find('.sticky').find('[data-testid="top-bar"]').exists()).toBe(true);
+    expect(scrollArea.find('[data-testid="top-bar"]').exists()).toBe(false);
     expect(scrollArea.find('[data-slot="admin-page-measure"]').text()).toBe('Puslapis');
     expect(scrollArea.find('[data-testid="bottom-bar"]').exists()).toBe(false);
     const bottomStack = wrapper.get('[data-slot="shell-bottom-stack"]');
@@ -72,7 +72,7 @@ describe('AdminShell focus mode', () => {
     const { wrapper } = mountShell();
     const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
 
-    expect(wrapper.find('.sticky').classes()).toContain('[view-transition-name:admin-chrome]');
+    expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('[view-transition-name:admin-chrome]');
     expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('backdrop-blur-sm');
     expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('[.a11y-contrast_&]:backdrop-blur-none');
 
@@ -139,7 +139,7 @@ describe('AdminShell on phones', () => {
     const { wrapper } = mountShell();
 
     expect(wrapper.find('[data-testid="section-tabs"]').classes()).toContain('max-md:hidden');
-    expect(wrapper.find('.sticky').find('[data-testid="context-bar"]').exists()).toBe(true);
+    expect(wrapper.get('[data-slot="shell-chrome"]').find('[data-testid="context-bar"]').exists()).toBe(true);
   });
 });
 

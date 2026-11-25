@@ -301,7 +301,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             ->options($this->urgency() === NotificationUrgency::Act
                 ? ['TTL' => 86400, 'urgency' => 'high']
                 : ['TTL' => 3600, 'urgency' => 'normal'])
-            ->data(['url' => $action['url']]);
+            ->data(['url' => $action['url'], 'unreadCount' => $notifiable->unreadNotifications()->count()]);
     }
 
     public function digestLine(object $notifiable): string

@@ -22,8 +22,8 @@ const mountBar = (props: Record<string, unknown> = {}) => mount(MobileBottomBar,
 
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('a, button').map(node => node.text());
 
-const finish = (url: string, prefetch = false) => (router as unknown as { __trigger: (event: string, payload: unknown) => void })
-  .__trigger('finish', { detail: { visit: { url: new URL(url, window.location.origin), prefetch } } });
+const finish = (url: string, prefetch = false, cancelled = false) => (router as unknown as { __trigger: (event: string, payload: unknown) => void })
+  .__trigger('finish', { detail: { visit: { url: new URL(url, window.location.origin), prefetch, cancelled } } });
 
 const lit = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('[data-active]')
   .map(tab => tab.attributes('data-active') === 'true');
@@ -73,10 +73,15 @@ describe('MobileBottomBar', () => {
   it('lights a tapped tab before the visit finishes, then follows the route again', async () => {
     const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
 
-    await wrapper.findAll('a')[1].trigger('click');
+    wrapper.findAllComponents({ name: 'InertiaLink' })[1]!.vm.$emit('start');
+    await wrapper.vm.$nextTick();
     expect(lit(wrapper)).toEqual([false, true, false, false]);
 
     finish(route('tasks.index'));
+    await wrapper.vm.$nextTick();
+    expect(lit(wrapper)).toEqual([false, true, false, false]);
+
+    finish(route('tasks.index'), false, true);
     await wrapper.vm.$nextTick();
     expect(lit(wrapper)).toEqual([false, false, false, true]);
   });
@@ -84,7 +89,8 @@ describe('MobileBottomBar', () => {
   it('keeps the tapped tab lit through prefetches and unrelated requests finishing', async () => {
     const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
 
-    await wrapper.findAll('a')[1].trigger('click');
+    wrapper.findAllComponents({ name: 'InertiaLink' })[1]!.vm.$emit('start');
+    await wrapper.vm.$nextTick();
     finish(route('tasks.index'), true);
     finish(route('dashboard'));
     await wrapper.vm.$nextTick();

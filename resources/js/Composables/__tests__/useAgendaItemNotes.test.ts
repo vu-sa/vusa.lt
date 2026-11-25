@@ -37,6 +37,7 @@ const realFetch = globalThis.fetch;
 
 describe('useAgendaItemNotes', () => {
   beforeEach(() => {
+    localStorage.clear();
     vi.useFakeTimers();
     globalThis.fetch = vi.fn();
   });
@@ -55,6 +56,24 @@ describe('useAgendaItemNotes', () => {
     expect(notes.isHydrating.value).toBe(false);
     expect(saves()).toHaveLength(0);
     scope.stop();
+  });
+
+  it('reviews an unsaved draft before merging it into the reopened note', async () => {
+    vi.mocked(fetch).mockImplementation(async (_, init) => init?.method === 'PUT'
+      ? json(503, {})
+      : json(200, { success: true, data: { version: 1 } }));
+    const first = setup();
+    await vi.advanceTimersByTimeAsync(1);
+    first.notes.doc.getText('t').insert(0, 'Darbotvarkė');
+    first.scope.stop();
+
+    const second = setup();
+    await vi.advanceTimersByTimeAsync(2500);
+    expect(second.notes.recoveredDraft.value).toBeTruthy();
+    expect(second.notes.doc.getText('t').toString()).toBe('');
+    await second.notes.resolveDraft(true);
+    expect(second.notes.doc.getText('t').toString()).toBe('Darbotvarkė');
+    second.scope.stop();
   });
 
   it('saves against the loaded version, and on a conflict merges the stored notes before saving again', async () => {

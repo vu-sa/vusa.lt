@@ -19,8 +19,8 @@ import * as Y from 'yjs';
 
 /** The subset of an Echo presence/private channel this provider relies on. */
 export interface WhisperTransport {
-  whisper: (event: string, data: unknown) => unknown;
-  listenForWhisper: (event: string, callback: (data: any) => void) => unknown;
+  whisper: (event: string, data: Record<string, unknown>) => unknown;
+  listenForWhisper: <T>(event: string, callback: (data: T) => void) => unknown;
   stopListeningForWhisper?: (event: string) => unknown;
 }
 

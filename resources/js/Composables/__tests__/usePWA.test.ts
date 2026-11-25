@@ -81,6 +81,14 @@ describe('migrateLegacyRegistration', () => {
     expect(usePWA().currentBrowserEndpoint.value).toBe('https://push.example/new');
   });
 
+  test('requires both a browser subscription and a matching account endpoint', () => {
+    const pwa = usePWA();
+    pwa.currentBrowserEndpoint.value = 'https://push.example/browser';
+    expect(pwa.hasPushSubscription.value).toBe(false);
+    vi.mocked(usePage).mockReturnValue(createMockPage({ pwa: { subscriptionEndpoints: [pwa.currentBrowserEndpoint.value] } }));
+    expect(usePWA().hasPushSubscription.value).toBe(true);
+  });
+
   test('only unregisters a /build/ worker that has no subscription', async () => {
     const legacy = fakeRegistration('https://www.vusa.test/build/');
     const current = fakeRegistration('https://www.vusa.test/mano');

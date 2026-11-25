@@ -333,3 +333,11 @@ tęsiasi. Perkrovus puslapį arba perėjus tarp viešos svetainės ir Mano VU SA
 įjungti iš naujo. Nepavykus prisijungti, grotuve galima bandyti dar kartą.
 
 Kol pakeitimas saugomas, susiję veiksmai palaukia, o kitus įrašus gali keisti toliau. Nepavykę pakeitimai grąžinami į ankstesnę būseną.
+
+## Programėlė telefone
+
+<ChangelogNote date="2026-11-26" title="Programėlė telefone">
+Be ryšio atvėręs programėlę, prisijunk prie interneto ir spausk **Bandyti dar kartą**, kad grįžtum į pasirinktą puslapį. Palaikomuose įrenginiuose palaikyk nuspaudęs programėlės piktogramą, kad atvertum užduotis ar pranešimus.
+</ChangelogNote>
+
+Jei nepavyko išsaugoti darbotvarkės punkto pastabų, tuo pačiu įrenginiu ir ta pačia paskyra grįžk į punktą. Peržiūrėk juodraštį ir pasirink, ar sujungti jį su pastabomis, ar atmesti.
