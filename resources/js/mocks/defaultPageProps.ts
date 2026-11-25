@@ -106,3 +106,7 @@ export function defaultPageProps(): PageProps {
     ],
   };
 }
+
+export function defaultMockPage() {
+  return { props: defaultPageProps(), url: '/mano', component: '' };
+}

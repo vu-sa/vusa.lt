@@ -1,130 +1,28 @@
 import { fn } from 'storybook/test';
-import { defineComponent, h, reactive } from 'vue';
 
-import { defaultPageProps } from './defaultPageProps';
+import { createInertiaMock } from './createInertiaMock';
+import { defaultMockPage } from './defaultPageProps';
 
-// Stories can override the default page with the props their example needs.
-export const usePage = fn((): { props: Record<string, unknown> } => ({ props: defaultPageProps() }));
+const mock = createInertiaMock(implementation => fn(implementation));
 
-// Mock router for Inertia
-export const router = {
-  visit: fn((url: string, options?: unknown) => {
-    console.log('Inertia router visit:', url, options);
-    return Promise.resolve();
-  }),
-  get: fn((url: string, data?: unknown, options?: unknown) => {
-    console.log('Inertia router get:', url, data, options);
-    return Promise.resolve();
-  }),
-  post: fn((url: string, data?: unknown, options?: unknown) => {
-    console.log('Inertia router post:', url, data, options);
-    return Promise.resolve();
-  }),
-  put: fn((url: string, data?: unknown, options?: unknown) => {
-    console.log('Inertia router put:', url, data, options);
-    return Promise.resolve();
-  }),
-  patch: fn((url: string, data?: unknown, options?: unknown) => {
-    console.log('Inertia router patch:', url, data, options);
-    return Promise.resolve();
-  }),
-  delete: fn((url: string, options?: unknown) => {
-    console.log('Inertia router delete:', url, options);
-    return Promise.resolve();
-  }),
-  reload: fn((options?: unknown) => {
-    console.log('Inertia router reload:', options);
-    return Promise.resolve();
-  }),
-  on: fn((_event: string, _callback: (event: CustomEvent) => void) => () => {}),
-};
+export const { useRemember, router, useForm, useHttp, Head, Link, Deferred, WhenVisible } = mock;
 
-// Mock useForm for Inertia forms
-export const useForm = fn((data: Record<string, unknown> = {}) => ({
-  ...data,
-  data: () => data,
-  errors: {},
-  hasErrors: false,
-  processing: false,
-  progress: null,
-  wasSuccessful: false,
-  recentlySuccessful: false,
-  transform: fn(),
-  defaults: fn(),
-  reset: fn(),
-  clearErrors: fn(),
-  setError: fn(),
-  submit: fn(),
-  get: fn(),
-  post: fn(),
-  put: fn(),
-  patch: fn(),
-  delete: fn(),
-  cancel: fn(),
-}));
+export const usePage = fn((): { props: Record<string, unknown>; url?: string; component?: string } => {
+  const page = defaultMockPage();
 
-/**
- * Inertia v3's standalone XHR hook. Reactive so a component reading `http.processing` in a
- * computed re-renders; the request methods are no-op spies, so a story never reaches the network.
- * Mirrors `inertia.mock.ts` — a story importing a component that calls `useHttp` (TextBoxDisplay,
- * FileUploadArea) fails to import at all without this export.
- */
-export const useHttp = fn((data: Record<string, unknown> = {}) => reactive({
-  ...data,
-  processing: false,
-  errors: {},
-  hasErrors: false,
-  response: null,
-  get: fn(),
-  post: fn(),
-  put: fn(),
-  patch: fn(),
-  delete: fn(),
-  cancel: fn(),
-  reset: fn(),
-  clearErrors: fn(),
-}));
-
-// Mock Head component for document meta
-export const Head = defineComponent({
-  name: 'InertiaHead',
-  setup(_, { slots }) {
-    return () => h('div', { 'data-testid': 'inertia-head' }, slots.default?.());
-  },
-});
-
-// Mock Link component
-export const Link = defineComponent({
-  name: 'InertiaLink',
-  props: {
-    href: String,
-    method: { type: String, default: 'get' },
-    data: Object,
-    replace: Boolean,
-    preserveScroll: Boolean,
-    preserveState: Boolean,
-    only: Array,
-    headers: Object,
-    queryStringArrayFormat: String,
-  },
-  setup(props, { slots }) {
-    return () => h('a', {
-      'href': props.href,
-      'data-testid': 'inertia-link',
-      'onClick': (e: Event) => {
-        e.preventDefault();
-        console.log('Inertia Link clicked:', props.href);
+  return {
+    ...page,
+    url: '/lt',
+    props: {
+      ...page.props,
+      app: { ...page.props.app, path: 'lt' },
+      otherLangURL: '/en',
+      typesenseConfig: {
+        apiKey: 'storybook-api-key',
+        nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
       },
-    }, slots.default?.());
-  },
+    },
+  };
 });
 
-// Export default
-export default {
-  usePage,
-  router,
-  useForm,
-  useHttp,
-  Head,
-  Link,
-};
+export default { ...mock, usePage };

@@ -4,6 +4,7 @@ import type { Config as ZiggyConfig } from 'ziggy-js';
 
 import type { NavFooterColumn, NavItem } from '@/Components/Public/Nav/types';
 import type { Notification, NotificationData } from '@/Composables/useNotificationFormatting';
+import type { PublicEditLink } from '@/Composables/usePublicEditLinkToast';
 import type { TypesenseConfig } from '@/Search/core/types';
 import type { DutyPronouns } from '@/Utils/String';
 import type { ZiggyContext } from '@/Utils/ziggyConfig';
@@ -75,6 +76,13 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   /** Only sent on initial requests eligible for public SSR. */
   ziggy?: ZiggyConfig & { location: string };
   head?: string[];
+  staging?: {
+    isStaging: boolean;
+    filesReadOnly: boolean;
+    sharepointReadOnly: boolean;
+    mailToRequester: boolean;
+  };
+  publicEditLink?: PublicEditLink | null;
   /** Organisation-level facts, from config/vusa.php. */
   organization: {
     contacts: { it: string; accounting: string; phone: string };

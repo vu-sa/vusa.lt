@@ -1,10 +1,10 @@
-import { defaultPageProps } from '@/mocks/defaultPageProps';
+import { defaultMockPage } from '@/mocks/defaultPageProps';
 
 /**
  * Create a mock Inertia page object for use in tests.
  *
  * Deep-merges the provided overrides with the default mock page props so
- * individual tests only need to specify what they want to change.
+ * individual tests only need to specify what they want to change. Pass page metadata separately.
  *
  * @example
  * import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -14,9 +14,16 @@ import { defaultPageProps } from '@/mocks/defaultPageProps';
  *   createMockPage({ app: { path: 'mano/forms/create' } })
  * );
  */
-export function createMockPage(overrides: Record<string, any> = {}): any {
+export function createMockPage(
+  overrides: Record<string, any> = {},
+  pageOverrides: Partial<Pick<ReturnType<typeof defaultMockPage>, 'url' | 'component'>> = {},
+): any {
+  const page = defaultMockPage();
+
   return {
-    props: deepMerge(defaultPageProps(), overrides),
+    ...page,
+    ...pageOverrides,
+    props: deepMerge(page.props, overrides),
   };
 }
 

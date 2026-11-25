@@ -28,7 +28,7 @@ describe('NotificationsIndicator', () => {
   it.each(['body', 'text', 'message'] as const)('renders a stored notification %s as text', (field) => {
     const body = '<strong>Ataskaita</strong> & aptarimas';
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { user: { unreadNotifications: [{
+      auth: { user: { unreadNotificationsCount: 1, unreadNotifications: [{
         id: 'text-body', type: 'App\\Notifications\\TaskOverdueNotification',
         data: { title: 'Užduotis', category: 'task', [field]: body },
         created_at: '2026-11-06T10:00:00Z', read_at: null,
@@ -112,6 +112,7 @@ describe('NotificationsIndicator', () => {
         user: {
           id: 'user-1',
           name: 'Test Rep',
+          unreadNotificationsCount: 2,
           unreadNotifications: [
             {
               id: 'notif-1',
@@ -162,6 +163,7 @@ describe('NotificationsIndicator', () => {
         user: {
           id: 'user-1',
           name: 'Test Rep',
+          unreadNotificationsCount: 1,
           unreadNotifications: [
             {
               id: 'notif-123',
@@ -201,6 +203,7 @@ describe('NotificationsIndicator', () => {
         user: {
           id: 'user-1',
           name: 'Test Rep',
+          unreadNotificationsCount: 1,
           unreadNotifications: [{
             id: 'notif-action',
             type: 'App\\Notifications\\TaskAssignedNotification',
@@ -241,7 +244,7 @@ describe('NotificationsIndicator', () => {
     'https://other.example/mano/meetings/1',
   ])('uses browser navigation for the bell entry and its action at %s', async (url) => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { user: { unreadNotifications: [{
+      auth: { user: { unreadNotificationsCount: 1, unreadNotifications: [{
         id: 'notif-answer',
         type: 'App\\Notifications\\InstitutionActivityNotification',
         data: {
