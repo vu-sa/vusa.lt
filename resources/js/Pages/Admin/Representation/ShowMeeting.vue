@@ -238,64 +238,29 @@
       </DialogContent>
     </Dialog>
 
-    <!-- Agenda Item Delete Confirmation -->
-    <Dialog v-model:open="showAgendaItemDeleteDialog">
-      <DialogContent class="max-w-md">
-        <DialogHeader>
-          <DialogTitle class="flex items-center gap-2 text-destructive">
-            <AlertTriangle class="h-5 w-5" />
-            {{ $t("Šalinti darbotvarkės punktą?") }}
-          </DialogTitle>
-        </DialogHeader>
-        <div class="space-y-4">
-          <p class="text-sm text-muted-foreground">
-            {{ $t("Ar tikrai nori ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.") }}
-          </p>
-          <p v-if="agendaItemPendingDelete" class="border border-border bg-secondary/60 px-3 py-2 text-sm font-medium text-foreground">
-            {{ agendaItemPendingDelete.title }}
-          </p>
-          <div class="flex justify-end gap-3">
-            <Button variant="outline" @click="showAgendaItemDeleteDialog = false">
-              {{ $t("Atšaukti") }}
-            </Button>
-            <Button variant="destructive" @click="confirmAgendaItemDelete">
-              <Trash2 class="h-4 w-4 mr-2" />
-              {{ $t("Šalinti") }}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      v-model:open="showAgendaItemDeleteDialog"
+      :title="$t('Šalinti darbotvarkės punktą?')"
+      :description="$t('Ar tikrai nori ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.')"
+      :confirm-label="$t('Šalinti')"
+      destructive
+      @confirm="confirmAgendaItemDelete"
+    >
+      <p v-if="agendaItemPendingDelete" class="border border-border bg-secondary/60 px-3 py-2 text-sm font-medium text-foreground">
+        {{ agendaItemPendingDelete.title }}
+      </p>
+    </ConfirmDialog>
 
-    <!-- Delete Confirmation Dialog -->
-    <Dialog v-model:open="showDeleteDialog">
-      <DialogContent class="max-w-md">
-        <DialogHeader>
-          <DialogTitle class="flex items-center gap-2 text-destructive">
-            <AlertTriangle class="h-5 w-5" />
-            {{ $t("Šalinti posėdį?") }}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div class="space-y-4">
-          <p data-testid="meeting-delete-description" class="text-sm text-muted-foreground">
-            {{ abilities?.discard
-              ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.')
-              : $t('Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.') }}
-          </p>
-
-          <div class="flex justify-end gap-3">
-            <Button variant="outline" @click="showDeleteDialog = false">
-              {{ $t("Atšaukti") }}
-            </Button>
-            <Button variant="destructive" @click="handleMeetingDelete">
-              <Trash2 class="h-4 w-4 mr-2" />
-              {{ $t("Šalinti posėdį") }}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      v-model:open="showDeleteDialog"
+      :title="$t('Šalinti posėdį?')"
+      :description="abilities?.discard
+        ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.')
+        : $t('Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.')"
+      :confirm-label="$t('Šalinti posėdį')"
+      destructive
+      @confirm="handleMeetingDelete"
+    />
     <AnnounceMeetingDialog
       v-if="isInternalBody"
       v-model:open="showAnnounceDialog"
@@ -318,8 +283,7 @@ import { ref, computed, watch, onMounted, onUnmounted, defineAsyncComponent, nex
 import { Link, router, WhenVisible } from '@inertiajs/vue3';
 import { useClipboard, useStorage } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
-import { DialogDescription } from 'reka-ui';
+import { CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
@@ -334,7 +298,7 @@ import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Const
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
@@ -349,6 +313,7 @@ import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
 import MeetingPublicVisibilityDialog from '@/Components/Meetings/MeetingPublicVisibilityDialog.vue';
 import { isShownPublicly, meetingVisibilityLabel, type MeetingPublicVisibility } from '@/Components/Meetings/meetingPublicVisibility';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
 import { FileableFilesPanel, type DocumentFolderRow } from '@/Components/Files';

@@ -25,7 +25,7 @@ export { default as DatePlate } from '../../Brand/DatePlate.vue';
 export { default as HairlineList } from './HairlineList.vue';
 export { default as HairlineRow } from './HairlineRow.vue';
 export { default as HeaderWordmark } from './HeaderWordmark.vue';
-export { default as MediaFrame } from './MediaFrame.vue';
+export { default as MediaFrame } from '@/Components/Brand/MediaFrame.vue';
 export { default as PageTitleBand } from './PageTitleBand.vue';
 export { default as ReadingSizeControl } from './ReadingSizeControl.vue';
 export { default as SectionBand } from './SectionBand.vue';

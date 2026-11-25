@@ -11,7 +11,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/**, tests/Feature/System/DutiableDetachConventionTest.php | .ai/rules/app.md |
 | app/Actions/GetInstitution*.php, app/Actions/{GetMeetingOverseers,ResolveMeetingNotificationAudience,ResolveMailingListMembers,ResolveTaskAssignees,ResolveTaskAudience}.php, app/Services/{MeetingRepresentative,Responsibility,CommentRecipient}Resolver.php, app/Tasks/Subscribers/**, app/Models/InstitutionSecretary.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |
 | app/Actions/**, app/Services/**, app/Support/**, app/ValueObjects/**, app/Helpers/** | .ai/rules/backend-layout.md |
-| resources/js/Components/Public/Base/MediaFrame.vue | .ai/rules/base.md |
+| resources/js/Components/Brand/MediaFrame.vue | .ai/rules/base.md |
 | app/Http/**, resources/js/**, routes/** | .ai/rules/boost/http-js-routes.md |
 | app/Http/**, routes/** | .ai/rules/boost/http-routes.md |
 | app/Models/** | .ai/rules/boost/models.md |

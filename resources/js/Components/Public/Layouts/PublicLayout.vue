@@ -80,6 +80,9 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import SiteFooter from '../FullWidth/SiteFooter.vue';
 import 'vue-sonner/style.css';
 
+// Inertia passes page props to the persistent layout; keep them off the root element.
+defineOptions({ inheritAttrs: false });
+
 // Non-critical components - load asynchronously
 const PartnersBanner = defineAsyncComponent({
   loader: () => import('../FullWidth/PartnersBanner.vue'),

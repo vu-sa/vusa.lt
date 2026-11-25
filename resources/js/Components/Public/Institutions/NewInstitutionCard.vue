@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
 import { imageFromSearch } from '@/Types/media';
-import MediaFrame from '@/Components/Public/Base/MediaFrame.vue';
+import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import { safeHref } from '@/Utils/safeHref';
 
 import InstitutionCardArrow from './InstitutionCardArrow.vue';

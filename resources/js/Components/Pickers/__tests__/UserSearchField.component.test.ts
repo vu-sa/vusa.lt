@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import MemberSearchField from '@/Features/Admin/Occupancy/MemberSearchField.vue';
+import UserSearchField from '@/Components/Pickers/UserSearchField.vue';
 
 const data = ref<unknown[] | null>(null);
 const execute = vi.fn();
@@ -29,12 +29,12 @@ const hits = [
 ];
 
 const mountField = (props: Record<string, unknown> = {}) =>
-  mount(MemberSearchField, {
-    props: { modelValue: null, ...props },
+  mount(UserSearchField, {
+    props: { modelValue: null, label: 'Narys', purpose: 'duty-member', ...props },
     global: { stubs: { UserAvatar: { template: '<span class="avatar" />' } } },
   });
 
-describe('MemberSearchField.vue', () => {
+describe('UserSearchField.vue', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     data.value = null;
@@ -71,9 +71,9 @@ describe('MemberSearchField.vue', () => {
   it('selects the arrowed-to result with Enter and never submits the surrounding form', async () => {
     const onSubmit = vi.fn();
     const wrapper = mount({
-      components: { MemberSearchField },
+      components: { UserSearchField },
       setup: () => ({ onSubmit }),
-      template: '<form @submit.prevent="onSubmit"><MemberSearchField :model-value="null" @update:model-value="$emit(\'picked\', $event)" /></form>',
+      template: '<form @submit.prevent="onSubmit"><UserSearchField :model-value="null" label="Narys" purpose="duty-member" @update:model-value="$emit(\'picked\', $event)" /></form>',
     }, { global: { stubs: { UserAvatar: true } }, attachTo: document.body });
 
     await wrapper.find('input').setValue('jo');
@@ -93,9 +93,9 @@ describe('MemberSearchField.vue', () => {
   it('does not submit the form when Enter is pressed with nothing highlighted', async () => {
     const onSubmit = vi.fn();
     const wrapper = mount({
-      components: { MemberSearchField },
+      components: { UserSearchField },
       setup: () => ({ onSubmit }),
-      template: '<form @submit.prevent="onSubmit"><MemberSearchField :model-value="null" /></form>',
+      template: '<form @submit.prevent="onSubmit"><UserSearchField :model-value="null" label="Narys" purpose="duty-member" /></form>',
     }, { global: { stubs: { UserAvatar: true } }, attachTo: document.body });
 
     await wrapper.find('input').trigger('keydown', { key: 'Enter' });

@@ -120,12 +120,13 @@
       </TabsContent>
     </Tabs>
 
-    <ConfirmDangerousDialog
+    <ConfirmDialog
       v-model:open="isForceDeleteDialogOpen"
       :title="$t('trash.permanently_delete')"
       :description="$t('trash.permanently_delete_description')"
       :confirmation-text="forceDeleteConfirmationText"
       :confirm-label="$t('trash.permanently_delete')"
+      destructive
       @confirm="handleForceDelete"
     />
   </div>
@@ -139,7 +140,7 @@ import { computed, ref } from 'vue';
 
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import { NavigationIcon } from '@/Components/icons';
-import { ConfirmDangerousDialog, EmptyState } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';

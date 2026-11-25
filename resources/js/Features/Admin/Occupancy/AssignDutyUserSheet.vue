@@ -35,9 +35,12 @@
         :error="form.errors.duty_id"
       />
 
-      <MemberSearchField
+      <!-- Searching all units lets a member join another unit through a new duty. -->
+      <UserSearchField
         v-if="pickMember"
         v-model="member"
+        :label="$t('Narys')"
+        purpose="duty-member"
         :taken-ids="takenInRange"
         :allow-create="canCreateMember"
         :error="form.errors.user_id || form.errors['new_user.name'] || form.errors['new_user.email']"
@@ -395,8 +398,8 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 import type { AssignmentDuty, AssignmentTerm, AssignmentUser, ExistingTerm } from '@/Types/DutyAssignment';
 import { isCuratorDuty, termStatus } from '@/Utils/occupancy';
+import UserSearchField, { type MemberHit } from '@/Components/Pickers/UserSearchField.vue';
 
-import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
 import DutySearchField, { type DutyHit } from './DutySearchField.vue';
 
 interface CadenceOption {

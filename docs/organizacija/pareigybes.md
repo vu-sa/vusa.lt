@@ -53,7 +53,7 @@ tests:
   - resources/js/Features/Admin/Occupancy/__tests__/AssignDutyUserSheet.component.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/DutySearchField.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
-  - resources/js/Features/Admin/Occupancy/__tests__/MemberSearchField.component.test.ts
+  - resources/js/Components/Pickers/__tests__/UserSearchField.component.test.ts
   - resources/js/Components/Duties/__tests__/DutyPreview.component.test.ts
   - resources/js/Components/AdminForms/__tests__/useDuplicateDutyCheck.test.ts
 ---

@@ -10,7 +10,7 @@ import AccessibilityMenu from './AccessibilityMenu.vue';
 import HairlineList from './HairlineList.vue';
 import HairlineRow from './HairlineRow.vue';
 import HeaderWordmark from './HeaderWordmark.vue';
-import MediaFrame from './MediaFrame.vue';
+import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import ReadingSizeControl from './ReadingSizeControl.vue';
 import SectionBand from './SectionBand.vue';
 import ShareButton from './ShareButton.vue';

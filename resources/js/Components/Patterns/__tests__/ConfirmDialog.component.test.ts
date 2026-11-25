@@ -64,4 +64,26 @@ describe('ConfirmDialog.vue', () => {
   it('leaves a non-destructive confirm neutral', () => {
     expect(confirmButton(mountDialog()).classes()).not.toContain('bg-destructive');
   });
+
+  it('keeps an irreversible confirm disabled until the exact text is typed', async () => {
+    const wrapper = mountDialog({ confirmationText: 'Test record' });
+
+    expect(confirmButton(wrapper).attributes('disabled')).toBeDefined();
+
+    await wrapper.find('input').setValue('test record');
+    expect(confirmButton(wrapper).attributes('disabled')).toBeDefined();
+
+    await wrapper.find('input').setValue('Test record');
+    expect(confirmButton(wrapper).attributes('disabled')).toBeUndefined();
+
+    await confirmButton(wrapper).trigger('click');
+    expect(wrapper.emitted('confirm')).toHaveLength(1);
+  });
+
+  it('asks for no typing when there is no confirmation text', () => {
+    const wrapper = mountDialog({ confirmationText: null });
+
+    expect(wrapper.find('input').exists()).toBe(false);
+    expect(confirmButton(wrapper).attributes('disabled')).toBeUndefined();
+  });
 });
