@@ -9,6 +9,7 @@ import { DocumentSearchService } from '@/Search/public/DocumentSearchService';
 import { usePublicSearchService } from '@/Search/public/composables/usePublicSearchService';
 import { readSearchParams, replaceSearchParams } from '@/Search/public/searchUrl';
 import type { DocumentEffectStatusValue, DocumentSearchFilters, DocumentSearchSort, DocumentFacet, DocumentSearchPreferences, DocumentSearchController } from '@/Types/DocumentSearchTypes';
+import type { PageProps } from '@/Types/index';
 
 export const useDocumentSearch = (): DocumentSearchController => {
   const documentPreferences = useLocalStorage<DocumentSearchPreferences>('document-search-preferences', {
@@ -53,7 +54,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     excludeFromFilterCount: ['sort', 'effectStatuses'],
   });
 
-  const page = usePage<{ importantContentTypes?: string[]; hasDocumentRecommendations?: boolean }>();
+  const page = usePage<PageProps & { importantContentTypes?: string[]; hasDocumentRecommendations?: boolean }>();
   const { searchClient, initializeSearchClient } = usePublicSearchService(baseSearch, 'documents', (client, collection) =>
     new DocumentSearchService(client, collection, {
       importantContentTypes: page.props.importantContentTypes ?? [],
