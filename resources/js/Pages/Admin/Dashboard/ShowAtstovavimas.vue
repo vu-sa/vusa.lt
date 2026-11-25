@@ -22,11 +22,8 @@
       </Button>
     </template>
 
-    <OverviewNumbers v-if="!showNumbersBesideCoordinators" :numbers class="max-md:gap-y-6" />
-
     <div v-show="!isPrimarySectionEmpty" class="grid gap-12 md:gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-primary-section">
       <div class="flex min-w-0 flex-col gap-12 md:gap-10 lg:gap-14">
-        <OverviewNumbers v-if="showNumbersBesideCoordinators" :numbers two-columns class="max-md:gap-y-6 lg:mt-8" />
         <InstitutionsNeedingAttention data-tour="attention-card" :institutions="attention" @record="recordActivityFor" />
         <UpcomingMeetingsList :meetings="scopedUpcoming" :total="scopedUpcomingTotal" :href="route('meetings.index')" />
       </div>
@@ -118,7 +115,6 @@ import { provideGanttSettings } from '@/Components/Graphs/composables/useGanttSe
 import { Button } from '@/Components/ui/button';
 import { OverviewStatusList } from '@/Components/Patterns';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
@@ -156,7 +152,6 @@ const props = defineProps<{
   relatedInstitutions?: AtstovavimasInstitution[];
   mayHaveRelatedInstitutions?: boolean;
   canViewTenantOverview: boolean;
-  openTasksCount: number;
   coordinators?: HomeCoordinator[];
   upcomingMeetings: { items: HomeMeeting[]; total: number };
   followedInstitutions?: HomeFollowedInstitutions;
@@ -232,7 +227,7 @@ const userScopedGaps = computed(() =>
   atstovavimasData.userGaps.value.filter(gap => userScopedInstitutionIds.value.has(String(gap.institution_id))),
 );
 
-// --- Attention and numbers --------------------------------------------------------------------
+// --- Attention --------------------------------------------------------------------------------
 
 const attention = computed<InstitutionActivityInsight[]>(() =>
   userScopedInstitutions.value
@@ -247,33 +242,11 @@ const attention = computed<InstitutionActivityInsight[]>(() =>
     })),
 );
 
-const showNumbersBesideCoordinators = computed(() =>
-  attention.value.length === 0 && scopedUpcoming.value.length === 0 && (props.coordinators?.length ?? 0) > 0,
-);
-
 const isPrimarySectionEmpty = computed(() =>
   attention.value.length === 0
   && scopedUpcoming.value.length === 0
   && props.coordinators?.length === 0,
 );
-
-function countByStatus(status: 'overdue' | 'approaching' | 'recent_check_in'): number {
-  return userScopedInstitutions.value.filter(institution => institution.activity_status?.status === status).length;
-}
-
-const numbers = computed<OverviewNumberItem[]>(() => [
-  { key: 'overdue', label: $t('visak.overview.numbers.overdue'), value: countByStatus('overdue'), href: route('institutions.index', { activity_status: 'overdue' }), tone: 'danger' },
-  { key: 'approaching', label: $t('visak.overview.numbers.approaching'), value: countByStatus('approaching'), href: route('institutions.index', { activity_status: 'approaching' }), tone: 'attention' },
-  { key: 'recent_check_in', label: $t('activity_requests.recent_check_in'), value: countByStatus('recent_check_in'), href: route('institutions.index', { activity_status: 'recent_check_in' }), tone: 'info' },
-  {
-    key: 'incomplete_meetings',
-    label: $t('visak.overview.numbers.incomplete_meetings'),
-    value: userScopedInstitutions.value.reduce((sum, institution) => sum + (institution.incomplete_meetings_count ?? 0), 0),
-    href: route('meetings.index', { completion_status: 'incomplete' }),
-    tone: 'attention',
-  },
-  { key: 'open_tasks', label: $t('visak.overview.numbers.open_tasks'), value: props.openTasksCount, href: route('tasks.index') },
-]);
 
 function recordActivityFor(institution: InstitutionActivityInsight): void {
   actionWindow.open({ flow: 'institution.report', institution: { id: institution.id, name: institution.name } });

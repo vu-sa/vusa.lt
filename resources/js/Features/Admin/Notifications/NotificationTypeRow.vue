@@ -5,7 +5,7 @@
     class="flex flex-col gap-3 border-b border-border px-4 py-3 last:border-b-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
   >
     <div class="flex min-w-0 flex-col gap-0.5">
-      <p class="text-sm font-bold text-foreground">
+      <p class="text-sm font-semibold text-foreground">
         {{ $t(`notifications.types.${type.value}.label`) }}
       </p>
       <p class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">

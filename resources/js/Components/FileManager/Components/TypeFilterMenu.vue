@@ -12,12 +12,12 @@
       </button>
     </DropdownMenuTrigger>
 
-    <DropdownMenuContent align="start" class="w-72 rounded-none p-1">
+    <DropdownMenuContent align="start" class="w-72 p-1">
       <DropdownMenuItem
         v-for="option in options"
         :key="option.id"
         :class="[
-          'min-h-11 cursor-pointer items-start gap-3 rounded-none py-2',
+          'min-h-11 cursor-pointer items-start gap-3 py-2',
           option.count === 0 && option.id !== 'all' && 'opacity-60',
         ]"
         :data-type-filter="option.id"

@@ -6,9 +6,11 @@
     content-ruled
     data-slot="reservation-draft-summary"
   >
-    <div class="border-y border-border">
-      <ReservationDraftRow :draft />
-    </div>
+    <CollectionRowList :items="[draft]" frame="box">
+      <template #default>
+        <ReservationDraftRow :draft />
+      </template>
+    </CollectionRowList>
   </OverviewSection>
 </template>
 
@@ -16,6 +18,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { ShoppingBasket } from '@lucide/vue';
 
+import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 import ReservationDraftRow from './ReservationDraftRow.vue';

@@ -1,6 +1,6 @@
 <template>
   <Dialog open @update:open="(open) => !open && $emit('close')">
-    <DialogContent class="flex max-h-[85dvh] flex-col rounded-none sm:max-w-lg">
+    <DialogContent class="flex max-h-[85dvh] flex-col sm:max-w-lg">
       <DialogHeader>
         <DialogTitle>{{ $t('files.ui.move_title', { count: String(paths.length) }) }}</DialogTitle>
         <DialogDescription>{{ $t('files.ui.move_description') }}</DialogDescription>
@@ -17,7 +17,7 @@
 
       <div class="min-h-40 flex-1 overflow-y-auto">
         <div v-if="loading" class="space-y-2">
-          <Skeleton v-for="i in 4" :key="i" class="h-11 w-full rounded-none" />
+          <Skeleton v-for="i in 4" :key="i" class="h-11 w-full" />
         </div>
         <p v-else-if="directoriesRaw.length === 0" class="py-6 text-center text-sm text-muted-foreground">
           {{ $t('files.ui.no_subfolders') }}

@@ -3,14 +3,24 @@
     :title="sectionTitle"
     :icon="Landmark"
     variant="home"
+    content-ruled
     :empty="institutions.length === 0"
     :empty-text="$t('visos institucijos posėdžius fiksuoja laiku')"
   >
+    <!-- A padalinys can have hundreds: the rest open in a searchable dialog, not inline. -->
+    <template v-if="hiddenCount > 0" #actions>
+      <SectionHeaderAction
+        :label="$t('Rodyti visas (:count)', { count: String(institutions.length) })"
+        trailing-chevron
+        data-slot="institutions-needing-attention-more"
+        @click="dialogOpen = true"
+      />
+    </template>
+
     <InstitutionAttentionList :institutions="visibleInstitutions" @record="emit('record', $event)" />
 
-    <div v-if="askable || hiddenCount > 0" class="-ml-3 flex flex-wrap items-center gap-x-1 gap-y-1" data-slot="institutions-needing-attention-actions">
+    <div v-if="askable" class="-ml-3 flex flex-wrap items-center gap-x-1 gap-y-1" data-slot="institutions-needing-attention-actions">
       <SpotlightPopover
-        v-if="askable"
         :title="$t('visak.activity_request.spotlight_title')"
         :description="$t('visak.activity_request.spotlight_body')"
         :is-dismissed="askSpotlight.isDismissed.value"
@@ -27,19 +37,6 @@
           {{ $t('visak.activity_request.ask') }}
         </Button>
       </SpotlightPopover>
-
-      <!-- A padalinys can have hundreds: the rest open in a searchable dialog, not inline. -->
-      <Button
-        v-if="hiddenCount > 0"
-        variant="ghost"
-        size="sm"
-        class="pointer-coarse:h-11"
-        data-slot="institutions-needing-attention-more"
-        @click="dialogOpen = true"
-      >
-        <List aria-hidden="true" />
-        {{ $t('Rodyti visas (:count)', { count: String(institutions.length) }) }}
-      </Button>
     </div>
 
     <template v-if="hiddenCount > 0">
@@ -56,7 +53,7 @@
             <Input v-model="query" type="search" class="pl-9" :placeholder="$t('Ieškoti institucijos')" :aria-label="$t('Ieškoti institucijos')" />
           </div>
           <div class="-mx-6 min-h-0 flex-1 overflow-y-auto px-6" data-slot="institutions-needing-attention-dialog-list">
-            <InstitutionAttentionList :institutions="filteredInstitutions" @record="recordFromDialog" />
+            <InstitutionAttentionList :institutions="filteredInstitutions" frame="box" @record="recordFromDialog" />
             <p v-if="filteredInstitutions.length === 0" class="py-6 text-sm text-muted-foreground">
               {{ $t('Nieko nerasta') }}
             </p>
@@ -69,9 +66,10 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Landmark, List, MailQuestion, Search } from '@lucide/vue';
+import { Landmark, MailQuestion, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import SectionHeaderAction from '@/Components/Patterns/SectionHeaderAction.vue';
 import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

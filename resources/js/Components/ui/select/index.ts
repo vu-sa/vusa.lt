@@ -16,7 +16,7 @@ export { default as SelectVirtualizer } from './SelectVirtualizer.vue';
 
 export const selectTriggerVariants = cva(
   [
-    'flex w-fit items-center justify-between gap-2 border text-sm whitespace-nowrap transition-colors outline-none',
+    'flex w-fit items-center justify-between gap-2 rounded-md border text-sm whitespace-nowrap transition-colors outline-none',
     'placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
     'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
     // truncate, not line-clamp: line-clamp switches the value to a vertical -webkit-box and stacks an icon above its text.

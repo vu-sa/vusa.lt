@@ -29,7 +29,7 @@
       ref="scrollArea"
       scroll-region
       data-slot="admin-scroll-area"
-      class="min-h-0 flex flex-1 flex-col overflow-auto overscroll-y-contain"
+      class="@container/shell min-h-0 flex flex-1 flex-col overflow-auto overscroll-y-contain"
       :style="scrollAreaHeight ? {
         '--shell-chrome-height': `${shellChromeHeight}px`,
         '--shell-scroll-height': `${scrollAreaHeight}px`,

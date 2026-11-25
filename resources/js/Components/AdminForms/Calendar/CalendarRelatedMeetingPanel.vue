@@ -11,7 +11,7 @@
           <span>{{ meeting.institution_name ?? $t('Posėdis') }}</span>
           <ArrowUpRight class="size-3.5 text-muted-foreground group-hover:text-brand" aria-hidden="true" />
         </a>
-        <span v-if="meeting.trashed" class="border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-xs font-bold text-destructive">
+        <span v-if="meeting.trashed" class="border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-xs font-semibold text-destructive">
           {{ $t('meetings.announce.form_alert_trashed') }}
         </span>
       </div>

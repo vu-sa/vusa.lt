@@ -195,6 +195,7 @@ return [
         'end_before_start' => 'Pabaiga turi būti vėliau nei pradžia.',
         'delete_draft' => 'Ištrinti juodraštį',
         'delete_draft_title' => 'Ištrinti rezervacijos juodraštį?',
+        'finish' => 'Užbaik rezervaciją',
         'finish_named' => 'Užbaik rezervaciją: :name',
         'view' => 'Peržiūrėti',
         'reserve' => 'Rezervuoti',

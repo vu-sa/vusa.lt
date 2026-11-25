@@ -32,12 +32,12 @@
 
     <div v-else class="grid grid-cols-2 divide-x divide-border">
       <div class="p-4">
-        <span class="block font-mono text-2xl font-bold tracking-tight text-foreground">{{ data.totals.pageviews }}</span>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{{ $t('analytics.pageviews') }}</span>
+        <span class="block font-mono text-2xl font-semibold tracking-tight text-foreground">{{ data.totals.pageviews }}</span>
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{{ $t('analytics.pageviews') }}</span>
       </div>
       <div class="p-4">
-        <span class="block font-mono text-2xl font-bold tracking-tight text-foreground">{{ data.totals.visitors }}</span>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{{ $t('analytics.visitors') }}</span>
+        <span class="block font-mono text-2xl font-semibold tracking-tight text-foreground">{{ data.totals.visitors }}</span>
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{{ $t('analytics.visitors') }}</span>
       </div>
     </div>
   </FormPanel>

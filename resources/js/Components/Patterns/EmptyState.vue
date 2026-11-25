@@ -11,7 +11,7 @@
       <!-- Supplied icon via slot -->
       <div
         v-if="$slots.icon"
-        class="flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground"
+        class="flex size-12 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground"
       >
         <slot name="icon" />
       </div>
@@ -19,7 +19,7 @@
       <!-- Supplied icon via prop -->
       <div
         v-else-if="icon"
-        class="flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground"
+        class="flex size-12 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground"
       >
         <component :is="icon" class="size-6" />
       </div>
@@ -27,7 +27,7 @@
       <!-- Default for no-results mode -->
       <div
         v-else-if="mode === 'no-results'"
-        class="flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground"
+        class="flex size-12 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground"
       >
         <SearchX class="size-6" />
       </div>

@@ -14,7 +14,7 @@
           </span>
           <span
             v-if="badge"
-            class="inline-flex items-center gap-1 border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground"
+            class="inline-flex items-center gap-1 rounded-md border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground"
           >
             <Globe v-if="publicMarker" class="size-3" />
             {{ badge }}

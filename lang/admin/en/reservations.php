@@ -195,6 +195,7 @@ return [
         'end_before_start' => 'The end must be after the start.',
         'delete_draft' => 'Delete draft',
         'delete_draft_title' => 'Delete the reservation draft?',
+        'finish' => 'Finish the reservation',
         'finish_named' => 'Finish the reservation: :name',
         'view' => 'View',
         'reserve' => 'Reserve',

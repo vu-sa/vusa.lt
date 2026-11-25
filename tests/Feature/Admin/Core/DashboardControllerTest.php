@@ -313,7 +313,10 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('upcomingCalendarEvents'))
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('upcomingCalendarEvents')
+                    ->whereType('upcomingCalendarEvents.0.image', 'string|null')
+                )
             );
     });
 
@@ -442,7 +445,7 @@ describe('dashboard calendar and news', function (): void {
             );
     });
 
-    test('news with image returns actual image URL', function (): void {
+    test('news with image returns its thumbnail URL', function (): void {
         // Delete any existing news first
         News::query()->delete();
 
@@ -462,7 +465,7 @@ describe('dashboard calendar and news', function (): void {
                 ->component('Admin/ShowAdminHome')
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
                     ->has('latestNews', 1)
-                    ->where('latestNews.0.image', $news->fresh()->getImageUrl())
+                    ->where('latestNews.0.image', $news->fresh()->imageData('image')['thumb'])
                 )
             );
     });

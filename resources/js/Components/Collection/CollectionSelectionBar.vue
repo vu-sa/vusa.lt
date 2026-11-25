@@ -5,7 +5,7 @@
     :aria-label="countLabel"
     data-slot="collection-selection-bar"
   >
-    <span class="text-xs font-bold uppercase tracking-wide">
+    <span class="text-xs font-semibold uppercase tracking-wide">
       {{ countLabel }}: <span class="tabular-nums text-brand">{{ count }}</span>
     </span>
 

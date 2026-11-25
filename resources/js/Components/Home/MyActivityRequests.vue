@@ -1,49 +1,54 @@
 <template>
-  <OverviewSection v-if="requests.total > 0" :title="$t('activity_requests.personal.active_title')" :icon="MailQuestion" variant="home" data-slot="home-activity-requests">
-    <ul class="divide-y divide-border">
-      <li v-for="request in requests.data" :key="request.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
-        <div class="min-w-0 flex-1 space-y-1">
-          <p class="text-sm font-semibold">
-            {{ request.institution_name }}
-          </p>
-          <p class="text-sm text-muted-foreground">
-            {{ $t(`activity_requests.campaigns.${request.campaign_type}`) }}
-          </p>
-          <p class="text-xs text-muted-foreground">
-            {{ formatDate(request.period_start) }} – {{ request.period_end ? formatDate(request.period_end) : $t('activity_requests.legacy_period') }}
-            · {{ $t('activity_requests.valid_until') }} {{ formatDate(request.expires_at) }}
-          </p>
+  <OverviewSection v-if="requests.total > 0" :title="$t('activity_requests.personal.active_title')" :icon="MailQuestion" variant="home" content-ruled data-slot="home-activity-requests">
+    <template #actions>
+      <SpotlightPopover
+        :title="$t('activity_requests.personal.spotlight_title')"
+        :description="$t('activity_requests.personal.spotlight_body')"
+        :is-dismissed="spotlight.isDismissed.value"
+        @dismiss="spotlight.dismiss()"
+      >
+        <SectionHeaderAction
+          :href="route('profile.activityRequests')"
+          :label="$t('activity_requests.personal.view_all', { count: String(requests.total) })"
+          trailing-chevron
+          @click="spotlight.dismiss()"
+        />
+      </SpotlightPopover>
+    </template>
+
+    <CollectionRowList :items="requests.data" frame="box" :item-key="request => request.id">
+      <template #default="{ item: request }">
+        <div :class="['flex items-center gap-3 sm:gap-4', ROW_PADDING_CLASS]">
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-foreground">
+              {{ request.institution_name }}
+            </p>
+            <p class="mt-0.5 text-xs text-muted-foreground">
+              {{ $t(`activity_requests.campaigns.${request.campaign_type}`) }}
+              · {{ formatDate(request.period_start) }} – {{ request.period_end ? formatDate(request.period_end) : $t('activity_requests.legacy_period') }}
+              · {{ $t('activity_requests.valid_until') }} {{ formatDate(request.expires_at) }}
+            </p>
+          </div>
+          <CollectionRowActions :actions="[answerAction(request)]" stacked @navigate="spotlight.dismiss()" />
         </div>
-        <Button as-child variant="outline" voice="sentence">
-          <a :href="request.answer_url" @click="spotlight.dismiss()">{{ $t('activity_requests.personal.answer') }}</a>
-        </Button>
-      </li>
-    </ul>
-    <SpotlightPopover
-      :title="$t('activity_requests.personal.spotlight_title')"
-      :description="$t('activity_requests.personal.spotlight_body')"
-      :is-dismissed="spotlight.isDismissed.value"
-      @dismiss="spotlight.dismiss()"
-    >
-      <Button as-child variant="ghost" voice="sentence">
-        <Link :href="route('profile.activityRequests')" @click="spotlight.dismiss()">
-          {{ $t('activity_requests.personal.view_all', { count: String(requests.total) }) }}
-        </Link>
-      </Button>
-    </SpotlightPopover>
+      </template>
+    </CollectionRowList>
   </OverviewSection>
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { MailQuestion } from '@lucide/vue';
+import { MailQuestion, MessageSquareReply } from '@lucide/vue';
 
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
+import { ROW_PADDING_CLASS } from '@/Components/Collection/rowList';
 import { OverviewSection } from '@/Components/Patterns';
-import { Button } from '@/Components/ui/button';
+import SectionHeaderAction from '@/Components/Patterns/SectionHeaderAction.vue';
 import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 
 export interface ActiveActivityRequests {
   total: number;
@@ -53,4 +58,16 @@ export interface ActiveActivityRequests {
 defineProps<{ requests: ActiveActivityRequests }>();
 const { formatDate } = useDateFormatter();
 const spotlight = useFeatureSpotlight('user-activity-requests-v1');
+
+type ActivityRequestRow = ActiveActivityRequests['data'][number];
+
+// The answer page lives outside the Inertia app, so the action is a plain same-tab link.
+const answerAction = (request: ActivityRequestRow): AdminRecordAction => ({
+  key: 'answer',
+  label: $t('activity_requests.personal.answer'),
+  icon: MessageSquareReply,
+  href: request.answer_url,
+  plain: true,
+  primary: true,
+});
 </script>

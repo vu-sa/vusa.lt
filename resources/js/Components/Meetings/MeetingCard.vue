@@ -18,7 +18,7 @@
         <span class="mt-1 text-2xl leading-none font-semibold tabular-nums text-foreground">{{ day }}</span>
       </time>
       <div class="min-w-0 flex-1">
-        <p class="line-clamp-2 font-bold text-foreground group-hover:text-brand">
+        <p class="line-clamp-2 font-semibold text-foreground group-hover:text-brand">
           {{ heading }}
         </p>
         <p class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">

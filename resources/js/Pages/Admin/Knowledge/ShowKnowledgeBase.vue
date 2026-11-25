@@ -18,7 +18,7 @@
       <section v-if="knowledge.items.length" aria-labelledby="wiki-for-you" class="space-y-3" data-slot="wiki-for-you">
         <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
           <div>
-            <h2 id="wiki-for-you" class="text-xl font-bold leading-tight text-foreground sm:text-2xl">
+            <h2 id="wiki-for-you" class="text-xl font-semibold leading-tight text-foreground sm:text-2xl">
               {{ $t('learning.wiki.for_you') }}
             </h2>
           </div>
@@ -38,12 +38,12 @@
 
       <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-x-14">
         <section aria-labelledby="wiki-sections" class="min-w-0 space-y-6" data-slot="wiki-sections">
-          <h2 id="wiki-sections" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <h2 id="wiki-sections" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {{ $t('learning.wiki.sections') }}
           </h2>
           <div class="grid gap-x-10 gap-y-10 md:grid-cols-2">
             <section v-for="section in portals" :id="`section-${section.id}`" :key="section.id" class="min-w-0 scroll-mt-24" :aria-labelledby="`portal-${section.id}`">
-              <h3 :id="`portal-${section.id}`" class="border-t-2 border-foreground pt-3 text-lg font-bold leading-tight text-foreground">
+              <h3 :id="`portal-${section.id}`" class="border-t-2 border-foreground pt-3 text-lg font-semibold leading-tight text-foreground">
                 <Link v-if="section.id !== 'other'" :href="route('knowledgeSections.show', section.id)" class="underline decoration-transparent underline-offset-4 hover:decoration-foreground">
                   {{ section.title }}
                 </Link>
@@ -70,7 +70,7 @@
           <EmptyState v-if="!portals.length" :title="$t('learning_library.knowledge.empty_title')" :description="$t('learning_library.knowledge.empty_description')" />
 
           <section v-if="collections.length" aria-labelledby="wiki-materials" class="space-y-3 pt-6" data-slot="wiki-materials">
-            <h2 id="wiki-materials" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <h2 id="wiki-materials" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               {{ $t('learning.wiki.materials') }}
             </h2>
             <p class="text-sm text-muted-foreground">
@@ -91,18 +91,18 @@
 
         <aside class="space-y-10" data-slot="wiki-aside">
           <section v-if="recent.length" aria-labelledby="wiki-recent" class="space-y-3">
-            <h2 id="wiki-recent" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <h2 id="wiki-recent" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               {{ $t('learning.wiki.recent') }}
             </h2>
             <WikiPageList :pages="recent" dense :done-ids="done" />
           </section>
           <nav v-if="letters.length" aria-labelledby="wiki-letters" class="space-y-3">
-            <h2 id="wiki-letters" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <h2 id="wiki-letters" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
               {{ $t('learning.pages.alphabet') }}
             </h2>
             <ul class="flex flex-wrap gap-1">
               <li v-for="letter in letters" :key="letter">
-                <Link :href="`${route('knowledgeItems.alphabet')}#${letterAnchor(letter)}`" class="flex size-11 items-center justify-center border border-border text-sm font-bold text-foreground transition-colors hover:border-foreground sm:size-9">
+                <Link :href="`${route('knowledgeItems.alphabet')}#${letterAnchor(letter)}`" class="flex size-11 items-center justify-center border border-border text-sm font-semibold text-foreground transition-colors hover:border-foreground sm:size-9">
                   {{ letter }}
                 </Link>
               </li>

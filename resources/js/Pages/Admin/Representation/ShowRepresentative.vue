@@ -33,7 +33,7 @@
         <ul class="divide-y divide-border/60">
           <li v-for="institution in rep.institutions" :key="institution.id" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4" :data-institution="institution.id">
             <span class="min-w-0 flex-1 basis-48">
-              <Link :href="route('institutions.show', institution.id)" class="block text-pretty font-bold hover:text-brand">
+              <Link :href="route('institutions.show', institution.id)" class="block text-pretty font-semibold hover:text-brand">
                 {{ institution.name }}
               </Link>
               <span class="block text-xs text-muted-foreground">

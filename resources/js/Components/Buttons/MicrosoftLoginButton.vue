@@ -4,7 +4,7 @@
     :class="[
       'flex w-full items-center justify-center gap-3',
       'border border-foreground bg-foreground px-4 py-3',
-      'text-sm font-bold text-background transition-colors',
+      'text-sm font-semibold text-background transition-colors',
       'hover:bg-foreground/90 disabled:opacity-70 rounded-none min-h-[44px]',
       'cursor-pointer disabled:cursor-not-allowed',
     ]"

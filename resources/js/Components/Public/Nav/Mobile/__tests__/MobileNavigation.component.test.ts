@@ -228,7 +228,7 @@ describe('MobileNavigation.vue', () => {
     expect(accountLink.textContent).toContain('Mano VU SA');
     expect(accountLink.className).toContain('border');
     expect(accountLink.className).toContain('text-foreground/70');
-    expect(accountLink.className).toContain('hover:text-brand');
+    expect(accountLink.className).toContain('hover:text-(--button-outline-hover-text)');
     const icon = document.querySelector('[data-slot="mano-vusa-button-icon"]') as HTMLElement;
     expect(icon).not.toBeNull();
     expect(icon.getAttribute('class')).toContain('text-brand');

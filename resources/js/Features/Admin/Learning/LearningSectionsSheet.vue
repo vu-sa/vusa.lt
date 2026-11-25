@@ -22,7 +22,7 @@
       </Button>
       <section v-for="group in groups" :key="group.kind" class="space-y-2" :data-slot="`sections-${group.kind}`">
         <div class="flex items-center justify-between gap-2">
-          <h3 class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <h3 class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             {{ group.title }}
           </h3>
           <Button v-if="canReorder(group.sections)" type="button" variant="ghost" voice="sentence" size="sm" class="-my-1" :data-testid="`reorder-sections-${group.kind}`" @click="startReorder(group.kind)">

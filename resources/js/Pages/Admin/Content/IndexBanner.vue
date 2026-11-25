@@ -54,11 +54,11 @@
                 v-if="!isDeleted"
                 :href="route('banners.edit', item.id)"
                 data-collection-open
-                class="truncate font-bold hover:text-brand"
+                class="truncate font-semibold hover:text-brand"
               >
                 {{ item.title }}
               </Link>
-              <span v-else class="truncate font-bold text-muted-foreground">{{ item.title }}</span>
+              <span v-else class="truncate font-semibold text-muted-foreground">{{ item.title }}</span>
             </div>
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span v-if="item.tenant?.shortname" class="font-medium">{{ item.tenant.shortname }}</span>
@@ -105,11 +105,11 @@
           v-if="!isDeleted"
           :href="route('banners.edit', item.id)"
           data-collection-open
-          class="block min-w-0 whitespace-normal wrap-anywhere font-bold hover:text-brand"
+          class="block min-w-0 whitespace-normal wrap-anywhere font-semibold hover:text-brand"
         >
           {{ item.title }}
         </Link>
-        <span v-else class="block min-w-0 whitespace-normal wrap-anywhere font-bold text-muted-foreground">{{ item.title }}</span>
+        <span v-else class="block min-w-0 whitespace-normal wrap-anywhere font-semibold text-muted-foreground">{{ item.title }}</span>
       </div>
 
       <div v-else-if="column.key === 'link_url'" class="truncate">

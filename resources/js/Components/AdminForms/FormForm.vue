@@ -91,7 +91,7 @@
                 <Type v-else class="size-4" />
               </span>
 
-              <span v-if="model.is_required" class="text-destructive font-bold" :title="$t('Privalomas laukas')">*</span>
+              <span v-if="model.is_required" class="text-destructive font-semibold" :title="$t('Privalomas laukas')">*</span>
 
               <span class="truncate font-medium">
                 {{ model.label?.lt || model.label?.en || model.label || '—' }}

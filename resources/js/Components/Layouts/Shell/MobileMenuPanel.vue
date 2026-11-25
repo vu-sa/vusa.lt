@@ -17,7 +17,7 @@
         :aria-label="$t('shell.chrome.menu')"
       >
         <div class="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
-          <span class="flex items-baseline gap-1 text-sm font-bold uppercase tracking-wide">
+          <span class="flex items-baseline gap-1 text-sm font-semibold uppercase tracking-wide">
             <span>Mano</span>
             <span class="text-brand">VU SA</span>
           </span>
@@ -33,7 +33,7 @@
                 type="button"
                 :class="[
                   'flex w-full items-center justify-between gap-3 px-4 py-4 text-left',
-                  'text-base font-bold uppercase tracking-wide text-foreground',
+                  'text-base font-semibold uppercase tracking-wide text-foreground',
                   'transition-colors hover:text-brand',
                   'focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring',
                 ]"
@@ -90,7 +90,7 @@
           </ul>
 
           <div class="border-b border-border py-2">
-            <p class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <p class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ $t('shell.chrome.account') }}
             </p>
             <div v-if="user" class="px-4 py-1.5">
@@ -126,7 +126,7 @@
           </div>
 
           <div class="border-b border-border py-2">
-            <p class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <p class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ $t('shell.account.appearance') }}
             </p>
             <ul>
@@ -151,7 +151,7 @@
           </div>
 
           <div class="border-b border-border py-2">
-            <p class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <p class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ $t('shell.account.help') }}
             </p>
             <ul>

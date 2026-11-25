@@ -8,7 +8,7 @@
             <Building2 class="size-4 text-foreground" />
           </div>
           <div>
-            <h3 class="text-sm font-bold text-foreground">
+            <h3 class="text-sm font-semibold text-foreground">
               {{ $t('Nauja institucija') }}
             </h3>
             <p class="text-xs text-muted-foreground">
@@ -163,10 +163,10 @@
             <div v-if="filteredAttentionInstitutions.length > 0" class="space-y-3">
               <div class="flex items-center gap-2">
                 <AlertTriangle class="size-4 text-status-attention" />
-                <h3 class="text-xs font-bold uppercase tracking-wider text-status-attention">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-status-attention">
                   {{ $t('Reikia dėmesio') }}
                 </h3>
-                <span class="inline-flex items-center border border-status-attention-border bg-status-attention-surface px-1.5 py-0.5 text-[10px] font-bold text-status-attention">
+                <span class="inline-flex items-center border border-status-attention-border bg-status-attention-surface px-1.5 py-0.5 text-[10px] font-semibold text-status-attention">
                   {{ filteredAttentionInstitutions.length }}
                 </span>
               </div>
@@ -213,10 +213,10 @@
             <div v-if="filteredOtherInstitutions.length > 0" class="space-y-3">
               <div class="flex items-center gap-2">
                 <Building2 class="size-4 text-muted-foreground" />
-                <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {{ $t('Visos institucijos') }}
                 </h3>
-                <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
                   {{ filteredOtherInstitutions.length }}
                 </span>
               </div>

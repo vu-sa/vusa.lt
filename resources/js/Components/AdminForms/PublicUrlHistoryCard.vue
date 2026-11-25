@@ -7,7 +7,7 @@
         class="flex items-center justify-between gap-3 px-3 py-2 text-xs"
       >
         <div class="flex items-center gap-2 min-w-0">
-          <span class="border border-border bg-secondary/60 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <span class="border border-border bg-secondary/60 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {{ row.locale.toUpperCase() }}
           </span>
           <a

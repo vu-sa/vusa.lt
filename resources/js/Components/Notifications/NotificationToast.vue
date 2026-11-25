@@ -3,7 +3,7 @@
     <!-- Icon -->
     <div
       :class="[
-        'flex size-8 shrink-0 items-center justify-center border border-border',
+        'flex size-8 shrink-0 items-center justify-center rounded-md border border-border',
         colors.combined,
       ]"
     >
@@ -25,7 +25,7 @@
       v-if="url"
       :href="url"
       :aria-label="$t('Peržiūrėti')"
-      class="inline-flex size-7 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-foreground"
+      class="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-brand hover:text-foreground"
     >
       <ArrowRight class="size-3.5" />
     </NotificationLink>

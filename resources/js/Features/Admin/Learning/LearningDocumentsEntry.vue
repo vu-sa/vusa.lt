@@ -6,7 +6,7 @@
     aria-labelledby="documents-entry-title"
   >
     <div class="flex flex-col gap-2 md:row-span-2 md:grid md:grid-rows-subgrid md:self-stretch md:py-4">
-      <h2 id="documents-entry-title" class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+      <h2 id="documents-entry-title" class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
         {{ $t('learning.documents.progress') }}
       </h2>
       <WikiAssignedProgress :progress="documents.priorityProgress" :show-legend="false" />
@@ -14,7 +14,7 @@
 
     <div class="flex min-w-0 flex-col gap-2 border border-border p-4 md:row-span-2 md:grid md:grid-rows-subgrid md:items-center md:self-stretch" data-slot="next-document">
       <template v-if="next">
-        <p class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           {{ $t('learning.documents.next') }}
         </p>
         <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">

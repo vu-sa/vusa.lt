@@ -14,7 +14,7 @@
   >
     <Collapsible v-model:open="howOpen" class="border-y border-border" data-testid="how-it-works">
       <CollapsibleTrigger
-        class="flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-bold text-foreground pointer-coarse:min-h-11"
+        class="flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-semibold text-foreground pointer-coarse:min-h-11"
       >
         <span class="flex items-center gap-2">
           <Info class="size-4 shrink-0 text-brand" aria-hidden="true" />

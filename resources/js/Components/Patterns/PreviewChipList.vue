@@ -5,7 +5,7 @@
         :is="item.href ? Link : 'span'"
         :href="item.href"
         :class="[
-          'inline-flex max-w-full items-center gap-1.5 border border-border px-2 py-1 text-xs text-foreground',
+          'inline-flex max-w-full items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs text-foreground',
           item.href && 'transition-colors hover:border-brand hover:text-brand pointer-coarse:min-h-11',
         ]"
       >

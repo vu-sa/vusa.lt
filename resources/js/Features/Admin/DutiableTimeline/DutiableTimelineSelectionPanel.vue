@@ -1,6 +1,6 @@
 <template>
   <section data-slot="dutiable-timeline-selection" class="flex h-full min-h-0 flex-col gap-2 overflow-y-auto p-3">
-    <p class="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+    <p class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
       {{ $t('dutiables.timeline.dock.selection') }}
       <span v-if="selectedCount > 1">({{ selectedCount }})</span>
     </p>

@@ -58,7 +58,7 @@
       </thead>
       <tbody v-for="area in visibleAreas" :key="area.key">
         <tr>
-          <th :colspan="ABILITIES.length + 1" scope="rowgroup" class="pt-6 pb-1 text-left text-[11px] font-bold tracking-wide text-brand uppercase">
+          <th :colspan="ABILITIES.length + 1" scope="rowgroup" class="pt-6 pb-1 text-left text-[11px] font-semibold tracking-wide text-brand uppercase">
             {{ $t(`shell.workspaces.${area.key}.title`) }}
           </th>
         </tr>
@@ -96,7 +96,7 @@
     <!-- Phone and narrow tablet: one block per resource, abilities as rows. -->
     <div v-if="visibleAreas.length" class="space-y-8 xl:hidden">
       <section v-for="area in visibleAreas" :key="area.key" class="space-y-4">
-        <h3 class="text-[11px] font-bold tracking-wide text-brand uppercase">
+        <h3 class="text-[11px] font-semibold tracking-wide text-brand uppercase">
           {{ $t(`shell.workspaces.${area.key}.title`) }}
         </h3>
         <div v-for="resource in area.resources" :key="resource.key" class="border-t border-border pt-3">

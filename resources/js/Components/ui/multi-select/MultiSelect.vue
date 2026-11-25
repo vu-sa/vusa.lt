@@ -2,7 +2,7 @@
   <Combobox v-model="selectedItems" multiple :filter-function :open="isOpen" @update:open="isOpen = $event">
     <ComboboxAnchor
       :class="cn(
-        'relative flex min-h-11 w-full items-center gap-1.5 rounded-none border border-border bg-secondary/50 px-3 py-2 text-sm transition-colors',
+        'relative flex min-h-11 w-full items-center gap-1.5 border border-border bg-secondary/50 px-3 py-2 text-sm transition-colors',
         'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 focus-within:outline-none',
         compact ? 'flex-nowrap overflow-hidden' : 'flex-wrap',
         disabled && 'cursor-not-allowed opacity-50',

@@ -51,7 +51,7 @@
       <ol v-if="form.courses.length" class="divide-y divide-border border-y border-border">
         <li v-for="(course, index) in form.courses" :key="course._key" class="space-y-4 py-4">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{{ $t("Dalykas") }} #{{ index + 1 }}</span>
+            <span class="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">{{ $t("Dalykas") }} #{{ index + 1 }}</span>
             <Button
               variant="ghost"
               size="icon"
@@ -114,7 +114,7 @@
       <ol v-if="form.reviews.length" class="divide-y divide-border border-y border-border">
         <li v-for="(review, index) in form.reviews" :key="review._key" class="space-y-4 py-4">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">{{ $t("Atsiliepimas") }} #{{ index + 1 }}</span>
+            <span class="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">{{ $t("Atsiliepimas") }} #{{ index + 1 }}</span>
             <Button
               variant="ghost"
               size="icon"

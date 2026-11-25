@@ -5,14 +5,14 @@
     <p v-if="empty" :class="['flex items-center gap-2 text-sm text-muted-foreground', variant === 'home' ? 'border-b border-border pb-3' : 'border-t border-border pt-3']">
       <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
       <span>
-        <span :class="variant === 'home' ? 'font-bold uppercase tracking-[0.18em] text-foreground' : 'font-medium text-foreground'">{{ title }}</span>
+        <span :class="variant === 'home' ? 'font-semibold uppercase tracking-[0.06em] text-foreground' : 'font-medium text-foreground'">{{ title }}</span>
         <span v-if="emptyText"> — {{ emptyText }}</span>
       </span>
     </p>
 
     <template v-else>
-      <header :class="['flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4', headerRuleClass]">
-        <h2 :class="['flex items-center gap-2 text-foreground', variant === 'home' ? 'text-sm font-bold uppercase tracking-[0.18em]' : 'text-base font-semibold']">
+      <header :class="['flex flex-wrap items-center justify-between gap-x-4 gap-y-2', headerRuleClass]">
+        <h2 :class="['flex items-center gap-2 text-foreground', variant === 'home' ? 'text-sm font-semibold uppercase tracking-[0.06em]' : 'text-base font-semibold']">
           <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
           {{ title }}
           <span v-if="count !== undefined && count !== null" class="text-xs font-normal tracking-normal text-muted-foreground" data-slot="overview-section-count">

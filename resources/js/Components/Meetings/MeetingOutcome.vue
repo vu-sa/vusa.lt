@@ -20,7 +20,7 @@
       </li>
       <li v-for="(part, index) in parts" :key="part.label" class="flex items-center">
         <span v-if="index > 0 && show !== 'counts'" class="px-1.5" aria-hidden="true">·</span>
-        <span :class="['mr-1 font-bold tabular-nums', part.tone ?? 'text-foreground']">{{ part.count }}</span>
+        <span :class="['mr-1 font-semibold tabular-nums', part.tone ?? 'text-foreground']">{{ part.count }}</span>
         {{ part.label }}
       </li>
     </ul>

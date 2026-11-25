@@ -60,7 +60,7 @@ const emit = defineEmits<{
 
 // The branded section heading (OverviewSection's home variant), kept inline for the anchors.
 const HEADER_CLASS = 'flex items-center justify-between gap-3 border-b border-border pb-3';
-const HEADING_CLASS = 'flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground';
+const HEADING_CLASS = 'flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-foreground';
 
 const currentType = computed(() => agendaItemTypeOptions().find(option => option.value === props.form.type));
 </script>

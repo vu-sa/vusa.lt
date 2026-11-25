@@ -338,7 +338,7 @@ describe('ActivityRequestReviewScreen.vue', () => {
     expect(wrapper.text()).not.toContain('activity_requests.skip_section');
     const editButtons = wrapper.findAll('button').filter(button => /change_campaign|change_institutions/.test(button.text()));
     expect(editButtons).toHaveLength(2);
-    editButtons.forEach(button => expect(button.classes()).toContain('border-border'));
+    editButtons.forEach(button => expect(button.classes()).toContain('border-(--button-outline-border)'));
     expect(wrapper.find('h2 svg').classes()).toContain('text-brand');
     window.updateActivityRequest({ campaignType: 'missing_meetings' });
     await flushPromises();

@@ -21,7 +21,7 @@
         <span
           aria-hidden="true"
           :class="[
-            'relative z-10 col-start-1 row-start-1 flex size-10 items-center justify-center border-2 text-base font-bold tabular-nums sm:size-12 sm:text-lg',
+            'relative z-10 col-start-1 row-start-1 flex size-10 items-center justify-center border-2 text-base font-semibold tabular-nums sm:size-12 sm:text-lg',
             stateOf(index, station.steps) === 'done' && 'border-foreground bg-foreground text-background',
             stateOf(index, station.steps) === 'now' && 'border-brand-fill bg-brand-fill text-brand-foreground',
             stateOf(index, station.steps) === 'behind' && 'border-foreground bg-background text-foreground',
@@ -34,7 +34,7 @@
 
         <section class="col-span-2 col-start-1 row-start-1 min-w-0 sm:col-span-1 sm:col-start-2" :aria-labelledby="`stage-${station.stage}`">
           <header class="flex min-h-10 flex-wrap pl-13 sm:pl-0 items-center gap-x-4 gap-y-2 sm:min-h-12">
-            <h2 :id="`stage-${station.stage}`" class="text-xl font-bold leading-tight text-foreground sm:text-2xl">
+            <h2 :id="`stage-${station.stage}`" class="text-xl font-semibold leading-tight text-foreground sm:text-2xl">
               {{ $t(`learning.path.stages.${station.stage}`) }}
             </h2>
             <span
@@ -77,7 +77,7 @@
 
     <section v-if="path.meetingPrep.length" data-slot="meeting-prep" aria-labelledby="meeting-prep-title">
       <header class="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h2 id="meeting-prep-title" class="text-xl font-bold leading-tight sm:text-2xl">
+        <h2 id="meeting-prep-title" class="text-xl font-semibold leading-tight sm:text-2xl">
           {{ $t('learning.path.meeting_prep') }}
         </h2>
         <span class="inline-flex items-center gap-1.5 border border-border px-2 py-0.5 text-xs font-semibold text-muted-foreground">
@@ -90,9 +90,9 @@
         </h3>
         <ol class="mt-2 divide-y divide-border border border-border">
           <li v-for="(step, stepIndex) in group.steps" :key="step.id" class="grid grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-3 px-4 py-4">
-            <span class="mx-auto flex size-6 items-center justify-center border-2 border-border text-xs font-bold tabular-nums text-muted-foreground" aria-hidden="true">{{ stepIndex + 1 }}</span>
+            <span class="mx-auto flex size-6 items-center justify-center border-2 border-border text-xs font-semibold tabular-nums text-muted-foreground" aria-hidden="true">{{ stepIndex + 1 }}</span>
             <div class="min-w-0">
-              <p class="text-lg font-bold leading-6">
+              <p class="text-lg font-semibold leading-6">
                 {{ step.title }}
               </p>
               <!-- v-html: sanitized on write (LearningStep::sanitizedHtmlTranslations) -->

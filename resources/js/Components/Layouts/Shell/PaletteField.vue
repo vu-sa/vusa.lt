@@ -6,14 +6,14 @@
       type="button"
       :class="[
         'hidden h-8 w-full max-w-md items-center gap-2 lg:flex',
-        'border border-border bg-secondary/40 px-3 text-left text-sm text-muted-foreground',
+        'rounded-md border border-border bg-secondary/40 px-3 text-left text-sm text-muted-foreground',
         'transition-colors hover:border-brand hover:text-foreground',
       ]"
       @click="toggle"
     >
       <Search class="size-4 shrink-0" />
       <span class="flex-1 truncate">{{ $t('shell.chrome.search_field') }}</span>
-      <kbd class="hidden border border-border px-1.5 font-mono text-xs lg:inline">{{ shortcut }}</kbd>
+      <kbd class="hidden rounded-md border border-border px-1.5 font-mono text-xs lg:inline">{{ shortcut }}</kbd>
     </button>
 
     <Button

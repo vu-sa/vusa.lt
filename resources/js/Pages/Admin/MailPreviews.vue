@@ -3,7 +3,7 @@
     <Head :title="$t('mail_previews.title')" />
     <header class="flex flex-wrap items-center justify-between gap-4 border-b border-border py-5">
       <div>
-        <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand">
+        <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-brand">
           <Mail class="size-4" aria-hidden="true" />{{ $t('shell.workspaces.sistema.title') }}
         </p>
         <h1 class="u-display mt-2 text-3xl text-foreground">
@@ -24,7 +24,7 @@
         <Input v-model="search" :aria-label="$t('mail_previews.search')" :placeholder="$t('mail_previews.search')" type="search" />
         <div class="mt-4 max-h-72 overflow-y-auto lg:max-h-[calc(100vh-18rem)]">
           <section v-for="[group, items] in groups" :key="group" class="mb-4">
-            <h2 class="px-2 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            <h2 class="px-2 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ $t(group) }}
             </h2>
             <button

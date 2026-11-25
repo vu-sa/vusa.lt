@@ -1,12 +1,12 @@
 <template>
   <section v-if="links.length > 0" data-slot="home-quick-access">
     <!-- The OverviewSection home heading without its hairline; the tiles draw their own. -->
-    <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+    <h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.06em] text-foreground">
       <ArrowUpRight class="size-4 shrink-0 text-brand" aria-hidden="true" />
       {{ $t('home.quick_access.title') }}
     </h2>
 
-    <NavigationTiles :items="links" :columns class="mt-3" />
+    <NavigationTiles :items="links" :columns="tileColumns" framed class="mt-3" />
   </section>
 </template>
 
@@ -52,4 +52,7 @@ const links = computed<NavigationTileItem[]>(() => {
     .filter(link => link !== null)
     .map(link => ({ ...link, label: $t(link.label), description: $t(link.description) }));
 });
+
+// Full width with fewer destinations than columns would leave empty ruled cells; fill the row instead.
+const tileColumns = computed<2 | 3 | 4>(() => Math.min(props.columns, Math.max(2, links.value.length)) as 2 | 3 | 4);
 </script>

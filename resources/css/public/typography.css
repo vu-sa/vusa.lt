@@ -8,6 +8,11 @@
   .u-display {
     @apply font-bold uppercase leading-[1.05] tracking-[-0.01em];
   }
+
+  /* Admin titles speak in sentence case: an uppercase poster headline reads as a sign, not a desk. */
+  [data-surface="admin"] .u-display:not([data-surface="public"] *) {
+    @apply font-semibold normal-case tracking-[-0.02em];
+  }
 }
 
 .typography {

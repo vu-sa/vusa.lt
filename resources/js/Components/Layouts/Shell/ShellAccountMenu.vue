@@ -9,13 +9,13 @@
         :class="{ 'bg-secondary': isOpen }"
         :aria-label="$t('shell.chrome.account')"
       >
-        <Avatar class="size-6 rounded-none">
+        <Avatar class="size-6">
           <AvatarImage v-if="user?.profile_photo_path" :src="user.profile_photo_path" :alt="user.name" />
-          <AvatarFallback class="rounded-none bg-brand-fill text-xs font-bold text-brand-foreground dark:bg-brand-fill dark:text-brand-foreground">
+          <AvatarFallback class="bg-brand-fill text-xs font-semibold text-brand-foreground dark:bg-brand-fill dark:text-brand-foreground">
             {{ initials(user?.name) }}
           </AvatarFallback>
         </Avatar>
-        <span class="hidden max-w-28 truncate text-xs font-bold text-foreground lg:inline">{{ user?.name }}</span>
+        <span class="hidden max-w-28 truncate text-xs font-semibold text-foreground lg:inline">{{ user?.name }}</span>
         <ChevronDown
           class="hidden size-3.5 text-muted-foreground transition-transform duration-200 lg:inline"
           :class="{ 'rotate-180': isOpen }"
@@ -24,10 +24,10 @@
       </Button>
     </DropdownMenuTrigger>
 
-    <DropdownMenuContent align="end" class="w-72 rounded-none border border-border bg-popover p-0 shadow-none">
+    <DropdownMenuContent align="end" class="w-72 rounded-md border border-border bg-popover p-0 shadow-none">
       <!-- User Identity Header -->
       <div class="border-b border-border px-4 py-3">
-        <p class="truncate text-sm font-bold text-foreground">
+        <p class="truncate text-sm font-semibold text-foreground">
           {{ user?.name }}
         </p>
         <p class="truncate text-xs text-muted-foreground">
@@ -37,13 +37,13 @@
 
       <!-- Account navigation -->
       <div class="p-1">
-        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium">
           <Link :href="route('profile')" prefetch>
             <UserRound class="size-4 shrink-0" />
             <span>{{ $t('shell.chrome.account') }}</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+        <DropdownMenuItem as-child class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium">
           <Link :href="route('profile.notifications')" prefetch>
             <Bell class="size-4 shrink-0" />
             <span>{{ $t('shell.account.notifications') }}</span>
@@ -55,23 +55,23 @@
 
       <!-- Tools & Preferences -->
       <div class="p-1">
-        <DropdownMenuItem data-slot="language-settings" class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium" @select="changeLocale">
+        <DropdownMenuItem data-slot="language-settings" class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium" @select="changeLocale">
           <Languages class="size-4 shrink-0" />
           <span>{{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}</span>
         </DropdownMenuItem>
 
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger data-slot="appearance-settings-trigger" class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+          <DropdownMenuSubTrigger data-slot="appearance-settings-trigger" class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium">
             <Palette class="size-4 shrink-0" />
             <span>{{ $t('shell.account.appearance') }}</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent class="w-64 rounded-none border border-border bg-popover p-1 shadow-none">
-            <DropdownMenuItem class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="toggleDarkMode">
+          <DropdownMenuSubContent class="w-64 rounded-md border border-border bg-popover p-1 shadow-none">
+            <DropdownMenuItem class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium" @select="toggleDarkMode">
               <Sun v-if="isDark" class="size-4 shrink-0" />
               <Moon v-else class="size-4 shrink-0" />
               <span>{{ $t(isDark ? 'shell.account.light' : 'shell.account.dark') }}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem data-slot="accessibility-settings-open" class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="openAccessibilitySettings">
+            <DropdownMenuItem data-slot="accessibility-settings-open" class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium" @select="openAccessibilitySettings">
               <IFluentAccessibility24Regular class="size-4 shrink-0" />
               <span>{{ $t('accessibility.menu_title') }}</span>
             </DropdownMenuItem>
@@ -79,35 +79,35 @@
         </DropdownMenuSub>
 
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+          <DropdownMenuSubTrigger class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium">
             <CircleHelp class="size-4 shrink-0" />
             <span>{{ $t('shell.account.help') }}</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent class="w-64 rounded-none border border-border bg-popover p-1 shadow-none">
-            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
+          <DropdownMenuSubContent class="w-64 rounded-md border border-border bg-popover p-1 shadow-none">
+            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <a :href="docsBase" target="_blank" rel="noopener noreferrer">
                 <BookOpen class="size-4 shrink-0" />
                 <span class="flex-1">{{ $t('shell.account.docs') }}</span>
                 <ArrowUpRight class="size-3.5 shrink-0 text-muted-foreground/60" />
               </a>
             </DropdownMenuItem>
-            <DropdownMenuItem :disabled="!hasTour" class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="startTour">
+            <DropdownMenuItem :disabled="!hasTour" class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium" @select="startTour">
               <Map class="size-4 shrink-0" />
               <span>{{ $t('shell.account.tour') }}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
+            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <Link :href="reportProblemHref" prefetch>
                 <Bug class="size-4 shrink-0" />
                 <span>{{ $t('shell.account.report_problem') }}</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
+            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <Link :href="route('mySupportRequests.index')" prefetch>
                 <MessagesSquare class="size-4 shrink-0" />
                 <span>{{ $t('shell.account.my_requests') }}</span>
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
+            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <a :href="changelogHref" target="_blank" rel="noopener noreferrer">
                 <Sparkles class="size-4 shrink-0" />
                 <span class="flex-1">{{ $t('shell.account.whats_new') }}</span>
@@ -117,28 +117,28 @@
           </DropdownMenuSubContent>
         </DropdownMenuSub>
 
-        <DropdownMenuItem class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium" @select="startFm.open">
+        <DropdownMenuItem class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium" @select="startFm.open">
           <Radio class="size-4 shrink-0" />
           <span>{{ $t('shell.account.start_fm') }}</span>
         </DropdownMenuItem>
 
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+          <DropdownMenuSubTrigger class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium">
             <Info class="size-4 shrink-0" />
             <span>{{ $t('shell.account.about') }}</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent class="w-56 rounded-none border border-border bg-popover p-1 shadow-none">
-            <DropdownMenuLabel class="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <DropdownMenuSubContent class="w-56 rounded-md border border-border bg-popover p-1 shadow-none">
+            <DropdownMenuLabel class="px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ lastUpdateDate ?? 'VU SA' }}
             </DropdownMenuLabel>
-            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
+            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <a href="https://github.com/vu-sa/vusa.lt" target="_blank" rel="noopener noreferrer">
                 <ISimpleIconsGithub class="size-4 shrink-0" />
                 <span class="flex-1">GitHub</span>
                 <ArrowUpRight class="size-3.5 shrink-0 text-muted-foreground/60" />
               </a>
             </DropdownMenuItem>
-            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
+            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <a :href="changelogHref" target="_blank" rel="noopener noreferrer">
                 <Sparkles class="size-4 shrink-0" />
                 <span class="flex-1">{{ $t('shell.account.whats_new') }}</span>
@@ -155,14 +155,14 @@
       <div class="p-1">
         <DropdownMenuItem
           variant="destructive"
-          class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium"
+          class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium"
           @select="logout"
         >
           <LogOut class="size-4 shrink-0" />
           <span>{{ $t('auth.logout') }}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
-          class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium"
+          class="gap-3 px-3.5 py-2.5 cursor-pointer text-sm font-medium"
           @select="logoutMicrosoft"
         >
           <ISimpleIconsMicrosoft class="size-4 shrink-0" />

@@ -1,7 +1,7 @@
 <template>
   <ActionWindowScreen :title="$t('action_window.check_in.until.title')" :subtitle>
     <!-- Explanation, not a warning: nothing is wrong, so it takes no status colour. -->
-    <div class="mb-4 flex gap-3 border border-border bg-secondary p-3">
+    <div class="mb-4 flex gap-3 rounded-md border border-border bg-secondary p-3">
       <Info class="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       <div class="text-sm">
         <p class="font-medium text-foreground">

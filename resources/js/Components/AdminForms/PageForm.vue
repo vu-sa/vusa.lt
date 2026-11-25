@@ -90,7 +90,7 @@
         <summary
           :class="[
             'u-touch inline-flex cursor-pointer items-center gap-1.5',
-            'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
+            'text-xs font-semibold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
           ]"
         >
           <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
@@ -225,7 +225,7 @@
 
       <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" flush>
         <div class="flex flex-col gap-2 border-b border-border p-4" data-slot="form-field">
-          <Label class="text-sm font-bold text-foreground">{{ $t('Išdėstymas') }}</Label>
+          <Label class="text-sm font-semibold text-foreground">{{ $t('Išdėstymas') }}</Label>
           <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" />
         </div>
 

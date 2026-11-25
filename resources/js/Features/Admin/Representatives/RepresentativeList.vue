@@ -2,15 +2,15 @@
   <div class="flex flex-col gap-4" data-slot="representative-list">
     <div class="grid gap-3 border-y border-border py-4 sm:grid-cols-3">
       <label class="space-y-2">
-        <span class="text-xs font-bold uppercase tracking-wide">{{ $t('representatives.list.search') }}</span>
+        <span class="text-xs font-semibold uppercase tracking-wide">{{ $t('representatives.list.search') }}</span>
         <Input v-model="search" type="search" :placeholder="$t('representatives.list.search_placeholder')" data-testid="rep-search" />
       </label>
       <label class="space-y-2">
-        <span class="text-xs font-bold uppercase tracking-wide">{{ $t('representatives.list.institution') }}</span>
+        <span class="text-xs font-semibold uppercase tracking-wide">{{ $t('representatives.list.institution') }}</span>
         <NativeSelect v-model="institution" :options="institutionOptions" :placeholder="$t('representatives.list.all_institutions')" placeholder-selectable data-testid="rep-institution" />
       </label>
       <label class="space-y-2">
-        <span class="text-xs font-bold uppercase tracking-wide">{{ $t('representatives.list.activity') }}</span>
+        <span class="text-xs font-semibold uppercase tracking-wide">{{ $t('representatives.list.activity') }}</span>
         <NativeSelect v-model="filter" :options="filterOptions" data-testid="rep-filter" />
       </label>
     </div>

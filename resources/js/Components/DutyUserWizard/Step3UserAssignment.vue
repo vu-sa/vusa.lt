@@ -4,7 +4,7 @@
     <div v-if="isLoadingStepData" class="flex flex-col items-center justify-center py-12 space-y-3">
       <Loader2 class="size-6 animate-spin text-brand" />
       <div class="text-center">
-        <p class="font-bold text-sm text-foreground">
+        <p class="font-semibold text-sm text-foreground">
           {{ $t('Kraunami duomenys...') }}
         </p>
         <p class="text-xs text-muted-foreground">
@@ -21,7 +21,7 @@
             <DutyIcon class="size-4 text-foreground" />
           </div>
           <div class="min-w-0">
-            <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               {{ $t('Pasirinkta pareigybė') }}
             </p>
             <p class="min-w-0 font-semibold text-sm text-foreground truncate">
@@ -39,7 +39,7 @@
               <p class="text-[11px] text-muted-foreground font-medium">
                 {{ $t('Vietų skaičius') }}
               </p>
-              <p class="font-bold text-sm text-foreground" data-testid="wizard-seat-count">
+              <p class="font-semibold text-sm text-foreground" data-testid="wizard-seat-count">
                 {{ wizard.state.duty.places_to_occupy }}
               </p>
             </template>
@@ -58,10 +58,10 @@
         <!-- Left: Current members -->
         <div class="space-y-3.5">
           <div class="flex items-center justify-between">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
               <UserMinus class="size-4 text-muted-foreground" />
               {{ $t('Dabartiniai nariai') }}
-              <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+              <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
                 {{ currentUsers.length }}
               </span>
             </h3>
@@ -82,7 +82,7 @@
                     :alt="user.name"
                     class="size-full object-cover"
                   >
-                  <span v-else class="text-xs font-bold text-muted-foreground">{{ initials(user.name) }}</span>
+                  <span v-else class="text-xs font-semibold text-muted-foreground">{{ initials(user.name) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-sm truncate text-foreground">
@@ -117,7 +117,7 @@
                     :alt="change.userName"
                     class="size-full object-cover opacity-50"
                   >
-                  <span v-else class="text-xs font-bold text-destructive">{{ initials(change.userName) }}</span>
+                  <span v-else class="text-xs font-semibold text-destructive">{{ initials(change.userName) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-sm text-destructive line-through truncate">
@@ -157,10 +157,10 @@
         <!-- Right: Add new members -->
         <div class="space-y-3.5">
           <div class="flex items-center justify-between">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
               <UserPlus class="size-4 text-muted-foreground" />
               {{ $t('Pridėti narius') }}
-              <span v-if="usersToAdd.length > 0" class="inline-flex items-center border border-status-success-border bg-status-success-surface px-1.5 py-0.5 text-[10px] font-bold text-status-success">
+              <span v-if="usersToAdd.length > 0" class="inline-flex items-center border border-status-success-border bg-status-success-surface px-1.5 py-0.5 text-[10px] font-semibold text-status-success">
                 {{ usersToAdd.length }}
               </span>
             </h3>
@@ -211,7 +211,7 @@
                       :alt="user.name"
                       class="size-full object-cover"
                     >
-                    <span v-else class="text-xs font-bold text-muted-foreground">{{ initials(user.name) }}</span>
+                    <span v-else class="text-xs font-semibold text-muted-foreground">{{ initials(user.name) }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="flex items-center gap-1.5 font-semibold text-sm truncate text-foreground">
@@ -300,7 +300,7 @@
                       :alt="change.userName"
                       class="size-full object-cover"
                     >
-                    <span v-else class="text-xs font-bold text-status-success">{{ initials(change.userName) }}</span>
+                    <span v-else class="text-xs font-semibold text-status-success">{{ initials(change.userName) }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="font-semibold text-sm truncate text-foreground">

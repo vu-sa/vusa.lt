@@ -9,7 +9,7 @@
     ]"
   >
     <FlaskConical class="mt-px size-3.5 shrink-0 text-status-attention" aria-hidden="true" />
-    <span><span class="font-bold">{{ $t('staging.title') }}:</span> {{ $t(note.key) }}</span>
+    <span><span class="font-semibold">{{ $t('staging.title') }}:</span> {{ $t(note.key) }}</span>
   </p>
 </template>
 

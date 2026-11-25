@@ -14,7 +14,7 @@
         class="flex items-center gap-4 py-3.5 sm:py-4"
       >
         <!-- Icon / Date plate skeleton -->
-        <div class="size-10 shrink-0 border border-border bg-secondary/80" />
+        <div class="size-10 shrink-0 rounded-md border border-border bg-secondary/80" />
 
         <!-- Title & Subtitle lines -->
         <div class="min-w-0 flex-1 space-y-2">
@@ -30,7 +30,7 @@
 
         <!-- Badges & trailing actions -->
         <div class="hidden items-center gap-2 sm:flex">
-          <div class="h-5 w-20 border border-border/60 bg-secondary/60" />
+          <div class="h-5 w-20 rounded-md border border-border/60 bg-secondary/60" />
           <div class="h-3 w-16 bg-secondary/50" />
         </div>
       </div>
@@ -39,7 +39,7 @@
     <!-- Table View Skeleton -->
     <div
       v-else
-      class="overflow-x-auto border border-border"
+      class="overflow-x-auto rounded-md border border-border"
     >
       <table class="w-full text-left">
         <thead class="border-b border-border bg-secondary/40">
@@ -87,7 +87,7 @@
               <div class="h-4 w-24 bg-secondary/60" />
             </td>
             <td class="p-3">
-              <div class="h-5 w-16 border border-border/50 bg-secondary/60" />
+              <div class="h-5 w-16 rounded-md border border-border/50 bg-secondary/60" />
             </td>
           </tr>
         </tbody>
