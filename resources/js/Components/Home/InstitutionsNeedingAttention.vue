@@ -3,6 +3,7 @@
     :title="sectionTitle"
     :icon="Landmark"
     variant="home"
+    content-ruled
     :empty="institutions.length === 0"
     :empty-text="$t('visos institucijos posėdžius fiksuoja laiku')"
   >

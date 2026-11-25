@@ -3,9 +3,10 @@
     :title="$t('reservations.cart.unfinished')"
     :icon="ShoppingBasket"
     :variant
+    content-ruled
     data-slot="reservation-draft-summary"
   >
-    <CollectionRowList :items="[draft]" frame="attached">
+    <CollectionRowList :items="[draft]" frame="box">
       <template #default>
         <ReservationDraftRow :draft />
       </template>

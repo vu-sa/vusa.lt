@@ -1,5 +1,5 @@
 <template>
-  <OverviewSection v-if="requests.total > 0" :title="$t('activity_requests.personal.active_title')" :icon="MailQuestion" variant="home" data-slot="home-activity-requests">
+  <OverviewSection v-if="requests.total > 0" :title="$t('activity_requests.personal.active_title')" :icon="MailQuestion" variant="home" content-ruled data-slot="home-activity-requests">
     <template #actions>
       <SpotlightPopover
         :title="$t('activity_requests.personal.spotlight_title')"
@@ -16,10 +16,10 @@
       </SpotlightPopover>
     </template>
 
-    <CollectionRowList :items="requests.data" frame="attached" :item-key="request => request.id">
+    <CollectionRowList :items="requests.data" frame="box" :item-key="request => request.id">
       <template #default="{ item: request }">
-        <div :class="['flex flex-wrap items-center gap-x-4 gap-y-2', ROW_PADDING_CLASS]">
-          <div class="min-w-0 flex-1 basis-56">
+        <div :class="['flex items-center gap-3 sm:gap-4', ROW_PADDING_CLASS]">
+          <div class="min-w-0 flex-1">
             <p class="font-semibold text-foreground">
               {{ request.institution_name }}
             </p>

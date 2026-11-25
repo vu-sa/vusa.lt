@@ -3,10 +3,10 @@
     v-if="items.length > 0"
     :title="$t('home.site_content_title')"
     :icon="Globe"
-    variant="home"
+    variant="home" content-ruled
     data-slot="site-content"
   >
-    <CollectionRowList :items frame="attached" :item-key="item => item.key">
+    <CollectionRowList :items frame="box" :item-key="item => item.key">
       <template #default="{ item }">
         <!-- Native links: these open the public site, outside the admin's Inertia app. -->
         <component
@@ -18,8 +18,8 @@
           <component :is="item.kind === 'event' ? CalendarDays : Newspaper" class="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <span class="min-w-0 flex-1">
             <span class="line-clamp-2 text-pretty font-semibold text-foreground">{{ item.title }}</span>
-            <span class="mt-0.5 block text-xs text-muted-foreground">
-              {{ item.kind === 'event' ? $t('Renginys') : $t('Naujiena') }}
+            <span class="mt-0.5 flex flex-wrap gap-x-1.5 text-xs text-muted-foreground">
+              <span>{{ item.kind === 'event' ? $t('Renginys') : $t('Naujiena') }}</span>
               <span aria-hidden="true">·</span>
               <time :datetime="item.date">{{ formatNearDate(item.date, { thresholdDays: 30 }) }}</time>
             </span>

@@ -23,7 +23,7 @@
         ]"
         @click="event => activate(action, event)"
       >
-        <component :is="action.icon" v-if="action.icon" :class="['size-4 shrink-0', action.loading && 'animate-spin']" aria-hidden="true" />
+        <component :is="action.icon" v-if="action.icon" :class="[action === labelledAction ? 'size-3.5' : 'size-4', 'shrink-0', action.loading && 'animate-spin']" aria-hidden="true" />
         <span v-if="action === labelledAction" class="min-w-0 truncate">{{ fullLabels || stacked ? action.label : (action.shortLabel ?? action.label) }}</span>
       </component>
     </template>

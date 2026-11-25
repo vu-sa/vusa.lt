@@ -6,7 +6,7 @@
       {{ $t('home.quick_access.title') }}
     </h2>
 
-    <NavigationTiles :items="links" :columns framed class="mt-3" />
+    <NavigationTiles :items="links" :columns="tileColumns" framed class="mt-3" />
   </section>
 </template>
 
@@ -52,4 +52,7 @@ const links = computed<NavigationTileItem[]>(() => {
     .filter(link => link !== null)
     .map(link => ({ ...link, label: $t(link.label), description: $t(link.description) }));
 });
+
+// Full width with fewer destinations than columns would leave empty ruled cells; fill the row instead.
+const tileColumns = computed<2 | 3 | 4>(() => Math.min(props.columns, Math.max(2, links.value.length)) as 2 | 3 | 4);
 </script>

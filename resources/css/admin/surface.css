@@ -93,7 +93,7 @@ html[data-surface="admin"] #nprogress .peg {
   --button-hover-mix: 86%;
   --button-active-mix: 76%;
   --button-outline-fill: transparent;
-  --button-outline-border: var(--input);
+  --button-outline-border: color-mix(in oklab, var(--input) 50%, var(--border));
   --button-outline-hover-fill: color-mix(in oklab, var(--foreground) 5%, transparent);
   --button-outline-hover-border: color-mix(in oklab, var(--foreground) 38%, transparent);
   --button-outline-hover-text: var(--foreground);

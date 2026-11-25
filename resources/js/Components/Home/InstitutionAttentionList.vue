@@ -8,8 +8,8 @@
   >
     <template #default="{ item: institution }">
       <!-- Not CollectionRow: it folds a narrow row's action into ⋯, and this row's one job is that action. -->
-      <div :class="['flex flex-wrap items-center gap-x-4 gap-y-2', ROW_PADDING_CLASS]" data-slot="institution-attention-row">
-        <CollectionPrimaryCell :title="institution.name" :href="route('institutions.show', institution.id)" class="flex-1 basis-56">
+      <div :class="['flex items-center gap-3 sm:gap-4', ROW_PADDING_CLASS]" data-slot="institution-attention-row">
+        <CollectionPrimaryCell :title="institution.name" :href="route('institutions.show', institution.id)" class="flex-1">
           <template #sub>
             <span class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
               <template v-for="(part, index) in subParts(institution)" :key="part">
@@ -54,10 +54,9 @@ import type { InstitutionActivityInsight } from './types';
 
 withDefaults(defineProps<{
   institutions: InstitutionActivityInsight[];
-  /** `attached` under its section header; `box` inside the "show all" dialog. */
   frame?: RowListFrame;
 }>(), {
-  frame: 'attached',
+  frame: 'box',
 });
 
 const emit = defineEmits<{

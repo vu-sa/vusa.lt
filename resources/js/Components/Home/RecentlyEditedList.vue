@@ -1,7 +1,7 @@
 <template>
   <!-- Nothing edited is not a status worth reporting, so an empty list leaves no trace. -->
-  <OverviewSection v-if="records.length > 0" :title="$t('Neseniai redaguota')" :icon="History" variant="home">
-    <CollectionRowList :items="records" frame="attached" :item-key="record => `${record.type}:${record.id}`" data-slot="recently-edited">
+  <OverviewSection v-if="records.length > 0" :title="$t('Neseniai redaguota')" :icon="History" variant="home" content-ruled>
+    <CollectionRowList :items="records" frame="box" :item-key="record => `${record.type}:${record.id}`" data-slot="recently-edited">
       <template #default="{ item: record }">
         <Link :href="record.href" prefetch :class="cn(ROW_LINK_CLASS, 'flex-col gap-1')">
           <span class="line-clamp-2 text-pretty font-semibold text-foreground">{{ record.title }}</span>

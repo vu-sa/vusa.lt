@@ -5,12 +5,13 @@
     :title="$t('home.tasks_title')"
     :icon="ClipboardList"
     variant="home"
+    content-ruled
     :href="moreHref"
     :href-label="remainingCount > 0 ? $t('ir dar :count', { count: String(remainingCount) }) : $t('Visos užduotys')"
     :empty="tasks.length === 0"
     :empty-text="stats.total > 0 ? $t('Artimiausiu metu užduočių nėra') : $t('Šiuo metu nieko nelaukia')"
   >
-    <CollectionRowList :items="rows" frame="attached" :item-key="task => task.id">
+    <CollectionRowList :items="rows" frame="box" :item-key="task => task.id">
       <template #default="{ item: task }">
         <component
           :is="task.href ? Link : 'div'"

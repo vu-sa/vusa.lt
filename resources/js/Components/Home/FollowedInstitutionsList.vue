@@ -3,13 +3,14 @@
     :title="$t('Sekamos institucijos')"
     :icon="Eye"
     variant="home"
+    content-ruled
     :href="route('institutions.index', { followed: 1 })"
     :href-label="$t('Visos sekamos (:count)', { count: String(followed.total) })"
     data-slot="followed-institutions"
   >
     <CollectionRowList
       :items="followed.items"
-      frame="attached"
+      frame="box"
       :item-key="institution => institution.id"
       :row-muted="institution => institution.is_active === false"
     >

@@ -49,8 +49,6 @@
           <SiteContentLists :events="upcomingCalendarEvents ?? []" :news="latestNews ?? []" />
         </Deferred>
 
-        <QuickAccess :registration-forms :columns="2" data-slot="home-destinations-section" />
-
         <OverviewStatusList />
       </div>
 
@@ -69,6 +67,8 @@
         </Deferred>
       </aside>
     </div>
+
+    <QuickAccess :registration-forms data-slot="home-destinations-section" />
   </OverviewPage>
 </template>
 
@@ -149,7 +149,6 @@ const hasAtstovavimas = computed(() => Boolean(
   props.upcomingMeetings?.length
   || page.props.auth?.can?.create?.meeting,
 ));
-
 
 const actionWindow = useActionWindow();
 

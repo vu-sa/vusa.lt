@@ -3,17 +3,31 @@
     v-if="shortcuts.length > 0"
     :title="$t('home.create_title')"
     :icon="Plus"
-    variant="home"
+    variant="home" content-ruled
     data-slot="create-shortcuts"
     data-tour="quick-actions"
   >
-    <!-- Rows, not buttons: the header's Veiksmai is the region's one brand action. -->
-    <CollectionRowList :items="shortcuts" frame="attached" :item-key="shortcut => shortcut.id">
-      <template #default="{ item: shortcut }">
-        <button type="button" :class="cn(ROW_LINK_CLASS, 'group items-center')" :data-shortcut="shortcut.id" @click="shortcut.action">
-          <component :is="shortcut.icon" class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand" aria-hidden="true" />
-          <span class="min-w-0 flex-1 font-semibold text-foreground">{{ shortcut.label }}</span>
-          <ChevronRight class="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+    <!-- Rows, not buttons: the shell's Veiksmai is the one brand fill. -->
+    <CollectionRowList :items="shortcuts" frame="box" :item-key="shortcut => shortcut.id">
+      <!-- The first is what we most want done; it leads in brand ink rather than a fill. -->
+      <template #default="{ item: shortcut, index }">
+        <button
+          type="button"
+          :class="cn(ROW_LINK_CLASS, 'group items-center')"
+          :data-shortcut="shortcut.id"
+          :data-leading="index === 0 || undefined"
+          @click="shortcut.action"
+        >
+          <component
+            :is="shortcut.icon"
+            :class="['size-4 shrink-0 transition-colors', index === 0 ? 'text-brand' : 'text-muted-foreground group-hover:text-brand']"
+            aria-hidden="true"
+          />
+          <span :class="['min-w-0 flex-1 font-semibold', index === 0 ? 'text-brand' : 'text-foreground']">{{ shortcut.label }}</span>
+          <ChevronRight
+            :class="['size-4 shrink-0 transition-transform group-hover:translate-x-0.5', index === 0 ? 'text-brand' : 'text-muted-foreground']"
+            aria-hidden="true"
+          />
         </button>
       </template>
     </CollectionRowList>

@@ -4,6 +4,7 @@
     :title="$t('Artimiausi posėdžiai')"
     :icon="CalendarDays"
     variant="home"
+    content-ruled
     :empty="meetings.length === 0"
     :empty-text="$t('artimiausiu metu nieko nesuplanuota')"
     :href="hasMore ? undefined : href"
@@ -19,7 +20,7 @@
       />
     </template>
 
-    <CollectionRowList :items="visibleMeetings" frame="attached" :item-key="meeting => meeting.id" data-slot="upcoming-meetings">
+    <CollectionRowList :items="visibleMeetings" frame="box" :item-key="meeting => meeting.id" data-slot="upcoming-meetings">
       <template #default="{ item: meeting }">
         <UpcomingMeetingRow :meeting />
       </template>
