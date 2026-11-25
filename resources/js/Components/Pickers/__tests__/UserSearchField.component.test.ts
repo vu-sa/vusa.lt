@@ -113,13 +113,13 @@ describe('UserSearchField.vue', () => {
     await wrapper.vm.$nextTick();
 
     const options = wrapper.findAll('[role="option"]');
-    expect(options[0].attributes('aria-disabled')).toBe('true');
-    expect(options[0].text()).toContain('Jau eina šias pareigas');
+    expect(options[0]!.attributes('aria-disabled')).toBe('true');
+    expect(options[0]!.text()).toContain('Jau eina šias pareigas');
 
-    await options[0].trigger('click');
+    await options[0]!.trigger('click');
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
 
-    await options[1].trigger('click');
+    await options[1]!.trigger('click');
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([hits[1]]);
   });
 
