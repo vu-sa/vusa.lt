@@ -33,29 +33,8 @@
     <!-- Main Content -->
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <!-- Search and filter controls -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <!-- Search input -->
-        <div class="relative min-w-0 flex-1">
-          <IFluentSearch16Regular class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input
-            v-model="search"
-            type="text"
-            :placeholder="$t('Vardas arba institucija...')"
-            :class="[
-              'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
-              'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
-            ]"
-          >
-          <button
-            v-if="search"
-            type="button"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            @click="search = ''"
-          >
-            <IFluentDismiss16Regular class="size-3.5" />
-            <span class="sr-only">{{ $t('Išvalyti') }}</span>
-          </button>
-        </div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center" data-nosnippet>
+        <PublicSearchInput v-model="search" :placeholder="$t('Vardas arba institucija...')" />
 
         <!-- Padalinys filter & tenant toggle controls -->
         <div class="flex items-center gap-2 shrink-0">
@@ -216,7 +195,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { TenantType } from '@/Types/enums';
-import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import { PageTitleBand, PublicSearchInput } from '@/Components/Public/Base';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import StudentRepInstitutionCard from '@/Components/Public/Institutions/StudentRepInstitutionCard.vue';
@@ -226,8 +205,6 @@ import { pluralizeLithuanian } from '@/Utils/String';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { TypeIcon } from '@/Components/icons';
 
-import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
-import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';

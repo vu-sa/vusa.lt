@@ -26,7 +26,7 @@
     <!-- Main Content -->
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <!-- Tabs + Search + Filter Controls -->
-      <div class="space-y-4">
+      <div class="space-y-4" data-nosnippet>
         <!-- Top row: Tabs on left + Year selector in the same row, count on right -->
         <div class="flex flex-wrap items-center justify-between gap-4">
           <!-- Left side: Date tabs -->
@@ -81,28 +81,7 @@
 
         <!-- Search Bar and Filters Button in the same row on desktop -->
         <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
-          <!-- Search Input -->
-          <div class="relative min-w-0 flex-1">
-            <IFluentSearch16Regular class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              v-model="query"
-              type="text"
-              :placeholder="`${$t('Ieškoti pagal pavadinimą')}...`"
-              :class="[
-                'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
-                'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
-              ]"
-            >
-            <button
-              v-if="query"
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              @click="query = ''"
-            >
-              <IFluentDismiss16Regular class="size-3.5" />
-              <span class="sr-only">{{ $t('Išvalyti') }}</span>
-            </button>
-          </div>
+          <PublicSearchInput v-model="query" :placeholder="`${$t('Ieškoti pagal pavadinimą')}...`" />
 
           <!-- Filter Button (opens filter popovers row) -->
           <button
@@ -129,62 +108,7 @@
             />
           </button>
 
-          <Popover v-model:open="isSortPopoverOpen">
-            <PopoverTrigger as-child>
-              <button
-                type="button"
-                :class="[
-                  'inline-flex h-11 shrink-0 items-center justify-between gap-2 border px-3.5 text-xs font-bold uppercase tracking-wide transition-colors',
-                  sortBy !== 'relevance'
-                    ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
-                    : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-                ]"
-                :aria-label="$t('Rikiuoti')"
-              >
-                <component :is="currentSortIcon" class="size-3.5" />
-                <span>{{ $t('Rikiuoti') }}</span>
-                <IFluentChevronDown16Regular
-                  class="size-3.5 transition-transform duration-200"
-                  :class="{ 'rotate-180': isSortPopoverOpen }"
-                />
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              align="end"
-              class="z-50 w-64 border border-border bg-popover p-0 text-popover-foreground shadow-lg"
-            >
-              <div class="border-b border-border px-3.5 py-2.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                {{ $t('Rikiuoti pagal') }}
-              </div>
-              <div class="divide-y divide-border/40">
-                <button
-                  v-for="option in sortOptions"
-                  :key="option.value"
-                  type="button"
-                  role="radio"
-                  :aria-checked="sortBy === option.value"
-                  :class="[
-                    'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm font-medium',
-                    'text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-                  ]"
-                  @click="selectSort(option.value)"
-                >
-                  <div class="flex items-center gap-2">
-                    <component
-                      :is="getSortIcon(option.value)"
-                      class="size-4 text-muted-foreground"
-                    />
-                    <span>{{ option.label }}</span>
-                  </div>
-                  <IFluentCheckmark16Filled
-                    v-if="sortBy === option.value"
-                    class="size-4 text-brand"
-                  />
-                </button>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <PublicSortMenu v-model="sortBy" :options="sortOptions" default-value="relevance" />
         </div>
 
         <!-- Filter Popovers Bar (toggled by the filter button) -->
@@ -333,20 +257,16 @@
         </div>
 
         <!-- Empty State -->
-        <div
+        <PublicEmptyState
           v-else-if="!isLoading && events.length === 0"
-          class="border border-dashed border-border py-16 text-center"
+          :title="$t('Renginių nerasta')"
+          :description="$t('Pagal pasirinktus kriterijus renginių nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.')"
+          heading-tag="h3"
         >
-          <div class="mx-auto flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground">
-            <IFluentCalendarLtr24Regular class="size-6" />
-          </div>
-          <h3 class="mt-4 text-base font-bold text-foreground">
-            {{ $t('Renginių nerasta') }}
-          </h3>
-          <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            {{ $t('Pagal pasirinktus kriterijus renginių nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.') }}
-          </p>
-          <div v-if="hasActiveFilters" class="mt-6">
+          <template #icon>
+            <IFluentCalendarLtr24Regular aria-hidden="true" />
+          </template>
+          <template v-if="hasActiveFilters" #default>
             <Button
               voice="brand"
               variant="outline"
@@ -355,8 +275,8 @@
             >
               {{ $t('Išvalyti filtrus') }}
             </Button>
-          </div>
-        </div>
+          </template>
+        </PublicEmptyState>
 
         <!-- Event Grid -->
         <div
@@ -412,18 +332,15 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { useCalendarSearch, type CalendarSearchSort } from '@/Composables/useCalendarSearch';
 import { TenantType } from '@/Types/enums';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import { PageTitleBand, PublicEmptyState, PublicSearchInput, PublicSortMenu, type PublicSortOption } from '@/Components/Public/Base';
 import TagChip from '@/Components/Brand/TagChip.vue';
 import EventCard from '@/Components/Public/Calendar/EventCard.vue';
 import CalendarFilterPopover, { type FilterOption } from '@/Components/Public/Calendar/CalendarFilterPopover.vue';
 import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import { Button } from '@/Components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
 import IFluentArrowSync20Regular from '~icons/fluent/arrow-sync-20-regular';
-import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
-import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
@@ -431,7 +348,6 @@ import IFluentDelete20Regular from '~icons/fluent/delete-20-regular';
 import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
 import IFluentArrowSortDownLines24Regular from '~icons/fluent/arrow-sort-down-lines-24-regular';
 import IFluentArrowSortUpLines24Regular from '~icons/fluent/arrow-sort-up-lines-24-regular';
-import IFluentCheckmark16Filled from '~icons/fluent/checkmark-16-filled';
 
 // Breadcrumbs in band placement per redesign
 usePageBreadcrumbs(
@@ -463,7 +379,6 @@ const props = defineProps<{
 const page = usePage();
 const showModal = ref(false);
 const showFilterBar = useStorage('vusa-show-filters-expanded', false);
-const isSortPopoverOpen = ref(false);
 
 const {
   query,
@@ -488,7 +403,6 @@ const {
   toggleTenant,
   toggleYear,
   toggleRemote,
-  setSortBy,
   clearFilters,
   loadMore,
 } = useCalendarSearch({
@@ -502,30 +416,11 @@ if (currentTenant?.type === TenantType.Padalinys && currentTenant.shortname) {
   selectedTenants.value = [currentTenant.shortname];
 }
 
-const sortOptions: Array<{ value: CalendarSearchSort; label: string }> = [
-  { value: 'relevance', label: $t('Pagal aktualumą') },
-  { value: 'date_desc', label: $t('Tolimiausi ateityje pirmi') },
-  { value: 'date_asc', label: $t('Seniausi pirmi') },
+const sortOptions: PublicSortOption<CalendarSearchSort>[] = [
+  { value: 'relevance', label: $t('Pagal aktualumą'), icon: IFluentArrowSort24Regular },
+  { value: 'date_desc', label: $t('Tolimiausi ateityje pirmi'), icon: IFluentArrowSortDownLines24Regular },
+  { value: 'date_asc', label: $t('Seniausi pirmi'), icon: IFluentArrowSortUpLines24Regular },
 ];
-
-const selectSort = (newSortBy: CalendarSearchSort) => {
-  setSortBy(newSortBy);
-  isSortPopoverOpen.value = false;
-};
-
-const getSortIcon = (mode: CalendarSearchSort) => {
-  switch (mode) {
-    case 'date_desc':
-      return IFluentArrowSortDownLines24Regular;
-    case 'date_asc':
-      return IFluentArrowSortUpLines24Regular;
-    case 'relevance':
-    default:
-      return IFluentArrowSort24Regular;
-  }
-};
-
-const currentSortIcon = computed(() => getSortIcon(sortBy.value));
 
 // Event type options combining Typesense facets with backend props if available
 const eventTypeOptions = computed<FilterOption[]>(() => {

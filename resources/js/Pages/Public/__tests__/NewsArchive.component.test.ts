@@ -211,7 +211,7 @@ describe('Public/NewsArchive.vue', () => {
 
   it('renders search bar and filter controls', () => {
     const wrapper = mountPage();
-    const searchInput = wrapper.find('input[type="text"]');
+    const searchInput = wrapper.find('[data-slot="public-search-input"] input');
     expect(searchInput.exists()).toBe(true);
     expect(wrapper.text()).toContain('Filtrai');
     expect(wrapper.text()).toContain('Rikiuoti');
@@ -250,7 +250,7 @@ describe('Public/NewsArchive.vue', () => {
 
   it('renders first article as featured even when search query is typed', async () => {
     const wrapper = mountPage();
-    const searchInput = wrapper.find('input[type="text"]');
+    const searchInput = wrapper.find('[data-slot="public-search-input"] input');
     await searchInput.setValue('pranešimas');
 
     expect(wrapper.text()).toContain('Pirmasis svarbus pranešimas');

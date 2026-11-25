@@ -14,7 +14,7 @@
     <!-- Main Content -->
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <!-- Search, Quick Types + Filter Controls -->
-      <div class="space-y-4">
+      <div class="space-y-4" data-nosnippet>
         <!-- Quick Important Document Types Row -->
         <div
           v-if="importantContentTypes.length > 0"
@@ -41,25 +41,7 @@
 
         <!-- Search Bar, Filter Toggle + View Mode -->
         <div class="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-          <!-- Search Input -->
-          <div class="relative min-w-0 flex-1">
-            <IFluentSearch16Regular class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              v-model="searchInput"
-              type="text"
-              :placeholder="`${$t('search.enter_search_or_browse')}...`"
-              :class="searchFieldClass"
-            >
-            <button
-              v-if="searchInput"
-              type="button"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              @click="searchInput = ''"
-            >
-              <IFluentDismiss16Regular class="size-3.5" />
-              <span class="sr-only">{{ $t('Išvalyti') }}</span>
-            </button>
-          </div>
+          <PublicSearchInput v-model="searchInput" :placeholder="`${$t('search.enter_search_or_browse')}...`" />
 
           <div class="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2.5 lg:flex lg:items-center">
             <!-- Filter Button (opens filter popovers row) -->
@@ -82,58 +64,11 @@
               />
             </button>
 
-            <!-- Sort Popover -->
-            <Popover v-model:open="isSortPopoverOpen">
-              <PopoverTrigger as-child>
-                <button
-                  type="button"
-                  :class="controlVariants({ active: filters.sort !== 'relevance' })"
-                  :aria-label="$t('Rikiuoti')"
-                >
-                  <component :is="currentSortIcon" class="size-3.5" />
-                  <span class="hidden lg:inline">{{ $t('Rikiuoti') }}</span>
-                  <IFluentChevronDown16Regular
-                    class="size-3.5 transition-transform duration-200"
-                    :class="{ 'rotate-180': isSortPopoverOpen }"
-                  />
-                </button>
-              </PopoverTrigger>
-
-              <PopoverContent
-                align="end"
-                class="z-50 w-64 border border-border bg-popover p-0 text-popover-foreground shadow-lg"
-              >
-                <div class="border-b border-border px-3.5 py-2.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                  {{ $t('Rikiuoti pagal') }}
-                </div>
-                <div class="divide-y divide-border/40">
-                  <button
-                    v-for="option in sortOptions"
-                    :key="option.value"
-                    type="button"
-                    role="radio"
-                    :aria-checked="activeSort === option.value"
-                    :class="[
-                      'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm font-medium',
-                      'text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
-                    ]"
-                    @click="selectSort(option.value)"
-                  >
-                    <div class="flex items-center gap-2">
-                      <component
-                        :is="getSortIcon(option.value)"
-                        class="size-4 text-muted-foreground"
-                      />
-                      <span>{{ option.label }}</span>
-                    </div>
-                    <IFluentCheckmark16Filled
-                      v-if="activeSort === option.value"
-                      class="size-4 text-brand"
-                    />
-                  </button>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <PublicSortMenu
+              v-model="documentSort"
+              :options="sortOptions"
+              :default-value="hasQuery ? 'relevance' : 'date_desc'"
+            />
 
             <!-- View Mode Toggle -->
             <div :class="segmentGroupClass">
@@ -316,20 +251,16 @@
         </HairlineList>
 
         <!-- Empty State -->
-        <div
+        <PublicEmptyState
           v-else-if="!isSearching && documents.length === 0"
-          class="border border-dashed border-border py-16 text-center"
+          :title="$t('search.no_documents_found')"
+          :description="$t('Pagal pasirinktus kriterijus dokumentų nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.')"
+          heading-tag="h3"
         >
-          <div class="mx-auto flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground">
-            <IFluentDocumentMultiple24Regular class="size-6" />
-          </div>
-          <h3 class="mt-4 text-base font-bold text-foreground">
-            {{ $t('search.no_documents_found') }}
-          </h3>
-          <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            {{ $t('Pagal pasirinktus kriterijus dokumentų nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.') }}
-          </p>
-          <div v-if="hasActiveFilters" class="mt-6">
+          <template #icon>
+            <IFluentDocumentMultiple24Regular aria-hidden="true" />
+          </template>
+          <template v-if="hasActiveFilters" #default>
             <Button
               voice="brand"
               variant="outline"
@@ -338,8 +269,8 @@
             >
               {{ $t('Išvalyti filtrus') }}
             </Button>
-          </div>
-        </div>
+          </template>
+        </PublicEmptyState>
 
         <!-- Document Results List -->
         <div v-else>
@@ -406,7 +337,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { useDocumentSearch } from '@/Composables/useDocumentSearch';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import { PageTitleBand, PublicEmptyState, PublicSearchInput, PublicSortMenu, type PublicSortOption } from '@/Components/Public/Base';
 import TagChip from '@/Components/Brand/TagChip.vue';
 import HairlineList from '@/Components/Public/Base/HairlineList.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
@@ -414,8 +345,7 @@ import DocumentListItem from '@/Components/Public/Search/DocumentListItem.vue';
 import DocumentCompactListItem from '@/Components/Public/Search/DocumentCompactListItem.vue';
 import DocumentResultsSkeleton from '@/Components/Public/Search/DocumentResultsSkeleton.vue';
 import { Button } from '@/Components/ui/button';
-import { controlCountClass, controlVariants, searchFieldClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { controlCountClass, controlVariants, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import type { DocumentFacet, DocumentSearchSort } from '@/Types/DocumentSearchTypes';
 import { TenantType } from '@/Types/enums';
 
@@ -423,17 +353,14 @@ import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
 import IFluentArrowSortDownLines24Regular from '~icons/fluent/arrow-sort-down-lines-24-regular';
 import IFluentArrowSortUpLines24Regular from '~icons/fluent/arrow-sort-up-lines-24-regular';
 import IFluentArrowSync20Regular from '~icons/fluent/arrow-sync-20-regular';
-import IFluentCheckmark16Filled from '~icons/fluent/checkmark-16-filled';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentDelete20Regular from '~icons/fluent/delete-20-regular';
-import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentDocument16Regular from '~icons/fluent/document-16-regular';
 import IFluentDocumentMultiple24Regular from '~icons/fluent/document-multiple-24-regular';
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
 import IFluentList20Regular from '~icons/fluent/text-bullet-list-square-20-regular';
 import IFluentRowChild20Regular from '~icons/fluent/row-child-20-regular';
 import IFluentPin24Regular from '~icons/fluent/pin24-regular';
-import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentStar16Filled from '~icons/fluent/star-16-filled';
 
 interface Props {
@@ -442,8 +369,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  allContentTypes: () => [],
-  importantContentTypes: () => [],
+  allContentTypes: () =>[],
+  importantContentTypes: () =>[],
 });
 
 const page = usePage();
@@ -461,7 +388,6 @@ usePageBreadcrumbs(
 );
 
 const showFilterBar = useStorage('vusa-show-filters-expanded', false);
-const isSortPopoverOpen = ref(false);
 
 const pageEyebrow = computed(() => {
   const tenant = page.props.tenant as { shortname?: string } | undefined;
@@ -501,30 +427,16 @@ function applyCurrentTenantFilter(): void {
 }
 
 // Without a query there is nothing to rank by, so relevance is only offered once one exists.
-const sortOptions = computed<Array<{ value: DocumentSearchSort; label: string }>>(() => [
-  ...(hasQuery.value ? [{ value: 'relevance' as const, label: $t('Pagal aktualumą') }] : []),
-  { value: 'date_desc', label: $t('Naujausi pirmi') },
-  { value: 'date_asc', label: $t('Seniausi pirmi') },
+const sortOptions = computed<PublicSortOption<DocumentSearchSort>[]>(() => [
+  ...(hasQuery.value ? [{ value: 'relevance' as const, label: $t('Pagal aktualumą'), icon: IFluentArrowSort24Regular }] : []),
+  { value: 'date_desc', label: $t('Naujausi pirmi'), icon: IFluentArrowSortDownLines24Regular },
+  { value: 'date_asc', label: $t('Seniausi pirmi'), icon: IFluentArrowSortUpLines24Regular },
 ]);
 
-const selectSort = (newSortBy: DocumentSearchSort) => {
-  searchController.setSortBy(newSortBy);
-  isSortPopoverOpen.value = false;
-};
-
-const getSortIcon = (mode: DocumentSearchSort | undefined) => {
-  switch (mode) {
-    case 'date_desc':
-      return IFluentArrowSortDownLines24Regular;
-    case 'date_asc':
-      return IFluentArrowSortUpLines24Regular;
-    case 'relevance':
-    default:
-      return IFluentArrowSort24Regular;
-  }
-};
-
-const currentSortIcon = computed(() => getSortIcon(activeSort.value));
+const documentSort = computed<DocumentSearchSort>({
+  get: () => activeSort.value,
+  set: searchController.setSortBy,
+});
 
 // Sync search input with debounce to controller
 const debouncedSearch = useDebounceFn((query: string) => {

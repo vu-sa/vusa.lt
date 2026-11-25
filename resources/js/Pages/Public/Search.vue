@@ -11,30 +11,13 @@
     </PageTitleBand>
 
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
-      <div class="space-y-4">
-        <!-- Search Input -->
-        <div class="relative min-w-0">
-          <IFluentSearch16Regular class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input
-            v-model="searchInput"
-            type="text"
-            :placeholder="`${$t('search.all_search_placeholder')}...`"
-            :class="[
-              'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
-              'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
-            ]"
-            @keydown.enter="handleSearch"
-          >
-          <button
-            v-if="searchInput"
-            type="button"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            @click="handleClear"
-          >
-            <IFluentDismiss16Regular class="size-3.5" />
-            <span class="sr-only">{{ $t('Išvalyti') }}</span>
-          </button>
-        </div>
+      <div class="space-y-4" data-nosnippet>
+        <PublicSearchInput
+          v-model="searchInput"
+          :placeholder="`${$t('search.all_search_placeholder')}...`"
+          @submit="handleSearch"
+          @clear="handleClear"
+        />
 
         <!-- Content-type toggles -->
         <div class="flex flex-wrap items-center gap-1.5">
@@ -85,25 +68,21 @@
         </div>
 
         <!-- No results across all enabled collections -->
-        <div
+        <PublicEmptyState
           v-else-if="!controller.hasAnyResults.value && controller.hasSearched.value && !controller.isSearching.value"
-          class="border border-dashed border-border py-16 text-center"
+          :title="$t('search.no_results_found')"
+          :description="$t('search.no_results_criteria')"
+          heading-tag="h3"
         >
-          <div class="mx-auto flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground">
-            <IFluentSearch24Regular class="size-6" />
-          </div>
-          <h3 class="mt-4 text-base font-bold text-foreground">
-            {{ $t('search.no_results_found') }}
-          </h3>
-          <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            {{ $t('search.no_results_criteria') }}
-          </p>
-          <div v-if="hasCollectionFilter" class="mt-6">
+          <template #icon>
+            <IFluentSearch24Regular aria-hidden="true" />
+          </template>
+          <template v-if="hasCollectionFilter" #default>
             <Button voice="brand" variant="outline" size="sm" @click="controller.resetCollections">
               {{ $t('search.clear_all') }}
             </Button>
-          </div>
-        </div>
+          </template>
+        </PublicEmptyState>
 
         <!-- Results grouped by collection, ordered by relevance -->
         <div v-else class="space-y-10">
@@ -148,7 +127,7 @@ import { onMounted, computed, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import { PageTitleBand, PublicEmptyState, PublicSearchInput } from '@/Components/Public/Base';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import UnifiedResultItem from '@/Components/Public/Search/UnifiedResultItem.vue';
@@ -213,8 +192,8 @@ const searchInput = computed<string>({
   set: (value: string) => controller.search(value),
 });
 
-const handleSearch = (): void => {
-  controller.search(searchInput.value, true);
+const handleSearch = (query: string): void => {
+  controller.search(query, true);
 };
 
 const handleClear = (): void => {

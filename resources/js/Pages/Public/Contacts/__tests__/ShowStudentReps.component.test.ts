@@ -134,7 +134,7 @@ describe('ShowStudentReps', () => {
       global: { stubs },
     });
 
-    const input = wrapper.find('input[type="text"]');
+    const input = wrapper.find('[data-slot="public-search-input"] input');
     await input.setValue('MIF');
 
     const cards = wrapper.findAll('.mock-rep-card');
@@ -151,7 +151,7 @@ describe('ShowStudentReps', () => {
       global: { stubs },
     });
 
-    const input = wrapper.find('input[type="text"]');
+    const input = wrapper.find('[data-slot="public-search-input"] input');
     await input.setValue('Petras');
 
     const cards = wrapper.findAll('.mock-rep-card');
@@ -167,7 +167,7 @@ describe('ShowStudentReps', () => {
       global: { stubs },
     });
 
-    const input = wrapper.find('input[type="text"]');
+    const input = wrapper.find('[data-slot="public-search-input"] input');
     await input.setValue('NėraTokio');
 
     expect(wrapper.findAll('.mock-rep-card')).toHaveLength(0);
