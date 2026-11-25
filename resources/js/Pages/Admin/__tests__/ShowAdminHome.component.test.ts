@@ -160,15 +160,6 @@ describe('ShowAdminHome', () => {
     expect(queue.props('remainingCount')).toBe(4);
   });
 
-  it('sums up waiting and overdue tasks under the greeting, and says nothing when none wait', () => {
-    expect(mountPage().find('[data-testid="hero-summary"]').exists()).toBe(false);
-
-    const summary = mountPage({ taskStats: { total: 3, overdue: 1, dueSoon: 0 } }).find('[data-testid="hero-summary"]');
-    expect(summary.text()).toBe('home.summary.waiting · home.summary.overdue');
-    expect(mountPage({ taskStats: { total: 3, overdue: 0, dueSoon: 0 } }).find('[data-testid="hero-summary"]').text())
-      .toBe('home.summary.waiting');
-  });
-
   it('shows an unfinished reservation as its own section under the tasks, only when there is one', () => {
     expect(mountPage().find('[data-stub="reservation-draft"]').exists()).toBe(false);
 

@@ -21,8 +21,4 @@ return [
     'create_title' => 'Quick actions',
     'overdue_by' => ':daysd late',
     'overdue' => 'late',
-    'summary' => [
-        'waiting' => 'Tasks waiting: :count',
-        'overdue' => 'overdue: :count',
-    ],
 ];

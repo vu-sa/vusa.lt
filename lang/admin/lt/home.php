@@ -21,8 +21,4 @@ return [
     'create_title' => 'Greiti veiksmai',
     'overdue_by' => 'vėluoja :days d.',
     'overdue' => 'vėluoja',
-    'summary' => [
-        'waiting' => 'Laukia užduočių: :count',
-        'overdue' => 'vėluoja: :count',
-    ],
 ];

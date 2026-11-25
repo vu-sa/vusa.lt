@@ -33,9 +33,6 @@
       <h1 class="u-display mt-2 text-balance text-2xl text-foreground sm:text-3xl" data-tour="greeting-section">
         {{ greeting }}
       </h1>
-      <p v-if="summary" class="mt-1 text-sm text-foreground" data-testid="hero-summary">
-        {{ summary }}
-      </p>
     </div>
   </section>
 </template>
@@ -52,8 +49,6 @@ import type { HomeHeroImage } from './types';
 const props = defineProps<{
   greeting: string;
   image: HomeHeroImage | null;
-  /** One line on what waits, so the answer shows before the rep scrolls. */
-  summary?: string | null;
 }>();
 
 const { locale } = useDateFormatter();

@@ -1,7 +1,7 @@
 <template>
   <OverviewPage :title="$t('Mano VU SA')">
     <template #hero>
-      <HomeHero :greeting :image="heroImage" :summary="taskSummary">
+      <HomeHero :greeting :image="heroImage">
         <template v-if="seasonCountdown" #aside>
           <SeasonCountdown :starts-at="seasonCountdown.startsAt" />
         </template>
@@ -226,18 +226,6 @@ const greeting = computed(() => {
   const firstName = page.props.auth?.user?.name?.split(' ')[0];
   if (!firstName) return $t('Labas');
   return `${$t('Labas')}, ${page.props.app.locale === 'lt' ? addressivize(firstName) : firstName}`;
-});
-
-const taskSummary = computed(() => {
-  if (props.taskStats.total === 0) {
-    return null;
-  }
-
-  const waiting = $t('home.summary.waiting', { count: String(props.taskStats.total) });
-
-  return props.taskStats.overdue > 0
-    ? `${waiting} · ${$t('home.summary.overdue', { count: String(props.taskStats.overdue) })}`
-    : waiting;
 });
 
 const recordActivityFor = (institution: InstitutionActivityInsight) => {
