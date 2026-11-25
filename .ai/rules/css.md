@@ -13,7 +13,7 @@ paths:
 - A `dark:`-prefixed class beats an unprefixed one regardless of source order, so a colour override needs its `dark:` twin (see public.md).
 
 ## Surfaces: one palette, `data-surface` only for real differences
-`data-surface="public|admin"` on `<html>` does not scope the palette — palette, toasts, a11y and reduced motion are global. Scope a rule to it only when the surfaces genuinely differ: public prose colour (`public/typography.css`, kept off the admin Tiptap editor, so rich-content previews stamp `data-surface="public"`), Vue Flow borders, admin table numerals, the progress bar, and the admin radius scale, weight variables (`--action-weight`, `--caps-weight`, `--caps-tracking`) and Figtree typeface — each reset under a nested `[data-surface="public"]` preview. Don't stamp it on popovers or wrappers to "get the public palette" — they already have it.
+`data-surface="public|admin"` on `<html>` does not scope the palette — palette, toasts, a11y and reduced motion are global. Scope a rule to it only when the surfaces genuinely differ: public prose colour (`public/typography.css`, kept off the admin Tiptap editor, so rich-content previews stamp `data-surface="public"`), Vue Flow borders, admin table numerals, the progress bar, and the admin radius scale and weight variables (`--action-weight`, `--caps-weight`, `--caps-tracking`) — each reset under a nested `[data-surface="public"]` preview. Don't stamp it on popovers or wrappers to "get the public palette" — they already have it.
 
 ## app.css split into partials — find content by area, not by grepping app.css
 `resources/css/app.css` is now a thin entry that only `@import`s partials (still a single Tailwind build — no bundle-size split between admin/public, see below). Content lives in:
@@ -21,7 +21,7 @@ paths:
 - `theme/design-tokens.css` — consolidated @theme inline (fonts, vusa-*/status-* colors, ui/sidebar/chart mapping, animations)
 - `theme/surface-palette.css` — the canvas/ink palette and typeface on `:root`/`.dark`, shared by every page
 - `public/surface.css` — reader preferences, toasts and reduced motion (all pages), plus the public-only rules
-- `admin/surface.css` — admin-only rules (table numerals, progress bar, form-page fields, radius scale, weight variables, typeface)
+- `admin/surface.css` — admin-only rules (table numerals, progress bar, form-page fields, radius scale, weight variables)
 - `public/typography.css` — .typography, .rc-prose(-editing), .rc-lead, .rc-h-*, .rc-tag-*
 - `public/canvas.css` — .band-masthead, .rc-canvas grid, .rc-shell/.rc-aside, .rc-viewport
 - `base/reset.css` — Tailwind v3 border-color compat, base h1-h4, .icon-inline, base layer

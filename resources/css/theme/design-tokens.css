@@ -3,7 +3,7 @@
   /* Font Families */
   --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-public: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
-  --font-admin: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  --font-admin: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
   /* VU SA Brand Colors - converted to OKLCH */
   --color-vusa-red: oklch(0.5 0.2 25);

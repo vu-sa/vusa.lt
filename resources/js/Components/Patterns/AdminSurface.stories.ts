@@ -115,12 +115,12 @@ export const RadiusProbe: Story = {
   }),
 };
 
-/** The admin surface reads in Figtree; public keeps Atkinson Hyperlegible Next. */
+/** D10 — the admin surface takes the public typeface. */
 export const Typeface: Story = {
   render: () => ({
     template: `
-      <div class="bg-background p-6 text-foreground font-admin">
-        <p class="text-2xl font-semibold">Figtree</p>
+      <div class="bg-background p-6 text-foreground">
+        <p class="text-2xl font-bold">Atkinson Hyperlegible Next</p>
         <p class="text-sm text-muted-foreground">Set on the root, so teleported content (dialogs, the command palette, toasts) inherits it too.</p>
       </div>
     `,

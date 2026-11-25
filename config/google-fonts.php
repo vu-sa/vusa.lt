@@ -7,8 +7,8 @@ return [
      * The google-fonts:fetch command will prefetch these fonts.
      */
     'fonts' => [
-        // Admin uses Figtree
-        'default' => 'https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap',
+        // Admin uses Inter
+        'default' => 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap',
     ],
 
     /* 'fonts' => [ */

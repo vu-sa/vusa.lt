@@ -43,7 +43,7 @@ it('resolves the admin token scope in the browser', function (): void {
     JS);
 
     expect($borderRadius)->toBe('10px')
-        ->and($page->script('getComputedStyle(document.documentElement).fontFamily'))->toContain('Figtree');
+        ->and($page->script('getComputedStyle(document.documentElement).fontFamily'))->toContain('Atkinson Hyperlegible Next');
 
     // The admin surface's 100% reset keeps the root at a readable size.
     expect($page->script('getComputedStyle(document.documentElement).fontSize'))
