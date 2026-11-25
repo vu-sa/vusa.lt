@@ -30,11 +30,11 @@ describe('SiteContentLists', () => {
     });
     const thumbs = () => wrapper.findAll('[data-slot="site-content-thumb"]');
 
-    expect(thumbs()[0].find('img').attributes('src')).toBe('/thumb.jpg');
-    expect(thumbs()[1].find('img').exists()).toBe(false);
+    expect(thumbs()[0]!.find('img').attributes('src')).toBe('/thumb.jpg');
+    expect(thumbs()[1]!.find('img').exists()).toBe(false);
 
-    await thumbs()[0].get('img').trigger('error');
-    expect(thumbs()[0].find('img').exists()).toBe(false);
+    await thumbs()[0]!.get('img').trigger('error');
+    expect(thumbs()[0]!.find('img').exists()).toBe(false);
   });
 
   it('renders nothing when there are neither events nor news', () => {

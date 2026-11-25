@@ -59,8 +59,8 @@ describe('home actions', () => {
     expect(wrapper.find('[data-slot="collection-row-list"]').exists()).toBe(true);
     expect(buttons.some(button => button.classes().includes('bg-brand-fill'))).toBe(false);
 
-    await buttons[1].trigger('click');
-    expect(state.actions[3].action).toHaveBeenCalledOnce();
+    await buttons[1]!.trigger('click');
+    expect(state.actions[3]!.action).toHaveBeenCalledOnce();
   });
 
   it('puts an unfinished reservation first, in place of a new one, and links it to the reservation form', () => {
@@ -76,10 +76,10 @@ describe('home actions', () => {
     const rows = wrapper.findAll('[data-shortcut]');
 
     expect(rows.map(row => row.attributes('data-shortcut'))).toEqual(['finish-reservation', 'create-new_meeting', 'create-new_problem']);
-    expect(rows[0].text()).toContain('reservations.cart.finish');
-    expect(rows[0].text()).toContain('Mokymai');
-    expect(rows[0].attributes('data-leading')).toBe('true');
-    expect(rows[0].attributes('href')).toBe('/mocked-route/reservations.create');
+    expect(rows[0]!.text()).toContain('reservations.cart.finish');
+    expect(rows[0]!.text()).toContain('Mokymai');
+    expect(rows[0]!.attributes('data-leading')).toBe('true');
+    expect(rows[0]!.attributes('href')).toBe('/mocked-route/reservations.create');
   });
 
   it('fills the shortcuts with one action per workspace when the user records no meetings', () => {
@@ -109,10 +109,10 @@ describe('home actions', () => {
 
     const links = mount(QuickAccess).findAll('a');
     expect(links).toHaveLength(2);
-    expect(links[0].attributes('href')).toBe('/mocked-route/dashboard.atstovavimas');
-    expect(links[0].text()).toContain('shell.workspaces.atstovavimas.title');
-    expect(links[1].attributes('href')).toBe('/mocked-route/dashboard.reservations');
-    expect(links[1].text()).toContain('home.quick_access.manage_reservations_description');
+    expect(links[0]!.attributes('href')).toBe('/mocked-route/dashboard.atstovavimas');
+    expect(links[0]!.text()).toContain('shell.workspaces.atstovavimas.title');
+    expect(links[1]!.attributes('href')).toBe('/mocked-route/dashboard.reservations');
+    expect(links[1]!.text()).toContain('home.quick_access.manage_reservations_description');
   });
 
   it('shows each quick access link independently when only that area is available', () => {
