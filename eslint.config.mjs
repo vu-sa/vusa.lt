@@ -117,10 +117,13 @@ const removedIconPatterns = [
 
 const rawHuePattern = /^(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|decoration|caret|accent)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-[\w.]+)?(?:\/[\d.]+)?$/; // eslint-disable-line max-len
 
+// Scale radii resolve through --radius-* (square on public, small in admin); literals bypass it.
+const radiusScalePattern = /^rounded(?:-(?:[trbl]|[se]|[tb][lr]|[se][se]))?-(?:none|xs|sm|md|lg|xl|2xl)$/;
+
 function legacyUtility(value) {
   return value.split(/\s+/).map(token => token.replace(/^!/, '').split(':').at(-1)).find(token =>
     rawHuePattern.test(token)
-    || /^rounded(?:-(?!none$)[\w-]+)?$/.test(token)
+    || (/^rounded(?:-|$)/.test(token) && !radiusScalePattern.test(token))
     || /^(?:shadow|drop-shadow)(?:-(?!none$)[\w-]+)?$/.test(token),
   );
 }
@@ -132,7 +135,7 @@ const adminRedesignPlugin = {
         type: 'problem',
         schema: [],
         messages: {
-          legacy: '"{{utility}}" is legacy admin styling. Use semantic tokens with square, hairline surfaces instead.',
+          legacy: '"{{utility}}" is legacy admin styling. Use semantic tokens, hairline surfaces and the radius scale instead.',
         },
       },
       create(context) {
