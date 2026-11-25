@@ -2,7 +2,7 @@
   <!-- Edge to edge across the scroll area (100cqw of the shell's container), straight under the
        chrome; the text keeps the page measure. -->
   <section
-    class="relative isolate ml-[calc(50%-50cqw)] flex min-h-44 w-[100cqw] flex-col overflow-hidden bg-background text-foreground -mt-4 sm:min-h-52 md:-mt-6"
+    class="relative isolate ml-[calc(50%-50cqw)] flex min-h-32 w-[100cqw] flex-col overflow-hidden bg-background text-foreground -mt-4 sm:min-h-36 md:-mt-6"
     data-slot="home-hero"
   >
     <img
@@ -21,7 +21,7 @@
     <div class="absolute inset-0 -z-10 hidden bg-gradient-to-l from-background/95 from-0% via-background/68 via-32% to-transparent to-62% sm:block" aria-hidden="true" />
     <div class="absolute inset-0 -z-10 hidden bg-gradient-to-t from-background from-0% via-transparent via-60% to-background/18 sm:block" aria-hidden="true" />
 
-    <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-4 pt-8 pb-5 sm:px-6 sm:pb-7 lg:px-8">
+    <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-4 pt-6 pb-4 sm:px-6 sm:pb-5 lg:px-8">
       <!-- The right side of the band, for something the page stands there (the winter tree). -->
       <!-- z-2: above the seasonal snowdrift (z-1), so the tree stands on the snow. -->
       <div v-if="$slots.aside" class="absolute inset-y-0 right-4 z-2 hidden pt-3 sm:right-6 md:block lg:right-8" data-slot="home-hero-aside">
