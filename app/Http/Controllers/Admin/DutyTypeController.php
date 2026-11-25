@@ -37,6 +37,10 @@ class DutyTypeController extends AdminController
             'typeKind' => 'dutyType',
             'types' => $this->appendForceDeleteBlockedReason($types, $request)->values(),
             'deletedCount' => DutyType::onlyTrashed()->count(),
+            'abilities' => [
+                'delete' => $request->user()->can('delete', new DutyType),
+                'restore' => $request->user()->can('restore', new DutyType),
+            ],
         ]);
     }
 

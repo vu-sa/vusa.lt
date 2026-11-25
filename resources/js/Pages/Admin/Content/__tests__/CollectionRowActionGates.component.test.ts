@@ -71,7 +71,11 @@ function actionsFor(testCase: CollectionCase, allowed: boolean, trash = false, c
     forceDelete: { [testCase.model]: allowed },
   } } }));
   const wrapper = mount(testCase.component, {
-    props: { ...testCase.props, ...(testCase.banner ? { showDeleted: trash } : {}) },
+    props: {
+      ...testCase.props,
+      ...(testCase.banner ? { showDeleted: trash } : {}),
+      ...(testCase.domainType ? { abilities: { delete: allowed, restore: allowed } } : {}),
+    },
     global: { stubs: {
       CollectionPage: { name: 'CollectionPage', props: ['rowActions'], template: '<div />' },
       CollectionConfirmAction: true,
@@ -118,6 +122,13 @@ describe.each(cases)('$prefix row actions', (testCase) => {
     }
   });
 
+});
+
+describe.each(cases.filter(testCase => testCase.domainType))('$prefix delete gates', (testCase) => {
+  it('follows the type policy abilities, not creation permission', () => {
+    expect(kinds(actionsFor(testCase, false, false, true))).toEqual(['open', 'edit']);
+    expect(kinds(actionsFor(testCase, true, false, false))).toEqual(['open', 'edit', 'delete']);
+  });
 });
 
 const publishingCases = cases.filter(testCase => ['news', 'pages', 'calendar', 'banners'].includes(testCase.prefix));

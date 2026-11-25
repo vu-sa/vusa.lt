@@ -252,3 +252,15 @@ test('removing a duty type assignment removes its roles and invalidates warmed a
         ->and(Cache::has($navigationKey))->toBeFalse()
         ->and(Cache::has($mapKey))->toBeFalse();
 });
+
+test('type collections offer delete and restore only to super admins', function (string $resource): void {
+    $creator = makeUser(Tenant::query()->first());
+    $creator->givePermissionTo(["{$resource}.read.*", "{$resource}.create.*"]);
+    app(ModelAuthorizer::class)->resetCache($creator);
+
+    asUserWithInertia($creator)->get(route("{$resource}.index"))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('abilities.delete', false)->where('abilities.restore', false));
+
+    asUserWithInertia($this->admin)->get(route("{$resource}.index"))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('abilities.delete', true)->where('abilities.restore', true));
+})->with(['institutionTypes', 'dutyTypes']);
