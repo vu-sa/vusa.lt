@@ -392,22 +392,8 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
   if (getCurrentInstance()) {
     onMounted(() => {
-      // If we have URL parameters or no initial items, perform initial search
-      const hasUrlParams = Boolean(
-        query.value.trim()
-        || selectedTenants.value.length > 0
-        || selectedYears.value.length > 0
-        || selectedTags.value.length > 0
-        || sortBy.value !== 'relevance',
-      );
-
-      if (hasUrlParams || news.value.length === 0) {
-        performSearch(false);
-      }
-      else {
-        // Just fetch facets in background while showing initial server data
-        performSearch(false);
-      }
+      // Always search on mount: it fetches facets even when the server seeded the first page.
+      performSearch(false);
     });
 
     onUnmounted(() => {

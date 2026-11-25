@@ -1,6 +1,6 @@
 import { trans } from 'laravel-vue-i18n';
 
-import { statusRoleParts, type StatusRole } from '@/Constants/statuses';
+import type { StatusRole } from '@/Constants/statuses';
 
 import type { RepresentativeActivityCategory } from '../types';
 
@@ -60,14 +60,6 @@ export function getActivityRingColor(category: RepresentativeActivityCategory | 
     : getComputedStyle(document.documentElement).getPropertyValue(`--status-${role}`).trim();
 
   return token || FALLBACK_RING[role][isDark ? 1 : 0];
-}
-
-export function getActivityDotClasses(category: RepresentativeActivityCategory | undefined): string {
-  return statusRoleParts[getActivityRole(category)].dot;
-}
-
-export function getActivityTextClasses(category: RepresentativeActivityCategory | undefined): string {
-  return statusRoleParts[getActivityRole(category)].text;
 }
 
 export function getActivityLabel(category: RepresentativeActivityCategory | undefined): string {

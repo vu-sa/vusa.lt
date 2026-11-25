@@ -61,7 +61,7 @@
  */
 import { computed, h, defineAsyncComponent, onMounted, ref, watch, nextTick } from 'vue';
 import { useDark, useElementSize } from '@vueuse/core';
-import { usePage, router } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
 import FadeTransition from '@/Components/Shared/FadeTransition.vue';
 import StagingWatermark from '@/Components/Shared/StagingWatermark.vue';
@@ -147,59 +147,10 @@ const toasts = useToasts();
 usePublicEditLinkToast(() => usePage().props.publicEditLink);
 usePublicStagingToast(() => usePage().props.staging, () => usePage().url);
 
-// Listen for navigation events to handle breadcrumb persistence
 onMounted(() => {
   mounted.value = true;
 
   // Initialize flash message handling
   toasts.initializeToasts({ validationErrors: () => usePage().component !== 'Public/RegistrationPage' });
-
-  // Setup router navigation events for breadcrumbs
-  router.on('start', () => {
-    // Don't clear breadcrumbs during navigation - helps with transition
-  });
-
-  router.on('finish', () => {
-    // Note: We no longer clear breadcrumbs on navigation to prevent flashing
-    // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
-  });
-
-  // Reader preferences (text size, contrast, link underlines) are served by the in-house
-  // AccessibilityMenu in the header — see Components/Public/Base/AccessibilityMenu.vue.
-
-  // Tawk.to live chat disabled — its bottom-right widget kept colliding with other
-  // floating UI. Re-enable by restoring this block.
-  /* const loadTawkTo = () => {
-    const lang = usePage().props.app.locale;
-    const Tawk_SRC = lang === 'lt' ? 'default' : '1foc6rga3';
-
-    const tawkScript = document.createElement('script');
-    tawkScript.async = true;
-    tawkScript.src = `https://embed.tawk.to/5f71b135f0e7167d00145612/${Tawk_SRC}`;
-    tawkScript.charset = 'UTF-8';
-    tawkScript.setAttribute('crossorigin', 'anonymous');
-    document.head.appendChild(tawkScript);
-  };
-
-  // Load Tawk.to after user interaction or after 5 seconds (whichever comes first)
-  let tawkLoaded = false;
-  const loadTawkOnce = () => {
-    if (!tawkLoaded) {
-      tawkLoaded = true;
-      loadTawkTo();
-      // Remove event listeners after loading
-      document.removeEventListener('scroll', loadTawkOnce);
-      document.removeEventListener('click', loadTawkOnce);
-      document.removeEventListener('touchstart', loadTawkOnce);
-    }
-  };
-
-  // Listen for user interaction
-  document.addEventListener('scroll', loadTawkOnce, { once: true, passive: true });
-  document.addEventListener('click', loadTawkOnce, { once: true });
-  document.addEventListener('touchstart', loadTawkOnce, { once: true, passive: true });
-
-  // Fallback: load after 5 seconds if no interaction
-  setTimeout(loadTawkOnce, 5000); */
 });
 </script>

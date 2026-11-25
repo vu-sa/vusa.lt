@@ -23,7 +23,6 @@ const stubs = {
   Popover: stubPopover,
   PopoverTrigger: { template: '<div><slot /></div>' },
   PopoverContent: stubPopoverContent,
-  DutyCard: { props: ['duty', 'canManage'], template: '<div class="duty-card">{{ duty.name }}</div>' },
   EmptyState: { props: ['title', 'actionLabel'], template: '<div data-testid="empty">{{ title }}<span v-if="actionLabel">{{ actionLabel }}</span></div>' },
 };
 
@@ -172,7 +171,6 @@ it('keeps duty rows and holder controls when entering order mode', async () => {
   const before = wrapper.findAll('[data-slot="institution-duty-row"]').map(row => row.text());
   await button(wrapper, 'Keisti tvarką')!.trigger('click');
   expect(wrapper.findAll('[data-slot="institution-duty-row"]')).toHaveLength(3);
-  expect(wrapper.find('.duty-card').exists()).toBe(false);
   expect(wrapper.findAll('.handle')).toHaveLength(3);
   expect(wrapper.text()).toContain('Pirmininkas');
   expect(before).toHaveLength(3);

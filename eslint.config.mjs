@@ -19,8 +19,6 @@ const sourceResolver = createNodeResolver({
 
 export const LEGACY_ADMIN_EXCEPTIONS = [
   'resources/js/Pages/Admin/Dashboard/Components/CoordinatorSkeleton.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/RepresentativeActivitySkeleton.vue',
-  'resources/js/Pages/Admin/Dashboard/Components/RepresentativeDataTable.vue',
 ];
 
 const MIGRATED_ADMIN_COMPONENT_PATHS = [

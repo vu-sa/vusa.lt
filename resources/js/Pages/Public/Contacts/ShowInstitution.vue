@@ -123,7 +123,6 @@
         <EmptyContactsState
           v-if="!hasAnyContacts"
           :student-rep-form-info
-          :institution-name="String(institution.name)"
         />
 
         <div v-else :class="contactGridClass">

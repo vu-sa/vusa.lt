@@ -40,8 +40,8 @@
 
     <slot />
 
-    <p v-if="hint || helperText" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
-      {{ hint ?? helperText }}
+    <p v-if="hint" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
+      {{ hint }}
     </p>
     <p v-if="error" class="text-xs text-destructive">
       {{ error }}
@@ -65,8 +65,6 @@ const props = defineProps<{
   required?: boolean;
   /** One line under the field — never hover-only (.ai/rules/admin-forms.md). */
   hint?: string;
-  /** @deprecated Use `hint` instead. Kept for backwards compatibility. */
-  helperText?: string;
   error?: string;
   charCount?: number;
   maxLength?: number;
