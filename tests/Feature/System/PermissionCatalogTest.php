@@ -91,7 +91,7 @@ test('combinations that grant nothing are not offered', function (string $name):
 ]);
 
 test('unknown resources do not fail open to all scopes', function (): void {
-    expect(ModelEnum::getAllowedScopes('unknownResources'))->toBe([]);
+    expect(ModelEnum::getAllowedScopes('unknownResources'))->toBeEmpty();
 });
 
 test('what is still offered at own', function (string $name): void {
@@ -124,13 +124,9 @@ test('every grantable own resource names a live Duty relation and an editor labe
     foreach ($resourcesWithOwn as $resource) {
         $relation = PermissionCatalog::ownRelation($resource);
 
-        expect($relation)->toBeString()->not->toBeEmpty("{$resource} offers own without a Duty relation");
-        expect($relation === 'duties' || (new Duty)->{$relation}() instanceof Relation)
-            ->toBeTrue("{$resource} names missing Duty relation [{$relation}]");
-        expect($frontendByKey[$resource]['scopeLabels']['own'] ?? null)
-            ->toBeString()
-            ->not->toBeEmpty("{$resource} offers own without an editor scope label")
-            ->not->toStartWith('access.');
+        expect($relation)->toBeString()->not->toBeEmpty("{$resource} offers own without a Duty relation")
+            ->and($relation === 'duties' || (new Duty)->{$relation}() instanceof Relation)->toBeTrue("{$resource} names missing Duty relation [{$relation}]")
+            ->and($frontendByKey[$resource]['scopeLabels']['own'] ?? null)->toBeString()->not->toBeEmpty("{$resource} offers own without an editor scope label")->not->toStartWith('access.');
     }
 });
 

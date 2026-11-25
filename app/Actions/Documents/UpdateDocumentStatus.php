@@ -83,7 +83,7 @@ class UpdateDocumentStatus
                     $current->published_at = now();
                     $current->published_by = $user->id;
                     // Until the queued sync reports back, the missing link is expected, not a failure.
-                    $current->sync_status = 'pending';
+                    $current->sync_status = Document::SYNC_STATUS_PENDING;
                 }
             }
 

@@ -105,7 +105,7 @@ class DocumentFolderApiController extends ApiController
     public function refresh(Document $document): JsonResponse
     {
         // So the row reads "being created" rather than "failed" until the job reports back.
-        $document->update(['sync_status' => 'pending']);
+        $document->update(['sync_status' => Document::SYNC_STATUS_PENDING]);
         SyncDocumentFromSharePointJob::dispatch($document, force: true);
 
         return $this->jsonSuccess(new DocumentRowResource($document->refresh()->load('institution.tenant:id,shortname'))->resolve(request()), __('messages.document.refresh_queued'));

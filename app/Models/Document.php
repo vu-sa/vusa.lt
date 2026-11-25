@@ -54,7 +54,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $sharepoint_institution_label
  * @property Carbon $created_at
  * @property Carbon|null $checked_at
- * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
+ * @property string $sync_status Status of SharePoint sync, including legacy imported values
  * @property string|null $sync_error_message Error message from failed sync attempts
  * @property int $sync_attempts Number of sync attempts made
  * @property Carbon|null $last_sync_attempt_at Timestamp of last sync attempt
@@ -89,6 +89,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 class Document extends Model
 {
     use HasFactory, HasRelationships, LogsModelActivity, Searchable;
+
+    public const string SYNC_STATUS_PENDING = 'pending';
+
+    public const string SYNC_STATUS_SYNCING = 'syncing';
+
+    public const string SYNC_STATUS_SUCCESS = 'success';
+
+    public const string SYNC_STATUS_FAILED = 'failed';
 
     #[\Override]
     protected function casts(): array

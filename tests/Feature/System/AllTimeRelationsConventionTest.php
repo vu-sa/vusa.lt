@@ -221,7 +221,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Registration options check vacancies through duties.current_users.
     'app/Services/FormOptionResolver.php' => ["'duties" => 1],
     // Institution duty catalog, current-holder displays, and the assignment picker's historical and upcoming periods.
-    'app/Services/InstitutionPresenter.php' => ['->duties' => 5, "'duties" => 3, '->users' => 1],
+    'app/Services/Institutions/InstitutionPresenter.php' => ['->duties' => 5, "'duties" => 3, '->users' => 1],
     // Related institutions load term history for the Gantt and join the tenant table for graph edges.
     'app/Services/InstitutionRelationService.php' => ["'tenants'" => 1, "'duties" => 2],
     // Term history feeds Gantt coverage.

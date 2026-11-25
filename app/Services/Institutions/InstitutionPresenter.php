@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Institutions;
 
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GetInstitutionSecretaries;
@@ -23,6 +23,11 @@ use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\DutyPanelPresenter;
+use App\Services\DutyPresenter;
+use App\Services\FileableFilePresenter;
+use App\Services\InstitutionRelationService;
+use App\Services\MeetingPanelPresenter;
 use App\Services\Sharepoint\SharepointFileService;
 use App\Settings\CadenceSettings;
 use App\Support\MorphMap;
@@ -284,7 +289,7 @@ class InstitutionPresenter
     {
         $rows = [];
         foreach ($institution->problems()->with(['tenant:id,shortname', 'responsibleUser:id,name'])
-            ->orderByRaw("status = 'resolved'")->orderByDesc('occurred_at')->get() as $problem) {
+            ->orderByRaw('status = ?', [Problem::STATUS_RESOLVED])->orderByDesc('occurred_at')->get() as $problem) {
             $row = new ProblemSummaryResource($problem)->resolve(request());
             $rows[] = [
                 'id' => $row['id'],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Actions\GetPublicMeetingDocuments;
 use App\Enums\SystemDutyType;
 use App\Enums\TenantType;
@@ -126,7 +127,7 @@ class ContactController extends PublicController
         $types = $dutyType->getDescendantsAndSelf();
 
         if ($this->tenant->isMain()) {
-            $institution = Institution::where('alias', '=', 'centrinis-biuras')->firstOrFail();
+            $institution = Institution::where('alias', '=', GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS)->firstOrFail();
         } else {
             $institution = Institution::where('alias', '=', $this->tenant->alias)->firstOrFail();
         }

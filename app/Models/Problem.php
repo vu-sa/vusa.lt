@@ -70,6 +70,14 @@ class Problem extends Model implements Commentable
 {
     use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes;
 
+    public const string STATUS_OPEN = 'open';
+
+    public const string STATUS_IN_PROGRESS = 'in_progress';
+
+    public const string STATUS_RESOLVED = 'resolved';
+
+    public const array STATUSES = [self::STATUS_OPEN, self::STATUS_IN_PROGRESS, self::STATUS_RESOLVED];
+
     public $translatable = ['title', 'description', 'solution', 'steps_taken'];
 
     /**
@@ -173,7 +181,7 @@ class Problem extends Model implements Commentable
 
     public function isResolved(): bool
     {
-        return $this->status === 'resolved' && ! is_null($this->resolved_at);
+        return $this->status === self::STATUS_RESOLVED && ! is_null($this->resolved_at);
     }
 
     /**
@@ -183,7 +191,7 @@ class Problem extends Model implements Commentable
     protected static function booted(): void
     {
         static::saving(function (Problem $problem): void {
-            if ($problem->status !== 'resolved') {
+            if ($problem->status !== self::STATUS_RESOLVED) {
                 $problem->resolved_at = null;
             } elseif ($problem->resolved_at === null) {
                 $problem->resolved_at = now();

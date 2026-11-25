@@ -138,7 +138,7 @@ describe('image search synchronization', function (): void {
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $resource = Resource::where('identifier', 'PHOTO-CREATE')->sole();
-        $document = (new Client(config('scout.typesense.client-settings')))->collections[$resource->searchableAs()]->documents[$resource->id]->retrieve();
+        $document = new Client(config('scout.typesense.client-settings'))->collections[$resource->searchableAs()]->documents[$resource->id]->retrieve();
         expect($document['image_url'])->toBe($resource->getFirstMedia('images')->getUrl());
     });
 
@@ -153,7 +153,7 @@ describe('image search synchronization', function (): void {
         }
         event(new ConversionHasBeenCompletedEvent($media, Conversion::create('wide')));
 
-        $document = (new Client(config('scout.typesense.client-settings')))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
+        $document = new Client(config('scout.typesense.client-settings'))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
         expect($document['image_url'])->toBe($media->getUrl('thumb'))
             ->and($this->resource->fresh()->updated_at->equalTo($updatedAt))->toBeTrue();
     });
@@ -173,7 +173,7 @@ describe('image search synchronization', function (): void {
             'media' => $removeAll ? [] : [['id' => $second->id, 'status' => 'finished']],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
-        $document = (new Client(config('scout.typesense.client-settings')))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
+        $document = new Client(config('scout.typesense.client-settings'))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
         expect($document['image_url'])->toBe($removeAll ? '' : $second->getUrl());
     })->with([false, true]);
 });
