@@ -1647,5 +1647,13 @@
     "Paspausk elementą – liks matomi tik su juo susiję.": "Click an element to see only what it is tied to.",
     "Pašalinti :name": "Remove :name",
     "Ieškok pagal vardą…": "Search by name…",
-    "Jau pasirinktas": "Already picked"
+    "Jau pasirinktas": "Already picked",
+    "Standartinis": "Standard",
+    "Su šonine juosta": "With a sidebar",
+    "Platus": "Wide",
+    "Visas plotis": "Full width",
+    "Susikaupęs": "Focused",
+    "Centruotas": "Centred",
+    "Pildyti anglų kalbos laukelius": "Fill in the English fields",
+    "Pildyti lietuvių kalbos laukelius": "Fill in the Lithuanian fields"
 }

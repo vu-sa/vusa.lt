@@ -14,18 +14,15 @@
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        <template v-if="locale === 'lt'">
-          Pildyti anglų kalbos laukelius
-        </template>
-        <template v-else>
-          Fill in Lithuanian fields
-        </template>
+        {{ locale === 'lt' ? $t('Pildyti anglų kalbos laukelius') : $t('Pildyti lietuvių kalbos laukelius') }}
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
 </template>
 
 <script setup lang="ts">
+import { trans as $t } from 'laravel-vue-i18n';
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { Button } from '@/Components/ui/button';
 import type { LocaleEnum } from '@/Types/enums';

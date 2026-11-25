@@ -476,26 +476,26 @@ const FocusedLayoutIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', s
   h('rect', { x: 16, y: 24, width: 64, height: 32, rx: 2 }),
 ]);
 
-const layoutOptions = [
+const layoutOptions = computed(() => [
   {
     value: 'default',
-    label: 'Standartinis',
-    description: 'Su šonine juosta',
+    label: $t('Standartinis'),
+    description: $t('Su šonine juosta'),
     icon: DefaultLayoutIcon,
   },
   {
     value: 'wide',
-    label: 'Platus',
-    description: 'Visas plotis',
+    label: $t('Platus'),
+    description: $t('Visas plotis'),
     icon: WideLayoutIcon,
   },
   {
     value: 'focused',
-    label: 'Susikaupęs',
-    description: 'Centruotas',
+    label: $t('Susikaupęs'),
+    description: $t('Centruotas'),
     icon: FocusedLayoutIcon,
   },
-];
+]);
 
 const languageLabels = computed(() => ({
   lang: $t('Puslapio kalba'),
