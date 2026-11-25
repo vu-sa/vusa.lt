@@ -1,88 +1,17 @@
-/**
- * Meeting Search Composable V2
- *
- * Refactored version using shared search infrastructure.
- * This composable extends useBaseSearch with meeting-specific functionality.
- */
-import { ref, computed, nextTick, type Ref } from 'vue';
+import { computed } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
-import { usePage } from '@inertiajs/vue3';
 
-import type { PageProps } from '@/Types/index';
-import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
+import { useBaseSearch } from '@/Search/core/composables/useBaseSearch';
 import { FilterUtils } from '@/Search/core/services/FilterUtils';
-import type { ProcessedSearchResult } from '@/Search/core/types';
-import type { MeetingSearchFilters, MeetingFacet, MeetingSearchPreferences, MeetingSearchController } from '@/Types/MeetingSearchTypes';
 import { MeetingSearchService } from '@/Search/public/MeetingSearchService';
-
-import { createTypesenseClients } from './useSearchClient';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-/**
- * Extended preferences for meeting search
- */
-interface MeetingPreferences extends MeetingSearchPreferences {
-  viewMode: 'list' | 'compact';
-  recentSearches: string[];
-}
-
-// ============================================================================
-// Service Adapter
-// ============================================================================
-
-/**
- * Adapter to make MeetingSearchService compatible with BaseSearchService interface
- */
-class MeetingSearchServiceAdapter implements BaseSearchService<MeetingSearchFilters, MeetingFacet> {
-  private service: MeetingSearchService;
-
-  constructor(service: MeetingSearchService) {
-    this.service = service;
-  }
-
-  async performSearch(
-    filters: MeetingSearchFilters,
-    perPage: number,
-    isLoadMore: boolean,
-    currentPage: number,
-  ): Promise<ProcessedSearchResult<MeetingFacet>> {
-    const result = await this.service.performSearch(filters, perPage, isLoadMore, currentPage);
-    return {
-      hits: result.hits,
-      totalHits: result.totalHits,
-      totalPages: result.totalPages,
-      currentPage: result.currentPage,
-      facets: result.facets,
-    };
-  }
-
-  async loadInitialFacets(): Promise<MeetingFacet[]> {
-    return this.service.loadInitialFacets();
-  }
-
-  cancelCurrentSearch(): void {
-    this.service.cancelCurrentSearch();
-  }
-}
-
-// ============================================================================
-// Composable
-// ============================================================================
+import { usePublicSearchService } from '@/Search/public/composables/usePublicSearchService';
+import type { MeetingSearchFilters, MeetingFacet, MeetingSearchPreferences, MeetingSearchController } from '@/Types/MeetingSearchTypes';
 
 export const useMeetingSearch = (): MeetingSearchController => {
-  // Extended preferences for meeting search
-  const meetingPreferences = useLocalStorage<MeetingPreferences>('meeting-search-preferences', {
+  const meetingPreferences = useLocalStorage<MeetingSearchPreferences>('meeting-search-preferences', {
     viewMode: 'list',
     recentSearches: [],
   });
-
-  // Search client refs (for initialization)
-  const searchClient = ref<any>(null);
-  const typesenseClient = ref<any>(null);
-  const meetingService = ref<MeetingSearchService | null>(null);
 
   // Default filters for meeting search
   const defaultFilters: MeetingSearchFilters = {
@@ -109,88 +38,19 @@ export const useMeetingSearch = (): MeetingSearchController => {
     }
   };
 
-  // Initialize base search without service (will be set after client init)
-  const baseSearch = useBaseSearch<MeetingSearchFilters, MeetingFacet, any>({
+  const baseSearch = useBaseSearch<MeetingSearchFilters, MeetingFacet, Record<string, unknown>>({
     defaultFilters,
-    searchService: null, // Will be set after initialization
+    searchService: null,
     filterKeyMapper,
     localStorageKey: 'meeting-search-state',
-    perPage: 24,
-    debounceDelay: 300,
-    maxRetries: 3,
-    searchOnMount: false,
-    loadFacetsOnMount: false,
     // Always holds a non-empty value, so the generic active-filter counter would
     // otherwise flag it even at its default.
     excludeFromFilterCount: ['sort'],
   });
 
-  // ============================================================================
-  // Client Initialization
-  // ============================================================================
-
-  const initializeSearchClient = async () => {
-    const page = usePage<PageProps>();
-    const typesenseConfig = page.props.typesenseConfig;
-
-    if (Array.isArray(typesenseConfig) || !typesenseConfig?.apiKey) {
-      console.warn('Typesense not configured - meeting search unavailable');
-      return null;
-    }
-
-    try {
-      const locale = page.props.app.locale || 'lt';
-      const institutionNameField = `institution_name_${locale}`;
-      const collectionName = typesenseConfig.collections?.public_meetings || 'public_meetings';
-
-      // Build collection-specific search parameters
-      const collectionSpecificSearchParameters: Record<string, any> = {};
-      collectionSpecificSearchParameters[collectionName] = {
-        query_by: `title,description,${institutionNameField}`,
-        facet_by: ['year', 'month', 'tenant_shortname'].join(','),
-        per_page: 24,
-      };
-
-      const clients = createTypesenseClients(typesenseConfig, {
-        additionalSearchParameters: {
-          query_by: `title,description,${institutionNameField}`,
-          num_typos: 2,
-          typo_tokens_threshold: 1,
-          drop_tokens_threshold: 1,
-          max_hits: 1000,
-          per_page: 24,
-          facet_by: ['year', 'month', 'tenant_shortname'].join(','),
-          max_facet_values: 50,
-          sort_by: 'start_time:desc',
-        },
-        collectionSpecificSearchParameters,
-      });
-
-      searchClient.value = clients.searchClient;
-      typesenseClient.value = clients.typesenseClient;
-
-      // Create meeting service and adapter
-      meetingService.value = new MeetingSearchService(typesenseClient.value, collectionName);
-      const adapter = new MeetingSearchServiceAdapter(meetingService.value);
-
-      // Set the service on base search
-      baseSearch.setSearchService(adapter);
-
-      // Load initial facets
-      await nextTick();
-      await baseSearch.loadInitialFacets();
-
-      return clients.searchClient;
-    }
-    catch (error) {
-      console.error('Failed to initialize Typesense clients:', error);
-      return null;
-    }
-  };
-
-  // ============================================================================
-  // Meeting-Specific Methods
-  // ============================================================================
+  const { searchClient, initializeSearchClient } = usePublicSearchService(baseSearch, 'public_meetings', (client, collection, getLocale) =>
+    new MeetingSearchService(client, collection, getLocale),
+  );
 
   const toggleTenant = (tenantShortname: string) => {
     const current = baseSearch.filters.value.tenants;
@@ -228,7 +88,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
     baseSearch.debouncedSearch();
   };
 
-  const setDateRange = (dateRange: { from?: string; to?: string; preset?: string }) => {
+  const setDateRange = (dateRange: MeetingSearchFilters['dateRange']) => {
     baseSearch.filters.value = {
       ...baseSearch.filters.value,
       dateRange: {
@@ -266,10 +126,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     baseSearch.debouncedSearch();
   };
 
-  // ============================================================================
-  // Recent Searches (using meeting preferences)
-  // ============================================================================
-
   const clearRecentSearches = () => {
     meetingPreferences.value.recentSearches = [];
   };
@@ -279,10 +135,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
       s => s !== searchToRemove,
     );
   };
-
-  // ============================================================================
-  // Search State
-  // ============================================================================
 
   const searchState = computed(() => ({
     isSearching: baseSearch.status.value === 'searching',
@@ -298,10 +150,6 @@ export const useMeetingSearch = (): MeetingSearchController => {
     status: baseSearch.status.value,
   }));
 
-  // ============================================================================
-  // Return Controller
-  // ============================================================================
-
   return {
     // State from base
     searchState,
@@ -314,7 +162,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
     totalHits: baseSearch.totalHits,
     results: baseSearch.results,
     facets: baseSearch.mergedFacets, // Use merged facets
-    filters: baseSearch.filters as unknown as Ref<MeetingSearchFilters>,
+    filters: baseSearch.filters,
     viewMode: computed(() => meetingPreferences.value.viewMode),
     recentSearches: computed(() => meetingPreferences.value.recentSearches),
 
@@ -326,7 +174,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
 
     // Actions from base
     search: baseSearch.search,
-    setFilter: baseSearch.setFilter as <K extends keyof MeetingSearchFilters>(key: K, value: MeetingSearchFilters[K]) => void,
+    setFilter: baseSearch.setFilter,
     loadMore: baseSearch.loadMore,
     retrySearch: baseSearch.retrySearch,
     clearError: baseSearch.clearError,
@@ -345,7 +193,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
     removeRecentSearch,
 
     // Internal
-    searchClient: computed(() => searchClient.value),
+    searchClient,
     initializeSearchClient,
     cancelPendingSearch: baseSearch.cancelPendingSearch,
   };

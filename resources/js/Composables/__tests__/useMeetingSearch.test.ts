@@ -19,31 +19,21 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   };
 });
 
-vi.mock('../useSearchClient', () => ({
-  createTypesenseClients: vi.fn(() => ({
-    searchClient: { search: vi.fn() },
-    typesenseClient: {
-      search: vi.fn(() => Promise.resolve({
-        hits: [],
-        found: 0,
-        facet_counts: [],
-      })),
-    },
-  })),
-}));
-
 vi.mock('@/Search/public/MeetingSearchService', () => ({
-  MeetingSearchService: vi.fn().mockImplementation(() => ({
-    performSearch: vi.fn(() => Promise.resolve({
-      hits: [],
-      totalHits: 0,
-      totalPages: 0,
-      currentPage: 0,
-      facets: [],
-    })),
-    loadInitialFacets: vi.fn(() => Promise.resolve([])),
-    cancelCurrentSearch: vi.fn(),
-  })),
+  // eslint-disable-next-line prefer-arrow-callback
+  MeetingSearchService: vi.fn().mockImplementation(function () {
+    return {
+      performSearch: vi.fn(() => Promise.resolve({
+        hits: [],
+        totalHits: 0,
+        totalPages: 0,
+        currentPage: 0,
+        facets: [],
+      })),
+      loadInitialFacets: vi.fn(() => Promise.resolve([])),
+      cancelCurrentSearch: vi.fn(),
+    };
+  }),
 }));
 
 describe('useMeetingSearch (refactored)', () => {
@@ -53,9 +43,7 @@ describe('useMeetingSearch (refactored)', () => {
       createMockPage({
         typesenseConfig: {
           apiKey: 'test-key',
-          host: 'localhost',
-          port: 8108,
-          protocol: 'http',
+          nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
           collections: {
             public_meetings: 'public_meetings',
           },

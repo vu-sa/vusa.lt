@@ -1,92 +1,24 @@
-/**
- * Document Search Composable V2
- *
- * Refactored version using shared search infrastructure.
- * This composable extends useBaseSearch with document-specific functionality.
- */
-import { ref, computed, nextTick, watch, type ComputedRef } from 'vue';
+import { computed, watch } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-import type { PageProps } from '@/Types/index';
-import { useBaseSearch, type BaseSearchService } from '@/Search/core/composables/useBaseSearch';
-import { FilterUtils } from '@/Search/core/services/FilterUtils';
+import { useBaseSearch } from '@/Search/core/composables/useBaseSearch';
 import { createSearchReporter } from '@/Search/core/searchReporter';
-import type { ProcessedSearchResult } from '@/Search/core/types';
+import { FilterUtils } from '@/Search/core/services/FilterUtils';
 import { DocumentSearchService } from '@/Search/public/DocumentSearchService';
-import type { DocumentSearchFilters, DocumentSearchSort, DocumentFacet, DocumentSearchPreferences, DocumentSearchController, SearchState, SearchError } from '@/Types/DocumentSearchTypes';
-
-import { createTypesenseClients } from './useSearchClient';
-
-// ============================================================================
-// Types
-// ============================================================================
-
-/**
- * Extended preferences for document search
- */
-interface DocumentPreferences extends DocumentSearchPreferences {
-  viewMode: 'list' | 'compact';
-  recentSearches: string[];
-}
-
-// ============================================================================
-// Service Adapter
-// ============================================================================
-
-/**
- * Adapter to make DocumentSearchService compatible with BaseSearchService interface
- */
-class DocumentSearchServiceAdapter implements BaseSearchService<DocumentSearchFilters, DocumentFacet> {
-  private service: DocumentSearchService;
-
-  constructor(service: DocumentSearchService) {
-    this.service = service;
-  }
-
-  async performSearch(
-    filters: DocumentSearchFilters,
-    perPage: number,
-    isLoadMore: boolean,
-    currentPage: number,
-  ): Promise<ProcessedSearchResult<DocumentFacet>> {
-    const result = await this.service.performSearch(filters, perPage, isLoadMore, currentPage);
-    return {
-      hits: result.hits,
-      totalHits: result.totalHits,
-      totalPages: result.totalPages,
-      currentPage: result.currentPage,
-      facets: result.facets,
-    };
-  }
-
-  async loadInitialFacets(): Promise<DocumentFacet[]> {
-    return this.service.loadInitialFacets();
-  }
-
-  cancelCurrentSearch(): void {
-    this.service.cancelCurrentSearch();
-  }
-}
-
-// ============================================================================
-// Composable
-// ============================================================================
+import { usePublicSearchService } from '@/Search/public/composables/usePublicSearchService';
+import { readSearchParams, replaceSearchParams } from '@/Search/public/searchUrl';
+import type { DocumentEffectStatusValue, DocumentSearchFilters, DocumentSearchSort, DocumentFacet, DocumentSearchPreferences, DocumentSearchController } from '@/Types/DocumentSearchTypes';
 
 export const useDocumentSearch = (): DocumentSearchController => {
-  // Extended preferences for document search
-  const documentPreferences = useLocalStorage<DocumentPreferences>('document-search-preferences', {
+  const documentPreferences = useLocalStorage<DocumentSearchPreferences>('document-search-preferences', {
     viewMode: 'list',
     recentSearches: [],
   });
 
-  // Search client refs (for initialization)
-  const searchClient = ref<any>(null);
-  const typesenseClient = ref<any>(null);
-  const documentService = ref<DocumentSearchService | null>(null);
-
   // Default filters for document search. `effectStatuses: ['true', 'unknown']` hides
   // "Negalioja" documents by default — deselecting it (or clearing) reveals them.
+  const defaultEffectStatuses: DocumentEffectStatusValue[] = ['true', 'unknown'];
   const defaultFilters: DocumentSearchFilters = {
     query: '',
     tenants: [],
@@ -94,7 +26,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     languages: [],
     dateRange: {},
     sort: 'relevance',
-    effectStatuses: ['true', 'unknown'],
+    effectStatuses: defaultEffectStatuses,
   };
 
   // Filter key mapper for document facets
@@ -111,98 +43,23 @@ export const useDocumentSearch = (): DocumentSearchController => {
     }
   };
 
-  // Initialize base search without service (will be set after client init)
-  const baseSearch = useBaseSearch<DocumentSearchFilters, DocumentFacet, any>({
+  const baseSearch = useBaseSearch<DocumentSearchFilters, DocumentFacet, Record<string, unknown>>({
     defaultFilters,
-    searchService: null, // Will be set after initialization
+    searchService: null,
     filterKeyMapper,
     localStorageKey: 'document-search-state',
-    perPage: 24,
-    debounceDelay: 300,
-    maxRetries: 3,
-    searchOnMount: false,
-    loadFacetsOnMount: false,
     // Both always hold a non-empty value at their defaults, so the generic active-filter
     // counter would otherwise flag them even when nobody has touched them.
     excludeFromFilterCount: ['sort', 'effectStatuses'],
   });
 
-  // ============================================================================
-  // Client Initialization
-  // ============================================================================
-
-  const initializeSearchClient = async () => {
-    const page = usePage<PageProps<{ importantContentTypes?: string[]; hasDocumentRecommendations?: boolean }>>();
-    const typesenseConfig = page.props.typesenseConfig;
-
-    if (Array.isArray(typesenseConfig) || !typesenseConfig?.apiKey) {
-      console.warn('Typesense not configured - document search unavailable');
-      return null;
-    }
-
-    try {
-      const clients = createTypesenseClients(typesenseConfig, {
-        additionalSearchParameters: {
-          query_by: 'title,summary',
-          num_typos: 2,
-          typo_tokens_threshold: 1,
-          drop_tokens_threshold: 1,
-          max_hits: 1000,
-          per_page: 20,
-          facet_by: [
-            'content_type',
-            'tenant_shortname',
-            'language',
-            'document_date',
-          ].join(','),
-          max_facet_values: 50,
-          sort_by: 'document_date:desc,created_at:desc',
-        },
-        collectionSpecificSearchParameters: {
-          documents: {
-            query_by: 'title,summary',
-            facet_by: [
-              'content_type',
-              'tenant_shortname',
-              'language',
-              'document_date',
-            ].join(','),
-            per_page: 24,
-          },
-        },
-      });
-
-      searchClient.value = clients.searchClient;
-      typesenseClient.value = clients.typesenseClient;
-
-      // Get collection name from config (includes Scout prefix)
-      const collectionName = typesenseConfig.collections?.documents || 'documents';
-
-      // Create document service and adapter
-      documentService.value = new DocumentSearchService(typesenseClient.value, collectionName, {
-        importantContentTypes: page.props.importantContentTypes ?? [],
-        recommendationsUrl: page.props.hasDocumentRecommendations ? route('api.v1.documents.recommendations') : undefined,
-      });
-      const adapter = new DocumentSearchServiceAdapter(documentService.value);
-
-      // Set the service on base search
-      baseSearch.setSearchService(adapter);
-
-      // Load initial facets
-      await nextTick();
-      await baseSearch.loadInitialFacets();
-
-      return clients.searchClient;
-    }
-    catch (error) {
-      console.error('Failed to initialize Typesense clients:', error);
-      return null;
-    }
-  };
-
-  // ============================================================================
-  // Document-Specific Methods
-  // ============================================================================
+  const page = usePage<{ importantContentTypes?: string[]; hasDocumentRecommendations?: boolean }>();
+  const { searchClient, initializeSearchClient } = usePublicSearchService(baseSearch, 'documents', (client, collection) =>
+    new DocumentSearchService(client, collection, {
+      importantContentTypes: page.props.importantContentTypes ?? [],
+      recommendationsUrl: page.props.hasDocumentRecommendations ? route('api.v1.documents.recommendations') : undefined,
+    }),
+  );
 
   const toggleTenant = (tenantShortname: string) => {
     const current = baseSearch.filters.value.tenants;
@@ -265,8 +122,8 @@ export const useDocumentSearch = (): DocumentSearchController => {
     baseSearch.debouncedSearch();
   };
 
-  const toggleEffectStatus = (value: DocumentSearchFilters['effectStatuses'][number]) => {
-    const current = baseSearch.filters.value.effectStatuses;
+  const toggleEffectStatus = (value: DocumentEffectStatusValue) => {
+    const current = baseSearch.filters.value.effectStatuses ?? defaultEffectStatuses;
     baseSearch.filters.value = {
       ...baseSearch.filters.value,
       effectStatuses: FilterUtils.toggleArrayValue(current, value),
@@ -301,10 +158,6 @@ export const useDocumentSearch = (): DocumentSearchController => {
     baseSearch.debouncedSearch();
   };
 
-  // ============================================================================
-  // Recent Searches (using document preferences)
-  // ============================================================================
-
   const clearRecentSearches = () => {
     documentPreferences.value.recentSearches = [];
   };
@@ -315,11 +168,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     );
   };
 
-  // ============================================================================
-  // Search State (matching original interface)
-  // ============================================================================
-
-  const searchState = computed<SearchState>(() => ({
+  const searchState = computed(() => ({
     status: baseSearch.status.value,
     isSearching: baseSearch.status.value === 'searching',
     hasResults: baseSearch.hasResults.value,
@@ -333,17 +182,12 @@ export const useDocumentSearch = (): DocumentSearchController => {
     isOnline: baseSearch.isOnline.value,
   }));
 
-  // ============================================================================
-  // URL Sync - Using W3 HTML standard array notation (param[]=value)
-  // ============================================================================
-
   /**
    * Sync current filter state to URL using array notation for multi-value params
    * Following HTML standard: tenants[]=value1&tenants[]=value2
    */
   const syncFiltersToUrl = () => {
     const filters = baseSearch.filters.value;
-    if (!filters) return;
 
     const params = new URLSearchParams();
 
@@ -382,10 +226,9 @@ export const useDocumentSearch = (): DocumentSearchController => {
     if (filters.sort && filters.sort !== 'relevance') {
       params.set('sort', filters.sort);
     }
-    const defaultEffectStatuses = ['true', 'unknown'];
     const effectStatuses = filters.effectStatuses ?? defaultEffectStatuses;
     const isDefaultEffectStatuses = effectStatuses.length === defaultEffectStatuses.length
-      && defaultEffectStatuses.every(s => effectStatuses.includes(s as never));
+      && defaultEffectStatuses.every(s => effectStatuses.includes(s));
     if (!isDefaultEffectStatuses) {
       if (effectStatuses.length === 0) {
         // Explicit marker for "no restriction" — an empty array wouldn't otherwise
@@ -399,19 +242,14 @@ export const useDocumentSearch = (): DocumentSearchController => {
       }
     }
 
-    // Update URL without page reload
-    const newUrl = new URL(window.location.href);
-    newUrl.search = params.toString();
-    window.history.replaceState(window.history.state, '', newUrl.toString());
+    replaceSearchParams(params, true);
   };
 
   /**
    * Load filter state from URL
    */
   const loadFiltersFromUrl = (): Partial<DocumentSearchFilters> => {
-    if (typeof window === 'undefined') return {};
-
-    const params = new URLSearchParams(window.location.search);
+    const params = readSearchParams();
     const filters: Partial<DocumentSearchFilters> = {};
 
     // Query
@@ -469,7 +307,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     }
     else {
       const statuses = parseArrayParam('status').filter(
-        (s): s is DocumentSearchFilters['effectStatuses'][number] => s === 'true' || s === 'false' || s === 'unknown',
+        (s): s is DocumentEffectStatusValue => s === 'true' || s === 'false' || s === 'unknown',
       );
       if (statuses.length > 0) filters.effectStatuses = statuses;
     }
@@ -515,39 +353,9 @@ export const useDocumentSearch = (): DocumentSearchController => {
     },
   );
 
-  // ============================================================================
-  // Return Controller (matching DocumentSearchController interface)
-  // ============================================================================
-
   // Wrap initializeSearchClient to load URL params first
   const initializeWithUrlSync = async () => {
-    // Load filters from URL before initializing
-    const urlFilters = loadFiltersFromUrl();
-
-    // Apply URL filters to base search (with null checks)
-    if (baseSearch.filters.value) {
-      if (urlFilters.tenants) {
-        baseSearch.filters.value.tenants = urlFilters.tenants;
-      }
-      if (urlFilters.contentTypes) {
-        baseSearch.filters.value.contentTypes = urlFilters.contentTypes;
-      }
-      if (urlFilters.languages) {
-        baseSearch.filters.value.languages = urlFilters.languages;
-      }
-      if (urlFilters.dateRange) {
-        baseSearch.filters.value.dateRange = urlFilters.dateRange;
-      }
-      if (urlFilters.query) {
-        baseSearch.filters.value.query = urlFilters.query;
-      }
-      if (urlFilters.sort) {
-        baseSearch.filters.value.sort = urlFilters.sort;
-      }
-      if (urlFilters.effectStatuses) {
-        baseSearch.filters.value.effectStatuses = urlFilters.effectStatuses;
-      }
-    }
+    Object.assign(baseSearch.filters.value, loadFiltersFromUrl());
 
     // Initialize search client
     const result = await initializeSearchClient();
@@ -572,21 +380,21 @@ export const useDocumentSearch = (): DocumentSearchController => {
     totalHits: baseSearch.totalHits,
     results: baseSearch.results,
     facets: baseSearch.mergedFacets, // Use merged facets
-    filters: baseSearch.filters as unknown as ComputedRef<DocumentSearchFilters>,
+    filters: baseSearch.filters,
     hasQuery,
     activeSort,
     viewMode: computed(() => documentPreferences.value.viewMode),
     recentSearches: computed(() => documentPreferences.value.recentSearches),
 
     // Error handling
-    searchError: baseSearch.error as ComputedRef<SearchError | null>,
+    searchError: baseSearch.error,
     isOnline: baseSearch.isOnline,
     retryCount: baseSearch.retryCount,
     maxRetries: baseSearch.maxRetries,
 
     // Actions from base
     search: baseSearch.search,
-    setFilter: baseSearch.setFilter as <K extends keyof DocumentSearchFilters>(key: K, value: DocumentSearchFilters[K]) => void,
+    setFilter: baseSearch.setFilter,
     loadMore: baseSearch.loadMore,
     retrySearch: baseSearch.retrySearch,
     clearError: baseSearch.clearError,
@@ -606,7 +414,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     removeRecentSearch,
 
     // Internal
-    searchClient: computed(() => searchClient.value),
+    searchClient,
     initializeSearchClient: initializeWithUrlSync,
     cancelPendingSearch: baseSearch.cancelPendingSearch,
   };

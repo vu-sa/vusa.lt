@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
+import { SearchClientFactory } from '@/Search/core/services/SearchClientFactory';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 const mockSearch = vi.fn().mockResolvedValue({
@@ -37,17 +38,15 @@ const mockSearch = vi.fn().mockResolvedValue({
   ],
 });
 
-vi.mock('@/Search/core/services/SearchClientFactory', () => ({
-  SearchClientFactory: {
-    createPublicClient: vi.fn(() => ({
-      search: mockSearch,
-    })),
-  },
-}));
-
 describe('useCalendarSearch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(SearchClientFactory, 'createPublicClient').mockReturnValue({
+      apiKey: 'test-key',
+      nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
+      searchFacet: vi.fn(),
+      search: mockSearch,
+    });
     window.history.replaceState({}, '', '/lt/renginiai');
 
     vi.mocked(usePage).mockReturnValue(

@@ -1,6 +1,6 @@
 import { buildProfileParams, type SearchProfileConfig } from '../profiles';
 import { documentWithMatch, type HighlightedHit } from '../matches';
-import { facetSearches, mergeDisjunctiveFacets, type FacetSearch } from '../facets';
+import { facetSearches, mergeDisjunctiveFacets, type FacetSearch, type RawFacet } from '../facets';
 /**
  * SearchClientFactory - Unified search client factory
  *
@@ -14,10 +14,12 @@ import { facetSearches, mergeDisjunctiveFacets, type FacetSearch } from '../face
 
 import type { TypesenseConfig, TypesenseNode } from '../types';
 
+import { quoteFilterValue } from './FilterUtils';
+
 /**
  * Typesense client interface for direct API access
  */
-export interface TypesenseClient {
+export interface TypesenseClient<TDocument = Record<string, unknown>> {
   apiKey: string;
   nodes: TypesenseNode[];
   searchFacet: FacetSearch;
@@ -25,21 +27,19 @@ export interface TypesenseClient {
     collection: string,
     searchParams: Record<string, unknown>,
     abortSignal?: AbortSignal,
-  ) => Promise<TypesenseSearchResponse>;
+  ) => Promise<TypesenseSearchResponse<TDocument>>;
 }
 
 /**
  * Typesense search response
  */
-export interface TypesenseSearchResponse {
-  hits?: Array<{ document: Record<string, unknown>; highlights?: HighlightedHit['highlights'] }>;
+export interface TypesenseSearchResponse<TDocument = Record<string, unknown>> {
+  hits?: Array<{ document: TDocument; highlights?: HighlightedHit['highlights'] }>;
   found?: number;
   page?: number;
   search_time_ms?: number;
-  facet_counts?: Array<{
-    field_name: string;
-    counts: Array<{ value: string; count: number }>;
-  }>;
+  request_params?: { per_page?: number };
+  facet_counts?: RawFacet[];
 }
 
 /**
@@ -54,10 +54,6 @@ export interface ClientFactoryOptions extends SearchProfileConfig {
   nodes: TypesenseNode[];
   /** Connection timeout in seconds */
   connectionTimeoutSeconds?: number;
-  /** Additional search parameters */
-  additionalSearchParameters?: Record<string, unknown>;
-  /** Collection-specific search parameters */
-  collectionSpecificSearchParameters?: Record<string, Record<string, unknown>>;
 }
 
 /**
@@ -69,10 +65,11 @@ export class SearchClientFactory {
    *
    * This is the preferred client for custom search implementations.
    */
-  static createTypesenseClient(options: ClientFactoryOptions): TypesenseClient {
+  static createTypesenseClient<TDocument = Record<string, unknown>>(options: ClientFactoryOptions): TypesenseClient<TDocument> {
     const { apiKey, nodes, connectionTimeoutSeconds = 10 } = options;
 
-    if (!nodes?.length) {
+    const node = nodes?.[0];
+    if (!node) {
       throw new Error('No Typesense nodes configured');
     }
 
@@ -81,7 +78,7 @@ export class SearchClientFactory {
       const base = Object.entries(options.collections ?? {}).find(([, name]) => name === collection)?.[0] ?? collection;
       return options.searchProfiles?.[base];
     };
-    const client: TypesenseClient = {
+    const client: TypesenseClient<TDocument> = {
       searchFacet: async (field, query, signal) => {
         if (!lastSearch) return [];
         const { collection, params } = lastSearch;
@@ -95,7 +92,7 @@ export class SearchClientFactory {
         collection: string,
         searchParams: Record<string, unknown>,
         abortSignal?: AbortSignal,
-      ): Promise<TypesenseSearchResponse> => {
+      ): Promise<TypesenseSearchResponse<TDocument>> => {
         const inputParams = searchParams;
         searchParams = buildProfileParams(profileFor(collection), searchParams, options.locale);
         if (!inputParams.facet_query && Number(inputParams.per_page) > 0) lastSearch = { collection, params: searchParams };
@@ -104,18 +101,17 @@ export class SearchClientFactory {
         const searches = facetSearches(searchParams, facetFilters);
         const query = String(searchParams.q ?? '').trim();
         const pinnedIds = query && query !== '*' && Number(searchParams.per_page) > 0
-          ? String(searchParams.pinned_hits ?? '').split(',').filter(Boolean).map(pin => pin.split(':')[0])
+          ? String(searchParams.pinned_hits ?? '').split(',').filter(Boolean).map(pin => pin.split(':', 1)[0] ?? '')
           : [];
         // Curated hits omit highlights, so match those records normally in the same request.
         if (pinnedIds.length) {
-          const idFilter = `id:=[${pinnedIds.map(id => `\`${id.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',')}]`;
+          const idFilter = `id:=[${pinnedIds.map(quoteFilterValue).join(',')}]`;
           searches.push({
             ...searchParams, pinned_hits: undefined, facet_by: undefined, facetFilters: undefined,
             enable_overrides: false, page: 1, per_page: pinnedIds.length,
             filter_by: searchParams.filter_by ? `(${searchParams.filter_by}) && ${idFilter}` : idFilter,
           });
         }
-        const node = nodes[0];
         const baseUrl = `${node.protocol}://${node.host}:${node.port}`;
         const url = new URL(`${baseUrl}/collections/${collection}/documents/search`);
 
@@ -173,14 +169,23 @@ export class SearchClientFactory {
   /**
    * Create a public search client from page props config
    */
-  static createPublicClient(config: TypesenseConfig, locale = 'lt'): TypesenseClient {
-    return this.createTypesenseClient({
+  static createPublicClient<TDocument = Record<string, unknown>>(config: TypesenseConfig, locale = 'lt'): TypesenseClient<TDocument> {
+    return this.createTypesenseClient<TDocument>({
       apiKey: config.apiKey,
       searchProfiles: config.searchProfiles,
       collections: config.collections,
       locale,
       nodes: config.nodes,
     });
+  }
+
+  static resolvePublicSearch<TDocument = Record<string, unknown>>(config: unknown, collection: string, locale?: string) {
+    if (!this.isValidConfig(config)) return null;
+
+    return {
+      client: this.createPublicClient<TDocument>(config, locale),
+      collection: config.collections?.[collection] || collection,
+    };
   }
 
   /**
@@ -202,7 +207,7 @@ export class SearchClientFactory {
   static isValidConfig(config: unknown): config is TypesenseConfig {
     if (!config || typeof config !== 'object') return false;
     const c = config as Record<string, unknown>;
-    return typeof c.apiKey === 'string' && c.apiKey.length > 0 && Array.isArray(c.nodes);
+    return typeof c.apiKey === 'string' && c.apiKey.length > 0 && Array.isArray(c.nodes) && c.nodes.length > 0;
   }
 }
 
@@ -353,7 +358,7 @@ export class FilterBuilder {
   private escapeValue(value: string): string {
     if (value.includes(',') || value.includes(':') || value.includes('`') || value.includes('\\')) {
       // Escape backslashes first, then backticks
-      return `\`${value.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``;
+      return quoteFilterValue(value);
     }
     return value;
   }

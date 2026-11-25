@@ -118,8 +118,8 @@ export interface BaseSearchPreferences {
 /**
  * Processed search result from service
  */
-export interface ProcessedSearchResult<TFacet extends BaseFacet> {
-  hits: unknown[];
+export interface ProcessedSearchResult<TFacet extends BaseFacet, TResult = unknown> {
+  hits: TResult[];
   totalHits: number;
   facets: TFacet[];
   currentPage: number;

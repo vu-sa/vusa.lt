@@ -4,6 +4,7 @@ import { usePage } from '@inertiajs/vue3';
 
 import NewsArchive from '@/Pages/Public/NewsArchive.vue';
 import PublicFilterPopover from '@/Components/Public/Base/PublicFilterPopover.vue';
+import { SearchClientFactory } from '@/Search/core/services/SearchClientFactory';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import type { NewsItem } from '@/Types/contentParts';
 
@@ -51,14 +52,6 @@ const mockSearch = vi.fn().mockResolvedValue({
   ],
 });
 
-vi.mock('@/Search/core/services/SearchClientFactory', () => ({
-  SearchClientFactory: {
-    createPublicClient: vi.fn(() => ({
-      search: mockSearch,
-    })),
-  },
-}));
-
 const sampleNews: NewsItem[] = [
   {
     id: 1,
@@ -83,6 +76,12 @@ const sampleNews: NewsItem[] = [
 describe('Public/NewsArchive.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(SearchClientFactory, 'createPublicClient').mockImplementation(config => ({
+      apiKey: config.apiKey,
+      nodes: config.nodes,
+      search: mockSearch,
+      searchFacet: vi.fn(),
+    }));
     localStorage.clear();
     window.history.replaceState({}, '', '/lt/naujienos');
 
@@ -107,6 +106,7 @@ describe('Public/NewsArchive.vue', () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     document.body.innerHTML = '';
   });
 

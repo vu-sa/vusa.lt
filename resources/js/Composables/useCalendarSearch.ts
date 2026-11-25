@@ -1,15 +1,12 @@
-import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import { useDebounceFn } from '@vueuse/core';
+import { computed, ref } from 'vue';
 
-import type { PageProps } from '@/Types/index';
-import { provideFacetSearch } from '@/Search/core/facets';
-import { SearchClientFactory, type TypesenseClient } from '@/Search/core/services/SearchClientFactory';
+import type { SearchMatchDocument } from '@/Search/core/matches';
+import { FilterUtils, quoteFilterValue } from '@/Search/core/services/FilterUtils';
+import { listingDateSort, useListingSearch, type FacetOption, type ListingSearchSort } from '@/Search/public/composables/useListingSearch';
 
-export interface CalendarEventDocument {
-  _searchMatch?: import('@/Search/core/matches').SearchMatch;
-  _searchTitleMatches?: import('@/Search/core/matches').SearchMatch[];
-  _searchFieldMatches?: Record<string, import('@/Search/core/matches').SearchMatch>;
+export type { FacetOption };
+
+export interface CalendarEventDocument extends SearchMatchDocument {
   id: string | number;
   title: string;
   title_lt?: string;
@@ -35,81 +32,28 @@ export interface CalendarEventDocument {
   created_at?: number;
 }
 
-export interface FacetOption {
-  label: string;
-  value: string;
-  count: number;
-}
-
 export interface UseCalendarSearchOptions {
   initialTab?: CalendarSearchTab;
   perPage?: number;
 }
 
 export type CalendarSearchTab = 'upcoming' | 'past' | 'all';
-export type CalendarSearchSort = 'relevance' | 'date_asc' | 'date_desc';
+export type CalendarSearchSort = ListingSearchSort;
 
 export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
-  const page = usePage<PageProps>();
   const perPage = options.perPage ?? 18;
 
-  const query = ref('');
   const tab = ref<CalendarSearchTab>(options.initialTab ?? 'upcoming');
   const selectedEventTypes = ref<string[]>([]);
   const selectedTenants = ref<string[]>([]);
   const selectedYears = ref<string[]>([]);
   const isRemoteOnly = ref(false);
-  const sortBy = ref<CalendarSearchSort>('relevance');
 
-  const events = ref<CalendarEventDocument[]>([]);
-  const totalHits = ref(0);
-  const currentPage = ref(1);
-  const isLoading = ref(false);
-  const isLoadingMore = ref(false);
-  const error = ref<string | null>(null);
-
-  // Facets
   const eventTypeFacets = ref<FacetOption[]>([]);
   const tenantFacets = ref<FacetOption[]>([]);
   const yearFacets = ref<FacetOption[]>([]);
 
-  let abortController: AbortController | null = null;
-  let client: TypesenseClient | null = null;
-
-  const locale = computed(() => page.props.app?.locale || 'lt');
-  const hasMore = computed(() => events.value.length < totalHits.value);
-  const hasActiveFilters = computed(() =>
-    Boolean(query.value.trim())
-    || selectedEventTypes.value.length > 0
-    || selectedTenants.value.length > 0
-    || selectedYears.value.length > 0
-    || isRemoteOnly.value,
-  );
-  const activeFilterCount = computed(() =>
-    selectedEventTypes.value.length
-    + selectedTenants.value.length
-    + selectedYears.value.length
-    + (isRemoteOnly.value ? 1 : 0),
-  );
-
-  const getClient = (): TypesenseClient | null => {
-    if (client) return client;
-    const config = page.props.typesenseConfig;
-    if (Array.isArray(config) || !config?.apiKey || !config.nodes?.length) {
-      return null;
-    }
-    client = SearchClientFactory.createPublicClient(config, locale.value);
-    return client;
-  };
-
-  const getCollectionName = (): string => {
-    const config = page.props.typesenseConfig;
-    return (Array.isArray(config) ? undefined : config?.collections?.calendar) || 'calendar';
-  };
-
-  provideFacetSearch(async (field, text, signal) => getClient()?.searchFacet(field, text, signal) ?? []);
-
-  const buildFilterConditions = (excludeField?: string): string[] => {
+  const buildFilterConditions = (locale: string, excludeField?: string): string[] => {
     const conditions: string[] = [];
     const now = Math.floor(Date.now() / 1000);
 
@@ -122,19 +66,19 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     }
 
     // Locale condition for international events
-    if (locale.value === 'en') {
+    if (locale === 'en') {
       conditions.push('is_international:=true');
     }
 
     // Event type filter
     if (excludeField !== 'event_type_name' && selectedEventTypes.value.length > 0) {
-      const escaped = selectedEventTypes.value.map(c => `\`${c.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
+      const escaped = selectedEventTypes.value.map(quoteFilterValue).join(',');
       conditions.push(`event_type_name:=[${escaped}]`);
     }
 
     // Tenant filter
     if (excludeField !== 'tenant_shortname' && selectedTenants.value.length > 0) {
-      const escaped = selectedTenants.value.map(t => `\`${t.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
+      const escaped = selectedTenants.value.map(quoteFilterValue).join(',');
       conditions.push(`tenant_shortname:=[${escaped}]`);
     }
 
@@ -151,202 +95,45 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     return conditions;
   };
 
-  const syncUrlParams = () => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams();
-
-    if (tab.value !== 'upcoming') params.set('tab', tab.value);
-    if (query.value.trim()) params.set('q', query.value.trim());
-    if (selectedEventTypes.value.length > 0) {
-      params.set('type', selectedEventTypes.value.join(','));
-    }
-    if (selectedTenants.value.length > 0) {
-      params.set('tenant', selectedTenants.value.join(','));
-    }
-    if (selectedYears.value.length > 0) {
-      params.set('year', selectedYears.value.join(','));
-    }
-    if (isRemoteOnly.value) params.set('remote', '1');
-    if (sortBy.value !== 'relevance') params.set('sort', sortBy.value);
-
-    const newQuery = params.toString();
-    const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ''}`;
-    window.history.replaceState(window.history.state, '', newUrl);
-  };
-
-  const parseUrlParams = () => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-
-    const tabParam = params.get('tab');
-    if (tabParam === 'upcoming' || tabParam === 'past' || tabParam === 'all') {
-      tab.value = tabParam;
-    }
-
-    // `q` matches the convention used by useDocumentSearch — the site's search pages all
-    // read/write the same query-string key so a "view all" link's `?q=` term is picked up
-    // regardless of which collection it points to.
-    const searchParam = params.get('q');
-    if (searchParam) {
-      query.value = searchParam;
-    }
-
-    const typeParam = params.get('type');
-    if (typeParam) {
-      selectedEventTypes.value = typeParam.split(',').filter(Boolean);
-    }
-
-    const tenantParam = params.get('tenant');
-    if (tenantParam) {
-      selectedTenants.value = tenantParam.split(',').filter(Boolean);
-    }
-
-    const yearParam = params.get('year');
-    if (yearParam) {
-      selectedYears.value = yearParam.split(',').filter(Boolean);
-    }
-
-    const remoteParam = params.get('remote');
-    if (remoteParam === '1' || remoteParam === 'true') {
-      isRemoteOnly.value = true;
-    }
-
-    const sortParam = params.get('sort');
-    if (sortParam === 'relevance' || sortParam === 'date_asc' || sortParam === 'date_desc') {
-      sortBy.value = sortParam;
-    }
-  };
-
-  const updateFacetsFromResponse = (facetCounts?: Array<{ field_name: string; counts: Array<{ value: string; count: number }> }>) => {
-    if (!facetCounts) return;
-
-    for (const facet of facetCounts) {
-      if (facet.field_name === 'event_type_name') {
-        eventTypeFacets.value = facet.counts.map(c => ({
-          label: c.value,
-          value: c.value,
-          count: c.count,
-        }));
-      }
-      else if (facet.field_name === 'tenant_shortname') {
-        tenantFacets.value = facet.counts.map(c => ({
-          label: c.value,
-          value: c.value,
-          count: c.count,
-        }));
-      }
-      else if (facet.field_name === 'year') {
-        yearFacets.value = facet.counts
-          .map(c => ({
-            label: String(c.value),
-            value: String(c.value),
-            count: c.count,
-          }))
-          .sort((a, b) => Number(b.value) - Number(a.value));
-      }
-    }
-  };
-
-  const performSearch = async (isLoadMore = false) => {
-    const searchClient = getClient();
-    if (!searchClient) {
-      error.value = 'Typesense is not configured';
-      return;
-    }
-
-    if (abortController) {
-      abortController.abort();
-    }
-    abortController = new AbortController();
-    const controller = abortController;
-
-    if (isLoadMore) {
-      isLoadingMore.value = true;
-    }
-    else {
-      isLoading.value = true;
-      currentPage.value = 1;
-    }
-    error.value = null;
-
-    const targetPage = isLoadMore ? currentPage.value + 1 : 1;
-    const filterConditions = buildFilterConditions();
-    const dateTiebreak = tab.value === 'upcoming' ? 'date:asc' : 'date:desc';
-    const hasQuery = Boolean(query.value.trim()) && query.value.trim() !== '*';
-    let sortExpression = hasQuery ? `_text_match:desc,${dateTiebreak}` : dateTiebreak;
-    if (sortBy.value === 'date_asc') {
-      sortExpression = 'date:asc';
-    }
-    else if (sortBy.value === 'date_desc') {
-      sortExpression = 'date:desc';
-    }
-
-    const searchParams: Record<string, unknown> = {
-      q: query.value.trim() || '*',
-      query_by: 'title,title_lt,title_en,description,location',
-      query_by_weights: '10,8,8,3,2',
-      filter_by: filterConditions.join(' && '),
-      sort_by: sortExpression,
-      facetFilters: Object.fromEntries(['tenant_shortname', 'year', 'event_type_name'].map(field => [field, buildFilterConditions(field).join(' && ')])),
-      facet_by: 'event_type_name,tenant_shortname,year',
-      max_facet_values: 50,
-      per_page: perPage,
-      page: targetPage,
-      prefix: true,
-      infix: 'fallback',
-      prioritize_exact_match: true,
-      prioritize_token_position: true,
-    };
-
-    try {
-      const response = await searchClient.search(
-        getCollectionName(),
-        searchParams,
-        controller.signal,
-      );
-      if (controller.signal.aborted) return;
-
-      const hits = (response.hits ?? []).map(h => h.document as unknown as CalendarEventDocument);
-      totalHits.value = response.found ?? 0;
-      currentPage.value = targetPage;
-
-      if (isLoadMore) {
-        events.value = [...events.value, ...hits];
-      }
-      else {
-        events.value = hits;
-      }
-
-      updateFacetsFromResponse(response.facet_counts);
-      syncUrlParams();
-    }
-    catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return;
-      }
-      error.value = err instanceof Error ? err.message : 'Search failed';
-    }
-    finally {
-      if (abortController === controller) {
-        isLoading.value = false;
-        isLoadingMore.value = false;
-      }
-    }
-  };
-
-  const debouncedSearch = useDebounceFn(() => {
-    performSearch(false);
-  }, 300);
-
-  // Watch query with debounce
-  watch(query, () => {
-    debouncedSearch();
+  const { items: events, ...listing } = useListingSearch<CalendarEventDocument, CalendarEventDocument>({
+    collection: 'calendar',
+    perPage,
+    unavailableMessage: 'Typesense is not configured',
+    filters: { type: selectedEventTypes, tenant: selectedTenants, year: selectedYears },
+    additionalFilterSources: [tab, isRemoteOnly],
+    facets: { event_type_name: eventTypeFacets, tenant_shortname: tenantFacets, year: yearFacets },
+    readUrl: (params) => {
+      const value = params.get('tab');
+      if (value === 'upcoming' || value === 'past' || value === 'all') tab.value = value;
+      const remote = params.get('remote');
+      isRemoteOnly.value = remote === '1' || remote === 'true';
+    },
+    writeUrl: (params) => {
+      if (tab.value !== 'upcoming') params.set('tab', tab.value);
+      if (isRemoteOnly.value) params.set('remote', '1');
+    },
+    buildFilters: buildFilterConditions,
+    buildSort: (sort, hasQuery) => listingDateSort('date', sort, hasQuery, tab.value === 'upcoming' ? 'asc' : 'desc'),
+    queryBy: 'title,title_lt,title_en,description,location',
+    queryByWeights: '10,8,8,3,2',
+    mapDocument: document => document,
   });
 
-  // Watch filters and tab with immediate search
-  watch([tab, selectedEventTypes, selectedTenants, selectedYears, isRemoteOnly, sortBy], () => {
-    performSearch(false);
-  }, { deep: true });
+  const { query, sortBy } = listing;
+
+  const hasActiveFilters = computed(() =>
+    Boolean(query.value.trim())
+    || selectedEventTypes.value.length > 0
+    || selectedTenants.value.length > 0
+    || selectedYears.value.length > 0
+    || isRemoteOnly.value,
+  );
+  const activeFilterCount = computed(() =>
+    selectedEventTypes.value.length
+    + selectedTenants.value.length
+    + selectedYears.value.length
+    + (isRemoteOnly.value ? 1 : 0),
+  );
 
   const setTab = (newTab: CalendarSearchTab) => {
     if (tab.value === newTab) return;
@@ -354,34 +141,15 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
   };
 
   const toggleEventType = (eventTypeName: string) => {
-    const idx = selectedEventTypes.value.indexOf(eventTypeName);
-    if (idx >= 0) {
-      selectedEventTypes.value.splice(idx, 1);
-    }
-    else {
-      selectedEventTypes.value.push(eventTypeName);
-    }
+    selectedEventTypes.value = FilterUtils.toggleArrayValue(selectedEventTypes.value, eventTypeName);
   };
 
   const toggleTenant = (tenantShortname: string) => {
-    const idx = selectedTenants.value.indexOf(tenantShortname);
-    if (idx >= 0) {
-      selectedTenants.value.splice(idx, 1);
-    }
-    else {
-      selectedTenants.value.push(tenantShortname);
-    }
+    selectedTenants.value = FilterUtils.toggleArrayValue(selectedTenants.value, tenantShortname);
   };
 
   const toggleYear = (year: string | number) => {
-    const str = String(year);
-    const idx = selectedYears.value.indexOf(str);
-    if (idx >= 0) {
-      selectedYears.value.splice(idx, 1);
-    }
-    else {
-      selectedYears.value.push(str);
-    }
+    selectedYears.value = FilterUtils.toggleArrayValue(selectedYears.value, String(year));
   };
 
   const toggleRemote = () => {
@@ -401,46 +169,19 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     isRemoteOnly.value = false;
   };
 
-  const loadMore = () => {
-    if (!hasMore.value || isLoadingMore.value || isLoading.value) return;
-    performSearch(true);
-  };
-
-  parseUrlParams();
-
-  if (getCurrentInstance()) {
-    onMounted(() => {
-      performSearch(false);
-    });
-
-    onUnmounted(() => {
-      if (abortController) {
-        abortController.abort();
-      }
-      debouncedSearch.cancel();
-    });
-  }
-
   return {
-    query,
+    ...listing,
+    events,
     tab,
     selectedEventTypes,
     selectedTenants,
     selectedYears,
     isRemoteOnly,
-    sortBy,
-    events,
-    totalHits,
-    currentPage,
-    isLoading,
-    isLoadingMore,
-    hasMore,
     hasActiveFilters,
     activeFilterCount,
     eventTypeFacets,
     tenantFacets,
     yearFacets,
-    error,
     setTab,
     toggleEventType,
     toggleTenant,
@@ -448,7 +189,5 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     toggleRemote,
     setSortBy,
     clearFilters,
-    loadMore,
-    performSearch,
   };
 }

@@ -1,7 +1,10 @@
+import { quoteFilterValue } from '@/Search/core/services/FilterUtils';
+import type { RawFacet } from '@/Search/core/facets';
+import type { TypesenseClient } from '@/Search/core/services/SearchClientFactory';
 import { apiRequest } from '@/Composables/apiRequest';
 import type { DocumentSearchFilters, DocumentFacet, SearchError } from '@/Types/DocumentSearchTypes';
 
-interface SearchParams {
+interface SearchParams extends Record<string, unknown> {
   pinned_hits?: string;
   filter_curated_hits?: boolean;
   enable_overrides?: boolean;
@@ -25,21 +28,7 @@ interface SearchParams {
   drop_tokens_threshold?: number;
 }
 
-interface SearchResponse {
-  hits?: Array<{ document: Record<string, unknown> }>;
-  found?: number;
-  facet_counts?: Array<{
-    field_name: string;
-    counts: Array<{
-      value: string;
-      count: number;
-    }>;
-  }>;
-}
-
-interface SearchClient {
-  search: (collection: string, searchParams: SearchParams, signal?: AbortSignal) => Promise<SearchResponse>;
-}
+type SearchClient = Pick<TypesenseClient, 'search'>;
 
 export interface DocumentSearchCuration {
   importantContentTypes?: string[];
@@ -199,7 +188,7 @@ export class DocumentSearchService {
         return 'document_date:desc,created_at:desc';
       default: {
         const types = this.curation.importantContentTypes ?? [];
-        const promotion = types.length ? `_eval(content_type:=[${types.map(type => `\`${type.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',')}]):desc,` : '';
+        const promotion = types.length ? `_eval(content_type:=[${types.map(quoteFilterValue).join(',')}]):desc,` : '';
         return (query && query !== '*') ? `_text_match:desc,${promotion}document_date:desc` : 'document_date:desc,created_at:desc';
       }
     }
@@ -211,7 +200,7 @@ export class DocumentSearchService {
    * as "neither true nor false" rather than a literal value. Empty or all-three selected
    * both mean "no restriction".
    */
-  private buildEffectStatusFilter(statuses: DocumentSearchFilters['effectStatuses']): string | null {
+  private buildEffectStatusFilter(statuses: NonNullable<DocumentSearchFilters['effectStatuses']>): string | null {
     const hasTrue = statuses.includes('true');
     const hasFalse = statuses.includes('false');
     const hasUnknown = statuses.includes('unknown');
@@ -318,10 +307,7 @@ export class DocumentSearchService {
     return Math.floor(dateObj.getTime() / 1000);
   }
 
-  private processFacets(facetCounts: Array<{
-    field_name: string;
-    counts: Array<{ value: string; count: number }>;
-  }>): DocumentFacet[] {
+  private processFacets(facetCounts: RawFacet[]): DocumentFacet[] {
     return facetCounts.map(facetData => ({
       field: facetData.field_name,
       label: this.getFacetLabel(facetData.field_name),

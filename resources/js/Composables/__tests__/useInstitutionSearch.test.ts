@@ -12,38 +12,28 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@vueuse/core')>();
   return {
     ...actual,
-    useLocalStorage: vi.fn((key: string, defaultValue: any) => {
+    useLocalStorage: vi.fn((key: string, defaultValue: Record<string, unknown>) => {
       return { value: { ...defaultValue } };
     }),
     useOnline: vi.fn(() => ({ value: true })),
   };
 });
 
-vi.mock('../useSearchClient', () => ({
-  createTypesenseClients: vi.fn(() => ({
-    searchClient: { search: vi.fn() },
-    typesenseClient: {
-      search: vi.fn(() => Promise.resolve({
-        hits: [],
-        found: 0,
-        facet_counts: [],
-      })),
-    },
-  })),
-}));
-
 vi.mock('@/Search/public/InstitutionSearchService', () => ({
-  InstitutionSearchService: vi.fn().mockImplementation(() => ({
-    performSearch: vi.fn(() => Promise.resolve({
-      hits: [],
-      totalHits: 0,
-      totalPages: 0,
-      currentPage: 0,
-      facets: [],
-    })),
-    loadInitialFacets: vi.fn(() => Promise.resolve([])),
-    cancelCurrentSearch: vi.fn(),
-  })),
+  // eslint-disable-next-line prefer-arrow-callback
+  InstitutionSearchService: vi.fn().mockImplementation(function () {
+    return {
+      performSearch: vi.fn(() => Promise.resolve({
+        hits: [],
+        totalHits: 0,
+        totalPages: 0,
+        currentPage: 0,
+        facets: [],
+      })),
+      loadInitialFacets: vi.fn(() => Promise.resolve([])),
+      cancelCurrentSearch: vi.fn(),
+    };
+  }),
 }));
 
 describe('useInstitutionSearch (refactored)', () => {
@@ -53,9 +43,7 @@ describe('useInstitutionSearch (refactored)', () => {
       createMockPage({
         typesenseConfig: {
           apiKey: 'test-key',
-          host: 'localhost',
-          port: 8108,
-          protocol: 'http',
+          nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
           collections: {
             public_institutions: 'public_institutions',
           },

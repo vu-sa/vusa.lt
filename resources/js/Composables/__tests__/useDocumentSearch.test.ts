@@ -22,19 +22,6 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   };
 });
 
-vi.mock('../useSearchClient', () => ({
-  createTypesenseClients: vi.fn(() => ({
-    searchClient: { search: vi.fn() },
-    typesenseClient: {
-      search: vi.fn(() => Promise.resolve({
-        hits: [],
-        found: 0,
-        facet_counts: [],
-      })),
-    },
-  })),
-}));
-
 vi.mock('@/Search/public/DocumentSearchService', () => ({
   // The composable constructs the service with `new`, so this must stay a `function`, not an arrow.
   // eslint-disable-next-line prefer-arrow-callback
@@ -60,9 +47,7 @@ describe('useDocumentSearch (refactored)', () => {
       createMockPage({
         typesenseConfig: {
           apiKey: 'test-key',
-          host: 'localhost',
-          port: 8108,
-          protocol: 'http',
+          nodes: [{ protocol: 'http', host: 'localhost', port: 8108 }],
           collections: {
             documents: 'documents',
           },

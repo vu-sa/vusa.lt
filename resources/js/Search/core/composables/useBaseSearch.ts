@@ -26,7 +26,7 @@
  * ```
  */
 
-import { ref, computed, watch, onUnmounted, shallowRef } from 'vue';
+import { ref, computed, watch, onScopeDispose, shallowRef, type Ref } from 'vue';
 import { useLocalStorage, useOnline, useDebounceFn } from '@vueuse/core';
 
 import type {
@@ -36,7 +36,6 @@ import type {
   BaseSearchFilters,
   BaseSearchPreferences,
   ProcessedSearchResult,
-  FacetConfig,
 } from '../types';
 import { FacetMerger, type FilterKeyMapper } from '../services/FacetMerger';
 import { FilterUtils } from '../services/FilterUtils';
@@ -49,13 +48,13 @@ import { ErrorUtils, QueryUtils, RecentSearchManager } from '../services/SearchE
 /**
  * Search service interface for base search
  */
-export interface BaseSearchService<TFilters extends BaseSearchFilters, TFacet extends BaseFacet> {
+export interface BaseSearchService<TFilters extends BaseSearchFilters, TFacet extends BaseFacet, TResult = unknown> {
   performSearch(
     filters: TFilters,
     perPage: number,
     isLoadMore: boolean,
     currentPage: number
-  ): Promise<ProcessedSearchResult<TFacet>>;
+  ): Promise<ProcessedSearchResult<TFacet, TResult>>;
 
   loadInitialFacets(): Promise<TFacet[]>;
 
@@ -74,7 +73,7 @@ export interface UseBaseSearchOptions<
   defaultFilters: TFilters;
 
   /** Search service implementation */
-  searchService: BaseSearchService<TFilters, TFacet> | null;
+  searchService: BaseSearchService<TFilters, TFacet, TResult> | null;
 
   /** Function to map facet fields to filter keys for selection */
   filterKeyMapper: FilterKeyMapper<TFilters>;
@@ -91,15 +90,6 @@ export interface UseBaseSearchOptions<
   /** Max retry attempts for failed searches */
   maxRetries?: number;
 
-  /** Whether to search on mount */
-  searchOnMount?: boolean;
-
-  /** Whether to load facets on mount */
-  loadFacetsOnMount?: boolean;
-
-  /** Facet configuration (for admin search) */
-  facetConfig?: FacetConfig;
-
   /**
    * Filter keys to leave out of `hasActiveFilters`/`activeFilterCount`, on top of `query`.
    * For fields that always hold a non-empty value (a sort mode, a status toggle with a
@@ -107,63 +97,6 @@ export interface UseBaseSearchOptions<
    * them as "active" even at their default value.
    */
   excludeFromFilterCount?: string[];
-}
-
-/**
- * Return type for useBaseSearch
- */
-export interface BaseSearchReturn<
-  TFilters extends BaseSearchFilters,
-  TFacet extends BaseFacet,
-  TResult = unknown,
-> {
-  // State refs
-  status: ReturnType<typeof ref<SearchStatus>>;
-  query: ReturnType<typeof ref<string>>;
-  displayQuery: ReturnType<typeof ref<string>>;
-  results: ReturnType<typeof shallowRef<TResult[]>>;
-  facets: ReturnType<typeof shallowRef<TFacet[]>>;
-  initialFacets: ReturnType<typeof shallowRef<TFacet[]>>;
-  filters: ReturnType<typeof ref<TFilters>>;
-  totalHits: ReturnType<typeof ref<number>>;
-  error: ReturnType<typeof ref<SearchError | null>>;
-  isOnline: ReturnType<typeof useOnline>;
-  currentPage: ReturnType<typeof ref<number>>;
-  totalPages: ReturnType<typeof ref<number>>;
-  perPage: ReturnType<typeof ref<number>>;
-  retryCount: ReturnType<typeof ref<number>>;
-  maxRetries: number;
-
-  // Computed
-  isSearching: ReturnType<typeof computed<boolean>>;
-  isLoadingFacets: ReturnType<typeof computed<boolean>>;
-  isLoadingMore: ReturnType<typeof computed<boolean>>;
-  hasResults: ReturnType<typeof computed<boolean>>;
-  hasActiveFilters: ReturnType<typeof computed<boolean>>;
-  hasMoreResults: ReturnType<typeof computed<boolean>>;
-  activeFilterCount: ReturnType<typeof computed<number>>;
-  mergedFacets: ReturnType<typeof computed<TFacet[]>>;
-
-  // Preferences
-  preferences: ReturnType<typeof useLocalStorage<BaseSearchPreferences>>;
-
-  // Methods
-  search: (query: string, immediate?: boolean) => void;
-  performSearch: (isLoadMore?: boolean, attempt?: number) => Promise<void>;
-  debouncedSearch: ReturnType<typeof debounce>;
-  loadMore: () => void;
-  refresh: () => void;
-
-  setFilter: <K extends keyof TFilters>(key: K, value: TFilters[K]) => void;
-  toggleFilter: (field: string, value: string | number) => void;
-  clearFilters: () => void;
-
-  retrySearch: () => void;
-  clearError: () => void;
-  handleSearchError: (error: unknown, context: string) => void;
-
-  loadInitialFacets: () => Promise<void>;
-  setSearchService: (service: BaseSearchService<TFilters, TFacet>) => void;
 }
 
 // ============================================================================
@@ -174,7 +107,7 @@ export function useBaseSearch<
   TFilters extends BaseSearchFilters,
   TFacet extends BaseFacet,
   TResult = unknown,
->(options: UseBaseSearchOptions<TFilters, TFacet, TResult>): BaseSearchReturn<TFilters, TFacet, TResult> {
+>(options: UseBaseSearchOptions<TFilters, TFacet, TResult>) {
   const {
     defaultFilters,
     filterKeyMapper,
@@ -182,9 +115,6 @@ export function useBaseSearch<
     perPage: defaultPerPage = 24,
     debounceDelay = 300,
     maxRetries = 3,
-    searchOnMount = false,
-    loadFacetsOnMount = false,
-    facetConfig,
     excludeFromFilterCount = [],
   } = options;
 
@@ -195,7 +125,7 @@ export function useBaseSearch<
   // ============================================================================
 
   // Search service (can be set later)
-  const searchService = ref<BaseSearchService<TFilters, TFacet> | null>(options.searchService);
+  const searchService = shallowRef<BaseSearchService<TFilters, TFacet, TResult> | null>(options.searchService);
 
   // Core state
   const status = ref<SearchStatus>('idle');
@@ -210,7 +140,7 @@ export function useBaseSearch<
   const initialFacetsLoaded = ref(false);
 
   // Filters
-  const filters = ref<TFilters>({ ...defaultFilters }) as ReturnType<typeof ref<TFilters>>;
+  const filters = ref<TFilters>({ ...defaultFilters }) as Ref<TFilters>;
 
   // Pagination
   const currentPage = ref(0);
@@ -346,10 +276,10 @@ export function useBaseSearch<
 
       // Update state with results
       if (isLoadMore) {
-        results.value = [...results.value, ...result.hits] as TResult[];
+        results.value = [...results.value, ...result.hits];
       }
       else {
-        results.value = result.hits as TResult[];
+        results.value = result.hits;
       }
 
       totalHits.value = result.totalHits;
@@ -509,7 +439,7 @@ export function useBaseSearch<
   // Service Management
   // ============================================================================
 
-  const setSearchService = (service: BaseSearchService<TFilters, TFacet>) => {
+  const setSearchService = (service: BaseSearchService<TFilters, TFacet, TResult>) => {
     searchService.value = service;
   };
 
@@ -532,13 +462,11 @@ export function useBaseSearch<
   // Lifecycle
   // ============================================================================
 
-  onUnmounted(() => {
-    // Cancel ongoing searches
-    if (searchService.value?.cancelCurrentSearch) {
-      searchService.value.cancelCurrentSearch();
-    }
+  onScopeDispose(() => {
+    searchGeneration++;
+    searchService.value?.cancelCurrentSearch?.();
     debouncedSearch.cancel();
-  });
+  }, true);
 
   // ============================================================================
   // Return
