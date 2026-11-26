@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
+import { LifeBuoy } from '@lucide/vue';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useCommandActions } from '@/Components/CommandPalette/useCommandActions';
@@ -148,6 +149,16 @@ describe('useCommandActions', () => {
 
     expect(workspaceKeyForEntity('meeting')).toBe('atstovavimas');
     expect(workspaceKeyForEntity('news')).toBeUndefined();
+  });
+
+  it('gives new_support_request a dedicated icon instead of the generic fallback', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: {
+      workspaces: [workspace('pradzia', [section('mano_uzklausos', 'mySupportRequests.index')], [
+        { key: 'new_support_request', label: 'shell.actions.new_support_request.title', description: null, entityType: null, target: { kind: 'route', routeName: 'mySupportRequests.create' } },
+      ])],
+    } }));
+
+    expect(resolve().actions.value.find(action => action.id === 'create-new_support_request')?.icon).toBe(LifeBuoy);
   });
 
   it('filters by label, keyword and workspace title', () => {

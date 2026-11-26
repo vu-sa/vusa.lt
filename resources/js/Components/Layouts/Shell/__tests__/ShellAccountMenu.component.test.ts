@@ -51,12 +51,15 @@ describe('ShellAccountMenu', () => {
     expect(wrapper.findComponent(SpotlightPopover).exists()).toBe(false);
   });
 
-  it('renders submenu triggers for appearance, help, and about', () => {
+  it('renders submenu triggers for appearance, help, and about without duplicating my support requests', () => {
     const wrapper = mountMenu();
     const content = wrapper.find('[data-testid="dropdown-menu-content"]');
 
     expect(content.text()).toContain('shell.account.appearance');
     expect(content.text()).toContain('shell.account.help');
+    expect(content.text()).toContain('shell.account.report_problem');
+    expect(content.text()).not.toContain('shell.account.my_requests');
+    expect(wrapper.findAll('a').some(link => link.attributes('href') === '/mocked-route/mySupportRequests.index')).toBe(false);
     expect(content.text()).toContain('shell.account.about');
   });
 

@@ -73,8 +73,8 @@ return [
 
     'account' => [
         'appearance' => 'Appearance', 'light' => 'Light theme', 'dark' => 'Dark theme', 'language' => 'Language: :language',
-        'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a problem',
-        'roles' => 'My responsibilities and duties', 'notifications' => 'Notification settings', 'my_requests' => 'My requests', 'whats_new' => 'Updates', 'start_fm' => 'Listen to START FM', 'about' => 'About',
+        'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a vusa.lt problem',
+        'roles' => 'My responsibilities and duties', 'notifications' => 'Notification settings', 'whats_new' => 'Updates', 'start_fm' => 'Listen to START FM', 'about' => 'About',
         'listen' => 'Listen', 'pause' => 'Pause', 'close' => 'Close',
     ],
 
@@ -115,6 +115,7 @@ return [
         'pranesimai' => 'Notifications',
         'atsakomybes' => 'Responsibilities',
         'veiklos_uzklausos' => 'Activity requests',
+        'mano_uzklausos' => 'Support requests',
         'institucijos' => 'Institutions',
         'posedziai' => 'Meetings',
         'darbotvarkes_klausimai' => 'Agenda items',
@@ -171,6 +172,7 @@ return [
         'uzduotys' => 'Work assigned to you and its deadlines',
         'atsakomybes' => 'Your duties and what they let you do',
         'veiklos_uzklausos' => 'Requests you received about institution activity',
+        'mano_uzklausos' => 'Your reports on vusa.lt issues and improvements',
         'institucijos' => 'Institutions where we represent students',
         'posedziai' => 'Recorded and upcoming meetings',
         'darbotvarkes_klausimai' => 'Agenda items and votes across meetings',
@@ -254,6 +256,10 @@ return [
         'new_reservation' => [
             'title' => 'New reservation',
             'description' => 'Reserve equipment or other items',
+        ],
+        'new_support_request' => [
+            'title' => 'New support request',
+            'description' => 'Report a vusa.lt issue or suggest an improvement',
         ],
         'duty_update' => [
             'title' => 'Duty update',

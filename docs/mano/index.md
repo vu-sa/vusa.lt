@@ -49,9 +49,9 @@ nuorodos; senasis pirmųjų žingsnių kontrolinis sąrašas ir pareigų pokyči
 </ChangelogNote>
 
 **Eiti į** rodo tau prieinamas sritis ir skiltis. **Veiksmai** atveria leidžiamus
-veiksmus. **Greiti veiksmai** kompiuteryje rodo iki keturių dažniausiai laukiamų veiksmų: pirmiausia
-**Fiksuoti posėdį** ir šalia jo **Posėdžio nebuvo**, tada **Nauja problema** ir po vieną kitų tau
-prieinamų sričių veiksmą. ViSAK apžvalga skirta tavo institucijoms, [Padaliniai](/visak/padaliniai) – laiko
+veiksmus. **Greiti veiksmai** rodo iki keturių eilučių su dažniausiais veiksmais: pirmoje eilutėje
+šalia vienas kito **Pranešk apie posėdį** ir **Posėdžio nebuvo**, tada **Pranešk apie studentų problemą**,
+**Rezervuok VU SA įrangą** ir **Kreipkis dėl vusa.lt pagalbos**. ViSAK apžvalga skirta tavo institucijoms, [Padaliniai](/visak/padaliniai) – laiko
 juostai ir prieinamiems padalinių rodikliams.
 
 Jei pradėjai rezervaciją, bet jos nepateikei, Pradžioje gali ją tęsti. Krepšelis saugomas

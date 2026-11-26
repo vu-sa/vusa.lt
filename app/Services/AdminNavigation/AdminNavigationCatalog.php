@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v16-';
+    public const string CACHE_PREFIX = 'admin-navigation-v17-';
 
     /** Canonical workspace order shared by the shell and the permission matrix editor. */
     public const array WORKSPACE_KEYS = ['pradzia', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema', 'wiki'];
@@ -190,6 +190,10 @@ class AdminNavigationCatalog
                 new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
                 new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
                 new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
+                new Section('mano_uzklausos', 'shell.sections.mano_uzklausos', 'mySupportRequests.index', [], null, Visibility::always(), matches: ['mySupportRequests.*'], descriptionKey: 'shell.section_descriptions.mano_uzklausos'),
+            ],
+            createActions: [
+                CreateAction::route('new_support_request', 'shell.actions.new_support_request.title', 'shell.actions.new_support_request.description', null, 'mySupportRequests.create', Visibility::can('create', SupportRequest::class)),
             ],
         );
     }

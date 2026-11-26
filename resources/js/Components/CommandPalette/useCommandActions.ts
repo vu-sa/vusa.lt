@@ -1,7 +1,7 @@
 import { computed, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, Plus, Radio, Settings, ShieldCheck } from '@lucide/vue';
+import { Bell, LifeBuoy, Plus, Radio, Settings, ShieldCheck } from '@lucide/vue';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
@@ -25,6 +25,11 @@ export interface CommandAction {
   /** Present on catalog sections, which can be pinned. */
   page?: { routeName: string; href: string; title: string };
 }
+
+/** Icons for catalog create actions that have no backing `ModelEnum` entry. */
+const createActionIcons: Record<string, Component> = {
+  new_support_request: LifeBuoy,
+};
 
 /** Catalog `screen` targets are ActionWindow screens; each one is the first screen of a flow. */
 const flowForScreen: Record<string, OpenOptions['flow']> = {
@@ -63,7 +68,7 @@ export function useCommandActions() {
       id: `create-${action.key}`,
       label: $t(action.label),
       keywords: [action.key, action.target.kind],
-      icon: (action.entityType && getEntityTypeDefinition(action.entityType)?.icon) || Plus,
+      icon: (action.entityType && getEntityTypeDefinition(action.entityType)?.icon) || createActionIcons[action.key] || Plus,
       category: 'create',
       action: () => {
         if (action.target.kind === 'route') {

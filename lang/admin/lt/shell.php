@@ -73,8 +73,8 @@ return [
 
     'account' => [
         'appearance' => 'Išvaizda', 'light' => 'Šviesi tema', 'dark' => 'Tamsi tema', 'language' => 'Kalba: :language',
-        'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie problemą',
-        'my_requests' => 'Mano užklausos', 'roles' => 'Mano atsakomybės ir pareigybės', 'notifications' => 'Pranešimų nustatymai', 'whats_new' => 'Atnaujinimai', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
+        'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie vusa.lt problemą',
+        'roles' => 'Mano atsakomybės ir pareigybės', 'notifications' => 'Pranešimų nustatymai', 'whats_new' => 'Atnaujinimai', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
         'listen' => 'Klausyti', 'pause' => 'Pristabdyti', 'close' => 'Uždaryti',
     ],
 
@@ -115,6 +115,7 @@ return [
         'pranesimai' => 'Pranešimai',
         'atsakomybes' => 'Atsakomybės',
         'veiklos_uzklausos' => 'Veiklos užklausos',
+        'mano_uzklausos' => 'Pagalbos užklausos',
         'institucijos' => 'Institucijos',
         'posedziai' => 'Posėdžiai',
         'darbotvarkes_klausimai' => 'Darbotvarkės klausimai',
@@ -171,6 +172,7 @@ return [
         'uzduotys' => 'Tau priskirti darbai ir terminai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
         'veiklos_uzklausos' => 'Tau gautos užklausos apie institucijų veiklą',
+        'mano_uzklausos' => 'Tavo pranešimai apie vusa.lt problemas ir patobulinimus',
         'institucijos' => 'Institucijos, kuriose atstovaujame',
         'posedziai' => 'Užfiksuoti ir būsimi posėdžiai',
         'darbotvarkes_klausimai' => 'Klausimai ir balsavimai iš visų posėdžių',
@@ -254,6 +256,10 @@ return [
         'new_reservation' => [
             'title' => 'Nauja rezervacija',
             'description' => 'Rezervuok įrangą ar kitus daiktus',
+        ],
+        'new_support_request' => [
+            'title' => 'Nauja pagalbos užklausa',
+            'description' => 'Pranešk apie vusa.lt problemą arba pasiūlyk patobulinimą',
         ],
         'duty_update' => [
             'title' => 'Pareigybių atnaujinimas',

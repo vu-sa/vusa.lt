@@ -39,43 +39,79 @@ beforeEach(() => {
 });
 
 describe('home actions', () => {
-  it('lists the meeting answers first, then a problem, then one action per other workspace, as rows rather than filled buttons', async () => {
+  it('merges the meeting answers into one split row, uses home-only labels, and shows support request as a fourth row', async () => {
     state.actions = [
       createAction('create-new_meeting', 'atstovavimas'),
       createAction('create-complete_meeting', 'atstovavimas'),
       createAction('create-new_problem', 'atstovavimas'),
       createAction('create-no_meeting', 'atstovavimas'),
       createAction('create-new_reservation', 'rezervacijos'),
+      createAction('create-new_support_request', 'pradzia'),
       createAction('create-duty_update', 'organizacija'),
     ];
 
     const wrapper = mount(CreateShortcuts);
+    const listItems = wrapper.findAll('[data-slot="collection-row-list"] > li');
     const buttons = wrapper.findAll('button');
 
     expect(wrapper.find('h2').text()).toBe('home.create_title');
+    expect(listItems).toHaveLength(4);
+    expect(listItems[0]!.find('[data-shortcut-group="meeting-activity"]').exists()).toBe(true);
+    expect(listItems[0]!.findAll('button').map(button => [button.attributes('data-shortcut'), button.text(), button.attributes('data-leading')])).toEqual([
+      ['create-new_meeting', 'home.shortcuts.new_meeting', 'true'],
+      ['create-no_meeting', 'home.shortcuts.no_meeting', undefined],
+    ]);
     expect(buttons.map(button => button.text())).toEqual([
-      'create-new_meeting', 'create-no_meeting', 'create-new_problem', 'create-new_reservation',
+      'home.shortcuts.new_meeting',
+      'home.shortcuts.no_meeting',
+      'home.shortcuts.new_problem',
+      'home.shortcuts.new_reservation',
+      'home.shortcuts.new_support_request',
     ]);
     expect(wrapper.find('[data-slot="collection-row-list"]').exists()).toBe(true);
     expect(buttons.some(button => button.classes().includes('bg-brand-fill'))).toBe(false);
 
+    await buttons[0]!.trigger('click');
     await buttons[1]!.trigger('click');
+    await buttons[4]!.trigger('click');
+    expect(state.actions[0]!.action).toHaveBeenCalledOnce();
     expect(state.actions[3]!.action).toHaveBeenCalledOnce();
+    expect(state.actions[5]!.action).toHaveBeenCalledOnce();
+  });
+
+  it('keeps a single meeting row when only one meeting action is permitted', () => {
+    state.actions = [
+      createAction('create-new_meeting', 'atstovavimas'),
+      createAction('create-new_problem', 'atstovavimas'),
+    ];
+
+    const wrapper = mount(CreateShortcuts);
+
+    expect(wrapper.find('[data-shortcut-group="meeting-activity"]').exists()).toBe(false);
+    expect(wrapper.findAll('[data-shortcut]').map(row => row.attributes('data-shortcut'))).toEqual([
+      'create-new_meeting', 'create-new_problem',
+    ]);
   });
 
   it('puts an unfinished reservation first, in place of a new one, and links it to the reservation form', () => {
     state.actions = [
       createAction('create-new_meeting', 'atstovavimas'),
+      createAction('create-no_meeting', 'atstovavimas'),
       createAction('create-new_problem', 'atstovavimas'),
       createAction('create-new_reservation', 'rezervacijos'),
+      createAction('create-new_support_request', 'pradzia'),
     ];
 
     const wrapper = mount(CreateShortcuts, {
       props: { reservationDraft: { name: 'Mokymai', count: 2, start_time: null, end_time: null } },
     });
+    const listItems = wrapper.findAll('[data-slot="collection-row-list"] > li');
     const rows = wrapper.findAll('[data-shortcut]');
 
-    expect(rows.map(row => row.attributes('data-shortcut'))).toEqual(['finish-reservation', 'create-new_meeting', 'create-new_problem']);
+    expect(listItems).toHaveLength(4);
+    expect(rows.map(row => row.attributes('data-shortcut'))).toEqual([
+      'finish-reservation', 'create-new_meeting', 'create-no_meeting', 'create-new_problem', 'create-new_support_request',
+    ]);
     expect(rows[0]!.text()).toContain('reservations.cart.finish');
     expect(rows[0]!.text()).toContain('Mokymai');
     expect(rows[0]!.attributes('data-leading')).toBe('true');
@@ -91,7 +127,7 @@ describe('home actions', () => {
     ];
 
     expect(mount(CreateShortcuts).findAll('button').map(button => button.text())).toEqual([
-      'create-new_problem', 'create-new_reservation', 'create-duty_update', 'create-duty_periods',
+      'home.shortcuts.new_problem', 'home.shortcuts.new_reservation', 'create-duty_update', 'create-duty_periods',
     ]);
   });
 

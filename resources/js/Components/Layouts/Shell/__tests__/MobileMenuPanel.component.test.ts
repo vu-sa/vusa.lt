@@ -135,7 +135,7 @@ describe('MobileMenuPanel', () => {
     expect(wrapper.text()).toContain('shell.account.help');
     expect(wrapper.text()).toContain('shell.account.docs');
     expect(wrapper.text()).toContain('shell.account.report_problem');
-    expect(wrapper.text()).toContain('shell.account.my_requests');
+    expect(wrapper.text()).not.toContain('shell.account.my_requests');
     expect(wrapper.text()).toContain('shell.account.whats_new');
     expect(wrapper.text()).toContain('shell.account.start_fm');
     expect(wrapper.text()).toContain('auth.logout');

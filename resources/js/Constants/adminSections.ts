@@ -1,6 +1,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
-import { Bell, BookA, BookOpen, BookOpenCheck, ChartNoAxesCombined, ChartNoAxesColumn, FileStack, Folder, LayoutDashboard, ListTree, Mail, MailOpen, MailQuestion, Route, Settings2, Shapes, ShieldCheck, Tags, UsersRound, Waypoints } from '@lucide/vue';
+import { Bell, BookA, BookOpen, BookOpenCheck, ChartNoAxesCombined, ChartNoAxesColumn, FileStack, Folder, LayoutDashboard, ListTree, Mail, MailOpen, MailQuestion, MessagesSquare, Route, Settings2, Shapes, ShieldCheck, Tags, UsersRound, Waypoints } from '@lucide/vue';
 
 import type { NavigationTileItem } from '@/Components/Patterns/NavigationTiles.vue';
 import { sectionHref, type AdminSection } from '@/Composables/useAdminNavigation';
@@ -18,6 +18,7 @@ const sectionIcons: Record<string, Component> = {
   pranesimai: Bell,
   atsakomybes: ShieldCheck,
   veiklos_uzklausos: MailQuestion,
+  mano_uzklausos: MessagesSquare,
   kategorijos: Tags,
   problemu_kategorijos: Tags,
   tipai: Shapes,
