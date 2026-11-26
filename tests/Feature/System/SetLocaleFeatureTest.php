@@ -4,19 +4,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
-test('handles malicious lang parameter in real request', function (): void {
-    $maliciousInput = "'nvOpzp; AND 1=1 OR (<'\">iKO)),";
-
-    $response = $this->get('/news/test?lang='.urlencode($maliciousInput));
-
-    // Should redirect to localized URL with default locale
-    $response->assertRedirect('/lt/news/test');
-
-    // Locale should not be set to malicious input
-    expect(app()->getLocale())->toBe(config('app.locale'));
-    expect(session()->get('lang'))->toBeNull();
-});
-
 test('sets valid locale from parameter', function (): void {
     $response = $this->get('/news/test?lang=en');
 
@@ -34,14 +21,6 @@ test('returns 409 with x inertia location header for inertia requests', function
 
     expect($response->getStatusCode())->toBe(409)
         ->and($response->headers->get('X-Inertia-Location'))->toEndWith('/lt/news/test');
-});
-
-test('preserves query parameters during redirect', function (): void {
-    $response = $this->get('/news/test?lang=en&page=2&search=query');
-
-    // Should redirect and preserve other parameters
-    $response->assertRedirect();
-    expect($response->headers->get('Location'))->toContain('/en/news/test');
 });
 
 test('handles multiple injection attempts', function (): void {

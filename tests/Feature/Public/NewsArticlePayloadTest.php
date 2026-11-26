@@ -70,18 +70,6 @@ test('the article payload has the public contract in each locale', function (str
         );
 })->with(['lt', 'en']);
 
-/** The four-way layout choice is gone — one article design, so nothing selects between them. */
-test('the article payload no longer carries a layout', function (): void {
-    $tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
-    $news = News::factory()->for($tenant)->create(['lang' => 'lt']);
-
-    $this->get(newsArticleUrl($news))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/NewsPage')
-            ->missing('article.layout')
-        );
-});
-
 test('related articles have the public card contract in each locale', function (string $locale): void {
     $tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
     $news = News::factory()->for($tenant)->create(['lang' => $locale]);

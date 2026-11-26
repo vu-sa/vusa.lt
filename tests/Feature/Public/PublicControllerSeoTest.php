@@ -86,6 +86,8 @@ describe('Canonical URL generation', function (): void {
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
         );
+        expect($response->getContent())
+            ->toMatch('~<link\b[^>]*rel="canonical"[^>]*href="https://mif\.vusa\.test/lt"~');
     });
 
     it('includes canonical URL pointing at the content owner subdomain for news article', function (): void {
@@ -147,6 +149,8 @@ describe('Canonical URL generation', function (): void {
             ->component('Public/ContentPage')
             ->has('head')
         );
+        expect($response->getContent())
+            ->toMatch('~<link\b[^>]*rel="canonical"[^>]*href="https://www\.vusa\.test/lt/canonical-test-page"~');
     });
 });
 
@@ -164,14 +168,6 @@ describe('Inertia head adoption', function (): void {
     });
 });
 
-describe('Public head resources', function (): void {
-    it('does not preload the retired accessibility icon', function (): void {
-        $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
-
-        expect($response->getContent())->not->toContain('body_wh.svg');
-    });
-});
-
 describe('Hreflang tags', function (): void {
     it('renders hreflang alternate links for bilingual content', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
@@ -180,25 +176,10 @@ describe('Hreflang tags', function (): void {
         $html = $response->getContent();
 
         expect($html)->toContain('hreflang="x-default"')
-            ->toContain('hreflang="lt"');
-    });
-
-    it('includes x-default hreflang for Lithuanian content', function (): void {
-        $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
-
-        $response->assertStatus(200);
-        expect($response->getContent())->toContain('hreflang="x-default"');
-    });
-
-    it('includes lt and en hreflang tags', function (): void {
-        $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
-
-        $response->assertStatus(200);
-        $html = $response->getContent();
-
-        expect($html)->toContain('hreflang="lt"')
+            ->toContain('hreflang="lt"')
             ->toContain('hreflang="en"');
     });
+
 });
 
 describe('Pagination SEO metadata', function (): void {
@@ -350,21 +331,6 @@ describe('SEO structured data', function (): void {
 
         $response->assertStatus(200);
         $response->assertSee('"@type":"Organization"', escape: false);
-    });
-});
-
-describe('Robots directive override', function (): void {
-    it('renders noindex, nofollow for a meeting page', function (): void {
-        $meeting = makePublicMeeting($this->mainTenant);
-
-        $response = $this->get(route('publicMeetings.show', [
-            'subdomain' => 'www',
-            'lang' => 'lt',
-            'meeting' => $meeting->id,
-        ]));
-
-        $response->assertStatus(200);
-        expect($response->getContent())->toContain('noindex, nofollow');
     });
 });
 

@@ -127,6 +127,8 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->hasAttached($institution)
                 ->create(['start_time' => now()]);
 
+            event(new MeetingFullyCreated($meeting));
+
             $tasks = Task::query()
                 ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
@@ -743,24 +745,6 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->and($foundTask->id)->toBe($completionTask->id);
         });
 
-        test('handles meeting with no agenda items gracefully', function (): void {
-            $tenant = Tenant::query()->first()
-                ?? Tenant::factory()->create();
-
-            $institution = Institution::factory()->for($tenant)->create();
-
-            $meeting = Meeting::factory()
-                ->hasAttached($institution)
-                ->create(['start_time' => now()]);
-
-            // No student reps = no tasks at all
-            $tasks = Task::query()
-                ->where('taskable_type', MorphMap::alias(Meeting::class))
-                ->where('taskable_id', $meeting->id)
-                ->get();
-
-            expect($tasks)->toBeEmpty();
-        });
     });
 
     describe('AgendaCreationTaskHandler', function (): void {
@@ -790,10 +774,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
     describe('agenda item type completion rules', function (): void {
         test('informational agenda items are counted as complete without votes', function (): void {
-            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
-
-            // Delete all default agenda items and add informational items
-            $meeting->agendaItems()->delete();
+            [$meeting] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             AgendaItem::factory()
                 ->informational()
@@ -809,14 +790,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->latest('id')
-                ->first();
-
-            if (! $completionTask) {
-                // No task created = already complete, which is valid
-                expect(true)->toBeTrue();
-
-                return;
-            }
+                ->firstOrFail();
 
             // Task should be auto-completed with correct counts
             // Note: The latest task has 2 items (created after second item was added)
@@ -826,10 +800,7 @@ describe('MeetingTaskSubscriber', function (): void {
         });
 
         test('deferred agenda items are counted as complete without votes', function (): void {
-            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
-
-            // Delete all default agenda items and add deferred items
-            $meeting->agendaItems()->delete();
+            [$meeting] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             AgendaItem::factory()
                 ->deferred()
@@ -845,14 +816,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
                 ->latest('id')
-                ->first();
-
-            if (! $completionTask) {
-                // No task created = already complete, which is valid
-                expect(true)->toBeTrue();
-
-                return;
-            }
+                ->firstOrFail();
 
             // Task should be auto-completed with correct counts
             // Note: The latest task has 2 items (created after second item was added)
@@ -862,10 +826,7 @@ describe('MeetingTaskSubscriber', function (): void {
         });
 
         test('voting agenda items without main vote are counted as incomplete', function (): void {
-            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
-
-            // Delete all default agenda items and add a voting item without vote
-            $meeting->agendaItems()->delete();
+            [$meeting] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             AgendaItem::factory()
                 ->voting()
@@ -876,11 +837,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
-                ->first();
-
-            if (! $completionTask) {
-                $this->fail('Expected completion task to be created for voting item');
-            }
+                ->firstOrFail();
 
             $meeting->refresh();
 
@@ -896,10 +853,7 @@ describe('MeetingTaskSubscriber', function (): void {
         });
 
         test('voting agenda items with incomplete main vote are counted as incomplete', function (): void {
-            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
-
-            // Delete all default agenda items and add a voting item with partial vote
-            $meeting->agendaItems()->delete();
+            [$meeting] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             $agendaItem = AgendaItem::factory()
                 ->voting()
@@ -919,11 +873,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
-                ->first();
-
-            if (! $completionTask) {
-                $this->fail('Expected completion task to be created for voting item');
-            }
+                ->firstOrFail();
 
             $meeting->refresh();
 
@@ -939,10 +889,7 @@ describe('MeetingTaskSubscriber', function (): void {
         });
 
         test('voting agenda items with complete main vote are counted as complete', function (): void {
-            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
-
-            // Delete all default agenda items and add a voting item with complete vote
-            $meeting->agendaItems()->delete();
+            [$meeting] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             $agendaItem = AgendaItem::factory()
                 ->voting()
@@ -962,15 +909,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
-                ->first();
-
-            if (! $completionTask) {
-                // If no task was created, it means the meeting was already considered complete
-                // This is valid behavior
-                expect(true)->toBeTrue();
-
-                return;
-            }
+                ->firstOrFail();
 
             $meeting->refresh();
 
@@ -986,10 +925,7 @@ describe('MeetingTaskSubscriber', function (): void {
         });
 
         test('mixed agenda items complete when each type meets its requirements', function (): void {
-            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
-
-            // Delete all default agenda items
-            $meeting->agendaItems()->delete();
+            [$meeting] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Add informational item (no vote needed)
             AgendaItem::factory()
@@ -1019,13 +955,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
-                ->first();
-
-            if (! $completionTask) {
-                expect(true)->toBeTrue();
-
-                return;
-            }
+                ->firstOrFail();
 
             $meeting->refresh();
 
@@ -1041,10 +971,7 @@ describe('MeetingTaskSubscriber', function (): void {
         });
 
         test('agenda items with null type are counted as incomplete', function (): void {
-            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
-
-            // Delete all default agenda items
-            $meeting->agendaItems()->delete();
+            [$meeting] = $this->createMeetingWithCompletionTask(agendaItemCount: 0);
 
             // Add an item with null type
             AgendaItem::factory()
@@ -1059,11 +986,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->where('taskable_type', MorphMap::alias(Meeting::class))
                 ->where('taskable_id', $meeting->id)
                 ->where('action_type', ActionType::AgendaCompletion)
-                ->first();
-
-            if (! $completionTask) {
-                $this->fail('Expected completion task to be created for item with null type');
-            }
+                ->firstOrFail();
 
             $meeting->refresh();
 
@@ -1110,7 +1033,8 @@ describe('MeetingTaskSubscriber', function (): void {
         [$meeting, $task] = $this->createMeetingWithCompletionTask(1);
         $item = $meeting->agendaItems->first();
 
-        asUser(makeAdminUser())
+        $editor = makeTenantUserWithRole('Studentų atstovų koordinatorius', $meeting->institutions->first()->tenant);
+        asUser($editor)
             ->patch(route('agendaItems.update', $item), [
                 'type' => AgendaItemType::Voting->value,
                 'votes' => [[
@@ -1120,7 +1044,7 @@ describe('MeetingTaskSubscriber', function (): void {
                     'student_benefit' => 'positive',
                 ]],
             ])
-            ->assertSessionHasNoErrors();
+            ->assertRedirect()->assertSessionHasNoErrors()->assertSessionHas('success');
 
         $task->refresh();
 

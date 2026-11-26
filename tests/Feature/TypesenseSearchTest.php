@@ -16,28 +16,6 @@ use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
-test('typesense configuration is available', function (): void {
-    // Configure Typesense settings for this test
-    config([
-        'scout.typesense.client-settings.api_key' => 'test-api-key-123',
-        'scout.typesense.client-settings.search_only_key' => 'test-search-key',
-        'scout.typesense.client-settings.nodes' => [
-            [
-                'host' => 'localhost',
-                'port' => '8108',
-                'protocol' => 'http',
-                'path' => '',
-            ],
-        ],
-    ]);
-
-    $config = TypesenseManager::getFrontendConfig();
-    expect($config)->not()->toBeEmpty()
-        ->and($config)->toHaveKey('apiKey')
-        ->and($config)->toHaveKey('nodes')
-        ->and($config['apiKey'])->toBe('test-search-key');
-});
-
 test('typesense manager detects proper configuration', function (): void {
     // With proper API key, should be configured
     config(['scout.typesense.client-settings.api_key' => 'test-api-key-123']);
@@ -52,29 +30,25 @@ test('typesense manager detects proper configuration', function (): void {
     expect(TypesenseManager::isConfigured())->toBeFalse();
 });
 
-test('searchable models have proper configuration', function (): void {
+test('active documents and published calendar events are searchable', function (): void {
     // Test News model searchability logic
     $news = News::factory()->create([
         'draft' => false,
         'publish_time' => now()->subHour(),
     ]);
-    expect($news->shouldBeSearchable())->toBeTrue()
-        ->and($news->toSearchableArray())->toBeArray();
+    expect($news->shouldBeSearchable())->toBeTrue();
 
     // Test Page model searchability logic
     $page = Page::factory()->create(['is_active' => true]);
-    expect($page->shouldBeSearchable())->toBeTrue()
-        ->and($page->toSearchableArray())->toBeArray();
+    expect($page->shouldBeSearchable())->toBeTrue();
 
     // Test Document model searchability logic
     $document = Document::factory()->active()->create();
-    expect($document->shouldBeSearchable())->toBeTrue()
-        ->and($document->toSearchableArray())->toBeArray();
+    expect($document->shouldBeSearchable())->toBeTrue();
 
     // Test Calendar model searchability logic
     $calendar = Calendar::factory()->create(['is_draft' => false]);
-    expect($calendar->shouldBeSearchable())->toBeTrue()
-        ->and($calendar->toSearchableArray())->toBeArray();
+    expect($calendar->shouldBeSearchable())->toBeTrue();
 });
 
 test('search arrays contain required fields', function (): void {

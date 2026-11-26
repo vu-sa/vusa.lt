@@ -10,9 +10,9 @@ use App\Models\User;
 use App\Notifications\MeetingReminderNotification;
 use App\Services\CommentableMentionResolver;
 use App\Services\InstitutionAccessService;
-use App\Services\Institutions\InstitutionQueries;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Testing\AssertableInertia;
 
 pest()->use(RefreshDatabase::class);
 
@@ -152,11 +152,12 @@ describe('secretaries are not members', function (): void {
     });
 
     test('and it reaches their dashboard, flagged as secretary rather than held', function (): void {
-        asUser($this->nominee)->get(route('dashboard.atstovavimas'));
-
-        $institutions = InstitutionQueries::getUserInstitutionsForDashboard($this->nominee);
-
-        expect($institutions->pluck('id'))->toContain($this->institution->id)
-            ->and($institutions->firstWhere('id', $this->institution->id)->is_secretary)->toBeTrue();
+        asUserWithInertia($this->nominee)->get(route('dashboard.atstovavimas'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('userInstitutions', fn ($institutions) => collect($institutions)->contains(
+                    fn ($row) => data_get($row, 'id') === $this->institution->id
+                        && data_get($row, 'is_secretary') === true
+                )));
     });
 });

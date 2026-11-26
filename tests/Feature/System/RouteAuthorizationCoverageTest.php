@@ -10,14 +10,11 @@
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
-
-pest()->use(RefreshDatabase::class);
 
 /**
  * Routes that are genuinely self-scoped: they only ever read or write rows belonging to the

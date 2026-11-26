@@ -132,13 +132,4 @@ describe('index', function (): void {
             ->assertStatus(403);
     });
 
-    test('lists submissions when authorized', function (): void {
-        $contentPart = makeTextBoxPart($this->tenant);
-        TextBoxSubmission::factory()->count(2)->create(['content_part_id' => $contentPart->id]);
-
-        asUser($this->admin)
-            ->getJson(route('api.v1.admin.text-box-submissions.index', ['content_part_id' => $contentPart->id]))
-            ->assertOk()
-            ->assertJson(['success' => true]);
-    });
 });

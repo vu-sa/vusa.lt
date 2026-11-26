@@ -8,6 +8,7 @@ use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,8 +19,6 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     usesTypesense();
 
-    $this->admin = User::factory()->create();
-    $this->admin->assignRole(config('permission.super_admin_role_name'));
 });
 
 function indexedDocument(Institution|Meeting|AgendaItem $model): array
@@ -30,7 +29,7 @@ function indexedDocument(Institution|Meeting|AgendaItem $model): array
 
 function meetingWithAgendaItem(): array
 {
-    $institution = Institution::factory()->create();
+    $institution = Institution::factory()->for(Tenant::query()->firstOrFail())->create();
     $institution->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create());
     $meeting = Meeting::factory()->create();
     $meeting->institutions()->attach($institution);
@@ -56,7 +55,7 @@ test('a new member shows in the institution list straight away', function (): vo
 test('saving a vote refreshes the meeting and agenda item documents', function (): void {
     [$meeting, $item] = meetingWithAgendaItem();
 
-    $this->actingAs($this->admin)->post(route('votes.store'), [
+    asUser(makeTenantUserWithRole('Studentų atstovų koordinatorius', $meeting->institutions->first()->tenant))->post(route('votes.store'), [
         'agenda_item_id' => $item->id,
         'is_main' => true,
         'student_vote' => 'positive',
@@ -77,7 +76,7 @@ test('the main vote of a new vote counts, not the one it replaced', function ():
     [$meeting, $item] = meetingWithAgendaItem();
     Vote::factory()->for($item, 'agendaItem')->create(['is_main' => true, 'student_vote' => 'positive', 'decision' => 'positive', 'student_benefit' => 'positive']);
 
-    $this->actingAs($this->admin)->post(route('votes.store'), [
+    asUser(makeTenantUserWithRole('Studentų atstovų koordinatorius', $meeting->institutions->first()->tenant))->post(route('votes.store'), [
         'agenda_item_id' => $item->id,
         'is_main' => true,
         'student_vote' => 'positive',
@@ -94,7 +93,7 @@ test('deleting a vote takes it out of the meeting outcome', function (): void {
     [$meeting, $item] = meetingWithAgendaItem();
     $vote = Vote::factory()->for($item, 'agendaItem')->create(['is_main' => true, 'student_vote' => 'positive', 'decision' => 'positive', 'student_benefit' => 'positive']);
 
-    $this->actingAs($this->admin)->delete(route('votes.destroy', $vote))->assertSessionHasNoErrors();
+    asUser(makeTenantUserWithRole('Studentų atstovų koordinatorius', $meeting->institutions->first()->tenant))->delete(route('votes.destroy', $vote))->assertSessionHasNoErrors();
 
     expect(indexedDocument($meeting))
         ->outcome_aligned->toBe(0)

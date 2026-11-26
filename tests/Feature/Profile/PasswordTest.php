@@ -6,10 +6,6 @@ use Illuminate\Support\Facades\Hash;
 
 pest()->use(RefreshDatabase::class);
 
-describe('User Settings', function (): void {
-    test('user can set own settings')->todo();
-});
-
 describe('User Password Management', function (): void {
     test('user can update password with valid current password', function (): void {
         $user = makeTenantUser('Komunikacijos koordinatorius');

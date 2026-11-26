@@ -89,22 +89,22 @@ describe('tasks.summary listing', function (): void {
 
 describe('tasks.summary completion filter', function (): void {
     test('hides completed tasks unless they are asked for', function (): void {
-        $superAdmin = makeAdminUser($this->tenant);
-        $done = orphanTaskFor($superAdmin);
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $done = orphanTaskFor($coordinator);
         $done->update(['completed_at' => now()]);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary'));
+        $response = asUser($coordinator)->get(route('tasks.summary'));
 
         expect($response->viewData('page')['props']['data'])->toBeEmpty();
     });
 
     test('shows both when the filter is set to all', function (): void {
-        $superAdmin = makeAdminUser($this->tenant);
-        $done = orphanTaskFor($superAdmin);
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $done = orphanTaskFor($coordinator);
         $done->update(['completed_at' => now()]);
-        orphanTaskFor($superAdmin);
+        orphanTaskFor($coordinator);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary', ['completion' => 'all']));
+        $response = asUser($coordinator)->get(route('tasks.summary', ['completion' => 'all']));
 
         expect($response->viewData('page')['props']['data'])->toHaveCount(2);
     });
@@ -112,11 +112,11 @@ describe('tasks.summary completion filter', function (): void {
 
 describe('tasks.summary taskable_type filter', function (): void {
     test('narrows to institution tasks without hiding a meeting task from the same list', function (): void {
-        $superAdmin = makeAdminUser($this->tenant);
-        $institutionTask = orphanTaskFor($superAdmin);
-        $meetingTask = summaryMeetingTaskFor($superAdmin, $this->institution);
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $institutionTask = orphanTaskFor($coordinator);
+        $meetingTask = summaryMeetingTaskFor($coordinator, $this->institution);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['institution']]));
+        $response = asUser($coordinator)->get(route('tasks.summary', ['taskable_type' => ['institution']]));
 
         $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
         expect($ids)->toContain($institutionTask->id)
@@ -127,11 +127,11 @@ describe('tasks.summary taskable_type filter', function (): void {
         // This is the "view meeting tasks" link from ShowAtstovavimas: a periodicity-gap task
         // (taskable=institution) is exactly as much "about a meeting" as an agenda task
         // (taskable=meeting), so asking for meeting-related work should surface both.
-        $superAdmin = makeAdminUser($this->tenant);
-        $institutionTask = orphanTaskFor($superAdmin);
-        $meetingTask = summaryMeetingTaskFor($superAdmin, $this->institution);
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $institutionTask = orphanTaskFor($coordinator);
+        $meetingTask = summaryMeetingTaskFor($coordinator, $this->institution);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['institution', 'meeting']]));
+        $response = asUser($coordinator)->get(route('tasks.summary', ['taskable_type' => ['institution', 'meeting']]));
 
         $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
         expect($ids)->toContain($institutionTask->id)
@@ -141,11 +141,11 @@ describe('tasks.summary taskable_type filter', function (): void {
     test('accepts a single hand-typed value the same as an array', function (): void {
         // A bookmarked or hand-typed URL carries `?taskable_type=meeting`, not
         // `taskable_type[]=meeting` — IndexTasksRequest::prepareForValidation() normalizes it.
-        $superAdmin = makeAdminUser($this->tenant);
-        $meetingTask = summaryMeetingTaskFor($superAdmin, $this->institution);
-        orphanTaskFor($superAdmin);
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $meetingTask = summaryMeetingTaskFor($coordinator, $this->institution);
+        orphanTaskFor($coordinator);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary').'?taskable_type=meeting');
+        $response = asUser($coordinator)->get(route('tasks.summary').'?taskable_type=meeting');
 
         $tasks = $response->viewData('page')['props']['data'];
         expect(collect($tasks)->pluck('id'))->toContain($meetingTask->id)
@@ -153,12 +153,12 @@ describe('tasks.summary taskable_type filter', function (): void {
     });
 
     test('counts pending, overdue and assigned tasks for the chips regardless of the active filter', function (): void {
-        $superAdmin = makeAdminUser($this->tenant);
-        orphanTaskFor($superAdmin)->update(['due_date' => now()->subDay()]);
-        summaryMeetingTaskFor($superAdmin, $this->institution);
-        orphanTaskFor($superAdmin)->update(['completed_at' => now()]);
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        orphanTaskFor($coordinator)->update(['due_date' => now()->subDay()]);
+        summaryMeetingTaskFor($coordinator, $this->institution);
+        orphanTaskFor($coordinator)->update(['completed_at' => now()]);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['meeting']]));
+        $response = asUser($coordinator)->get(route('tasks.summary', ['taskable_type' => ['meeting']]));
 
         expect($response->viewData('page')['props']['taskCounts'])->toMatchArray([
             'pending' => 2,
@@ -239,12 +239,12 @@ describe('tasks.summary scope', function (): void {
     });
 
     test('lists unassigned institution tasks and keeps personal tasks out of the summary', function (): void {
-        $superAdmin = makeAdminUser($this->tenant);
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
         $unassigned = Task::factory()->create(['taskable_type' => 'institution', 'taskable_id' => $this->institution->id]);
-        $aboutUser = summaryTaskFor($superAdmin, ['taskable_type' => 'user', 'taskable_id' => $superAdmin->id]);
-        $listed = summaryMeetingTaskFor($superAdmin, $this->institution);
+        $aboutUser = summaryTaskFor($coordinator, ['taskable_type' => 'user', 'taskable_id' => $coordinator->id]);
+        $listed = summaryMeetingTaskFor($coordinator, $this->institution);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary'));
+        $response = asUser($coordinator)->get(route('tasks.summary'));
 
         $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
         expect($ids)->toContain($listed->id)

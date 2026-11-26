@@ -1,9 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-pest()->use(RefreshDatabase::class);
-
 /**
  * The palette is global, but the surface-specific rules (admin table numerals and progress bar,
  * public prose colour) only apply through the attribute, and nothing errors if it goes missing.

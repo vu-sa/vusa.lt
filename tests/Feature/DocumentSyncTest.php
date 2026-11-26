@@ -329,18 +329,17 @@ describe('Document Sync Status', function (): void {
             ->and($document->last_sync_attempt_at)->toBeNull();
     });
 
-    test('sync status is included in admin table display', function (): void {
+    test('the folder API returns the persisted sync status for a document', function (): void {
         $user = User::factory()->create();
-        $user->assignRole(config('permission.super_admin_role_name'));
+        $user->givePermissionTo('documents.create.*');
 
-        Document::factory()->create([
+        $document = Document::factory()->create([
             'sync_status' => 'success',
-            'title' => 'Test Document',
+            'sharepoint_path' => null,
         ]);
 
-        $response = $this->actingAs($user)->get(route('documents.index'));
-
-        $response->assertOk();
-        // The page should load successfully - detailed UI testing would require browser tests
+        $this->actingAs($user)->getJson(route('api.v1.admin.documents.folder', ['path' => '']))
+            ->assertOk()
+            ->assertJsonFragment(['id' => $document->id, 'sync_status' => 'success']);
     });
 });

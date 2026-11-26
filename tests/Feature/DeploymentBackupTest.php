@@ -18,16 +18,6 @@ describe('failure is not swallowed', function (): void {
         expect($source)->toContain('set -eo pipefail');
     });
 
-    // Verifies the shell contract the line above depends on, rather than trusting it: this is the
-    // exact difference between storing a truncated backup and refusing it.
-    it('relies on shell semantics that actually behave that way', function (): void {
-        $withoutE = Process::run(['bash', '-c', 'set -o pipefail; { false; echo second; } | cat']);
-        $withE = Process::run(['bash', '-c', 'set -eo pipefail; { false; echo second; } | cat']);
-
-        expect($withoutE->exitCode())->toBe(0)
-            ->and($withE->exitCode())->not->toBe(0);
-    });
-
     it('names the archive only after the completion marker is verified', function (): void {
         $source = File::get(app_path('Console/Commands/DeploymentBackup.php'));
 

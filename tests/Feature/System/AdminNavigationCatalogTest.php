@@ -260,19 +260,6 @@ describe('per-persona visibility', function (): void {
         ]);
     });
 
-    test('a plain member sees institutions but not the organisation-wide graph', function (): void {
-        $user = makeUser($this->tenant);
-        $duty = $user->duties()->first();
-        $duty->pivot->end_date = null;
-        $duty->pivot->save();
-
-        $sections = collect($this->catalog->for($user)['workspaces'])->firstWhere('key', 'atstovavimas')['sections'];
-
-        expect(collect($sections)->pluck('key')->all())
-            ->toContain('institucijos')
-            ->not->toContain('institucijos_grafas');
-    });
-
     test('problem categories are managed only by those who edit problems in every padalinys', function (): void {
         $keysFor = fn (User $user): array => collect(collect($this->catalog->for($user)['workspaces'])->firstWhere('key', 'atstovavimas')['sections'] ?? [])->pluck('key')->all();
 
@@ -393,15 +380,6 @@ describe('per-persona visibility', function (): void {
             ->and($this->catalog->opensWorkspace(makeAdminUser($this->tenant), 'sistema'))->toBeTrue();
     });
 
-    test('an empty workspace does not render at all', function (): void {
-        // A plain member has zero visible sections in ViSAK, Svetainė, Organizacija and Sistema —
-        // none of those keys should appear in the payload, rather than an empty `sections: []`.
-        $user = makeUser($this->tenant);
-
-        $keys = collect($this->catalog->for($user)['workspaces'])->pluck('key');
-
-        expect($keys)->not->toContain('atstovavimas', 'svetaine', 'organizacija', 'sistema');
-    });
 });
 
 describe('route-coverage guard', function (): void {

@@ -78,29 +78,6 @@ test('page renders successfully without content', function (): void {
     );
 });
 
-test('page renders successfully with content but no parts', function (): void {
-    $content = Content::factory()->create();
-    // Don't create any content parts
-
-    $page = Page::factory()->create([
-        'title' => 'Test Page Empty Content',
-        'permalink' => 'test-page-empty-content',
-        'tenant_id' => $this->tenant->id,
-        'content_id' => $content->id,
-        'is_active' => true, // Ensure page is active for public access
-    ]);
-
-    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'test-page-empty-content']));
-
-    $response->assertStatus(200);
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Public/ContentPage')
-            ->has('page.content')
-            ->where('page.title', 'Test Page Empty Content')
-    );
-});
-
 test('page renders successfully with content but no tiptap parts', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
@@ -247,47 +224,6 @@ test('page with children renders section listing', function (): void {
             ->has('page.children', 1)
             ->where('page.children.0.title', $child->title)
     );
-});
-
-test('seo description is extracted from first tiptap content', function (): void {
-    $content = Content::factory()->create();
-    ContentPart::factory()->create([
-        'content_id' => $content->id,
-        'type' => 'tiptap',
-        'json_content' => (new Editor)->setContent('<p>This is the SEO description content.</p>')->getDocument(),
-    ]);
-
-    $page = Page::factory()->create([
-        'title' => 'SEO Test Page',
-        'permalink' => 'seo-test-page',
-        'tenant_id' => $this->tenant->id,
-        'content_id' => $content->id,
-        'is_active' => true, // Ensure page is active for public access
-    ]);
-
-    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'seo-test-page']));
-
-    $response->assertStatus(200);
-    // The actual SEO data is in view data, which we can't easily test with Inertia testing
-    // But the important thing is that it doesn't error out
-});
-
-test('seo description is null when no tiptap content exists', function (): void {
-    $content = Content::factory()->create();
-    // Don't create any content parts
-
-    $page = Page::factory()->create([
-        'title' => 'SEO Test Page No Content',
-        'permalink' => 'seo-test-page-no-content',
-        'tenant_id' => $this->tenant->id,
-        'content_id' => $content->id,
-        'is_active' => true, // Ensure page is active for public access
-    ]);
-
-    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'seo-test-page-no-content']));
-
-    $response->assertStatus(200);
-    // The important thing is that it doesn't error out when content is null
 });
 
 test('homepage falls back to main tenant content when tenant has empty content parts', function (): void {

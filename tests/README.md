@@ -137,7 +137,7 @@ They are skipped in the default SQLite suite, which cannot exercise MySQL row lo
 ```
 tests/Feature/
 ├── Admin/          # MAIN: Comprehensive admin controller tests
-│   ├── Calendar/   # AgendaItem, Calendar, Meeting controllers
+│   ├── Calendar/   # AgendaItem, Calendar, Meeting, Vote controllers
 │   ├── Content/    # Banner, Category, News, Page, Tag controllers  
 │   ├── Core/       # Dashboard controller
 │   ├── Dashboard/  # One {Workspace}DashboardTest.php per workspace overview
@@ -146,6 +146,7 @@ tests/Feature/
 │   ├── Navigation/ # Navigation controller
 │   ├── Permissions/# Permission, Role controllers
 │   ├── Reservations/# Reservation, cart, Resource, ResourceCategory controllers
+│   ├── System/     # Mail queue and system administration
 │   └── Resources/  # Document, Files, SharePoint controllers
 ├── Api/Admin/      # Includes Atstovavimas, Comment, Institution, Meeting and Resource API controllers
 ├── Approvals/      # ApprovalService and ApprovalController (one describe per action)

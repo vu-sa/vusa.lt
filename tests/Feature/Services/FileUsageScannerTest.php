@@ -197,6 +197,16 @@ describe('references to other files', function (): void {
 });
 
 describe('owners and freshness', function (): void {
+    test('a trashed banner still protects its linked file from deletion', function (): void {
+        $banner = Banner::factory()->create(['link_url' => '/uploads/files/trashed-banner.pdf']);
+        $banner->delete();
+
+        $usage = $this->scanner->scanFileUsage('uploads/files/trashed-banner.pdf');
+
+        expect($usage['is_safe_to_delete'])->toBeFalse()
+            ->and($usage['total_usages'])->toBe(1);
+    });
+
     test('a block on a trashed page is reported as that page', function (): void {
         $page = Page::factory()->create(['title' => 'Archyvuotas puslapis']);
         makeTiptapImagePart($this->url, ['content_id' => $page->content_id]);

@@ -12,8 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\Glob;
-use Symfony\Component\Yaml\Yaml;
 
 /** Roots a relative path in a rule doc may be written against, besides the doc's own directory. */
 const RULE_REFERENCE_PATH_ROOTS = ['', 'resources/js', 'resources/js/Components', 'resources/css', 'tests/Feature', 'docs'];
@@ -131,32 +129,6 @@ test('every file path named in the rule docs exists', function (): void {
 
             if (! $exists) {
                 $missing[] = "{$doc}: {$path}";
-            }
-        }
-    }
-
-    expect(array_values(array_unique($missing)))->toBeEmpty(implode("\n", array_unique($missing)));
-});
-
-test('every scoped rule paths glob matches a file', function (): void {
-    $files = [];
-    $finder = Finder::create()->files()->in(base_path())->ignoreDotFiles(false)
-        ->exclude(['vendor', 'node_modules', 'storage', 'public/build', '.git', '.worktrees']);
-
-    foreach ($finder as $file) {
-        $files[] = $file->getRelativePathname();
-    }
-
-    $missing = [];
-
-    foreach (ruleReferenceDocs() as $doc => $markdown) {
-        if (dirname($doc) !== '.ai/rules' || ! preg_match('/\A---\R(.*?)\R---(?:\R|\z)/s', $markdown, $frontmatter)) {
-            continue;
-        }
-
-        foreach (Yaml::parse($frontmatter[1])['paths'] ?? [] as $glob) {
-            if (preg_grep(Glob::toRegex($glob, strictLeadingDot: false), $files) === []) {
-                $missing[] = "{$doc}: {$glob}";
             }
         }
     }

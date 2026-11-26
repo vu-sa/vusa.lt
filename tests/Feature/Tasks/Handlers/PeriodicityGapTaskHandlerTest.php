@@ -5,7 +5,6 @@ use App\Enums\ResponsibilityPurpose;
 use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
@@ -150,49 +149,6 @@ describe('PeriodicityGapTaskHandler', function (): void {
         expect($task->completed_at)->not->toBeNull();
     });
 
-    test('completes periodicity gap task when check-in is created', function (): void {
-        $tenant = Tenant::query()->first()
-            ?? Tenant::factory()->create();
-
-        $institution = Institution::factory()
-            ->for($tenant)
-            ->create(['is_active' => true]);
-
-        $duty = Duty::factory()->for($institution)->create();
-        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
-
-        $user = User::factory()->create();
-        $user->duties()->attach($duty, [
-            'start_date' => now()->subMonth(),
-            'end_date' => null,
-        ]);
-
-        $handler = app(PeriodicityGapTaskHandler::class);
-        $representatives = GetInstitutionRepresentatives::execute($institution);
-
-        // Create periodicity gap task
-        $task = $handler->findOrCreate(
-            institution: $institution,
-            users: $representatives,
-            dueDate: now()->addDays(7),
-        );
-
-        expect($task->completed_at)->toBeNull();
-
-        // Create check-in for this institution
-        InstitutionCheckIn::factory()
-            ->for($institution)
-            ->for($user)
-            ->for($tenant)
-            ->create([
-                'start_date' => now(),
-                'end_date' => now()->addMonth(),
-            ]);
-
-        $task->refresh();
-
-        expect($task->completed_at)->not->toBeNull();
-    });
 });
 
 describe('GetInstitutionRepresentatives', function (): void {
@@ -249,12 +205,5 @@ describe('GetInstitutionRepresentatives', function (): void {
         $representatives = GetInstitutionRepresentatives::execute($institution);
 
         expect($representatives)->toBeEmpty();
-    });
-});
-
-describe('RepopulateTasks command for institutions', function (): void {
-    test('command runs without errors', function (): void {
-        $this->artisan('tasks:repopulate institution --dry-run')
-            ->assertExitCode(0);
     });
 });

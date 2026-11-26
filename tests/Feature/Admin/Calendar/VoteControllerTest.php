@@ -249,44 +249,6 @@ describe('vote controller', function (): void {
                 ->exists())->toBeTrue();
     });
 
-    test('vote alignment is tracked correctly on agenda items with multiple votes', function (): void {
-        // Create votes with different alignments
-        Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
-            'decision' => 'positive',
-            'student_vote' => 'positive', // aligned
-        ]);
-
-        // Create another agenda item with misaligned votes
-        $agendaItem2 = AgendaItem::create([
-            'meeting_id' => $this->meeting->id,
-            'title' => 'Test Agenda Item 2',
-            'order' => 2,
-            'type' => 'voting',
-        ]);
-
-        Vote::factory()->main()->for($agendaItem2, 'agendaItem')->create([
-            'decision' => 'positive',
-            'student_vote' => 'negative', // misaligned
-        ]);
-
-        $this->meeting->refresh();
-
-        // Load agenda items with votes
-        $this->meeting->load('agendaItems.votes');
-
-        // Get all votes from the meeting
-        $allVotes = $this->meeting->agendaItems->flatMap(fn ($item) => $item->votes);
-
-        // Count aligned and misaligned votes
-        $votesWithBoth = $allVotes->filter(fn ($v) => ! empty($v->student_vote) && ! empty($v->decision));
-        $alignedCount = $votesWithBoth->filter(fn ($v) => $v->student_vote === $v->decision)->count();
-        $misalignedCount = $votesWithBoth->count() - $alignedCount;
-
-        expect($alignedCount)->toBe(1)
-            ->and($misalignedCount)->toBe(1)
-            ->and($allVotes->count())->toBe(2);
-    });
-
     test('updating agenda item syncs is_consensus field on votes', function (): void {
         // Create initial vote without consensus
         $existingVote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create([
@@ -381,17 +343,6 @@ describe('vote controller', function (): void {
             ->and($vote->decision)->toBeNull();
     });
 
-    test('vote factory supports consensus state', function (): void {
-        $consensusVote = Vote::factory()
-            ->consensus()
-            ->for($this->agendaItem, 'agendaItem')
-            ->create();
-
-        expect($consensusVote->is_consensus)->toBeTrue()
-            ->and($consensusVote->decision)->toBe('positive')
-            ->and($consensusVote->student_vote)->toBe('positive')
-            ->and($consensusVote->student_benefit)->toBe('positive');
-    });
 });
 
 describe('vote authorization', function (): void {

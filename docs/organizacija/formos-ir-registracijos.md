@@ -12,7 +12,6 @@ tests:
   - tests/Browser/PublicRegistrationTest.php
   - tests/Browser/RegistrationFieldEditorTest.php
   - tests/Browser/ImageInsertionTest.php
-  - tests/Feature/Forms/RegistrationWorkflowTest.php
   - tests/Feature/Forms/SendMemberRegistrationNotificationTest.php
   - tests/Feature/Forms/ConfirmMemberRegistrationTest.php
   - tests/Feature/Forms/MemberRegistrationNotificationMailTest.php

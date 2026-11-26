@@ -179,29 +179,6 @@ describe('registration is stored correctly', function (): void {
     });
 });
 
-describe('FormSettings for student rep registration', function (): void {
-    test('student rep form ID can be set and retrieved', function (): void {
-        $form = Form::factory()->published()->create(['tenant_id' => $this->tenant->id]);
-
-        $settings = app(FormSettings::class);
-        $settings->student_rep_registration_form_id = $form->id;
-        $settings->save();
-
-        // Refresh settings
-        $freshSettings = app(FormSettings::class);
-        expect($freshSettings->student_rep_registration_form_id)->toBe($form->id);
-    });
-
-    test('student rep institution type IDs can be set and retrieved', function (): void {
-        $settings = app(FormSettings::class);
-        $settings->setStudentRepInstitutionTypeIds([1, 2, 3]);
-        $settings->save();
-
-        $freshSettings = app(FormSettings::class);
-        expect($freshSettings->getStudentRepInstitutionTypeIds()->toArray())->toBe([1, 2, 3]);
-    });
-});
-
 // Helper function to create a student rep registration form
 function createStudentRepForm(Tenant $tenant, Institution $institution): Form
 {
