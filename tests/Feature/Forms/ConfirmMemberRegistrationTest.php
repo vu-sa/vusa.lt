@@ -12,7 +12,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create();
     $this->institution = Institution::factory()->for($this->tenant)->create();
-    $this->user = User::factory()->create(['name' => 'Jonas Petrauskas']);
+    $this->user = User::factory()->create(['name' => 'Jonas Jonaitis']);
     $this->duty = Duty::factory()
         ->for($this->institution)
         ->hasAttached($this->user, ['start_date' => now()->subDay(), 'end_date' => now()->addDay()])
@@ -30,7 +30,7 @@ describe('ConfirmMemberRegistration Mail', function (): void {
             $this->duty
         );
 
-        expect($mail->contactName)->toBe('Jono Petrausko');
+        expect($mail->contactName)->toBe('Jono Jonaičio');
     });
 
     it('falls back to duty email when no user is assigned', function (): void {

@@ -232,6 +232,8 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 
 ### Daugiakalbiškumas ir vertimai {#vertimai}
 
+Atvėrus svetainės nuorodą be kalbos kodo, ji nukreipia į pasirinktos kalbos puslapį. Nuorodoje nurodyti filtrai, paieškos tekstas ir puslapio numeris išsaugomi.
+
 VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
 - **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaujamasi forma bei jos gidu.
   Kalba perjungiama visai formai, todėl prie laukų pavadinimų kalba nerašoma. Privalomi laukai pažymėti žvaigždute (*), o formos pradžioje esanti pastaba primena, kad kitus galima praleisti.

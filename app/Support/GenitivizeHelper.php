@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Support;
 
 class GenitivizeHelper
 {
@@ -17,6 +17,7 @@ class GenitivizeHelper
         $name = preg_replace('/a$/', 'os', $name);
         $name = preg_replace('/as$/', 'o', $name);
         $name = preg_replace('/ė$/', 'ės', $name);
+        $name = preg_replace('/aitis$/', 'aičio', $name);
         $name = preg_replace('/is$/', 'io', $name);
         $name = preg_replace('/iai$/', 'ių', $name);
         $name = preg_replace('/ė$/', 'ės', $name);

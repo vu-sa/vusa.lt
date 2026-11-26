@@ -212,6 +212,8 @@ pirmininkas – kaip padalinio anketų gavėjas, o koordinatorius – per pareig
 | Studentas pateikia **studentų atstovų registraciją** | Institucijos koordinatoriai gauna pranešimą apie naują registraciją (`StudentRepRegistrationNotification`) | Atstovų koordinatoriai |
 | Pateikiama įprasta renginio ar apklausos forma | Registracija išsaugoma duomenų bazėje; automatiniai laiškai nesiunčiami | Niekas |
 
+Lietuviškuose patvirtinimo laiškuose kontaktinio asmens pavardė su galūne „-aitis“ pateikiama kilmininku, pavyzdžiui, „Jonaičio“.
+
 Nario registracijos laiškas siunčiamas gavėjo pareigybės instituciniu el. paštu (`@vusa.lt`),
 net jei pareigybė neužimta. Jei yra dabartinis pareigybės narys, jis papildomai gauna pranešimą
 platformoje. Gavėjo pareigybę parenka registracijų nustatymuose nurodyta rolė.

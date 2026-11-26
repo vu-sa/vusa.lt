@@ -83,8 +83,9 @@ describe('SystemMonitorService', function (): void {
                 ->and($status)->toHaveKey('connection_time');
         });
 
-        test('returns error status when database connection fails', function (): void {
-            DB::shouldReceive('connection')->once()->andThrow(new Exception('SQLSTATE[HY000]'));
+        test('reports a failed database check without exposing connection details', function (): void {
+            app()->setLocale('en');
+            DB::shouldReceive('connection')->once()->andThrow(new Exception('SQLSTATE[HY000] test-connection-secret'));
             DB::shouldReceive('getConnections')->andReturn([]);
 
             $status = $this->service->getDatabaseStatus();
@@ -92,7 +93,8 @@ describe('SystemMonitorService', function (): void {
             expect($status)
                 ->status->toBe('error')
                 ->connected->toBeFalse()
-                ->error->toContain('SQLSTATE');
+                ->error->toBe('The database health check failed.');
+            expect(json_encode($status))->not->toContain('test-connection-secret');
         });
     });
 
