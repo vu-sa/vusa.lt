@@ -106,7 +106,7 @@ class SearchText
         }
         if ($model instanceof Meeting) {
             $model->loadMissing('institutions');
-            $parts = $locale === 'lt' && is_string($model->title) ? [$model->title] : [];
+            $parts = $locale === 'lt' && $model->title !== '' ? [$model->title] : [];
             foreach ($model->institutions as $institution) {
                 $parts[] = $institution->getTranslations('name')[$locale] ?? '';
             }
