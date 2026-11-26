@@ -99,7 +99,7 @@ class DutyPanelPresenter
         return $payload;
     }
 
-    /** @return array{events: list<array{kind: 'rename', date: string, name: string|null}|array{kind: 'took_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null, can_fold: bool}>}|array{kind: 'handed_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null}>}>, predecessorTerms: list<array{id: string, name: string, profile_photo_path: string|null, pivot: array{id: string, start_date: string, end_date: string|null}, duty_name: string|null, via_duty_id: string}>, suggestedLinkDate: string} */
+    /** @return array{events: list<array{kind: 'rename', date: string, name: string|null}|array{kind: 'took_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null, can_fold: bool}>}|array{kind: 'handed_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null}>}>, predecessorTerms: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null}, duty_name: string|null, via_duty_id: string}>, suggestedLinkDate: string} */
     public static function lineage(Duty $duty, ?User $user): array
     {
         return BuildDutyLineage::execute($duty, $user);

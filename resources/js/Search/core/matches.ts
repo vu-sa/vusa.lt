@@ -19,6 +19,7 @@ export interface SearchMatchDocument {
 }
 
 const identityFields = new Set(['title', 'title_lt', 'title_en', 'name', 'name_lt', 'name_en']);
+const exactNameFields = [...identityFields, 'short_name_lt', 'short_name_en', 'alias'];
 export const PROSE_FIELDS = new Set(['body', 'short', 'summary', 'description', 'description_lt', 'description_en', 'meta_description', 'student_benefit']);
 
 function plainSnippet(value: string): string {
@@ -139,6 +140,18 @@ export function hasIdentityMatch(document: Record<string, unknown>): boolean {
   const names = [...identityFields].map(field => document[field]).filter(value => typeof value === 'string');
   return ((document as SearchMatchDocument)._searchTitleMatches ?? [])
     .some(match => names.includes(match.segments.map(segment => segment.text).join('')));
+}
+
+export function normalizeSearchName(value: string): string {
+  return value.normalize('NFC').toLowerCase().trim().replace(/\s+/gu, ' ');
+}
+
+export function hasExactNameMatch(document: Record<string, unknown>, query: string): boolean {
+  if (!query) return false;
+  return exactNameFields.some((field) => {
+    const value = document[field];
+    return typeof value === 'string' && normalizeSearchName(value) === query;
+  });
 }
 
 /** A document's date chip, highlighted when the query matched its indexed date or year. */

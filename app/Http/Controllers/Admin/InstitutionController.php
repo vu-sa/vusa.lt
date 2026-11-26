@@ -117,7 +117,7 @@ class InstitutionController extends AdminController
             $institution->setRawAttributes([...$institution->getAttributes(), ...$summary->getAttributes()], true);
             $institution->setRelation('types', $summary->types);
             $institution->setRelation('checkIns', $summary->checkIns);
-            $institution->loadMissing('tenant:id,shortname', 'duties.current_users:id,name,profile_photo_path,profile_photo_focal_point')
+            $institution->loadMissing('tenant:id,shortname', 'duties.'.InstitutionPresenter::DUTY_HOLDERS)
                 ->append(['has_public_meetings', 'governance_scope']);
 
             return $institution;

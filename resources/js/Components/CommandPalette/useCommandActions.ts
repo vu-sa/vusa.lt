@@ -1,13 +1,27 @@
 import { computed, type Component } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, LifeBuoy, Plus, Radio, Settings, ShieldCheck } from '@lucide/vue';
+import { Bell, Play, Plus, Radio, Settings, ShieldCheck } from '@lucide/vue';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import { useActionWindow, type OpenOptions } from '@/Composables/useActionWindow';
 import { sectionHref, useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useStartFm } from '@/Composables/useStartFm';
+
+import type { PageProps } from '@/Types/index';
+
+type NavigationCatalog = NonNullable<PageProps['adminNavigation']>;
+type WorkspaceAction = NavigationCatalog['workspaces'][number]['createActions'][number];
+type CatalogCommand = Omit<WorkspaceAction, 'target'> & {
+  target: WorkspaceAction['target'] & { routeParams?: Record<string, string> };
+  workspaceKey: string;
+  workspaceLabel: string;
+  createsRecord: boolean;
+};
+type PalettePageProps = PageProps & {
+  adminNavigation: (NavigationCatalog & { commandActions?: CatalogCommand[] }) | null;
+};
 
 export type ActionCategory = 'navigation' | 'create' | 'action';
 
@@ -26,13 +40,8 @@ export interface CommandAction {
   page?: { routeName: string; href: string; title: string };
 }
 
-/** Icons for catalog create actions that have no backing `ModelEnum` entry. */
-const createActionIcons: Record<string, Component> = {
-  new_support_request: LifeBuoy,
-};
-
 /** Catalog `screen` targets are ActionWindow screens; each one is the first screen of a flow. */
-const flowForScreen: Record<string, OpenOptions['flow']> = {
+export const flowForScreen: Record<string, OpenOptions['flow']> = {
   'meeting.institution': 'meeting.create',
   'checkin.institution': 'check-in',
   'meeting.pick': 'meeting.complete',
@@ -41,6 +50,7 @@ const flowForScreen: Record<string, OpenOptions['flow']> = {
 
 export function useCommandActions() {
   const { workspaces, activeWorkspace } = useAdminNavigation();
+  const page = usePage<PalettePageProps>();
   const actionWindow = useActionWindow();
   const startFm = useStartFm();
 
@@ -64,27 +74,30 @@ export function useCommandActions() {
       };
     }));
 
-    const create = workspaces.value.flatMap(workspace => workspace.createActions.map((action): CommandAction => ({
+    const catalogActions = (page.props.adminNavigation?.commandActions ?? []).map((action): CommandAction => ({
       id: `create-${action.key}`,
       label: $t(action.label),
-      keywords: [action.key, action.target.kind],
-      icon: (action.entityType && getEntityTypeDefinition(action.entityType)?.icon) || createActionIcons[action.key] || Plus,
-      category: 'create',
+      keywords: [
+        action.key,
+        action.target.kind === 'route' ? action.target.routeName : action.target.screen,
+      ],
+      icon: action.createsRecord ? Plus : (action.entityType && getEntityTypeDefinition(action.entityType)?.icon) || Play,
+      category: action.createsRecord ? 'create' : 'action',
       action: () => {
         if (action.target.kind === 'route') {
-          router.visit(route(action.target.routeName));
+          router.visit(route(action.target.routeName, action.target.routeParams));
         }
         else {
           actionWindow.open({ flow: flowForScreen[action.target.screen] });
         }
       },
-      workspaceKey: workspace.key,
-      workspaceLabel: $t(workspace.label),
-    })));
+      workspaceKey: action.workspaceKey,
+      workspaceLabel: $t(action.workspaceLabel),
+    }));
 
     return [
       ...navigation,
-      ...create,
+      ...catalogActions,
       {
         id: 'nav-profile',
         label: $t('Profilis'),
@@ -129,17 +142,14 @@ export function useCommandActions() {
 
   const filterActions = (query: string): CommandAction[] => {
     const normalized = query.trim().toLowerCase();
+    const creating = ['nauj', 'naujas', 'nauja', 'sukurti', 'kurti', 'new', 'create'].includes(normalized);
     const matching = normalized
-      ? actions.value.filter(action => [action.label, action.workspaceLabel ?? '', ...action.keywords]
+      ? actions.value.filter(action => (creating && action.category === 'create') || [action.label, action.workspaceLabel ?? '', ...action.keywords]
           .some(value => value.toLowerCase().includes(normalized)))
       : actions.value;
 
     return rankByWorkspace(matching);
   };
 
-  /** The catalog workspace that owns an entity type, so search hits can rank by workspace too. */
-  const workspaceKeyForEntity = (entityType: string): string | undefined =>
-    workspaces.value.find(workspace => workspace.sections.some(section => section.entityType === entityType))?.key;
-
-  return { actions, filterActions, rankByWorkspace, workspaceKeyForEntity, activeWorkspace };
+  return { actions, filterActions, rankByWorkspace, activeWorkspace };
 }

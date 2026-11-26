@@ -47,7 +47,10 @@ export interface InstitutionPageDuty {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  current_users: InstitutionMember[];
+  current_users: (InstitutionMember & {
+    duty_pronouns: { lt: string; en: string };
+    pivot: InstitutionMember['pivot'] & Pick<InstitutionMemberTerm, 'use_original_duty_name'>;
+  })[];
 }
 
 export interface InstitutionPageType {

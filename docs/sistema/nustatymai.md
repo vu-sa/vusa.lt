@@ -1,11 +1,12 @@
 ---
 doc_status: reviewed
 title: Nustatymai
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-26
 tests:
   - tests/Feature/Season/SeasonTest.php
   - tests/Feature/Season/SeasonCountdownTest.php
   - tests/Feature/Admin/Core/SeasonSettingsTest.php
+  - tests/Feature/Admin/Settings/FormSettingsTest.php
   - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
   - tests/Feature/Admin/People/CadenceResolutionTest.php
@@ -85,7 +86,7 @@ Paskirtį atliekančios atsakomybės ar kontaktuose naudojamo tipo ištrinti neg
 
 ### Formų nustatymai {#formos}
 
-Adresas: `/mano/settings/forms`. Čia nurodomos pagrindinės platformos registracijos anketos:
+Adresas: `/mano/settings/forms`. Čia nurodomos pagrindinės platformos registracijos anketos (bet kurią jų galima palikti „Nepasirinkta (išjungta)“):
 
 - **Narių registracijos forma**: forma, kuria viešai registruojasi nauji VU SA nariai.
 - **Kas gauna registracijas**: registracijas gauna ir mato *narių registracijos* paskirtį turinčios
@@ -113,9 +114,8 @@ turi likti pažymėtas. Posėdžių laiko juostoje visos institucijos rodomos ne
 pasirinkimo. Pakeitimas taikomas iš karto; jau išsaugotos praėjusių dienų būklės istorijos jis nekeičia.
 
 Adresas: `/mano/settings/atstovavimas`. **Studentų atstovų organų šakninis tipas** ir jo potipiai
-nurodo, kurioms institucijoms viešuose kontaktuose rodomos studentų atstovų kortelės ir jų grupės.
-Palikus „Nepasirinkta (išjungta)“, šios kortelės ir grupės nerodomos; institucijas vis tiek galima
-rasti bendroje kontaktų paieškoje. Atstovavimo rodiklius lemia aukščiau pažymėti organai,
+nurodo, pagal kurį institucijų tipą sudaromas viešas puslapis **Studentų atstovai** (`/kontaktai/studentu-atstovai`) ir kurioms institucijoms kontaktų paieškoje (`/kontaktai`) rodomos studentų atstovų kortelės vietoje standartinių.
+Palikus „Nepasirinkta (išjungta)“, puslapis **Studentų atstovai** bus tuščias, o kontaktų paieškoje bus rodomos tik standartinės institucijų kortelės. Atstovavimo rodiklius lemia aukščiau pažymėti organai,
 o ne šis tipas.
 
 ### Dokumentų nustatymai {#dokumentai}
@@ -127,28 +127,28 @@ Adresas: `/mano/settings/documents`. Čia pažymimi **svarbūs dokumentų turini
   šių tipų rezultatai rodomi aukščiau. Be paieškos frazės bendras sąrašas rodomas nuo naujausių.
 - **Vidiniame dokumentų sąraše** (`/mano/documents`): jie siūlomi kaip greitojo filtravimo parinktys.
 
-<ChangelogNote date="2026-10-02" title="Rekomenduojami dokumentai paieškoje">
+<ChangelogNote date="2026-10-02" title="Svarbiausi dokumentai paieškoje">
 
-Tame pačiame puslapyje galima pridėti rekomendaciją ir pasirinkti dokumentą (paspaudus pavadinimą,
-jis pakeičiamas). Kiekviena rekomendacija rodoma dviem atskirais atvejais:
+Tame pačiame puslapyje galima pridėti svarbiausią dokumentą (paspaudus pavadinimą,
+jis pakeičiamas). Kiekvienas toks dokumentas rodomas dviem atskirais atvejais:
 
 - **Rodyti ieškant** – frazės per kablelį, pvz., VU SA įstatams – **VU SA įstatai**.
-  Rekomendacija rodoma, kai visi įvesti žodžiai yra frazėje: **įstat**, **įstatų** ar
-  **SA įstatus** ją suaktyvina, o **pakeisti įstatai** – ne, nes žodžio **pakeisti** frazėje nėra;
+  Dokumentas rodomas, kai visi įvesti žodžiai yra frazėje: **įstat**, **įstatų** ar
+  **SA įstatus** jį suaktyvina, o **pakeisti įstatai** – ne, nes žodžio **pakeisti** frazėje nėra;
   tokiai užklausai pridedama atskira frazė. Lietuviškos žodžio formos ir pradėtas rašyti žodis
-  atpažįstami automatiškai. Be frazių rekomendacija paieškos metu nerodoma.
-- **Rodyti ir tuščioje paieškoje** – rekomendacija rodoma atidarius dokumentų paiešką, kol nieko
-  neįvesta (naujoms rekomendacijoms pažymėta).
+  atpažįstami automatiškai. Be frazių dokumentas paieškos metu nerodomas.
+- **Rodyti ir tuščioje paieškoje** – dokumentas rodomas atidarius dokumentų paiešką, kol nieko
+  neįvesta (naujiems dokumentams pažymėta).
 
-**Laikinai išjungti** paslepia rekomendaciją jos neištrinant. Rodyklėmis galima pakeisti
-rekomendacijų eilę. Išsaugojus ji rodoma viešos paieškos skiltyje
-**Rekomenduojami dokumentai**, nesikartodama bendrame sąraše. Filtrai galioja ir rekomendacijoms;
-neaktyvūs ar pašalinti dokumentai nerodomi. Pradiniame rodinyje rekomendacijos yra virš
+**Laikinai išjungti** paslepia dokumentą jo neištrinant. Rodyklėmis galima pakeisti
+svarbiausių dokumentų eilę. Išsaugojus jis rodomas viešos paieškos skiltyje
+**Svarbiausi dokumentai**, nesikartodamas bendrame sąraše. Filtrai galioja ir šiems dokumentams;
+neaktyvūs ar pašalinti dokumentai nerodomi. Pradiniame rodinyje svarbiausi dokumentai yra virš
 nuo naujausių rikiuojamo bendro sąrašo; **Naujausi pirmi** pažymėta ir rikiavimo valdiklyje.
 Įvedus paiešką sąrašas savaime rikiuojamas **Pagal aktualumą** (ši parinktis siūloma tik tada),
-nebent pasirenkamas rikiavimas pagal datą. Rekomendacijos lieka virš bendro sąrašo ir rikiuojant
+nebent pasirenkamas rikiavimas pagal datą. Svarbiausi dokumentai lieka virš bendro sąrašo ir rikiuojant
 **Naujausi pirmi**. Pasirinkus **Seniausi pirmi**
-rekomendacijos nerodomos. Abu rikiavimai pagal datą netaiko svarbių tipų pirmumo.
+jie nerodomi. Abu rikiavimai pagal datą netaiko svarbių tipų pirmumo.
 
 </ChangelogNote>
 

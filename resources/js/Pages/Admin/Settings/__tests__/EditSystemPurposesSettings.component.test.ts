@@ -23,7 +23,7 @@ const mountSettings = (canEdit = true, typeCount = 0) => mount(EditSystemPurpose
   global: {
     stubs: {
       FormPage: { template: '<form><slot /></form>' },
-      FormSection: { template: '<section><slot /></section>' },
+      FormPanel: { template: '<section><slot /></section>' },
       SpotlightPopover: { template: '<div data-testid="spotlight"><slot /></div>' },
     },
   },

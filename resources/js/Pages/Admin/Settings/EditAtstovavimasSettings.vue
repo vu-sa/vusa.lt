@@ -10,7 +10,7 @@
     :available-locales="[]"
     @submit="handleFormSubmit"
   >
-    <FormSection :title="$t('settings.atstovavimas_settings.baseline_title')">
+    <FormPanel :title="$t('settings.atstovavimas_settings.baseline_title')" :icon="CalendarRange">
       <FormFieldWrapper
         id="baseline_cadence_id"
         :label="$t('settings.atstovavimas_settings.baseline_label')"
@@ -27,10 +27,11 @@
           placeholder-selectable
         />
       </FormFieldWrapper>
-    </FormSection>
-    <FormSection
+    </FormPanel>
+    <FormPanel
       :title="$t('settings.atstovavimas_settings.counted_scopes_title')"
       :description="$t('settings.atstovavimas_settings.counted_scopes_description')"
+      :icon="BarChart3"
     >
       <FormFieldWrapper
         id="counted_institution_scopes"
@@ -56,10 +57,11 @@
           </label>
         </fieldset>
       </FormFieldWrapper>
-    </FormSection>
-    <FormSection
+    </FormPanel>
+    <FormPanel
       :title="$t('settings.atstovavimas_settings.student_rep_type_title')"
       :description="$t('settings.atstovavimas_settings.student_rep_type_description')"
+      :icon="Building2"
     >
       <FormFieldWrapper
         id="student_rep_root_type_id"
@@ -76,17 +78,18 @@
           placeholder-selectable
         />
       </FormFieldWrapper>
-    </FormSection>
+    </FormPanel>
   </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { BarChart3, Building2, CalendarRange } from '@lucide/vue';
 import { computed } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { formatDate } from '@/Utils/dateTime';
 import { Checkbox } from '@/Components/ui/checkbox';

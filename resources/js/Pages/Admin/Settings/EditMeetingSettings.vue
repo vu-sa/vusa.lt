@@ -10,9 +10,10 @@
     :available-locales="[]"
     @submit="handleFormSubmit"
   >
-    <FormSection
+    <FormPanel
       :title="$t('settings.meeting_settings.types_title')"
       :description="$t('settings.meeting_settings.types_description')"
+      :icon="Users"
     >
       <FormFieldWrapper id="type_ids" :label="$t('settings.meeting_settings.types_label')" :error="form.errors.type_ids">
         <TypeTreeMultiSelect
@@ -22,16 +23,17 @@
           :empty-text="$t('settings.meeting_settings.no_types_found')"
         />
       </FormFieldWrapper>
-    </FormSection>
+    </FormPanel>
   </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { Users } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 
 interface InstitutionType {

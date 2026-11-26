@@ -40,6 +40,8 @@ class InstitutionPresenter
     /** Up to this many duties show in the overview instead of a tab (`DUTIES_IN_OVERVIEW` in ShowInstitution.vue). */
     public const int OVERVIEW_DUTY_LIMIT = 3;
 
+    public const string DUTY_HOLDERS = 'current_users:id,name,profile_photo_path,profile_photo_focal_point,pronouns';
+
     /** @return array{id: string, name: string, is_active: bool, description: string|null, tenant: array{id: int, shortname: string}|null, types: list<array{id: int, parent_id: int|null, title: string|null, description: string|null, slug: string|null, extra_attributes: array<array-key, mixed>|null, created_at: string|null, updated_at: string|null, deleted_at: string|null, pivot: array{institution_id: string, institution_type_id: int}}>, has_public_meetings: bool, governance_scope: InstitutionScope, duties_count: int, meetings_count: int, problems_count: int, related_institutions_count: int, has_files: bool, managers: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>, secretaries: list<array{id: string, name: string, email: string|null, profile_photo_path: string|null}>, sharepointPath: string|null, sharepointFolderUrl: string|null} */
     public static function forShow(Institution $institution, bool $readOnly): array
     {
@@ -166,17 +168,15 @@ class InstitutionPresenter
         return $term;
     }
 
-    /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null}}>}> */
+    /** @return list<array{id: string, name: string|null, description: string|null, institution_id: string, order: int, email: string|null, contacts_grouping: string, places_to_occupy: int|null, is_active: bool, created_at: string, updated_at: string, deleted_at: string|null, current_users: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, duty_pronouns: array{lt: string, en: string}, pivot: array{id: string, start_date: string, end_date: string|null, use_original_duty_name: bool}}>}> */
     public static function duties(Institution $institution, ?int $limit = null): array
     {
-        $usersRelation = 'current_users:id,name,profile_photo_path,profile_photo_focal_point';
-
         if ($institution->relationLoaded('duties')) {
             $ordered = $institution->duties->sortBy('order');
             $selected = $limit === null || $limit < 0 ? $ordered : $ordered->take($limit);
-            $selected = $selected->values()->loadMissing($usersRelation);
+            $selected = $selected->values()->loadMissing(self::DUTY_HOLDERS);
         } else {
-            $selected = $institution->duties()->with($usersRelation)->orderBy('order')
+            $selected = $institution->duties()->with(self::DUTY_HOLDERS)->orderBy('order')
                 ->when($limit !== null, fn ($query) => $query->limit($limit))->get();
         }
 
@@ -185,7 +185,13 @@ class InstitutionPresenter
             $attributes = $duty->attributesToArray();
             $users = [];
             foreach ($duty->current_users as $user) {
-                $users[] = self::member($user);
+                $member = self::member($user);
+                $member['duty_pronouns'] = [
+                    'lt' => (string) $user->getTranslation('pronouns', 'lt', false),
+                    'en' => (string) $user->getTranslation('pronouns', 'en', false),
+                ];
+                $member['pivot']['use_original_duty_name'] = $user->pivot->use_original_duty_name;
+                $users[] = $member;
             }
             $duties[] = [
                 'id' => $attributes['id'],

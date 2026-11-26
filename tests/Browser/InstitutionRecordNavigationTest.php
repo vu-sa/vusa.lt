@@ -17,7 +17,7 @@ it('keeps institution sections reachable on phones and desktops', function (): v
     $institution = Institution::factory()->create();
     foreach (range(1, 5) as $order) {
         $duty = Duty::factory()->for($institution)->create(['order' => $order]);
-        Dutiable::factory()->forDuty($duty)->active()->count($order === 1 ? 8 : 1)->create();
+        Dutiable::factory()->forDuty($duty)->active()->count($order === 1 ? 9 : 1)->create();
     }
     foreach ([-3, -2, -1, 1] as $days) {
         $meeting = Meeting::factory()->create(['start_time' => now()->addDays($days)]);
@@ -28,6 +28,19 @@ it('keeps institution sections reachable on phones and desktops', function (): v
     foreach ([390, 820, 1180, 1440] as $width) {
         $page->resize($width, 900);
         expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width);
+        if ($width >= 768) {
+            $page->assertScript('(() => {
+                const tabs = document.querySelector("[role=tablist]");
+                tabs.scrollTop = 100;
+                return tabs.scrollTop === 0 && tabs.scrollHeight === tabs.clientHeight;
+            })()');
+        } else {
+            $page->assertScript('(() => {
+                const holder = [...document.querySelectorAll("[data-slot=duty-holders-trigger]")]
+                    .find(button => button.textContent.includes("Užima 9"));
+                return holder?.querySelector("[data-slot=avatar]")?.getBoundingClientRect().width > 0;
+            })()');
+        }
         if ($width < 768) {
             $page->select('[data-slot="record-section-switcher"] select', 'comments');
         } else {
@@ -56,6 +69,13 @@ it('keeps institution sections reachable on phones and desktops', function (): v
         $page->script("document.documentElement.classList.remove('dark')");
         $page->screenshot(filename: "institution-record-{$width}");
     }
+    $page->resize(820, 900);
+    $page->script('document.querySelector("[role=tablist]").style.maxWidth = "320px"');
+    $overviewTab = $page->page()->locator('[role="tab"][data-section="overview"]');
+    $overviewTab->press('End');
+    $page->assertScript('document.activeElement?.dataset.section === "comments" && document.querySelector("[role=tablist]").scrollLeft > 0');
+    $page->script('document.querySelector("[role=tablist]").style.removeProperty("max-width")');
+
     $page->resize(1440, 900);
     $page->click('[role="tab"][data-section="duties"]');
     $page->assertPresent('[data-slot="institution-duty-row"]');

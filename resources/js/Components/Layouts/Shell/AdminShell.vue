@@ -96,11 +96,11 @@ import { usePage } from '@inertiajs/vue3';
 import { useElementSize, useEventListener, useLocalStorage } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 
-import type { PageProps } from '@/Types/index';
 import ImpersonateBanner from '@/Components/Layouts/Shell/ImpersonateBanner.vue';
 import StagingBanner from '@/Components/StagingBanner.vue';
 import StagingWatermark from '@/Components/Shared/StagingWatermark.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import { useActionWindowCatalog } from '@/Composables/useActionWindowCatalog';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import StartFmPlayer from '@/Components/Shared/StartFmPlayer.vue';
 import { useStartFm } from '@/Composables/useStartFm';
@@ -112,6 +112,8 @@ import SectionTabs from './SectionTabs.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
 import MobileContextBar from './MobileContextBar.vue';
 import MobileBottomBar from './MobileBottomBar.vue';
+
+import type { PageProps } from '@/Types/index';
 
 const radio = useStartFm();
 const { started: snowStarted } = useSeasonSnow();
@@ -132,7 +134,7 @@ const shellFocus = useShellFocus();
 const focused = computed(() => shellFocus?.isFocused.value ?? false);
 
 const menuOpen = ref(false);
-const canCreate = computed(() => workspaces.value.some(workspace => workspace.createActions.length > 0));
+const { hasAnyAction: canCreate } = useActionWindowCatalog();
 // Visi skyriai lists only what the user may open, so it is never a dead end and is offered to everyone.
 const showAllSections = true;
 

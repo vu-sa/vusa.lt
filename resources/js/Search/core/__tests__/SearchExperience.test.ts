@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 
 import { buildProfileParams, splitSortExpressions, type SearchProfile } from '../profiles';
-import { descriptionMatch, documentWithMatch, highlightText, matchTitle, type SearchMatchDocument } from '../matches';
+import { descriptionMatch, documentWithMatch, hasExactNameMatch, highlightText, matchTitle, normalizeSearchName, type SearchMatchDocument } from '../matches';
 import { SearchClientFactory } from '../services/SearchClientFactory';
 
 const profile: SearchProfile = {
@@ -47,6 +47,62 @@ describe('search profiles and matches', () => {
     expect(() => buildProfileParams(profile, { facet_by: 'email' })).toThrow('Invalid facet');
     expect(() => buildProfileParams(profile, { sort_by: 'body:asc' })).toThrow('Invalid sort');
     expect(buildProfileParams(undefined, { query_by: 'title' })).toEqual({ query_by: 'title' });
+  });
+
+  it('narrows explicit VU ŠA queries to locale-preserving search_text_lt without matching VU SA', () => {
+    const withHighlight: SearchProfile = { ...profile, parameters: { ...profile.parameters, highlight_fields: String(profile.parameters.query_by) } };
+    const result = buildProfileParams(withHighlight, { q: 'VU ŠA studijų kolegija', pinned_hits: '1:1' });
+    expect(result).toMatchObject({
+      q: '"vu ša" studijų kolegija',
+      query_by: 'search_text_lt',
+      query_by_weights: '1',
+      infix: 'off',
+      num_typos: '2',
+      highlight_fields: 'search_text_lt',
+      drop_tokens_threshold: 0,
+      split_join_tokens: 'off',
+      enable_synonyms: false,
+      enable_curations: false,
+      pinned_hits: undefined,
+    });
+    expect(result).not.toHaveProperty('pre_segmented_query');
+
+    // Decomposed Unicode (NFD) and repeated calls must behave identically.
+    expect(buildProfileParams(profile, { q: 'VU S\u030CA' }).q).toBe('"vu ša"');
+    expect(buildProfileParams(profile, { q: '"VU ŠA" taryba' }).q).toBe('"VU ŠA" taryba');
+
+    // Legacy profiles without search_text_lt fall back to pre_segmented_query so š never folds to s.
+    const legacy = buildProfileParams(undefined, { q: 'VU ŠA', query_by: 'title' });
+    expect(legacy).toMatchObject({
+      q: '"vu ša"',
+      pre_segmented_query: true,
+      num_typos: 0,
+      drop_tokens_threshold: 0,
+      enable_synonyms: false,
+      enable_curations: false,
+    });
+
+    // Standalone ŠA also narrows to search_text_lt so it never folds into SA, without breaking mid-typing prefixes.
+    const standalone = buildProfileParams(profile, { q: 'ŠA' });
+    expect(standalone).toMatchObject({ q: 'ŠA', query_by: 'search_text_lt', enable_synonyms: false, enable_curations: false });
+    expect(buildProfileParams(profile, { q: 'VU SA ŠA' })).toMatchObject({ q: 'VU SA ŠA', query_by: 'search_text_lt' });
+
+    // Ordinary VU SA, ša-prefixed words and full Šiauliai Academy queries stay untouched.
+    const vuSa = buildProfileParams(profile, { q: 'VU SA' });
+    expect(vuSa.q).toBe('VU SA');
+    expect(vuSa.query_by).toContain('title');
+    expect(buildProfileParams(profile, { q: 'šablonas' }).query_by).toContain('title');
+    expect(buildProfileParams(profile, { q: 'VU Šiaulių akademija' }).query_by).toContain('title');
+  });
+
+  it('matches normalized exact names across identity, short name and alias fields', () => {
+    const query = normalizeSearchName('  VU  Senatas ');
+    expect(query).toBe('vu senatas');
+    expect(hasExactNameMatch({ name_lt: 'VU Senatas' }, query)).toBe(true);
+    expect(hasExactNameMatch({ short_name_lt: 'Senatas' }, normalizeSearchName('Senatas'))).toBe(true);
+    expect(hasExactNameMatch({ alias: 'vu-senatas' }, normalizeSearchName('vu-senatas'))).toBe(true);
+    expect(hasExactNameMatch({ name_lt: 'Studentų atstovas VU Senate' }, query)).toBe(false);
+    expect(hasExactNameMatch({ alias: '' }, '')).toBe(false);
   });
 
   it('prefers body excerpts and renders untrusted highlight text without HTML', () => {

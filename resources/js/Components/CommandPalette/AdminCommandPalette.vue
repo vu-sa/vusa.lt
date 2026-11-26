@@ -8,120 +8,121 @@
         :aria-label="$t('shell.chrome.search_field')"
         class="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
         @keydown.escape="close"
-        @keydown.down.prevent="focusFirstResult"
-        @keydown.enter.prevent="focusFirstResult">
+        @keydown.down="focusFirstResult">
       <TopProgressBar :active="isSearching" class="absolute inset-x-0 -bottom-px" />
     </div>
 
     <CommandList class="max-h-[50vh] scroll-py-2 max-sm:max-h-none max-sm:flex-1 sm:max-h-[60vh]">
-      <!-- Loading skeleton -->
-      <div v-if="isSearching && query" class="space-y-1 p-2">
-        <div v-for="i in 3" :key="i" class="flex items-center gap-3 px-3 py-2">
-          <div class="size-10 animate-pulse bg-secondary" />
-          <div class="flex-1 space-y-2">
-            <div class="h-4 w-3/4 animate-pulse bg-secondary" />
-            <div class="h-3 w-1/2 animate-pulse bg-secondary/70" />
-          </div>
-        </div>
+      <!-- Pinned pages, then recents: both empty-state only (O20, O15) -->
+      <PaletteGroup v-if="!searchTerm && pinnedItems.length > 0" :heading="$t('shell.palette.pinned')">
+        <PaletteRow
+          v-for="item in pinnedItems" :key="`pinned-${item.id}`"
+          :value="`pinned-${item.id}`"
+          :icon="resolvePageIcon(item.routeName, item.href)"
+          :title="item.title"
+          @select="handleRecentSelect(item)"
+        >
+          <template #trailing>
+            <PinButton pinned @toggle="togglePin({ routeName: item.routeName, href: item.href, title: item.title })" />
+          </template>
+        </PaletteRow>
+      </PaletteGroup>
+
+      <PaletteGroup v-if="!searchTerm && personalItems.length > 0" :heading="$t('shell.palette.personal')">
+        <PaletteRow
+          v-for="item in personalItems" :key="`${item.kind}-${item.id}`"
+          :value="`personal-${item.kind}-${item.id}`"
+          :icon="resolvePageIcon(undefined, item.href)"
+          :entity-type="item.kind === 'duty' ? ModelEnum.DUTY : ModelEnum.INSTITUTION"
+          :title="item.title"
+          :subtitle="personalSubtitle(item)"
+          @select="navigateToHref(item.href)"
+        />
+      </PaletteGroup>
+
+      <PaletteGroup v-if="!searchTerm && topRecentItems.length > 0" :heading="$t('shell.palette.recent')">
+        <PaletteRow
+          v-for="item in topRecentItems" :key="`recent-${item.type}-${item.id}`"
+          :value="`recent-${item.type}-${item.id}`"
+          :icon="resolvePageIcon(item.routeName, item.href)"
+          :entity-type="recentEntityType(item.type)"
+          :title="item.title"
+          :subtitle="getRecentTypeBadge(item.type)"
+          @select="handleRecentSelect(item)"
+        >
+          <template v-if="item.type === 'page' && item.routeName" #trailing>
+            <PinButton
+              :pinned="isPinned({ routeName: item.routeName, href: item.href })"
+              @toggle="togglePin({ routeName: item.routeName, href: item.href, title: item.title })"
+            />
+          </template>
+        </PaletteRow>
+      </PaletteGroup>
+
+      <PaletteGroup v-if="createActions.length > 0" :heading="$t('shell.palette.create')">
+        <ActionResult v-for="action in createActions" :key="action.id" :action />
+      </PaletteGroup>
+
+      <PaletteGroup v-if="otherActions.length > 0" :heading="$t('shell.palette.actions')">
+        <ActionResult v-for="action in otherActions" :key="action.id" :action />
+      </PaletteGroup>
+
+      <!-- Go to: the current workspace first -->
+      <PaletteGroup v-if="goToActions.length > 0" :heading="$t('shell.palette.go_to')">
+        <ActionResult v-for="action in goToActions" :key="action.id" :action />
+      </PaletteGroup>
+
+      <!-- Wiki articles come from the small index the Wiki hub searches too, not from Typesense. -->
+      <PaletteGroup v-if="wikiHits.length > 0" :heading="$t('learning.pages.knowledge')">
+        <PaletteRow
+          v-for="page in wikiHits" :key="`wiki-${page.id}`"
+          :value="`wiki-${page.id}`"
+          :icon="Library"
+          :entity-type="ModelEnum.KNOWLEDGE_ITEM"
+          :title="page.abbreviation ? `${page.title} (${page.abbreviation})` : page.title"
+          :subtitle="$t(`learning.kinds.${page.kind}`)"
+          @select="navigateToHref(page.url)"
+        />
+      </PaletteGroup>
+      <!-- One ranked list across collections; each row names its type -->
+      <PaletteGroup v-if="flatHits.length > 0" :heading="$t('shell.palette.results')">
+        <CommandItem
+          v-for="hit in flatHits"
+          :key="hit.id"
+          :value="hit.id"
+          :class="paletteRowClass"
+          @select="handleHitSelect(hit)"
+        >
+          <SearchHitRow
+            :hit
+            show-actions
+            show-type
+            @view="navigateToHref(hit.viewHref)"
+            @edit="navigateToHref(hit.editHref)"
+          />
+        </CommandItem>
+      </PaletteGroup>
+
+      <!-- Rate limit warning -->
+      <div v-if="searchError && searchError.includes('užklausų')" class="mx-4 my-2 border border-status-attention-border bg-status-attention-surface p-3">
+        <p class="flex items-center gap-2 text-sm text-status-attention">
+          <Clock class="size-4" />
+          {{ searchError }}
+        </p>
       </div>
 
-      <template v-else>
-        <!-- Pinned pages, then recents: both empty-state only (O20, O15) -->
-        <PaletteGroup v-if="!query && pinnedItems.length > 0" :heading="$t('shell.palette.pinned')">
-          <PaletteRow
-            v-for="item in pinnedItems" :key="`pinned-${item.id}`"
-            :value="`pinned-${item.id}`"
-            :icon="resolvePageIcon(item.routeName, item.href)"
-            :title="item.title"
-            @select="handleRecentSelect(item)"
-          >
-            <template #trailing>
-              <PinButton pinned @toggle="togglePin({ routeName: item.routeName, href: item.href, title: item.title })" />
-            </template>
-          </PaletteRow>
-        </PaletteGroup>
-
-        <PaletteGroup v-if="!query && topRecentItems.length > 0" :heading="$t('shell.palette.recent')">
-          <PaletteRow
-            v-for="item in topRecentItems" :key="`recent-${item.type}-${item.id}`"
-            :value="`recent-${item.type}-${item.id}`"
-            :icon="resolvePageIcon(item.routeName, item.href)"
-            :entity-type="recentEntityType(item.type)"
-            :title="item.title"
-            :subtitle="getRecentTypeBadge(item.type)"
-            @select="handleRecentSelect(item)"
-          >
-            <template v-if="item.type === 'page' && item.routeName" #trailing>
-              <PinButton
-                :pinned="isPinned({ routeName: item.routeName, href: item.href })"
-                @toggle="togglePin({ routeName: item.routeName, href: item.href, title: item.title })"
-              />
-            </template>
-          </PaletteRow>
-        </PaletteGroup>
-
-        <!-- Create -->
-        <PaletteGroup v-if="createActions.length > 0" :heading="$t('shell.palette.actions')">
-          <ActionResult v-for="action in createActions" :key="action.id" :action />
-        </PaletteGroup>
-
-        <!-- Go to: the current workspace first -->
-        <PaletteGroup v-if="goToActions.length > 0" :heading="$t('shell.palette.go_to')">
-          <ActionResult v-for="action in goToActions" :key="action.id" :action />
-        </PaletteGroup>
-
-        <!-- Wiki articles come from the small index the Wiki hub searches too, not from Typesense. -->
-        <PaletteGroup v-if="wikiHits.length > 0" :heading="$t('learning.pages.knowledge')">
-          <PaletteRow
-            v-for="page in wikiHits" :key="`wiki-${page.id}`"
-            :value="`wiki-${page.id}`"
-            :icon="Library"
-            :entity-type="ModelEnum.KNOWLEDGE_ITEM"
-            :title="page.abbreviation ? `${page.title} (${page.abbreviation})` : page.title"
-            :subtitle="$t(`learning.kinds.${page.kind}`)"
-            @select="navigateToHref(page.url)"
-          />
-        </PaletteGroup>
-        <!-- One ranked list across collections; each row names its type -->
-        <PaletteGroup v-if="flatHits.length > 0" :heading="$t('shell.palette.results')">
-          <CommandItem
-            v-for="hit in flatHits"
-            :key="hit.id"
-            :value="hit.id"
-            :class="paletteRowClass"
-            @select="handleHitSelect(hit)"
-          >
-            <SearchHitRow
-              :hit
-              show-actions
-              show-type
-              @view="navigateToHref(hit.viewHref)"
-              @edit="navigateToHref(hit.editHref)"
-            />
-          </CommandItem>
-        </PaletteGroup>
-
-        <!-- Rate limit warning -->
-        <div v-if="searchError && searchError.includes('užklausų')" class="mx-4 my-2 border border-status-attention-border bg-status-attention-surface p-3">
-          <p class="flex items-center gap-2 text-sm text-status-attention">
-            <Clock class="size-4" />
-            {{ searchError }}
-          </p>
+      <!-- Empty state -->
+      <div v-if="searchTerm && !hasResults && !isSearching && !searchError" class="py-14 text-center">
+        <div class="mx-auto mb-4 flex size-12 items-center justify-center border border-border bg-secondary">
+          <SearchX class="size-6 text-muted-foreground" />
         </div>
-
-        <!-- Empty state -->
-        <div v-if="query && !hasResults && !isSearching && !searchError" class="py-14 text-center">
-          <div class="mx-auto mb-4 flex size-12 items-center justify-center border border-border bg-secondary">
-            <SearchX class="size-6 text-muted-foreground" />
-          </div>
-          <p class="text-sm font-medium text-foreground">
-            {{ $t('Rezultatų nerasta') }}
-          </p>
-          <p class="mt-1 text-xs text-muted-foreground">
-            {{ $t('Pabandyk kitą paieškos frazę') }}
-          </p>
-        </div>
-      </template>
+        <p class="text-sm font-medium text-foreground">
+          {{ $t('Rezultatų nerasta') }}
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ $t('Pabandyk kitą paieškos frazę') }}
+        </p>
+      </div>
     </CommandList>
 
     <!-- Footer with keyboard hints -->
@@ -159,12 +160,13 @@ import {
   Library,
 } from '@lucide/vue';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import type { MultiSearchResults } from '@/Search/core/types';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
 import { resolvePageIcon } from '@/Composables/pageIcons';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
-import { adminSearchCollections, adminSearchRequests, collectAllTabHits, type AdminSearchCollectionId, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
+import { adminSearchRequests, collectAllTabHits, type AdminSearchCollectionId, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 import type { MapperContext } from '@/Search/admin/Utils/searchHitMappers';
 import SearchHitRow from '@/Components/Search/SearchHitRow.vue';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
@@ -192,24 +194,47 @@ const { isPinned, togglePin, pinnedPages } = useUIPreferences();
 const { multiSearch, initialize: initializeSearch, isRateLimited, getDirectInstitutionIds } = useAdminSearch();
 
 // Command actions
-const { filterActions, workspaceKeyForEntity, activeWorkspace } = useCommandActions();
+const { filterActions, activeWorkspace } = useCommandActions();
 
 // Local state
+interface PersonalRecord {
+  id: string;
+  kind: 'assigned' | 'followed' | 'duty';
+  title: string;
+  context: string | null;
+  href: string;
+}
+
+const searchTerm = computed(() => query.value.trim());
 const isSearching = ref(false);
 const searchError = ref<string | null>(null);
 const searchResults = ref<MultiSearchResults<AdminSearchCollectionId>>({});
 const searchInputRef = ref<HTMLInputElement | null>(null);
 
 const pinnedItems = computed<RecentItem[]>(() => pinnedPages.value);
+const linkPath = (href?: string) => href ? new URL(href, 'https://local.invalid').pathname : undefined;
+const pinnedPaths = computed(() => new Set(pinnedItems.value.map(item => linkPath(item.href))));
+
+const personalRecords = ref<PersonalRecord[]>([]);
+const personalOrder = { assigned: 0, followed: 1, duty: 2 };
+const personalItems = computed(() => personalRecords.value
+  .filter(item => !pinnedPaths.value.has(linkPath(item.href)))
+  .sort((a, b) => personalOrder[a.kind] - personalOrder[b.kind]
+    || a.title.localeCompare(b.title, document.documentElement.lang || undefined)
+    || a.id.localeCompare(b.id)));
+
+const personalSubtitle = (item: PersonalRecord): string => [
+  $t(`shell.palette.personal_${item.kind}`),
+  item.context,
+].filter(Boolean).join(' · ');
 
 const wikiIndex = ref<WikiIndexEntry[]>([]);
-const wikiHits = computed(() => query.value.trim() ? searchWiki(wikiIndex.value, query.value).slice(0, 4) : []);
+const wikiHits = computed(() => searchTerm.value ? searchWiki(wikiIndex.value, searchTerm.value).slice(0, 4) : []);
 
-// Top 5 recents, minus anything already listed as pinned
 const topRecentItems = computed<RecentItem[]>(() => {
-  const pinnedHrefs = new Set(pinnedItems.value.map(item => item.href));
+  const shown = new Set([...pinnedPaths.value, ...personalItems.value.map(item => linkPath(item.href))]);
 
-  return recentItems.value.filter(item => !pinnedHrefs.has(item.href)).slice(0, 5);
+  return recentItems.value.filter(item => !shown.has(linkPath(item.href))).slice(0, 5);
 });
 
 // Context for mappers that need user-relative state (isRelated badges).
@@ -220,90 +245,76 @@ const mapperCtx = computed<MapperContext>(() => ({
   ],
 }));
 
-const flatHits = computed<NormalizedSearchHit[]>(() => {
-  const hits = collectAllTabHits(searchResults.value, { query: query.value, mapperContext: mapperCtx.value });
-  if (query.value.trim()) return hits;
-  const current = activeWorkspace.value?.key;
+const flatHits = computed<NormalizedSearchHit[]>(() =>
+  searchTerm.value ? collectAllTabHits(searchResults.value, { query: searchTerm.value, mapperContext: mapperCtx.value }) : [],
+);
 
-  return [...hits].sort((a, b) => {
-    const inCurrent = (hit: NormalizedSearchHit) => Number(workspaceKeyForEntity(adminSearchCollections[hit.collection].entityType) === current);
-
-    return inCurrent(b) - inCurrent(a);
-  });
-});
-
-// The catalog already gates every entry by permission, so there is nothing left to filter here.
-const matchingActions = computed(() => filterActions(query.value));
-const createActions = computed(() => matchingActions.value.filter(action => action.category === 'create').slice(0, query.value ? 5 : 6));
+const matchingActions = computed(() => filterActions(searchTerm.value));
+const createActions = computed(() => searchTerm.value ? matchingActions.value.filter(action => action.category === 'create') : []);
+const otherActions = computed(() => searchTerm.value ? matchingActions.value.filter(action => action.category === 'action') : []);
 const goToActions = computed(() => {
   const navigation = matchingActions.value.filter(action => action.category === 'navigation');
 
-  // With nothing typed, stay useful without being a wall: only the current workspace's pages.
-  return (query.value ? navigation : navigation.filter(action => action.workspaceKey === activeWorkspace.value?.key)).slice(0, 8);
+  return (searchTerm.value ? navigation : navigation.filter(action => action.workspaceKey === activeWorkspace.value?.key)).slice(0, 8);
 });
 
 // Check if we have any results
 const hasResults = computed(() => (
   createActions.value.length > 0
+  || otherActions.value.length > 0
   || goToActions.value.length > 0
   || flatHits.value.length > 0
   || wikiHits.value.length > 0
 ));
 
-// Debounced search function - 300ms debounce to reduce request frequency
-const performSearch = useDebounceFn(async (searchQuery: string) => {
-  if (!searchQuery.trim()) {
-    searchResults.value = {};
-    isSearching.value = false;
-    return;
-  }
-
-  // Skip if rate limited
+let searchVersion = 0;
+const performSearch = useDebounceFn(async (term: string, version: number) => {
+  if (version !== searchVersion) return;
   if (isRateLimited.value) {
     searchError.value = $t('Per daug užklausų. Palauk ir bandyk vėliau.');
     isSearching.value = false;
     return;
   }
 
-  isSearching.value = true;
-  searchError.value = null;
-
   try {
-    // Equal limits, so no collection floods the ranked list.
-    searchResults.value = await multiSearch(searchQuery, adminSearchRequests());
+    const results = await multiSearch(term, adminSearchRequests());
+    if (version === searchVersion) searchResults.value = results;
   }
   catch (error) {
+    if (version !== searchVersion) return;
     const message = error instanceof Error ? error.message : 'Search failed';
-    // Show user-friendly message for rate limiting
-    if (message.includes('Too many requests')) {
-      searchError.value = $t('Per daug užklausų. Palauk ir bandyk vėliau.');
-    }
-    else {
-      searchError.value = message;
-    }
-    // Don't clear results on error - keep previous results visible
+    searchError.value = message.includes('Too many requests')
+      ? $t('Per daug užklausų. Palauk ir bandyk vėliau.')
+      : message;
   }
   finally {
-    isSearching.value = false;
+    if (version === searchVersion) isSearching.value = false;
   }
 }, 300);
 
-// Watch query changes
-watch(query, (newQuery) => {
-  if (newQuery.trim()) {
-    performSearch(newQuery);
-  }
-  else {
-    searchResults.value = {};
-  }
-});
+watch(searchTerm, (term, _previous, onCleanup) => {
+  const version = ++searchVersion;
+  onCleanup(() => {
+    searchVersion++;
+  });
+  searchResults.value = {};
+  searchError.value = null;
+  isSearching.value = Boolean(term);
+  if (term) performSearch(term, version);
+}, { immediate: true });
 
 // Track if search has been initialized to prevent duplicate calls
 let searchInitialized = false;
 
 // Initialize search and focus input when opened
-watch(isOpen, (opened) => {
+watch(isOpen, (opened, _previous, onCleanup) => {
   if (opened) {
+    const request = new AbortController();
+    onCleanup(() => request.abort());
+    personalRecords.value = [];
+    apiRequest<PersonalRecord[]>(route('api.v1.admin.commandPalette.personalRecords'), { signal: request.signal }).then(({ data }) => {
+      if (!request.signal.aborted) personalRecords.value = data ?? [];
+    }).catch(() => {});
     // Only initialize once per session
     if (!searchInitialized) {
       initializeSearch();
@@ -317,19 +328,27 @@ watch(isOpen, (opened) => {
       searchInputRef.value?.focus();
       // Fallback in case dialog animation delays rendering
       setTimeout(() => {
-        searchInputRef.value?.focus();
+        const input = searchInputRef.value;
+        if (input && !input.closest('[role="dialog"]')?.contains(document.activeElement)) {
+          input.focus();
+        }
       }, 50);
     });
   }
 }, { immediate: true });
 
-// Focus the first result when pressing down arrow in the input
-const focusFirstResult = () => {
-  const firstItem = document.querySelector('[data-slot="command"] [role="option"]') as HTMLElement;
-  if (firstItem) {
-    firstItem.focus();
-  }
-};
+function focusFirstResult(event: KeyboardEvent): void {
+  if (event.isComposing) return;
+
+  const list = searchInputRef.value?.closest('[data-slot="command"]')
+    ?.querySelector<HTMLElement>('[data-slot="command-list"]');
+
+  if (!list?.querySelector('[role="option"]:not([data-disabled])')) return;
+
+  event.preventDefault();
+  // Let the listbox highlight and focus the first current option in one step.
+  list.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true }));
+}
 
 // Handle a flat search hit selection
 const handleHitSelect = (hit: NormalizedSearchHit) => {

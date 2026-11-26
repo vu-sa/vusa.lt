@@ -339,11 +339,15 @@ describe('FormPage.vue', () => {
       expect(wrapper.attributes('class')).toContain('max-w-6xl');
     });
 
-    it('stays a single column without an aside', () => {
+    it('stays a single column with vertical spacing between sections without an aside', () => {
       const wrapper = mount(FormPage, { props: { title: 'Forma' }, global: { stubs } });
 
       expect(wrapper.find('[data-testid="form-page-aside"]').exists()).toBe(false);
       expect(wrapper.find('form').classes()).not.toContain('lg:grid-cols-[1.6fr_1fr]');
+      const main = wrapper.get('[data-slot="form-page-main"]');
+      expect(main.classes()).toContain('flex-col');
+      expect(main.classes()).toContain('gap-8');
+      expect(main.classes()).not.toContain('contents');
     });
 
     it('closes a two-column form\'s aside with the record facts and the danger zone', () => {

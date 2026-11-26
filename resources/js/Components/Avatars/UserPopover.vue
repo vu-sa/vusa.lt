@@ -10,7 +10,7 @@
           :class="avatarWrapperClass"
         >
           <UserAvatar
-            :user
+            :user="avatarUser"
             :size="avatarSize"
             interactive
           />
@@ -22,7 +22,7 @@
           :class="avatarWrapperClass"
         >
           <UserAvatar
-            :user
+            :user="avatarUser"
             :size="avatarSize"
             interactive
           />
@@ -35,7 +35,7 @@
           v-bind="$attrs"
           class="group inline-flex items-center gap-2 px-1 py-0.5 transition-colors hover:bg-accent"
         >
-          <UserAvatar :user :size="avatarSize" interactive />
+          <UserAvatar :user="avatarUser" :size="avatarSize" interactive />
           <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
             {{ user.name }}
           </span>
@@ -45,7 +45,7 @@
           v-bind="$attrs"
           class="group inline-flex items-center gap-2 px-1 py-0.5 transition-colors hover:bg-accent"
         >
-          <UserAvatar :user :size="avatarSize" interactive />
+          <UserAvatar :user="avatarUser" :size="avatarSize" interactive />
           <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
             {{ user.name }}
           </span>
@@ -58,7 +58,7 @@
       <div class="relative aspect-[4/3] w-full overflow-hidden">
         <MediaImage
           v-if="photo && !imageError"
-          :image="preview?.image"
+          :image="photoOverride ? undefined : preview?.image"
           sizes="256px"
           class="h-full w-full object-cover"
           :src="photo"
@@ -153,9 +153,11 @@ const props = withDefaults(defineProps<{
   showName?: boolean;
   size?: number | AvatarSize;
   user: PopoverUser;
+  photoOverride?: { path: string; focalPoint?: string | null };
   /** Explicit opt-out from user profile linking; cannot force links. */
   clickable?: boolean;
 }>(), {
+  photoOverride: undefined,
   clickable: undefined,
 });
 
@@ -187,16 +189,25 @@ const avatarWrapperClass = computed(() => {
   return avatarSizeClasses[avatarSize.value];
 });
 
+const avatarUser = computed(() => props.photoOverride
+  ? {
+      ...props.user,
+      profile_photo_path: props.photoOverride.path,
+      profile_photo_focal_point: props.photoOverride.focalPoint,
+    }
+  : props.user);
+
 const photoEndpoint = computed(() => props.user.id ? route('api.v1.admin.users.photo', { user: props.user.id }) : '');
 const { data: preview, execute: fetchPhoto, isFetching: photoFetching } = useApi<{ image: ImageData | null }>(photoEndpoint, { immediate: false, showErrorToast: false });
 let fetchedPhotoFor: string | number | null = null;
 async function loadPhoto(open: boolean) {
-  if (!open || !canLinkUsers.value || !props.user.id || photoFetching.value || fetchedPhotoFor === props.user.id) return;
+  if (!open || props.photoOverride || !canLinkUsers.value || !props.user.id || photoFetching.value || fetchedPhotoFor === props.user.id) return;
   fetchedPhotoFor = props.user.id;
   await fetchPhoto();
 }
 
 const photo = computed(() => {
+  if (props.photoOverride) return props.photoOverride.path;
   if (props.user.src) return props.user.src;
   if (props.user.profile_photo_path) return props.user.profile_photo_path;
   return null;
@@ -209,7 +220,7 @@ watch(() => photo.value, () => {
 });
 
 // Keep the face in frame for the taller photo (mirrors ContactWithPhoto.vue).
-const focalPoint = computed(() => props.user.profile_photo_focal_point ?? '50% 30%');
+const focalPoint = computed(() => avatarUser.value.profile_photo_focal_point ?? '50% 30%');
 
 const pronounsLabel = computed(() => {
   const p = props.user.pronouns;

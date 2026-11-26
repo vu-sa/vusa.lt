@@ -1204,6 +1204,7 @@ describe('ShowDuty payload contract', function (): void {
         DutyName::factory()->for($duty)->create(['used_until' => '2024-01-01']);
         Dutiable::factory()->forDuty($predecessor)->forUser($this->regularUser)->create([
             'start_date' => '2023-01-01', 'end_date' => '2024-12-31', 'study_program_id' => null,
+            'additional_photo' => '/uploads/assignment.jpg', 'additional_photo_focal_point' => '40% 60%',
         ]);
         $program = StudyProgram::factory()->forTenant($this->tenant)->create();
         $duty->assignableTenants()->attach($this->tenant, ['quota' => null]);
@@ -1235,6 +1236,8 @@ describe('ShowDuty payload contract', function (): void {
                     ->whereType('lineage.predecessorTerms.0.duty_name', 'string')
                     ->whereType('lineage.predecessorTerms.0.via_duty_id', 'string')
                     ->whereType('lineage.predecessorTerms.0.pivot.end_date', 'string')
+                    ->where('lineage.predecessorTerms.0.pivot.additional_photo', '/uploads/assignment.jpg')
+                    ->where('lineage.predecessorTerms.0.pivot.additional_photo_focal_point', '40% 60%')
                     ->whereType('lineage.suggestedLinkDate', 'string')
                     ->whereType('responsibilities.items', 'array')));
     });

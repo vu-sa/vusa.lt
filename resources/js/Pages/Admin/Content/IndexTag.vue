@@ -98,6 +98,7 @@ import { Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref, reactive } from 'vue';
 import { toast } from 'vue-sonner';
 
+import { useCreateSheetLink } from '@/Composables/useCreateSheetLink';
 import { withOptimisticRollback } from '@/Composables/useOptimisticVisit';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
@@ -159,7 +160,7 @@ function selectRowAction(key: string, item: Tag): void {
   if (key === 'restore') restoreTag(item);
   if (key === 'forceDelete') targetTagToForceDelete.value = item;
 }
-const sheetOpen = ref(false);
+const sheetOpen = useCreateSheetLink(canCreate.value && !isDeleted.value);
 const editingTag = ref<Tag | null>(null);
 const mergeMode = ref(false);
 const mergeRecords = ref<MergeRecord[]>([]);

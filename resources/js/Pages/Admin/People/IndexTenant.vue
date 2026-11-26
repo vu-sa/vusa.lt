@@ -79,6 +79,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
+import { useCreateSheetLink } from '@/Composables/useCreateSheetLink';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import { formatRecordDate } from '@/Utils/dateTime';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
@@ -114,7 +115,7 @@ function selectRowAction(key: string, item: TenantRow): void {
   if (key === 'delete') targetToDelete.value = item;
 }
 
-const sheetOpen = ref(false);
+const sheetOpen = useCreateSheetLink(canCreate.value);
 const editingTenant = ref<(TenantInput & { primary_institution?: TenantInstitution | null }) | null>(null);
 const targetToDelete = ref<TenantRow | null>(null);
 

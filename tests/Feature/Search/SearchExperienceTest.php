@@ -4,6 +4,7 @@ use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PublicNews;
@@ -16,6 +17,7 @@ use App\Services\Typesense\DocumentRecommendations;
 use App\Services\Typesense\SearchProfiles;
 use App\Services\Typesense\SearchText;
 use App\Services\Typesense\TypesenseCollectionConfig;
+use App\Services\Typesense\TypesenseSynonyms;
 use App\Settings\DocumentSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -142,6 +144,89 @@ test('duty search text combines duty and institution names with the tenant short
 
     expect($text['search_text_lt'])->toContain('Atstovas', 'Matematikos fakultetas', $tenant->shortname)
         ->and($text['search_text_en'])->toContain('Representative', 'Faculty of Mathematics', $tenant->shortname);
+});
+
+test('institution and meeting search text include localized names and titles', function (): void {
+    $institution = Institution::factory()->create([
+        'name' => ['lt' => 'VU ŠA Taryba', 'en' => 'VU ŠA Council'],
+        'short_name' => ['lt' => 'ŠA Taryba', 'en' => 'ŠA Council'],
+        'description' => ['lt' => '<p>Akademijos taryba</p>', 'en' => '<p>Academy council</p>'],
+    ]);
+    $institutionText = SearchText::forModel($institution);
+    expect($institutionText['search_text_lt'])->toBe('VU ŠA Taryba ŠA Taryba Akademijos taryba')
+        ->and($institutionText['search_text_en'])->toBe('VU ŠA Council ŠA Council Academy council');
+
+    $meeting = Meeting::factory()->create(['title' => '2026 spalio 28 d. posėdis', 'description' => ['lt' => '', 'en' => '']]);
+    $meeting->institutions()->attach($institution);
+    $meetingText = SearchText::forModel($meeting);
+    expect($meetingText['search_text_lt'])->toContain('2026 spalio 28 d. posėdis', 'VU ŠA Taryba')
+        ->and($meetingText['search_text_en'])->toContain('VU ŠA Council');
+});
+
+test('explicit VU ŠA queries never match VU SA records or recommendations', function (): void {
+    usesTypesense();
+    config(['scout.queue' => false]);
+    $client = app(Client::class);
+    $tenant = Tenant::query()->first();
+
+    $vuSa = Institution::factory()->for($tenant)->create(['name' => ['lt' => 'VU SA Taryba', 'en' => 'VU SR Council']]);
+    $vuSaSa = Institution::factory()->for($tenant)->create([
+        'name' => ['lt' => 'VU SA Šiaulių akademijoje', 'en' => 'VU SR at Šiauliai Academy'],
+        'short_name' => ['lt' => 'VU SA ŠA', 'en' => 'VU SR ŠA'],
+    ]);
+    $vuShaTaryba = Institution::factory()->for($tenant)->create(['name' => ['lt' => 'VU ŠA Taryba', 'en' => 'VU ŠA Council']]);
+    $vuShaKolegija = Institution::factory()->for($tenant)->create(['name' => ['lt' => 'VU ŠA studijų kolegija', 'en' => 'VU ŠA Studies Board']]);
+
+    $collectionName = $vuShaTaryba->searchableAs();
+    TypesenseSynonyms::upsertSynonymSet($client);
+    $client->collections[$collectionName]->update(['synonym_sets' => [TypesenseSynonyms::setName()]]);
+
+    $idFilter = 'id:=['.implode(',', [$vuSa->id, $vuSaSa->id, $vuShaTaryba->id, $vuShaKolegija->id]).']';
+    $search = fn (string $q): array => array_column(
+        array_column(
+            $client->collections[$collectionName]->documents->search([
+                'q' => $q,
+                'query_by' => 'search_text_lt',
+                'query_by_weights' => '1',
+                'infix' => 'off',
+                'num_typos' => '2',
+                'prefix' => true,
+                'drop_tokens_threshold' => 0,
+                'split_join_tokens' => 'off',
+                'enable_synonyms' => false,
+                'enable_curations' => false,
+                'filter_by' => $idFilter,
+            ])['hits'],
+            'document',
+        ),
+        'id',
+    );
+
+    expect($search('"vu ša"'))->toEqualCanonicalizing([(string) $vuShaTaryba->id, (string) $vuShaKolegija->id])
+        ->and($search('"vu ša" tarybos'))->toBe([(string) $vuShaTaryba->id])
+        ->and($search('"vu ša" studijų kolegija'))->toBe([(string) $vuShaKolegija->id])
+        ->and($search('"vu ša" studiju'))->toBe([(string) $vuShaKolegija->id])
+        ->and($search('ŠA'))->toEqualCanonicalizing([(string) $vuSaSa->id, (string) $vuShaTaryba->id, (string) $vuShaKolegija->id])
+        ->and($search('ŠA taryba'))->toBe([(string) $vuShaTaryba->id]);
+
+    $vuSaLtDoc = Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'status' => DocumentStatus::Published]);
+    $vuSaEnDoc = Document::factory()->create(['title' => 'VU SA Statutes', 'language' => 'Anglų', 'status' => DocumentStatus::Published]);
+    $vuShaDoc = Document::factory()->create(['title' => 'VU ŠA nutarimas', 'language' => 'Lietuvių', 'status' => DocumentStatus::Published]);
+
+    $settings = app(DocumentSettings::class);
+    $settings->recommendations = [
+        ['document_id' => (string) $vuSaLtDoc->id, 'phrases' => ['VU SA įstatai'], 'enabled' => true, 'show_without_query' => false],
+        ['document_id' => (string) $vuSaEnDoc->id, 'phrases' => ['VU SA statutes'], 'enabled' => true, 'show_without_query' => false],
+        ['document_id' => (string) $vuShaDoc->id, 'phrases' => ['VU ŠA nutarimas'], 'enabled' => true, 'show_without_query' => false],
+    ];
+    $settings->save();
+
+    $recommendations = app(DocumentRecommendations::class);
+    $recommendations->synchronize();
+
+    expect($recommendations->matchingIds('VU ŠA'))->toBe([(string) $vuShaDoc->id])
+        ->and($recommendations->matchingIds('ŠA'))->toBe([(string) $vuShaDoc->id])
+        ->and($recommendations->matchingIds('VU SA'))->toEqualCanonicalizing([(string) $vuSaLtDoc->id, (string) $vuSaEnDoc->id]);
 });
 
 test('committed block edits and removals update admin and public bodies', function (string $model, string $mirror): void {

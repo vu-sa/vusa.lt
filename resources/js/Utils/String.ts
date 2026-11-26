@@ -307,6 +307,31 @@ export const resolveDutyPronouns = (pronouns: DutyPronouns, locale: string): str
   return [pronouns?.lt, pronouns?.en].find(value => pronounGender(value)) ?? '';
 };
 
+export const resolveDutyNameGender = (
+  contact: DutyNameHolder | null | undefined,
+  locale: string,
+  pronouns: DutyPronouns = contact?.pronouns,
+): DutyNameGender | null => {
+  const explicitGender = pronounGender(resolveDutyPronouns(pronouns, locale));
+  if (explicitGender) return explicitGender;
+
+  const name = contact?.name?.trim().toLowerCase();
+  if (!name) return null;
+
+  const firstName = name.split(/\s+/)[0];
+  if (firstName === 'katrin') return 'feminine';
+  if (firstName === 'nikita') return 'masculine';
+  if (firstName === 'german') return null;
+
+  // A recognisable first name wins over a surname shared by people of different genders.
+  for (const word of [firstName, name.split(/\s+/).at(-1) ?? '']) {
+    if (/(as|is|ys|us)$/.test(word)) return 'masculine';
+    if (/[aė]$/.test(word)) return 'feminine';
+  }
+
+  return null;
+};
+
 export const changeDutyNameEndings = (
   contact: DutyNameHolder | null | undefined,
   dutyName: string,
@@ -316,24 +341,8 @@ export const changeDutyNameEndings = (
 ): string => {
   if (locale !== 'lt' || useOriginalDutyName) return dutyName;
 
-  const explicitGender = pronounGender(resolveDutyPronouns(pronouns, locale));
-  if (explicitGender) return inflectDutyName(dutyName, explicitGender);
-
-  const name = contact?.name?.trim().toLowerCase();
-  if (!name) return dutyName;
-
-  const firstName = name.split(/\s+/)[0];
-  if (firstName === 'katrin') return inflectDutyName(dutyName, 'feminine');
-  if (firstName === 'nikita') return inflectDutyName(dutyName, 'masculine');
-  if (firstName === 'german') return dutyName;
-
-  // A recognisable first name wins over a surname shared by people of different genders.
-  for (const word of [firstName, name.split(/\s+/).at(-1) ?? '']) {
-    if (/(as|is|ys|us)$/.test(word)) return inflectDutyName(dutyName, 'masculine');
-    if (/[aė]$/.test(word)) return inflectDutyName(dutyName, 'feminine');
-  }
-
-  return dutyName;
+  const gender = resolveDutyNameGender(contact, locale, pronouns);
+  return gender ? inflectDutyName(dutyName, gender) : dutyName;
 };
 
 export interface DutyNameGenderVariants {

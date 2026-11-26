@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 
+import type { UserWithPivot } from '@/Types/DutyAssignment';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs, stubPopover, stubPopoverContent } from '@/tests/stubs';
 
 import InstitutionDutiesSection from '../InstitutionDutiesSection.vue';
@@ -44,6 +46,42 @@ const button = (wrapper: ReturnType<typeof mount>, label: string) =>
 describe('InstitutionDutiesSection', () => {
   beforeEach(() => {
     vi.mocked(router.post).mockClear?.();
+  });
+
+  it.each<{ names: string[]; overrides?: Partial<UserWithPivot>; fixed: string | null }>([
+    { names: ['Rūta', 'Ona'], fixed: 'Pirmininkė' },
+    { names: ['Jonas', 'Petras'], fixed: 'Pirmininkas' },
+    { names: ['Rūta', 'Jonas'], fixed: null },
+    { names: [], fixed: null },
+    { names: ['Rūta', 'Alex'], fixed: null },
+    { names: ['Rūta'], overrides: { duty_pronouns: { en: 'he/him' } }, fixed: 'Pirmininkas' },
+    { names: ['Rūta'], overrides: { duty_pronouns: { lt: 'jie/jų' } }, fixed: null },
+    { names: ['Rūta'], overrides: { pivot: { id: 'term-1', use_original_duty_name: true } }, fixed: null },
+  ])('renders the titles for $names using the current holders', ({ names, overrides, fixed }) => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'lt' } }));
+    const current_users = names.map((name, index) => ({ id: String(index), name, ...overrides }));
+    const wrapper = mountSection({ duties: [{ id: 'a', name: 'Pirmininkas', current_users }] });
+    const title = wrapper.get('[data-collection-open]');
+
+    expect(title.find('[data-testid="duty-gender-pair"]').exists()).toBe(fixed === null);
+    if (fixed) {
+      expect(title.text()).toBe(fixed);
+      expect(title.attributes('title')).toBe(fixed);
+    }
+  });
+
+  it('shows the English duty title as written', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'en' } }));
+    const wrapper = mountSection({
+      duties: [{
+        id: 'a',
+        name: { lt: 'Pirmininkas', en: 'Chair' },
+        current_users: [{ id: '1', name: 'Rūta' }],
+      }],
+    });
+
+    expect(wrapper.get('[data-collection-open]').text()).toBe('Chair');
+    expect(wrapper.find('[data-testid="duty-gender-pair"]').exists()).toBe(false);
   });
 
   it('lists the duties and offers to create the first one when there are none', () => {

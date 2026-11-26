@@ -189,7 +189,7 @@ const ALL_TIME_RELATION_ALLOWLIST = [
     // Fail-closed historical containment, blocking tenant names, and the actor's ModelAuthorizer scope.
     'app/Policies/UserPolicy.php' => ['->tenants' => 7, "'tenants'" => 1],
     // Duty route names and route patterns for admin navigation.
-    'app/Services/AdminNavigation/AdminNavigationCatalog.php' => ["'duties" => 4],
+    'app/Services/AdminNavigation/AdminNavigationCatalog.php' => ["'duties" => 5],
     // Agenda item tenants are the meeting's institution tenants.
     'app/Services/AgendaItemPresenter.php' => ['->tenants' => 1, "'tenants'" => 2],
     // Gantt shows all terms and reuses the meeting's institution tenants for its agenda.

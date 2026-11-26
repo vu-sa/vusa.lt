@@ -9,7 +9,9 @@ use App\Models\Tenant;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\RepMetricSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Queue\CallQueuedClosure;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Bus;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -66,6 +68,32 @@ describe('student representative root type', function (): void {
         asUser($this->admin)->post(route('settings.atstovavimas.update'), [
             'student_rep_root_type_id' => 999999,
         ])->assertSessionHasErrors('student_rep_root_type_id');
+    });
+
+    test('changing the root type queues a post-response reindex of public institutions', function (): void {
+        Bus::fake();
+        $type = InstitutionType::query()->firstOrFail();
+
+        asUser($this->admin)->post(route('settings.atstovavimas.update'), [
+            'student_rep_root_type_id' => $type->id,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        Bus::assertDispatchedAfterResponse(CallQueuedClosure::class);
+    });
+
+    test('saving without changing the root type does not trigger a reindex', function (): void {
+        $type = InstitutionType::query()->firstOrFail();
+        $settings = app(AtstovavimasSettings::class);
+        $settings->student_rep_root_type_id = $type->id;
+        $settings->save();
+
+        Bus::fake();
+
+        asUser($this->admin)->post(route('settings.atstovavimas.update'), [
+            'student_rep_root_type_id' => $type->id,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        Bus::assertNothingDispatched();
     });
 });
 

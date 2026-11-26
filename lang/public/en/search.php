@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'recommended_documents' => 'Recommended documents',
+    'recommended_documents' => 'Most important documents',
     'facet_search' => 'Search filter options',
     'facet_search_error' => 'Option search failed. Try again.',
     'facet_search_loading' => 'Searching options…',

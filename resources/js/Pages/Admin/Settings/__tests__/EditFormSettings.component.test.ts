@@ -6,7 +6,7 @@ import EditFormSettings from '../EditFormSettings.vue';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 describe('registration form settings', () => {
-  it('preserves string ids and allows clearing only the optional registration form', async () => {
+  it('preserves string ids and allows clearing both registration forms', async () => {
     const wrapper = mount(EditFormSettings, {
       props: {
         canEdit: true,
@@ -25,11 +25,19 @@ describe('registration form settings', () => {
       },
     });
     const { form } = wrapper.vm as unknown as {
-      form: { student_rep_registration_form_id: string | null };
+      form: {
+        member_registration_form_id: string | null;
+        student_rep_registration_form_id: string | null;
+      };
     };
 
-    expect(wrapper.get('label[for="member_registration_form_id"]').text()).toContain('*');
-    expect(wrapper.get('select#member_registration_form_id option').attributes('disabled')).toBeDefined();
+    expect(wrapper.get('label[for="member_registration_form_id"]').text()).not.toContain('*');
+    expect(wrapper.get('select#member_registration_form_id option').attributes('disabled')).toBeUndefined();
+    await wrapper.get('select#member_registration_form_id').setValue('');
+    expect(form.member_registration_form_id).toBeNull();
+    await wrapper.get('select#member_registration_form_id').setValue('form-1');
+    expect(form.member_registration_form_id).toBe('form-1');
+
     await wrapper.get('select#student_rep_registration_form_id').setValue('');
     expect(form.student_rep_registration_form_id).toBeNull();
     await wrapper.get('select#student_rep_registration_form_id').setValue('form-1');

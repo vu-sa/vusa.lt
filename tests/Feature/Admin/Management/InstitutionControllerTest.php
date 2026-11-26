@@ -408,8 +408,8 @@ describe('authorized access', function (): void {
             'name' => ['lt' => 'Narys', 'en' => 'Member'],
             'description' => null,
         ]);
-        $member = User::factory()->create(['email' => null, 'profile_photo_path' => null]);
-        $duty->users()->attach($member, ['start_date' => today()->subDay(), 'end_date' => null]);
+        $member = User::factory()->create(['email' => null, 'profile_photo_path' => null, 'pronouns' => ['en' => 'he/him']]);
+        $duty->users()->attach($member, ['start_date' => today()->subDay(), 'end_date' => null, 'use_original_duty_name' => true]);
         $meeting = Meeting::factory()->hasAttached($institution)->create(['type' => null]);
         $task = $institution->tasks()->create(['name' => 'Contract task']);
         $task->users()->attach($member);
@@ -447,7 +447,13 @@ describe('authorized access', function (): void {
         ];
         $expectedDuties = $loaded->duties()->with('current_users')->orderBy('order')->get()
             ->map(fn (Duty $row): array => array_replace($row->toArray(), [
-                'current_users' => $row->current_users->map($memberRow)->all(),
+                'current_users' => $row->current_users->map(function (User $user) use ($memberRow): array {
+                    $member = $memberRow($user);
+                    $member['duty_pronouns'] = ['lt' => '', 'en' => 'he/him'];
+                    $member['pivot']['use_original_duty_name'] = true;
+
+                    return $member;
+                })->all(),
             ]));
         $expectedInstitution = $json([
             'id' => $loaded->id,
@@ -507,6 +513,7 @@ describe('authorized access', function (): void {
                 ->where('readOnly', false)
                 ->where('institution', $expectedInstitution)
                 ->where('overview', $expectedOverview)
+                ->where('overviewDuties', $json($expectedDuties))
                 ->where('canViewActivityRequests', app(GetInstitutionActivityRequestHistory::class)->visible($loaded, $this->admin))
                 ->where('can', [
                     'update' => $this->admin->can('update', $loaded),

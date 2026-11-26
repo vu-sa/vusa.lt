@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'recommended_documents' => 'Rekomenduojami dokumentai',
+    'recommended_documents' => 'Svarbiausi dokumentai',
     'facet_search' => 'Ieškok filtro parinkties',
     'facet_search_error' => 'Parinkčių paieška nepavyko. Bandyk dar kartą.',
     'facet_search_loading' => 'Ieškoma parinkčių…',
