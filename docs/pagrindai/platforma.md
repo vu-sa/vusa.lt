@@ -65,7 +65,11 @@ tests:
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - resources/js/Components/Layouts/Shell/__tests__/PaletteField.component.test.ts
   - resources/js/Components/Layouts/Shell/__tests__/ShellTopBar.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/AdminShell.component.test.ts
   - resources/js/Components/Layouts/Shell/__tests__/MobileBottomBar.component.test.ts
+  - resources/js/Composables/__tests__/swPush.test.ts
+  - resources/js/Composables/__tests__/useAgendaItemNotes.test.ts
+  - resources/js/Composables/__tests__/usePWA.test.ts
   - tests/Unit/Models/TranslatableExpectationsTest.php
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
@@ -109,8 +113,7 @@ Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip p
 Skilčių piktogramos nusako jų paskirtį: Wiki žymi knyga, tau skirtus straipsnius – knyga su varnele,
 Mano kelią – maršrutas, atstovus – žmonės. Tos pačios piktogramos naudojamos telefono meniu ir skilčių nuorodose.
 
-Slenkant puslapį, turinys po viršutine juosta suliejamas, kad navigacija ir formos veiksmai liktų aiškiai matomi.
-Didelio kontrasto režimu juostos fonas yra nepermatomas.
+Slenkant puslapį, viršutinė juosta lieka matoma viršuje, kad navigacija ir formos veiksmai visada būtų pasiekiami.
 
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
@@ -293,6 +296,16 @@ Stulpelį, kurio antraštėje yra rodyklės, galima rikiuoti: paspaudus antrašt
 
 Peržiūros srityje taip pat lieka nuorodos į susijusius įrašus, o rankiniu būdu atliekamą užduotį galima pažymėti atlikta arba grąžinti į neatliktas. Kol veiksmas vykdomas, tos užduoties veiksmai laikinai neprieinami.
 
+## Programėlė telefone {#programele-telefone}
+
+<ChangelogNote date="2026-11-26" title="Programėlė telefone">
+
+Be ryšio atvėręs programėlę, prisijunk prie interneto ir spausk **Bandyti dar kartą**, kad grįžtum į pasirinktą puslapį. Palaikomuose įrenginiuose palaikyk nuspaudęs programėlės piktogramą, kad atvertum užduotis ar pranešimus.
+
+</ChangelogNote>
+
+Jei nepavyko išsaugoti darbotvarkės klausimo pastabų, tuo pačiu įrenginiu ir ta pačia paskyra grįžk į klausimą. Peržiūrėk juodraštį ir pasirink, ar sujungti jį su pastabomis, ar atmesti.
+
 ## Techninė informacija {#technine-informacija}
 
 Typesense laukų svoriai ir schemos aprašyti `config/scout.php`; naršyklė gauna patikrintus kolekcijų paieškos profilius. `search:reindex` atkuria kiekvienos kolekcijos schemą, patikrina laukus ir tik tada įjungia tos kolekcijos antrą profilio versiją. Iki atkūrimo naudojami ankstesnės schemos laukai. `TYPESENSE_SEARCH_PROFILE_VERSION=1` ir konfigūracijos podėlio atnaujinimas grąžina ankstesnius paieškos laukus nekeičiant duomenų. Po Redis podėlio išvalymo profilio įjungimas atkuriamas tuo pačiu indeksavimo veiksmu.
@@ -333,11 +346,3 @@ tęsiasi. Perkrovus puslapį arba perėjus tarp viešos svetainės ir Mano VU SA
 įjungti iš naujo. Nepavykus prisijungti, grotuve galima bandyti dar kartą.
 
 Kol pakeitimas saugomas, susiję veiksmai palaukia, o kitus įrašus gali keisti toliau. Nepavykę pakeitimai grąžinami į ankstesnę būseną.
-
-## Programėlė telefone
-
-<ChangelogNote date="2026-11-26" title="Programėlė telefone">
-Be ryšio atvėręs programėlę, prisijunk prie interneto ir spausk **Bandyti dar kartą**, kad grįžtum į pasirinktą puslapį. Palaikomuose įrenginiuose palaikyk nuspaudęs programėlės piktogramą, kad atvertum užduotis ar pranešimus.
-</ChangelogNote>
-
-Jei nepavyko išsaugoti darbotvarkės punkto pastabų, tuo pačiu įrenginiu ir ta pačia paskyra grįžk į punktą. Peržiūrėk juodraštį ir pasirink, ar sujungti jį su pastabomis, ar atmesti.

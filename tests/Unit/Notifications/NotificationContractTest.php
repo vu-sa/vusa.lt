@@ -293,9 +293,16 @@ describe('channel policy', function (): void {
         $push = $notification->toWebPush($this->user, null)->toArray();
 
         expect($push['title'])->toBe($notification->title($this->user))
-            ->and($push['data']['unreadCount'])->toBe($this->user->unreadNotifications()->count())
+            ->and($push['data']['unreadCount'])->toBe(1)
             ->and($push['data']['url'])->toBe($notification->primaryAction()['url'])
             ->and($push['actions'][0]['title'])->toBe($notification->primaryAction()['label']);
+
+        $this->user->notifications()->createMany([
+            ['id' => (string) str()->uuid(), 'type' => TaskAssignedNotification::class, 'data' => []],
+            ['id' => (string) str()->uuid(), 'type' => TaskAssignedNotification::class, 'data' => []],
+        ]);
+
+        expect($notification->toWebPush($this->user, null)->toArray()['data']['unreadCount'])->toBe(2);
     });
 
     test('an ask is pushed with high urgency so Android does not hold it back', function (): void {

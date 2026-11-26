@@ -2,10 +2,7 @@
   <!-- Phones: one row says where you are and doubles as the section switcher (the tab row would overflow). -->
   <div
     data-slot="mobile-context-bar"
-    :class="[
-      'shrink-0 border-b border-(--border-opaque) bg-background/90 md:hidden',
-      '[.a11y-contrast_&]:bg-background',
-    ]"
+    class="shrink-0 border-b border-(--border-opaque) bg-background md:hidden"
   >
     <div class="flex h-12 items-stretch">
       <slot name="staging-warning" />

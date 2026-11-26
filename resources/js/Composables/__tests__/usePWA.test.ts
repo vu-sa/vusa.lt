@@ -79,6 +79,7 @@ describe('migrateLegacyRegistration', () => {
     expect(legacySubscription.unsubscribe).toHaveBeenCalledOnce();
     expect(legacy.unregister).toHaveBeenCalledOnce();
     expect(usePWA().currentBrowserEndpoint.value).toBe('https://push.example/new');
+    expect(usePWA().hasPushSubscription.value).toBe(true);
   });
 
   test('requires both a browser subscription and a matching account endpoint', () => {
@@ -87,6 +88,27 @@ describe('migrateLegacyRegistration', () => {
     expect(pwa.hasPushSubscription.value).toBe(false);
     vi.mocked(usePage).mockReturnValue(createMockPage({ pwa: { subscriptionEndpoints: [pwa.currentBrowserEndpoint.value] } }));
     expect(usePWA().hasPushSubscription.value).toBe(true);
+  });
+
+  test('does not carry a confirmed session subscription over to a different signed-in user', async () => {
+    const legacy = fakeRegistration('https://www.vusa.test/build/', fakeSubscription('https://push.example/old'));
+    const current = fakeRegistration('https://www.vusa.test/mano');
+    current.pushManager.subscribe.mockResolvedValue(fakeSubscription('https://push.example/migrated'));
+    stubRegistrations([legacy, current]);
+
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { id: 1 } },
+      csrf_token: 'csrf',
+      pwa: { vapidPublicKey: VAPID_KEY, subscriptionEndpoints: [] },
+    }));
+    await migrateLegacyRegistration(current as unknown as ServiceWorkerRegistration);
+    expect(usePWA().hasPushSubscription.value).toBe(true);
+
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { id: 2 } },
+      pwa: { subscriptionEndpoints: [] },
+    }));
+    expect(usePWA().hasPushSubscription.value).toBe(false);
   });
 
   test('only unregisters a /build/ worker that has no subscription', async () => {

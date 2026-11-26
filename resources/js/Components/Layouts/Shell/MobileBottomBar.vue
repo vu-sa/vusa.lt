@@ -17,10 +17,8 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'pradzia'"
       :class="tabClass(activeTab === 'pradzia')"
-      @network-error="clearPending('pradzia')"
-      @http-exception="clearPending('pradzia')"
-      @error="clearPending('pradzia')"
-      @start="press('pradzia', route('dashboard'))"
+      @start="press('pradzia')"
+      @finish="clearPending('pradzia')"
     >
       <span :class="markerClass(activeTab === 'pradzia')" aria-hidden="true" />
       <span :class="iconClass">
@@ -35,10 +33,8 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'uzduotys'"
       :class="tabClass(activeTab === 'uzduotys')"
-      @network-error="clearPending('uzduotys')"
-      @http-exception="clearPending('uzduotys')"
-      @error="clearPending('uzduotys')"
-      @start="press('uzduotys', route('tasks.index'))"
+      @start="press('uzduotys')"
+      @finish="clearPending('uzduotys')"
     >
       <span :class="markerClass(activeTab === 'uzduotys')" aria-hidden="true" />
       <span :class="['relative', iconClass]">
@@ -68,10 +64,8 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'pranesimai'"
       :class="tabClass(activeTab === 'pranesimai')"
-      @network-error="clearPending('pranesimai')"
-      @http-exception="clearPending('pranesimai')"
-      @error="clearPending('pranesimai')"
-      @start="press('pranesimai', route('notifications.index'))"
+      @start="press('pranesimai')"
+      @finish="clearPending('pranesimai')"
     >
       <span :class="markerClass(activeTab === 'pranesimai')" aria-hidden="true" />
       <span :class="['relative', iconClass]">
@@ -110,10 +104,10 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Bell, ClipboardCheck, Menu, MousePointerClick } from '@lucide/vue';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
@@ -161,21 +155,18 @@ const routeTab = computed<Tab | null>(() => {
 });
 
 // Light the tapped tab straight away rather than after the server answers; a slow phone otherwise feels ignored.
-const pending = ref<{ tab: Tab; path: string } | null>(null);
-const activeTab = computed(() => pending.value?.tab ?? routeTab.value);
+const pending = ref<Tab | null>(null);
+const activeTab = computed(() => pending.value ?? routeTab.value);
 const menuActive = computed(() => props.menuOpen || activeTab.value === 'menu');
 
 const clearPending = (tab: Tab) => {
-  if (pending.value?.tab === tab) pending.value = null;
-};
-
-const press = (tab: Tab, href: string) => {
-  if (tab === routeTab.value) {
+  if (pending.value === tab) {
     pending.value = null;
   }
-  else {
-    pending.value = { tab, path: new URL(href, window.location.origin).pathname };
-  }
+};
+
+const press = (tab: Tab) => {
+  pending.value = tab === routeTab.value ? null : tab;
 };
 
 const page = usePage();
@@ -183,17 +174,6 @@ const page = usePage();
 watch(() => page.url, () => {
   pending.value = null;
 });
-
-// Prefetches and cancelled deferred-prop reloads finish too; only the tapped visit failing may un-light the tab.
-const stopFinish = router.on('finish', (event) => {
-  const { visit } = event.detail;
-
-  if ((visit.cancelled || visit.interrupted) && !visit.prefetch && visit.url.pathname === pending.value?.path) {
-    pending.value = null;
-  }
-});
-
-onUnmounted(stopFinish);
 
 // Re-keyed only on a rise, so the badge pops for new notifications but not on every page it reappears on.
 const unreadPops = ref(0);

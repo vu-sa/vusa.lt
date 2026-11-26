@@ -47,6 +47,33 @@ interface StoredNote {
   representatives?: NotesMentionUser[];
 }
 
+const BLOCK_XML_NODES = new Set(['paragraph', 'heading', 'listItem', 'taskItem', 'bulletList', 'orderedList', 'taskList']);
+
+function extractXmlNodeText(node: Y.XmlElement | Y.XmlText | Y.XmlHook): string {
+  if (node instanceof Y.XmlText) {
+    const delta = node.toDelta() as Array<{ insert?: unknown }>;
+    return delta.map(op => (typeof op.insert === 'string' ? op.insert : '')).join('');
+  }
+  if (node instanceof Y.XmlElement) {
+    if (node.nodeName === 'mention') {
+      const label = node.getAttribute('label') ?? node.getAttribute('id');
+      return typeof label === 'string' && label ? `@${label}` : '';
+    }
+    if (node.nodeName === 'hardBreak') {
+      return '\n';
+    }
+    const children = node.toArray();
+    const hasBlockChildren = children.some(child => child instanceof Y.XmlElement && BLOCK_XML_NODES.has(child.nodeName));
+    const parts = children.map(child => extractXmlNodeText(child));
+    return hasBlockChildren ? parts.filter(Boolean).join('\n') : parts.join('');
+  }
+  return '';
+}
+
+function extractXmlFragmentText(fragment: Y.XmlFragment): string {
+  return fragment.toArray().map(node => extractXmlNodeText(node)).filter(Boolean).join('\n');
+}
+
 export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUser) {
   const doc = new Y.Doc();
   const awareness = new Awareness(doc);
@@ -55,20 +82,44 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     color: colorForUser(currentUser.id),
   });
 
-  const draft = useStorage(`agenda-note:${currentUser.id}:${agendaItemId}`, '', undefined, { flush: 'sync', writeDefaults: false });
-  const recoveredDraft = ref(draft.value);
-  const recoveredAt = ref(0);
+  const draft = useStorage<string | null>(`agenda-note:${currentUser.id}:${agendaItemId}`, null, undefined, { flush: 'sync', writeDefaults: false });
+  const recoveredDraft = ref(draft.value ?? '');
+  const recoveredAt = ref<number | null>(null);
   const recoveredText = ref('');
   if (recoveredDraft.value) {
     const preview = new Y.Doc();
     try {
-      const snapshot = JSON.parse(recoveredDraft.value);
+      const snapshot = JSON.parse(recoveredDraft.value) as { state?: unknown; time?: unknown };
+      if (typeof snapshot?.state !== 'string') {
+        throw new Error('Invalid draft snapshot');
+      }
       Y.applyUpdate(preview, base64ToBytes(snapshot.state));
-      recoveredAt.value = snapshot.time;
-      recoveredText.value = new DOMParser().parseFromString(preview.getXmlFragment('default').toString(), 'text/html').body.textContent ?? '';
+      recoveredAt.value = typeof snapshot.time === 'number' && snapshot.time > 0 ? snapshot.time : null;
+      recoveredText.value = extractXmlFragmentText(preview.getXmlFragment('default'));
     }
     catch {
       recoveredDraft.value = '';
+      draft.value = null;
+    }
+    finally {
+      preview.destroy();
+    }
+  }
+
+  function draftHasUnsavedChanges(snapshotJson: string): boolean {
+    const preview = new Y.Doc();
+    try {
+      const snapshot = JSON.parse(snapshotJson) as { state?: unknown };
+      if (typeof snapshot?.state !== 'string') {
+        return false;
+      }
+      Y.applyUpdate(preview, base64ToBytes(snapshot.state));
+      const diff = Y.encodeStateAsUpdate(preview, Y.encodeStateVector(doc));
+      // An empty Yjs v1 update encodes as two zero bytes (0 structs, 0 delete-set clients).
+      return diff.length > 2 || diff[0] !== 0 || diff[1] !== 0;
+    }
+    catch {
+      return false;
     }
     finally {
       preview.destroy();
@@ -80,10 +131,12 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
     const snapshot = recoveredDraft.value;
     recoveredDraft.value = '';
     if (restore) {
+      needsHtmlSync = true;
       await nextTick();
-      Y.applyUpdate(doc, base64ToBytes(JSON.parse(snapshot).state));
+      const parsed = JSON.parse(snapshot) as { state: string };
+      Y.applyUpdate(doc, base64ToBytes(parsed.state));
     }
-    if (draft.value === snapshot) draft.value = '';
+    if (draft.value === snapshot) draft.value = null;
   }
 
   const provider = shallowRef<ReverbYjsProvider | null>(null);
@@ -99,9 +152,15 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
   // The mounted editor reports its current HTML here so we can store a snapshot
   // alongside the CRDT state.
   let currentHtml = '';
+  let persistedHtml = '';
+  let needsHtmlSync = false;
   const setHtml = (html: string) => {
     currentHtml = html;
     notesHtml.value = html;
+    if (needsHtmlSync && html !== persistedHtml) {
+      needsHtmlSync = false;
+      scheduleSave();
+    }
   };
 
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -142,6 +201,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
       return;
     }
     const savingDraft = authoredSnapshot;
+    const savingHtml = currentHtml;
     saving = true;
     saveStatus.value = 'saving';
     try {
@@ -150,7 +210,7 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
         keepalive: opts.keepalive ?? false,
         body: {
           yjs_state: bytesToBase64(Y.encodeStateAsUpdate(doc)),
-          notes_html: currentHtml,
+          notes_html: savingHtml,
           base_version: baseVersion,
         },
       });
@@ -159,8 +219,9 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
         return;
       }
       if (result.ok && result.body !== null) {
+        persistedHtml = savingHtml;
         dirty = authoredSnapshot !== savingDraft;
-        if (!dirty && draft.value === savingDraft) draft.value = '';
+        if (!dirty && draft.value === savingDraft) draft.value = null;
         const version = result.data?.version;
         baseVersion = typeof version === 'number' ? version : baseVersion;
       }
@@ -233,11 +294,17 @@ export function useAgendaItemNotes(agendaItemId: string, currentUser: CurrentUse
         if (typeof data?.notes_html === 'string') {
           notesHtml.value = data.notes_html;
           currentHtml = data.notes_html;
+          persistedHtml = data.notes_html;
         }
         if (Array.isArray(data?.representatives)) {
           representatives.value = data.representatives;
         }
         baseVersion = typeof data?.version === 'number' ? data.version : null;
+        if (recoveredDraft.value && !draftHasUnsavedChanges(recoveredDraft.value)) {
+          const snapshot = recoveredDraft.value;
+          recoveredDraft.value = '';
+          if (draft.value === snapshot) draft.value = null;
+        }
       }
       else {
         loadFailed.value = true;

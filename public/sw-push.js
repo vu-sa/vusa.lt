@@ -5,7 +5,6 @@
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
-  
   let data = {
     title: 'VU SA',
     body: 'Gavote naują pranešimą',
@@ -19,7 +18,7 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const payload = event.data.json();
-      
+
       data = {
         title: payload.title || data.title,
         body: payload.body || data.body,
@@ -29,7 +28,8 @@ self.addEventListener('push', (event) => {
         tag: payload.tag,
         data: payload.data || payload,
       };
-    } catch (e) {
+    }
+    catch {
       // If not JSON, use the text directly
       data.body = event.data.text();
     }
@@ -45,42 +45,69 @@ self.addEventListener('push', (event) => {
     requireInteraction: true,
   };
 
+  const { unreadCount } = options.data;
+  const badgeUpdate = Number.isSafeInteger(unreadCount) && unreadCount >= 0
+    ? Promise.resolve(
+        unreadCount > 0
+          ? self.navigator?.setAppBadge?.(unreadCount)
+          : self.navigator?.clearAppBadge?.(),
+      ).catch(() => {})
+    : Promise.resolve();
+
   event.waitUntil(
     Promise.all([
       self.registration.showNotification(data.title, options),
-      Number.isSafeInteger(options.data.unreadCount) && self.navigator.setAppBadge?.(options.data.unreadCount).catch(() => {}),
-    ])
+      badgeUpdate,
+    ]),
   );
 });
 
 // Handle notification click
 self.addEventListener('notificationclick', (event) => {
-  
   event.notification.close();
 
   let url = new URL('/mano', self.location.origin);
   try {
     const target = new URL(event.notification.data?.url || '/mano', self.location.origin);
     if (target.origin === url.origin) url = target;
-  } catch { /* Malformed notification links open the dashboard. */ }
+  }
+  catch { /* Malformed notification links open the dashboard. */ }
+
+  const isAdminUrl = (candidate) => {
+    try {
+      const parsed = new URL(candidate, self.location.origin);
+      return parsed.origin === url.origin && (parsed.pathname === '/mano' || parsed.pathname.startsWith('/mano/'));
+    }
+    catch {
+      return false;
+    }
+  };
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Check if there's already a window open with this URL
+      // Exact match: bring the already-open destination straight to the front.
       for (const client of clientList) {
         if (client.url === url.href && 'focus' in client) {
           return client.focus();
         }
       }
-      // If no window is open, open a new one
+      // Reuse an open Mano window (e.g. an installed phone PWA) instead of spawning duplicate windows.
+      for (const client of clientList) {
+        if (isAdminUrl(client.url) && 'navigate' in client && 'focus' in client) {
+          return Promise.resolve(client.navigate(url.href))
+            .then(navigated => (navigated || client).focus())
+            .catch(() => clients.openWindow?.(url.href));
+        }
+      }
+      // If no Mano window can be reused, open a new one.
       if (clients.openWindow) {
         return clients.openWindow(url.href);
       }
-    })
+    }),
   );
 });
 
 // Handle notification close
-self.addEventListener('notificationclose', (event) => {
+self.addEventListener('notificationclose', () => {
   // You can perform actions when the notification is dismissed if needed
 });

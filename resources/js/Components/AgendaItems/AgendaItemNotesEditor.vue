@@ -141,6 +141,9 @@ const editor = useEditor({
       class: 'focus:outline-none px-3 py-2 min-h-24 leading-relaxed',
     },
   },
+  onCreate: ({ editor: instance }) => {
+    emit('htmlChange', instance.getHTML());
+  },
   onUpdate: ({ editor: instance }) => {
     emit('htmlChange', instance.getHTML());
   },

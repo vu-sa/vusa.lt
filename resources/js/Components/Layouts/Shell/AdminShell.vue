@@ -25,10 +25,9 @@
     <StagingBanner v-model:dismissed="stagingDismissed" />
     <ImpersonateBanner />
 
-    <!-- A view-transition name creates a backdrop root, so the chrome itself owns the blur. -->
     <div
       data-slot="shell-chrome"
-      class="relative z-40 shrink-0 backdrop-blur-sm [view-transition-name:admin-chrome] [.a11y-contrast_&]:backdrop-blur-none"
+      class="relative z-40 shrink-0 [view-transition-name:admin-chrome]"
     >
       <ShellTopBar
         :workspaces

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { router, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
@@ -21,9 +21,6 @@ const mountBar = (props: Record<string, unknown> = {}) => mount(MobileBottomBar,
 });
 
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('a, button').map(node => node.text());
-
-const finish = (url: string, prefetch = false, cancelled = false) => (router as unknown as { __trigger: (event: string, payload: unknown) => void })
-  .__trigger('finish', { detail: { visit: { url: new URL(url, window.location.origin), prefetch, cancelled } } });
 
 const lit = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('[data-active]')
   .map(tab => tab.attributes('data-active') === 'true');
@@ -70,32 +67,30 @@ describe('MobileBottomBar', () => {
     expect(lit(wrapper)).toEqual([false, false, false, true]);
   });
 
-  it('lights a tapped tab before the visit finishes, then follows the route again', async () => {
+  it('lights a tapped tab before its visit finishes, then follows the route again', async () => {
     const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
+    const tasksLink = wrapper.findAllComponents({ name: 'InertiaLink' })[1]!;
 
-    wrapper.findAllComponents({ name: 'InertiaLink' })[1]!.vm.$emit('start');
+    tasksLink.vm.$emit('start');
     await wrapper.vm.$nextTick();
     expect(lit(wrapper)).toEqual([false, true, false, false]);
 
-    finish(route('tasks.index'));
-    await wrapper.vm.$nextTick();
-    expect(lit(wrapper)).toEqual([false, true, false, false]);
-
-    finish(route('tasks.index'), false, true);
+    // Handles both cancelled/errored visits and same-URL redirects (e.g. 302 back() on 403).
+    tasksLink.vm.$emit('finish');
     await wrapper.vm.$nextTick();
     expect(lit(wrapper)).toEqual([false, false, false, true]);
   });
 
-  it('keeps the tapped tab lit through prefetches and unrelated requests finishing', async () => {
+  it('keeps a newer tapped tab lit when an earlier tab visit finishes', async () => {
     const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
+    const links = wrapper.findAllComponents({ name: 'InertiaLink' });
 
-    wrapper.findAllComponents({ name: 'InertiaLink' })[1]!.vm.$emit('start');
-    await wrapper.vm.$nextTick();
-    finish(route('tasks.index'), true);
-    finish(route('dashboard'));
+    links[1]!.vm.$emit('start');
+    links[2]!.vm.$emit('start');
+    links[1]!.vm.$emit('finish');
     await wrapper.vm.$nextTick();
 
-    expect(lit(wrapper)).toEqual([false, true, false, false]);
+    expect(lit(wrapper)).toEqual([false, false, true, false]);
   });
 
   it('counts unread notifications on the Pranešimai tab', () => {

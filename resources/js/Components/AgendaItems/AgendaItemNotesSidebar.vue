@@ -60,14 +60,14 @@
         </Button>
       </div>
 
-      <div v-else-if="notes.recoveredDraft.value" class="space-y-2 px-2">
-        <p class="text-sm">
-          {{ $t('meetings.note_draft.saved', { time: formatDateTime(notes.recoveredAt.value) }) }}
+      <div v-else-if="notes.recoveredDraft.value" class="space-y-2 px-2 py-2">
+        <p class="text-sm text-foreground">
+          {{ $t('meetings.note_draft.saved', { time: notes.recoveredAt.value ? formatDateTime(notes.recoveredAt.value) : '—' }) }}
         </p>
-        <p class="max-h-40 overflow-auto whitespace-pre-wrap text-sm">
+        <p v-if="notes.recoveredText.value" class="max-h-40 overflow-auto whitespace-pre-wrap border border-border bg-muted/40 p-2 text-sm text-foreground">
           {{ notes.recoveredText.value }}
         </p>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           <Button size="sm" @click="notes.resolveDraft(true)">
             {{ $t('meetings.note_draft.restore') }}
           </Button>
@@ -104,7 +104,7 @@
         />
       </div>
 
-      <p v-if="!notes.isHydrating.value && !notes.loadFailed.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
+      <p v-if="!notes.isHydrating.value && !notes.loadFailed.value && !notes.recoveredDraft.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
         <span class="font-semibold">{{ $t('Eksperimentinė funkcija') }}.</span>
         {{ $t('Pažymėk tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
       </p>

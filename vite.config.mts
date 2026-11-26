@@ -15,7 +15,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { VitePWA } from 'vite-plugin-pwa';
 
-import { codecovVitePlugin } from "@codecov/vite-plugin";
+import { codecovVitePlugin } from '@codecov/vite-plugin';
 
 export default defineConfig(({ command, isSsrBuild }) => {
   // Define common plugins that will be used in both build and test
@@ -63,12 +63,14 @@ export default defineConfig(({ command, isSsrBuild }) => {
     ziggy({
       sail: true,
     }),
-    ...(command === 'serve' ? [ziggy({
-      sail: true,
-      path: 'resources/js/ziggy.js',
-      types: false,
-      typesOnly: false,
-    })] : []),
+    ...(command === 'serve'
+      ? [ziggy({
+          sail: true,
+          path: 'resources/js/ziggy.js',
+          types: false,
+          typesOnly: false,
+        })]
+      : []),
   ];
 
   // Dev-only plugins - disabled for Storybook and builds
@@ -85,7 +87,7 @@ export default defineConfig(({ command, isSsrBuild }) => {
     ? [
         codecovVitePlugin({
           enableBundleAnalysis: true,
-          bundleName: "vusa-frontend",
+          bundleName: 'vusa-frontend',
           uploadToken: process.env.CODECOV_TOKEN,
         }),
       ]
@@ -95,7 +97,12 @@ export default defineConfig(({ command, isSsrBuild }) => {
   // a worker at /build/sw.js could only ever control /build/, never the /mano pages.
   const screenshotSize = (name: string) => {
     const png = readFileSync(new URL(`./public/images/pwa/${name}.png`, import.meta.url));
-    return `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
+    const width = png.readUInt32BE(16);
+    const height = png.readUInt32BE(20);
+    if (Math.max(width, height) / Math.min(width, height) > 2.3) {
+      throw new Error(`PWA screenshot ${name}.png (${width}x${height}) exceeds Chrome's 2.3:1 aspect ratio limit.`);
+    }
+    return `${width}x${height}`;
   };
 
   const pwaPlugin = VitePWA({
@@ -169,7 +176,7 @@ export default defineConfig(({ command, isSsrBuild }) => {
       importScripts: ['/sw-push.js'],
       additionalManifestEntries: [{
         url: '/mano-offline.html',
-        revision: createHash('sha256').update(readFileSync('public/mano-offline.html')).digest('hex'),
+        revision: createHash('sha256').update(readFileSync(new URL('./public/mano-offline.html', import.meta.url))).digest('hex'),
       }],
       runtimeCaching: [
         {
