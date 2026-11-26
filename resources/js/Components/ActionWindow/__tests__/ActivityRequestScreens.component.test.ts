@@ -487,8 +487,12 @@ describe('preview validity', () => {
     preview.value = [entry];
     const { wrapper } = mountScreen(ActivityRequestReviewScreen, { flow: 'activity.request', institutions });
     await flushPromises();
-    expect(wrapper.text()).toContain('activity_requests.send_section', 'activity_requests.skip_section');
-    expect(wrapper.find('[data-slot="activity-request-exclusions"]').text()).toContain('activity_requests.delivery.digest');
+    const send = wrapper.get('[data-slot="activity-request-preview"]');
+    const exclusions = wrapper.get('[data-slot="activity-request-exclusions"]');
+    expect(send.element.closest('section')?.querySelector('h2')?.textContent).toContain('activity_requests.send_section');
+    expect(exclusions.element.closest('section')?.querySelector('h2')?.textContent).toContain('activity_requests.skip_section');
+    expect(send.get('[data-slot="activity-request-row"]').text()).toContain('Rep');
+    expect(exclusions.text()).toContain('Rep · activity_requests.delivery.digest');
   });
 
   it('cannot submit a failed or loading preview', async () => {

@@ -99,8 +99,7 @@ describe('CardStackDisplay — editable (full-screen editor)', () => {
     const wrapper = await mountEditable(makeElement([{ title: 'Old', description: 'Kept' }]));
     const title = wrapper.findAll('[contenteditable]')[0]!;
     title.element.textContent = 'New title';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();
@@ -170,8 +169,8 @@ describe('CardStackDisplay — icon popover (full-screen editor)', () => {
 
     expect(hotspots.isPopoverOpen('stack-1:card')).toBe(true);
     // "B" is now the front card — its remove button is the one rendered.
-    const removeButtons = wrapper.findAll('[data-rc-card-stack-remove-item]');
-    expect(removeButtons).toHaveLength(1);
+    expect(cards[0]!.find('[data-rc-card-stack-remove-item]').exists()).toBe(false);
+    expect(cards[1]!.get('[data-rc-card-stack-remove-item]').attributes('aria-label')).toBe('rich-content.remove_card');
   });
 
   it('switches the current card via the popover prev/next controls and updates the icon field', async () => {

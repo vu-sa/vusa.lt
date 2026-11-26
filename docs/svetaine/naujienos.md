@@ -4,7 +4,7 @@ last_reviewed: 2026-11-07
 tests:
   - tests/Feature/Public/NewsArticlePayloadTest.php
   - resources/js/Components/News/__tests__/NewsPreview.component.test.ts
-  - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts
+  - resources/js/Pages/Admin/__tests__/ContentCollectionPublishing.component.test.ts
   - resources/js/Components/Collection/__tests__/CollectionStatusIcon.component.test.ts
   - resources/js/Pages/Public/__tests__/NewsArchive.component.test.ts
   - resources/js/Composables/__tests__/useContentEditor.component.test.ts

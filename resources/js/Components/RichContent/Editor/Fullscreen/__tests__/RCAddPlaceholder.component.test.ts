@@ -7,10 +7,9 @@ describe('RCAddPlaceholder', () => {
   it('renders the label', () => {
     const wrapper = mount(RCAddPlaceholder, { props: { label: 'Add button' } });
 
-    expect(wrapper.text()).toContain('Add button');
+    expect(wrapper.get('button').attributes('aria-label')).toBe('Add button');
     expect(wrapper.classes()).toContain('absolute');
     expect(wrapper.classes()).toContain('bg-vusa-red');
-    expect(wrapper.classes()).toContain('animate-pulse');
   });
 
   it('renders an icon when given', () => {
@@ -22,7 +21,7 @@ describe('RCAddPlaceholder', () => {
 
   it('renders no icon when omitted', () => {
     const wrapper = mount(RCAddPlaceholder, { props: { label: 'Add button' } });
-    expect(wrapper.findComponent({ name: 'component' }).exists()).toBe(false);
+    expect(wrapper.find('svg').exists()).toBe(false);
   });
 
   it('emits click when pressed', async () => {

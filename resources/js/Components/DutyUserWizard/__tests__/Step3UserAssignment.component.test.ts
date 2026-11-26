@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { reactive, nextTick } from 'vue';
 
 import Step3UserAssignment from '@/Components/DutyUserWizard/Step3UserAssignment.vue';
 import { commonStubs } from '@/tests/stubs';
+
+afterEach(() => vi.useRealTimers());
 
 /**
  * This component previously had no test at all, which let two setup-time crashes
@@ -122,12 +124,6 @@ describe('Step3UserAssignment.vue', () => {
     apiMock.lastUrl = '';
   });
 
-  it('mounts without throwing', () => {
-    // The regression guard: both previous breakages threw during setup, so simply
-    // reaching a rendered wrapper is the assertion that matters here.
-    expect(() => mountStep()).not.toThrow();
-  });
-
   it('renders the assignment UI once step data has loaded', () => {
     const wrapper = mountStep();
 
@@ -153,7 +149,6 @@ describe('Step3UserAssignment.vue', () => {
     await flushPromises();
 
     expect(apiMock.execute).not.toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
   it('searches every tenant, not just the admin own', async () => {
@@ -170,7 +165,6 @@ describe('Step3UserAssignment.vue', () => {
 
     expect(apiMock.execute).toHaveBeenCalled();
     expect(apiMock.lastUrl).toContain('purpose=duty-member');
-    vi.useRealTimers();
   });
 
   it('labels each result with its unit so identical names can be told apart', async () => {

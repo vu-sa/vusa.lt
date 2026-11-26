@@ -1,13 +1,16 @@
-import { flushPromises, mount } from '@vue/test-utils';
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DocumentStatus } from '@/Types/enums';
 import { commonStubs } from '@/tests/stubs';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import type { DocumentFolderListing, DocumentFolderRow } from '../types';
 import DocumentFolderBrowser from '../DocumentFolderBrowser.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -49,9 +52,9 @@ beforeEach(() => {
   localStorage.clear();
   // The browser mirrors its filters into the URL; start every test from a clean one.
   window.history.replaceState(null, '', '/mano/documents');
-  vi.stubGlobal('route', (name: string) => `http://localhost/mocked/${name}`);
+  stubGlobal('route', (name: string) => `http://localhost/mocked/${name}`);
   responses = [listing()];
-  vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string | URL, init?: RequestInit) => {
+  stubGlobal('fetch', vi.fn().mockImplementation(async (url: string | URL, init?: RequestInit) => {
     const request = url.toString().includes('api.v1.admin.documents.status')
       ? JSON.parse(String(init?.body)) as { document_ids: number[]; status: DocumentStatus }
       : null;
@@ -66,8 +69,12 @@ beforeEach(() => {
   vi.mocked(router.reload).mockClear();
 });
 
+enableAutoUnmount(afterEach);
+
 afterEach(() => {
-  vi.unstubAllGlobals();
+  restoreGlobals();
+  vi.useRealTimers();
+  localStorage.clear();
 });
 
 async function mountBrowser(props: Record<string, unknown> = {}) {
@@ -190,15 +197,13 @@ describe('DocumentFolderBrowser', () => {
   });
 
   it('changes two files one after the other, so neither request cancels the other', async () => {
-    let inFlight = 0;
-    let mostAtOnce = 0;
+    const finish = new Map<number, () => void>();
     const fetchListing = vi.mocked(fetch).getMockImplementation()!;
     vi.mocked(fetch).mockImplementation(async (url, init) => {
       if (!url.toString().includes('api.v1.admin.documents.status')) return fetchListing(url, init);
 
-      mostAtOnce = Math.max(mostAtOnce, ++inFlight);
-      await new Promise(resolve => setTimeout(resolve, 5));
-      inFlight--;
+      const request = JSON.parse(String(init?.body)) as { document_ids: number[] };
+      await new Promise<void>(resolve => finish.set(request.document_ids[0]!, resolve));
 
       return fetchListing(url, init);
     });
@@ -206,10 +211,15 @@ describe('DocumentFolderBrowser', () => {
 
     setStatus(wrapper, 0, DocumentStatus.Hidden);
     setStatus(wrapper, 1, DocumentStatus.Published);
-    await vi.waitFor(() => expect(statusCalls()).toHaveLength(2));
     await flushPromises();
-
-    expect(mostAtOnce).toBe(1);
+    expect(statusCalls()).toHaveLength(1);
+    const first = [...finish.values()][0]!;
+    first();
+    await flushPromises();
+    expect(statusCalls()).toHaveLength(2);
+    const second = [...finish.values()][1]!;
+    second();
+    await flushPromises();
   });
 
   it('shows files a SharePoint check found, and drops ones it removed, keeping the folder', async () => {
@@ -249,8 +259,6 @@ describe('DocumentFolderBrowser', () => {
 
     await vi.advanceTimersByTimeAsync(9000);
     expect(folderCalls().length).toBe(afterPublish + 1);
-
-    vi.useRealTimers();
   });
 
   it('adds the next files on "Rodyti daugiau"', async () => {

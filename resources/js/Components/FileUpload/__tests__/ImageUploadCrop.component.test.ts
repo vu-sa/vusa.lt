@@ -4,6 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import { commonStubs } from '@/tests/stubs';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+const { stubGlobal, stubProperty, restoreGlobals } = scopedGlobals();
 
 const compression = vi.hoisted(() => ({
   compressImage: vi.fn(async (file: File) => ({
@@ -29,10 +32,8 @@ const CropperStub = defineComponent({
 
 describe('ImageUpload crop flow', () => {
   it('uses higher quality before cropping and saves the crop without default recompression', async () => {
-    vi.stubGlobal('URL', {
-      createObjectURL: vi.fn(() => 'blob:original'),
-      revokeObjectURL: vi.fn(),
-    });
+    stubProperty(URL, 'createObjectURL', vi.fn(() => 'blob:original'));
+    stubProperty(URL, 'revokeObjectURL', vi.fn());
 
     const wrapper = mount(ImageUpload, {
       props: { cropper: true, mode: 'deferred' },
@@ -68,6 +69,6 @@ describe('ImageUpload crop flow', () => {
     expect(croppedFile.name).toBe('photo.webp');
     expect(croppedFile.size).toBe(4);
     wrapper.unmount();
-    vi.unstubAllGlobals();
+    restoreGlobals();
   });
 });

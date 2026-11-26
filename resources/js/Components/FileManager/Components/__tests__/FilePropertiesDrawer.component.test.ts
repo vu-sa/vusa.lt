@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import FilePropertiesDrawer from '../Components/FilePropertiesDrawer.vue';
+import FilePropertiesDrawer from '../FilePropertiesDrawer.vue';
 
 vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
@@ -87,13 +87,13 @@ describe('FilePropertiesDrawer usage check', () => {
 
     const rows = drawer.findAll('[data-testid="file-usage"] li');
     expect(rows).toHaveLength(2);
-    expect(rows[0].text()).toContain('Rudens šventė');
-    expect(rows[0].text()).toContain('files.usage.models.news');
-    expect(rows[0].text()).toContain('files.usage.matched_blocks');
-    expect(rows[0].find('a').attributes('href')).toBe('/mano/news/7/edit');
-    expect(rows[1].text()).toContain('files.usage.models.contentEditorDrafts');
-    expect(rows[1].text()).not.toContain('files.usage.matched_blocks');
-    expect(rows[1].find('a').exists()).toBe(false);
+    expect(rows[0]!.text()).toContain('Rudens šventė');
+    expect(rows[0]!.text()).toContain('files.usage.models.news');
+    expect(rows[0]!.text()).toContain('files.usage.matched_blocks');
+    expect(rows[0]!.find('a').attributes('href')).toBe('/mano/news/7/edit');
+    expect(rows[1]!.text()).toContain('files.usage.models.contentEditorDrafts');
+    expect(rows[1]!.text()).not.toContain('files.usage.matched_blocks');
+    expect(rows[1]!.find('a').exists()).toBe(false);
   });
 
   it('reports a safe file without a usage list', async () => {

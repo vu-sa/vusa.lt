@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import { commonStubs } from '@/tests/stubs';
 
-import FolderStrip from '../Components/FolderStrip.vue';
+import FolderStrip from '../FolderStrip.vue';
 
 const wrappers: ReturnType<typeof mount>[] = [];
 

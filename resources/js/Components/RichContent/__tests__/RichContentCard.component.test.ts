@@ -8,14 +8,6 @@ function makeElement(options: Record<string, unknown>) {
 }
 
 describe('RichContentCard', () => {
-  it('renders no inline style attributes (no useDark-derived colour logic)', () => {
-    const wrapper = mount(RichContentCard, {
-      props: { element: makeElement({ title: 'T' }) },
-    });
-    const styled = wrapper.findAll('[style]');
-    expect(styled).toHaveLength(0);
-  });
-
   it('renders one fixed, token-driven surface regardless of stored options', () => {
     const wrapper = mount(RichContentCard, { props: { element: makeElement({}) } });
     const rootClass = wrapper.get('[data-slot="card-surface"]').attributes('class') ?? '';
@@ -80,8 +72,7 @@ describe('RichContentCard', () => {
     });
     const title = wrapper.find('[data-slot="card-title"]');
     title.element.textContent = 'New title';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();

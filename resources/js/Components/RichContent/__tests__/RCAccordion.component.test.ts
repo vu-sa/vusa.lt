@@ -91,8 +91,7 @@ describe('RCAccordion — editable (full-screen editor)', () => {
     const wrapper = await mountEditable(makeElement([{ label: 'Old' }]));
     const label = wrapper.find('[contenteditable]');
     label.element.textContent = 'New label';
-    await label.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await label.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();

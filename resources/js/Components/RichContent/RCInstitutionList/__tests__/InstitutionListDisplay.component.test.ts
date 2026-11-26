@@ -59,7 +59,7 @@ describe('InstitutionListDisplay', () => {
     expect(wrapper.findAll('.mock-institution-card')).toHaveLength(0);
   });
 
-  it('emits update:element in editable mode', () => {
+  it('emits the edited title and preserves the eyebrow', async () => {
     const element = makeElement('Pradinis', 'Eyebrow');
     const wrapper = mount(InstitutionListDisplay, {
       props: {
@@ -70,7 +70,9 @@ describe('InstitutionListDisplay', () => {
       global: { stubs },
     });
 
-    // In editable mode, check that headings render RCInlineText
-    expect(wrapper.find('h2').exists()).toBe(true);
+    const title = wrapper.get('h2 [contenteditable]');
+    title.element.textContent = 'Atnaujintas';
+    await title.trigger('blur');
+    expect(wrapper.emitted('update:element')).toEqual([[{ ...element, json_content: { title: 'Atnaujintas', eyebrow: 'Eyebrow' } }]]);
   });
 });

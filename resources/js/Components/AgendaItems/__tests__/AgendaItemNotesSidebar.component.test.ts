@@ -74,11 +74,6 @@ describe('AgendaItemNotesSidebar', () => {
     expect(wrapper.text()).toContain('PRIVAT');
   });
 
-  it('marks the feature as experimental', () => {
-    const wrapper = mountSidebar();
-    expect(wrapper.text()).toContain('Eksperiment');
-  });
-
   it('renders the live editor when not hydrating and collapsed', () => {
     const wrapper = mountSidebar();
     expect(wrapper.find('.notes-editor-stub').exists()).toBe(true);

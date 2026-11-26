@@ -1,40 +1,47 @@
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import type { TextBox } from '@/Types/contentParts';
 
-import TextBoxDisplay from '../../Types/TextBoxDisplay.vue';
+import TextBoxDisplay from '../TextBoxDisplay.vue';
 
-function makeElement(options: TextBox['options'] = null): TextBox & { id: number } {
+function makeElement(options: TextBox['options'] = {}): TextBox & { id: number } {
   return {
     id: 1,
     json_content: {},
     options: {
-      title: 'Atsiliepimai',
-      placeholder: 'Tavo tekstas...',
+      title: { lt: 'Atsiliepimai', en: 'Feedback' },
+      placeholder: { lt: 'Tavo tekstas...', en: 'Your text...' },
       isClosed: false,
-      closedMessage: 'Forma uždaryta',
+      closedMessage: { lt: 'Forma uždaryta', en: 'Form closed' },
       ...options,
     },
   };
 }
 
 describe('TextBoxDisplay', () => {
+  let unmountHydrated: (() => void) | undefined;
+
+  afterEach(() => {
+    unmountHydrated?.();
+    unmountHydrated = undefined;
+    localStorage.removeItem('text_box_submitted_1');
+  });
+
   it('hydrates the server-rendered form before showing an earlier submission', async () => {
     const { container, hydrationWarnings, unmount } = await ssrRoundTrip(TextBoxDisplay, { element: makeElement() }, {
       beforeHydrate: () => localStorage.setItem('text_box_submitted_1', '1'),
     });
 
+    unmountHydrated = unmount;
     expect(hydrationWarnings).toEqual([]);
     await nextTick();
     expect(container.querySelector('form')).toBeNull();
     expect(container.textContent).toContain('rich-content.text_box_success');
-    unmount();
-    localStorage.removeItem('text_box_submitted_1');
   });
 
   it('renders title and textarea in view mode', () => {

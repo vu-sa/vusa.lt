@@ -15,7 +15,7 @@ describe('Skeletons (Patterns)', () => {
 
       expect(wrapper.find('[data-slot="collection-skeleton"]').exists()).toBe(true);
       // In rows view, find row items
-      const rows = wrapper.findAll('.flex.items-center.gap-4');
+      const rows = wrapper.findAll('[data-slot="collection-skeleton"] > div > div');
       expect(rows).toHaveLength(4);
     });
 
@@ -45,7 +45,7 @@ describe('Skeletons (Patterns)', () => {
       });
 
       expect(wrapper.find('[data-slot="form-skeleton"]').exists()).toBe(true);
-      expect(wrapper.findAll('.space-y-5 > div')).toHaveLength(3);
+      expect(wrapper.get('[data-slot="form-skeleton"]').element.children[1]?.children).toHaveLength(3);
     });
   });
 
@@ -56,7 +56,7 @@ describe('Skeletons (Patterns)', () => {
       });
 
       expect(wrapper.find('[data-slot="section-card-skeleton"]').exists()).toBe(true);
-      expect(wrapper.findAll('.divide-y > div')).toHaveLength(4);
+      expect(wrapper.get('[data-slot="section-card-skeleton"]').element.lastElementChild?.children).toHaveLength(4);
     });
   });
 });

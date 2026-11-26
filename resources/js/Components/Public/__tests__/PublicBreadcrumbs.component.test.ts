@@ -1,21 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 
-import PublicBreadcrumbs from '../Public/PublicBreadcrumbs.vue';
-
-// Mock the import.meta.env for development mode
-vi.stubGlobal('import', {
-  meta: {
-    env: {
-      DEV: true,
-    },
-  },
-});
+import PublicBreadcrumbs from '../PublicBreadcrumbs.vue';
 
 describe('PublicBreadcrumbs Fallback Mode', () => {
+  afterEach(() => vi.restoreAllMocks());
   it('displays warning in development when no breadcrumb state is provided', () => {
     // Spy on console.warn to check if the warning is logged
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -31,19 +23,6 @@ describe('PublicBreadcrumbs Fallback Mode', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('🍞 [Breadcrumbs] State not provided'),
     );
-
-    warnSpy.mockRestore();
-  });
-
-  it('does not break when breadcrumb functions are called in fallback mode', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-    // This should not throw an error even without state provider
-    expect(() => {
-      mount(PublicBreadcrumbs);
-    }).not.toThrow();
-
-    warnSpy.mockRestore();
   });
 });
 

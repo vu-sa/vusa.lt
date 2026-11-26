@@ -45,12 +45,12 @@ describe('EntityLinkCard', () => {
 
   it('renders the optional subtitle only when provided', () => {
     const without = mount(EntityLinkCard, { props: { href: '/x', title: 'T' } });
-    expect(without.text()).not.toContain('Sub');
+    expect(without.findAll('p').map(line => line.text())).toEqual(['T']);
 
     const withSubtitle = mount(EntityLinkCard, {
       props: { href: '/x', title: 'T', subtitle: 'Sub' },
     });
-    expect(withSubtitle.text()).toContain('Sub');
+    expect(withSubtitle.findAll('p').map(line => line.text())).toEqual(['T', 'Sub']);
   });
 
   it('merges caller classes onto the root', () => {

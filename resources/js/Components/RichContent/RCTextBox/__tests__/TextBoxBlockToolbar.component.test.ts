@@ -59,6 +59,8 @@ describe('TextBoxBlockToolbar', () => {
       },
     });
 
-    expect(wrapper.text()).toContain('rich-content.text_box_closed_message_label');
+    expect(wrapper.get<HTMLInputElement>('input[placeholder="rich-content.text_box_closed_default"]').element.value).toBe('Submissions are closed');
+    await wrapper.setProps({ content: makeContent({ options: { isClosed: false, closedMessage: 'Submissions are closed' } }) });
+    expect(wrapper.find('input[placeholder="rich-content.text_box_closed_default"]').exists()).toBe(false);
   });
 });

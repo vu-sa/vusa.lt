@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 
@@ -77,7 +78,7 @@ describe('Calendar/CalendarFilterPopover.vue', () => {
 
     searchInput.value = 'Fizikos';
     searchInput.dispatchEvent(new Event('input'));
-    await new Promise(r => setTimeout(r, 50));
+    await nextTick();
 
     const optionButtons = document.body.querySelectorAll('[role="dialog"] button[role="checkbox"]');
     expect(optionButtons.length).toBe(1);

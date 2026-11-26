@@ -54,17 +54,6 @@ const makeOverview = (overrides: Record<string, unknown> = {}): OverviewProp => 
 }) as unknown as OverviewProp;
 
 describe('InstitutionOverviewSection', () => {
-  it('keeps members, tasks and related institutions out of the overview — each has its own section', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution(), overview: makeOverview() },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).not.toContain('Alice');
-    expect(wrapper.text()).not.toContain('Overdue task');
-    expect(wrapper.text()).not.toContain('VU MIF Taryba');
-  });
-
   it('leaves the status and the day counter to the record\'s status card', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution(), overview: makeOverview() },

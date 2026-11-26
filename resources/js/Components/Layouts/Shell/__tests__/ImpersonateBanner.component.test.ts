@@ -5,6 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ImpersonateBanner from '@/Components/Layouts/Shell/ImpersonateBanner.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { reloadDocument } from '@/Utils/reloadDocument';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+afterEach(() => vi.useRealTimers());
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Utils/reloadDocument', () => ({ reloadDocument: vi.fn() }));
@@ -21,14 +26,14 @@ const popoverStubs = {
 describe('ImpersonateBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubGlobal('route', vi.fn((name: string) => `/routes/${name}`));
+    stubGlobal('route', vi.fn((name: string) => `/routes/${name}`));
     fetchMock.mockResolvedValue(respond({ success: true }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
   });
 
   afterEach(() => {
     document.body.innerHTML = '';
-    vi.unstubAllGlobals();
+    restoreGlobals();
   });
 
   it('renders active impersonation as an in-flow status', () => {
@@ -134,7 +139,6 @@ describe('ImpersonateBanner', () => {
     await wrapper.get('input').setValue('Koord');
     await vi.advanceTimersByTimeAsync(300);
     await flushPromises();
-    vi.useRealTimers();
 
     const duties = wrapper.findAll('[data-slot="impersonation-duty"]').map(duty => duty.text());
     expect(duties).toEqual(['Koordinatorė · MIF SA', 'Narė']);

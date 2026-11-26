@@ -85,8 +85,7 @@ describe('EventCalendarElement', () => {
     expect(title.exists()).toBe(true);
 
     title.element.textContent = 'Artimiausi mūsų renginiai';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();
@@ -108,8 +107,7 @@ describe('EventCalendarElement', () => {
     expect(eyebrow.exists()).toBe(true);
 
     eyebrow.element.textContent = 'Šio mėnesio įvykiai';
-    await eyebrow.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await eyebrow.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();

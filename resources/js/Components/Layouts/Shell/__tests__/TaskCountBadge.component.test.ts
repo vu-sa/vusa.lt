@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { reactive } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import MobileBottomBar from '../MobileBottomBar.vue';
 import SectionTabs from '../SectionTabs.vue';
@@ -9,15 +11,10 @@ import WorkspacePicker from '../WorkspacePicker.vue';
 
 import { atstovavimas, pradzia } from './fixtures';
 
-const page = reactive({ props: { auth: { user: { tasks_count: 0, overdue_tasks_count: 0 } } } });
-
-vi.mock('@inertiajs/vue3', async () => ({
-  ...(await import('@/mocks/inertia.mock')),
-  usePage: () => page,
-}));
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const setTasks = (pending: number, overdue = 0) => {
-  page.props.auth.user = { tasks_count: pending, overdue_tasks_count: overdue };
+  vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { tasks_count: pending, overdue_tasks_count: overdue } } }));
 };
 
 describe('TaskCountBadge', () => {

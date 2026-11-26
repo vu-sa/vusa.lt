@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import DutyLabel from '@/Components/Duties/DutyLabel.vue';
 import { commonStubs } from '@/tests/stubs';
+import { Badge } from '@/Components/ui/badge';
 
 // Fixture uses a name with no detectable gendered ending ("Grupė") so InflectedDutyName
 // renders it as plain text — these tests are about DutyLabel's own composition (name +
@@ -30,11 +31,12 @@ describe('DutyLabel.vue', () => {
 
   it('shows the tenant shortname as a badge when present', () => {
     const wrapper = mount(DutyLabel, {
-      props: { duty: { name: 'Grupė', institution: { name: 'VU SA MIF', tenant: { shortname: 'VU SA MIF' } } } },
+      props: { duty: { name: 'Grupė', institution: { name: 'Studijų komitetas', tenant: { shortname: 'VU SA MIF' } } } },
       global: { stubs: commonStubs },
     });
 
-    expect(wrapper.text()).toContain('VU SA MIF');
+    expect(wrapper.getComponent(Badge).text()).toBe('VU SA MIF');
+    expect(wrapper.text()).toContain('Studijų komitetas');
   });
 
   it('omits the tenant badge when the institution has none', () => {
@@ -43,9 +45,7 @@ describe('DutyLabel.vue', () => {
       global: { stubs: commonStubs },
     });
 
-    // Institution name and tenant shortname happen to coincide above; here there's
-    // exactly one occurrence, proving no separate badge was rendered.
-    expect(wrapper.text().match(/VU SA MIF/g)).toHaveLength(1);
+    expect(wrapper.findComponent(Badge).exists()).toBe(false);
   });
 
   it('delegates a gendered duty name to the animated inflection component', () => {

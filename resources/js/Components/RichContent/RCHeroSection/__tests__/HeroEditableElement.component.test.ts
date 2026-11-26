@@ -67,8 +67,7 @@ describe('HeroEditableElement (full-screen editor)', () => {
     expect(eyebrow.exists()).toBe(true);
 
     eyebrow.element.textContent = 'Naujas antakis';
-    await eyebrow.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await eyebrow.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();

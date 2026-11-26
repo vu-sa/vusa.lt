@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Kalendorius
 last_reviewed: 2026-11-01
 tests:
-  - resources/js/Components/Collection/__tests__/ContentCollectionPublishing.component.test.ts
+  - resources/js/Pages/Admin/__tests__/ContentCollectionPublishing.component.test.ts
   - resources/js/Components/Collection/__tests__/CollectionStatusIcon.component.test.ts
   - tests/Feature/Public/CalendarEventListTest.php
   - tests/Feature/Admin/Calendar/CalendarControllerTest.php

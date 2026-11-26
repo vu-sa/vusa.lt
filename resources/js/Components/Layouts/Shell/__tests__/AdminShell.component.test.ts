@@ -5,21 +5,24 @@ import { defineComponent, h } from 'vue';
 
 import { createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import AdminShell from '../AdminShell.vue';
 
 import { atstovavimas, pradzia } from './fixtures';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // `virtual:pwa-register` only exists inside a Vite build.
 vi.mock('@/Composables/usePWA', () => ({ usePWA: () => ({ isPWA: false, setAppBadge: vi.fn() }) }));
 
 beforeEach(() => {
-  vi.stubGlobal('route', () => ({ current: () => 'pages.edit', params: {} }));
+  stubGlobal('route', () => ({ current: () => 'pages.edit', params: {} }));
 });
 
 afterEach(() => {
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 const stubs = {
@@ -127,7 +130,7 @@ describe('AdminShell focus mode', () => {
 
 describe('AdminShell on phones', () => {
   const onRoute = (routeName: string) => {
-    vi.stubGlobal('route', () => ({ current: () => routeName, params: {} }));
+    stubGlobal('route', () => ({ current: () => routeName, params: {} }));
     vi.mocked(usePage).mockReturnValue(createMockPage({
       adminNavigation: { workspaces: [pradzia, atstovavimas] },
     }) as ReturnType<typeof usePage>);
@@ -143,13 +146,16 @@ describe('AdminShell on phones', () => {
 });
 
 describe('AdminShell staging warning', () => {
+  const storageKey = () => `admin-staging-warning:${usePage().props.auth?.user.id}`;
+
+  afterEach(() => localStorage.removeItem(storageKey()));
+
   it('keeps the collapsed state across shell mounts and lets the topbar reopen it', async () => {
-    localStorage.clear();
-    const storageKey = `admin-staging-warning:${usePage().props.auth?.user.id}`;
+    const key = storageKey();
     const first = mountShell();
     await first.wrapper.findAll('[data-testid="staging"]')[0].trigger('click');
 
-    expect(localStorage.getItem(storageKey)).toBe('true');
+    expect(localStorage.getItem(key)).toBe('true');
     first.wrapper.unmount();
 
     const second = mountShell();
@@ -157,9 +163,8 @@ describe('AdminShell staging warning', () => {
     expect(topbarWarning.attributes('data-dismissed')).toBe('true');
     await topbarWarning.trigger('click');
 
-    expect(localStorage.getItem(storageKey)).toBe('false');
+    expect(localStorage.getItem(key)).toBe('false');
     second.wrapper.unmount();
-    localStorage.clear();
   });
 });
 

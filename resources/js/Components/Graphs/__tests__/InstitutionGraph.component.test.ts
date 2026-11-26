@@ -3,14 +3,17 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import InstitutionGraph from '../InstitutionGraph.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 const preferences = useAccessibilityPreferences();
 let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
-  vi.stubGlobal('ResizeObserver', class {
+  stubGlobal('ResizeObserver', class {
     observe = vi.fn();
     disconnect = vi.fn();
   });
@@ -19,7 +22,7 @@ beforeEach(() => {
 afterEach(() => {
   wrapper?.unmount();
   preferences.reset();
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 describe('InstitutionGraph reduced motion', () => {

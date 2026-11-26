@@ -1,20 +1,13 @@
+import { usePage } from '@inertiajs/vue3';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { ref } from 'vue';
-import type * as Inertia from '@inertiajs/vue3';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import LinkTargetField from '@/Components/AdminForms/LinkTargetField.vue';
 import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
 
-// Real useForm (reactive) — the global inertia mock's useForm returns a plain object,
-// which would silently break `form.link` reactivity in the template.
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
-  return {
-    ...actual,
-    usePage: () => ({ props: { app: { locale: 'lt', url: 'https://vusa.test' } } }),
-  };
-});
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const resolveUrlData = ref<{ url: string } | null>(null);
 const executeResolveUrl = vi.fn(async () => {});
@@ -97,6 +90,7 @@ describe('QuickLinkForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
   beforeEach(() => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ app: { url: 'https://vusa.test' } }));
     vi.clearAllMocks();
     resolveUrlData.value = null;
   });

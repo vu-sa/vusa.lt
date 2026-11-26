@@ -1,12 +1,18 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 
 import type { PersonQuote } from '@/Types/contentParts';
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
+import { stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 const mockAttributionData = ref<{ name: string; photoUrl: string | null; attributions: string[] } | null>(null);
 const mockExecute = vi.fn(async () => {});
+
+afterEach(() => {
+  mockAttributionData.value = null;
+  mockExecute.mockClear();
+});
 
 vi.mock('@/Composables/useApi', () => ({
   useApi: vi.fn(() => ({
@@ -14,8 +20,6 @@ vi.mock('@/Composables/useApi', () => ({
     execute: mockExecute,
   })),
 }));
-
-import { stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 import PersonQuoteDisplay from '../PersonQuoteDisplay.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
@@ -220,8 +224,7 @@ describe('PersonQuoteDisplay — person popover (full-screen editor)', () => {
 
     const attribution = wrapper.findAll('[contenteditable]')[0]!;
     attribution.element.textContent = 'Pirmininkė';
-    await attribution.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await attribution.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();

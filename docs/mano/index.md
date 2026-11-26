@@ -1,11 +1,12 @@
 ---
 doc_status: reviewed
 title: Mano
-last_reviewed: 2026-11-09
+last_reviewed: 2026-11-26
 tests:
   - tests/Feature/Admin/Management/UserActivityRequestsTest.php
   - resources/js/Pages/Admin/__tests__/ShowAdminHome.component.test.ts
   - resources/js/Components/Home/__tests__/SiteContentLists.component.test.ts
+  - resources/js/Components/Home/__tests__/AttentionQueue.component.test.ts
   - tests/Browser/AdminPublicLinksTest.php
   - tests/Browser/AdminHomeLayoutTest.php
   - tests/Feature/Admin/Core/DashboardControllerTest.php
@@ -39,7 +40,7 @@ jo viešas puslapis atveriamas tame pačiame naršyklės skirtuke; atgal galima 
 
 Pradžioje rodomos iki trijų neužbaigtų užduočių, kurių terminas jau praėjęs arba sueis per
 artimiausias 14 dienų. Pirmiausia rodoma anksčiausią terminą turinti užduotis, todėl vėluojančios
-užduotys pateikiamos prieš būsimas. Likusių užduočių skaičius apima visas tavo neužbaigtas užduotis.
+užduotys pateikiamos prieš būsimas. Likusių užduočių skaičius apima visas tavo neužbaigtas užduotis. Jei užduoties posėdis pašalintas, užduotis rodoma kaip tekstas.
 
 <ChangelogNote date="2026-10-02" title="Pradžia rodo tai, ką turi padaryti">
 

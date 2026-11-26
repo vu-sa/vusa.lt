@@ -1,8 +1,12 @@
-import { mount } from '@vue/test-utils';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { enableAutoUnmount, mount } from '@vue/test-utils';
+import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import ImageCropper from '../ImageCropper.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('cropperjs', () => ({}));
 
@@ -43,8 +47,13 @@ class TestCropperSelection extends HTMLElement {
   $reset = resetSelection;
 }
 
+enableAutoUnmount(afterEach);
+
+beforeEach(() => {
+  stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => setTimeout(callback, 0));
+});
+
 beforeAll(() => {
-  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => setTimeout(callback, 0));
   if (!customElements.get('cropper-canvas')) customElements.define('cropper-canvas', class extends HTMLElement {});
   if (!customElements.get('cropper-image')) customElements.define('cropper-image', TestCropperImage);
   if (!customElements.get('cropper-selection')) customElements.define('cropper-selection', TestCropperSelection);
@@ -64,6 +73,11 @@ function mountCropper(aspectRatio = 0) {
     },
   });
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  restoreGlobals();
+});
 
 describe('ImageCropper', () => {
   it('applies ratio choices, frees the selection, and resets to the supplied ratio', async () => {

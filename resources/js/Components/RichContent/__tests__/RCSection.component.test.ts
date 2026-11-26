@@ -43,8 +43,7 @@ describe('RCSection — editable (full-screen editor)', () => {
     const wrapper = mount(RCSection, { props: { title: 'Old', subtitle: 'Sub', editable: true } });
     const title = wrapper.find('h2[contenteditable]');
     title.element.textContent = 'New title';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const emitted = wrapper.emitted('update:header');
     expect(emitted).toBeTruthy();
@@ -55,8 +54,7 @@ describe('RCSection — editable (full-screen editor)', () => {
     const wrapper = mount(RCSection, { props: { title: 'Nariai', editable: true } });
     const [eyebrow] = wrapper.findAll('[contenteditable]');
     eyebrow!.element.textContent = 'Naujiena';
-    await eyebrow!.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await eyebrow!.trigger('blur');
 
     const emitted = wrapper.emitted('update:header');
     expect(emitted).toBeTruthy();

@@ -8,8 +8,7 @@ import IndexBanner from '@/Pages/Admin/Content/IndexBanner.vue';
 import IndexCalendarEvents from '@/Pages/Admin/Calendar/IndexCalendarEvents.vue';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
-
-import CollectionStatusMenu from '../CollectionStatusMenu.vue';
+import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -66,7 +65,7 @@ describe('content collection table publishing', () => {
   it('restores the banner active menu and saves through the status endpoint', async () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { create: { banner: true } } } }));
     const wrapper = mount(IndexBanner, {
-      props: { banners: { data: [{ id: 7, title: 'Banner', is_active: true } as App.Entities.Banner], meta } },
+      props: { banners: { data: [{ id: 7, title: 'Banner', is_active: true } as unknown as App.Entities.Banner], meta } },
       global: { stubs: { ...commonStubs, CollectionPage: collection, CollectionStatusMenu: true } },
     });
     const menu = wrapper.getComponent(CollectionStatusMenu);
@@ -82,7 +81,7 @@ describe('content collection table publishing', () => {
   it('restores calendar draft editing', async () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can: { create: { calendar: true } } } }));
     const wrapper = mount(IndexCalendarEvents, {
-      props: { calendar: { data: [{ id: 8, title: 'Event', is_draft: false } as App.Entities.Calendar], meta }, eventTypes: [], deletedCount: 0 },
+      props: { calendar: { data: [{ id: 8, title: 'Event', is_draft: false } as unknown as App.Entities.Calendar], meta }, eventTypes: [], deletedCount: 0 },
       global: { stubs: { ...commonStubs, CollectionPage: collection, CollectionStatusMenu: true } },
     });
     const menu = wrapper.getComponent(CollectionStatusMenu);

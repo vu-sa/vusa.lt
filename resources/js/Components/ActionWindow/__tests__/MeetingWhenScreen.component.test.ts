@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -54,10 +54,13 @@ const choices = (wrapper: ReturnType<typeof mount>) =>
 
 describe('MeetingWhenScreen.vue', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 9, 19, 12) });
     state.pattern = null;
     state.loading = false;
     vi.mocked(usePage).mockReset();
   });
+
+  afterEach(() => vi.useRealTimers());
 
   it('leads with today and yesterday, then the next two occurrences of the weekday this body meets on', async () => {
     state.pattern = { weekday: 2, time: '18:30' };
@@ -116,7 +119,8 @@ describe('MeetingWhenScreen.vue', () => {
     await wrapper.findAll('[data-slot="action-choice-button"]')[2]!.trigger('click');
     const sooner = new Date(window.draft.meeting.start_time!);
 
-    expect(later.getTime() - sooner.getTime()).toBe(7 * 24 * 60 * 60 * 1000);
+    expect(sooner).toEqual(new Date(2026, 9, 20, 18, 30));
+    expect(later).toEqual(new Date(2026, 9, 27, 18, 30));
   });
 
   /**

@@ -8,6 +8,11 @@ import ContentGridEditor from '../ContentGridEditor.vue';
 
 const stubs = {
   TiptapEditor: { template: '<div class="tiptap-stub" />' },
+  Select: { template: '<div><slot /></div>' },
+  SelectTrigger: { template: '<div><slot /></div>' },
+  SelectValue: true,
+  SelectContent: { template: '<div><slot /></div>' },
+  SelectItem: { props: ['value'], template: '<span :data-value="value"><slot /></span>' },
   TooltipProvider: { template: '<div><slot /></div>' },
   Tooltip: { template: '<div><slot /></div>' },
   TooltipTrigger: { template: '<div><slot /></div>' },
@@ -49,15 +54,13 @@ describe('ContentGridEditor', () => {
       global: { stubs },
     });
 
-    const widthOptionTexts = wrapper.findAll('[value="col-span-5"], [value="col-span-7"]');
-    // SelectItem internals vary by stub depth; assert through the rendered row's
-    // actual applied width classes instead, which is what matters functionally.
+    expect(wrapper.get('[data-value="col-span-5"]').text()).toBe('40%');
+    expect(wrapper.get('[data-value="col-span-7"]').text()).toBe('60%');
     expect(wrapper.find('.col-span-7').exists()).toBe(true);
     expect(wrapper.find('.col-span-5').exists()).toBe(true);
-    void widthOptionTexts;
   });
 
-  it('offers a "card" content type and renders it through RCFeatureCard', () => {
+  it('shows the link field for a card column', () => {
     const json_content: ContentGrid['json_content'] = [
       {
         columns: [

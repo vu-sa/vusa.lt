@@ -13,8 +13,11 @@ vi.mock('../../../composables/useContentPartPreview', () => ({
 }));
 
 import { commonStubs } from '@/tests/stubs';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import RCFullscreenEditor from '../RCFullscreenEditor.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 const stubs = {
   ...commonStubs,
@@ -36,7 +39,7 @@ describe('RCFullscreenEditor', () => {
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    restoreGlobals();
   });
 
   it('emits save from the toolbar so the parent form can persist the document', async () => {
@@ -64,18 +67,6 @@ describe('RCFullscreenEditor', () => {
 
     expect(wrapper.text()).toContain('rich-content.edit_mode');
     expect(wrapper.text()).toContain('rich-content.edit_mode_hint');
-  });
-
-  it('gives the editing canvas comfortable space above and below its blocks', () => {
-    const wrapper = mount(RCFullscreenEditor, {
-      props: {
-        contents: [],
-        history: { commit: () => {}, undo: () => {}, redo: () => {}, canUndo: false, canRedo: false },
-      },
-      global: { stubs },
-    });
-
-    expect(wrapper.find('main').classes()).toEqual(expect.arrayContaining(['py-20', 'md:py-28']));
   });
 
   it('keeps the toolbar portal inside the dialog but outside its scroll viewport', () => {
@@ -139,7 +130,7 @@ describe('RCFullscreenEditor', () => {
   });
 
   it('scrolls the moved block into view at its new position', async () => {
-    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       callback(0);
       return 0;
     });

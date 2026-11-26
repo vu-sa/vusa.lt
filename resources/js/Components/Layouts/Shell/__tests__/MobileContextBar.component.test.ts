@@ -4,10 +4,13 @@ import { usePage } from '@inertiajs/vue3';
 
 import { clearTrail, enterLearningStep } from '@/Composables/useRecordTrail';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import MobileContextBar from '../MobileContextBar.vue';
 
 import { atstovavimas, kelias, learning, pradzia } from './fixtures';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -30,7 +33,7 @@ const switcher = () => document.body.querySelector('[data-slot="mobile-section-s
 beforeEach(() => {
   clearTrail();
   vi.mocked(usePage).mockReturnValue(createMockPage());
-  vi.stubGlobal('route', (name?: string) => name ? `/mano/${name}` : { current: (pattern: string) => pattern === 'learningPath.reps' });
+  stubGlobal('route', (name?: string) => name ? `/mano/${name}` : { current: (pattern: string) => pattern === 'learningPath.reps' });
 });
 
 afterEach(() => {
@@ -38,7 +41,7 @@ afterEach(() => {
   mounted.splice(0).forEach(wrapper => wrapper.unmount());
   clearTrail();
   document.body.innerHTML = '';
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 describe('MobileContextBar', () => {
