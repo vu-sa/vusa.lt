@@ -16,7 +16,7 @@ it('keeps the floating Gantt date below the shell topbar', function (): void {
 
     $page->assertScript('(async () => {
         const scroll = document.querySelector("[data-slot=admin-scroll-area]");
-        const shell = scroll.querySelector(":scope > .sticky");
+        const shell = document.querySelector("[data-slot=shell-chrome]");
         const badge = document.querySelector(".gantt-center-date");
         scroll.scrollTop += badge.getBoundingClientRect().top - shell.getBoundingClientRect().bottom + 5;
         // Scrolling repaints sticky chrome and can rebuild the date badge.

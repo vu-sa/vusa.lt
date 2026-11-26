@@ -81,7 +81,10 @@ it('opens articles for you from the Wiki menu and switches grouping on its own p
         ->assertPathIs('/mano/knowledge/for-you')
         ->assertVisible('[data-slot=wiki-progress-assigned]')->assertNotPresent('[data-slot=wiki-progress-all]')
         ->assertVisible('[data-testid=documents-view-importance]');
-    $page->click('[data-testid=documents-view-sections]')->assertSee('Studijos')
+    // The incoming page is visible before the view transition releases pointer input.
+    $page->page()->locator('html:not(:active-view-transition) [data-testid=documents-view-sections]')->click();
+    $page->assertQueryStringHas('view', 'sections')
+        ->assertVisible('#documents-'.$section->id)
         ->assertAttribute('[data-testid=documents-view-sections]', 'aria-pressed', 'true')
         ->screenshot(filename: 'wiki-for-you-desktop');
     $page->resize(390, 844)->assertNoJavaScriptErrors()->screenshot(filename: 'wiki-for-you-phone');

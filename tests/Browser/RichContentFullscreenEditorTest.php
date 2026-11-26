@@ -161,7 +161,7 @@ it('keeps a centered hero title uppercase and centered before, during, and after
     $page->assertNoJavaScriptErrors();
 });
 
-it('keeps the first split hero left-aligned and its settings trigger below the editor navbar', function (): void {
+it('keeps the first split hero settings trigger below the editor toolbar', function (): void {
     $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
@@ -169,9 +169,9 @@ it('keeps the first split hero left-aligned and its settings trigger below the e
     waitForInertiaRender($page, '[role="heading"] button');
 
     $toolbarTop = $page->script('document.querySelector(\'button[title="Bloko nustatymai"]\').getBoundingClientRect().top');
-    $navbarBottom = $page->script('document.querySelector(".sticky.top-0").getBoundingClientRect().bottom');
+    $toolbarBottom = $page->script('document.querySelector("[data-testid=fullscreen-toolbar]").getBoundingClientRect().bottom');
 
-    expect($toolbarTop)->toBeGreaterThanOrEqual($navbarBottom);
+    expect($toolbarTop)->toBeGreaterThanOrEqual($toolbarBottom);
 
     $page->assertNoJavaScriptErrors();
 });
