@@ -679,6 +679,6 @@ Santraukoje rodoma iki trijų posėdžių kortelių: artimiausias būsimas ir du
 
 Telefone iš pradžių rodoma Santrauka. Prisegtas skyrių pasirinkimas atveria vieną skyrių; jo nuorodą galima nukopijuoti, o naršyklės „Atgal“ grąžina ankstesnį skyrių. Ištrynus paskutinį failą ar ryšį, atvertas skyrius lieka iki išėjimo iš įrašo.
 
-Narių valdiklyje rodoma, kas eina pareigas. Turint teisę tvarkyti sudėtį, galima priskirti asmenį arba keisti jo laikotarpį. Visa laikotarpių istorija pateikiama pareigybės įraše.
+Mygtuke **Užima** rodomos dabartinių narių nuotraukos. Jei pareigas eina daugiau nei du žmonės, šalia rodomas ir bendras jų skaičius, pvz., **Užima 9**. Jei visiems dabartiniams nariams tinka ta pati pavadinimo galūnė, rodoma ji. Kai pareigybė laisva arba nariams tinka skirtingos galūnės, pavadinimo galūnės kaitaliojamos. Turint teisę tvarkyti sudėtį, galima priskirti asmenį arba keisti jo laikotarpį. Visa laikotarpių istorija pateikiama pareigybės įraše.
 
 Keičiant pareigybių tvarką, išlieka tos pačios eilutės. Tvarką galima keisti tempimo rankenėle arba rodyklėmis, tada išsaugoti arba atšaukti. Išskleidžiama narių grupė atveriama paspaudus bet kurią jos vietą; ilgas sąrašas slenkamas išskleidimo viduje.

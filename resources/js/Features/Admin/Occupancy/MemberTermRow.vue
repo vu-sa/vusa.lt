@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between" data-slot="member-term-row">
     <div class="flex min-w-0 items-start gap-3">
-      <UserPopover :user :size="40" class="shrink-0" />
+      <UserPopover :user :photo-override="assignmentPhoto" :size="40" class="shrink-0" />
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
           <component
@@ -67,6 +67,8 @@ const props = defineProps<{
       via_dutiable_id?: string | null;
       tenant_id?: number | null;
       additional_email?: string | null;
+      additional_photo?: string | null;
+      additional_photo_focal_point?: string | null;
     };
   };
   canManage: boolean;
@@ -82,6 +84,13 @@ const emit = defineEmits<{
 }>();
 
 const { href } = useUserLink(() => props.user);
+
+const assignmentPhoto = computed(() => {
+  const term = props.user.pivot;
+  return term?.additional_photo
+    ? { path: term.additional_photo, focalPoint: term.additional_photo_focal_point }
+    : undefined;
+});
 
 const chipClass = 'border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground';
 

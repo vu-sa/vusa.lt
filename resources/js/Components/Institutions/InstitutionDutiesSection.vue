@@ -41,7 +41,7 @@
         <CollectionRow :actions="reordering ? [] : rowActions(duty)" :class="ROW_PADDING_CLASS" data-slot="institution-duty-row" @select="key => selectRowAction(key, duty)">
           <div class="flex items-center gap-3">
             <CollectionPrimaryCell :title="dutyName(duty)" :href="route('duties.show', duty.id)" class="flex-1">
-              <InflectedDutyName :name="dutyName(duty)" />
+              <InflectedDutyName :name="dutyName(duty)" :use-original-duty-name="fixedDutyNames.has(duty.id)" />
               <template #sub>
                 <template v-for="(part, index) in rowFacts(duty)" :key="part.text">
                   <span v-if="index > 0" aria-hidden="true"> · </span>
@@ -82,7 +82,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDownUp, Briefcase, Pencil, Plus, Save, UserPlus } from '@lucide/vue';
 
@@ -98,6 +98,7 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { AdminRecordAction } from '@/Types/AdminRecordAction';
 import type { DutyWithUsers, UserWithPivot } from '@/Types/DutyAssignment';
+import { changeDutyNameEndings, getDutyNameGenderVariants, resolveDutyNameGender } from '@/Utils/String';
 import { EmptyState, OverviewSection, SectionHeaderAction } from '@/Components/Patterns';
 
 const props = defineProps<{
@@ -120,7 +121,32 @@ const remainingCount = computed(() => Math.max(0, (props.totalCount ?? props.dut
 
 const holdersSpotlight = useFeatureSpotlight('duty-holders-popover-v1');
 
-const dutyName = (duty: DutyWithUsers) => getTranslatedValue(duty.name, undefined, '—');
+const page = usePage();
+const baseDutyName = (duty: DutyWithUsers) => getTranslatedValue(duty.name, page.props.app.locale, '—');
+
+const fixedDutyNames = computed(() => {
+  const names = new Map<DutyWithUsers['id'], string>();
+  if (page.props.app.locale !== 'lt') return names;
+
+  for (const duty of props.duties) {
+    const holders = duty.current_users ?? [];
+    const first = holders[0];
+    const name = baseDutyName(duty);
+    if (!first || !getDutyNameGenderVariants(name)) continue;
+
+    const genderOf = (holder: UserWithPivot) => holder.pivot?.use_original_duty_name
+      ? null
+      : resolveDutyNameGender(holder, 'lt', holder.duty_pronouns);
+    const gender = genderOf(first);
+    if ((gender === 'feminine' || gender === 'masculine') && holders.every(holder => genderOf(holder) === gender)) {
+      names.set(duty.id, changeDutyNameEndings(first, name, 'lt', first.duty_pronouns));
+    }
+  }
+
+  return names;
+});
+
+const dutyName = (duty: DutyWithUsers) => fixedDutyNames.value.get(duty.id) ?? baseDutyName(duty);
 
 /** The institution is the page itself, so a row says only how full the duty is and where to write. */
 const rowFacts = (duty: DutyWithUsers) => {

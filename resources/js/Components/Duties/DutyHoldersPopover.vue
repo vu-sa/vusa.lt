@@ -7,14 +7,14 @@
     size="xs"
     expandable
     show-when-empty
-    hide-avatars-on-mobile
+    limit-by-screen
     :popover-title="$t('Užima')"
     :trigger-label
     trigger-slot="duty-holders-trigger"
     popover-slot="duty-holders-popover"
   >
     <template #trigger-prefix>
-      <span>{{ $t('Nariai') }} · {{ holders.length }}</span>
+      <span class="whitespace-nowrap">{{ $t('Užima') }}{{ holders.length > 2 ? ` ${holders.length}` : '' }}</span>
     </template>
     <template #trigger-empty>
       <span class="flex size-6 items-center justify-center border border-dashed border-muted-foreground/50">

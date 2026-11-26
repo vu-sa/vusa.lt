@@ -1,3 +1,5 @@
+import type { DutyPronouns } from '@/Utils/String';
+
 export interface AssignmentDuty {
   id: string | number;
   name?: unknown;
@@ -36,6 +38,7 @@ export interface AssignmentTerm {
 }
 
 export interface UserWithPivot {
+  duty_pronouns?: DutyPronouns;
   id: string | number;
   name: string;
   profile_photo_path?: string | null;

@@ -37,7 +37,7 @@ describe('DutyHoldersPopover', () => {
     });
 
     expect(wrapper.findComponent({ name: 'UsersAvatarGroup' }).exists()).toBe(true);
-    expect(wrapper.get('[data-slot="duty-holders-trigger"]').text()).toContain('Nariai · 1');
+    expect(wrapper.get('[data-slot="duty-holders-trigger"]').text()).toContain('Užima');
     expect(wrapper.get('.popover-content').text()).toContain('Užima · 1');
     expect(wrapper.get('.popover-content').text()).toContain('Rūta Petraitė');
     expect(wrapper.get('.popover-content').text()).toContain('nuo');
@@ -49,6 +49,16 @@ describe('DutyHoldersPopover', () => {
     await wrapper.get('[data-slot="duty-holders-assign"]').trigger('click');
     expect(wrapper.emitted('assign')).toHaveLength(1);
   });
+
+  it.each<[number, string]>([[0, 'Užima'], [1, 'Užima'], [2, 'Užima'], [3, 'Užima 3'], [9, 'Užima 9']])(
+    'shows the total beside Užima for more than two of %i holders',
+    (count, label) => {
+      const holders = Array.from({ length: count }, (_, index) => makeHolder({ id: String(index) }));
+      const wrapper = mount(DutyHoldersPopover, { props: { holders, canManage: true }, global: { stubs } });
+
+      expect(wrapper.get('[data-slot="duty-holders-trigger"] > span:first-child').text()).toBe(label);
+    },
+  );
 
   it('links holder rows only when in admin context with user index access', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
