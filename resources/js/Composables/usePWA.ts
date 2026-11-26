@@ -74,9 +74,15 @@ const pushPermission = ref<NotificationPermission>('default');
 const isSubscribingToPush = ref(false);
 const isUnsubscribingFromPush = ref(false);
 const isRefreshingSubscriptionStatus = ref(false);
-const currentBrowserSubscribed = ref<boolean | null>(null); // null = checking, true/false = known state
 const currentBrowserEndpoint = ref<string | null>(null); // Store current browser's endpoint for matching
+// Tracks an endpoint saved to the server in this session, scoped to the active user so another
+// account signing into the same browser never inherits it before page.props.pwa reloads.
+const confirmedServerSubscription = ref<{ userId: string | number | null; endpoint: string } | null>(null);
 const isPWAMode = ref(false); // Reactive PWA mode state
+
+function currentUserId(): string | number | null {
+  return usePage<PageProps>().props.auth?.user?.id ?? null;
+}
 
 // Service worker update function (set after registration)
 let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined;
@@ -222,8 +228,9 @@ export async function migrateLegacyRegistration(current: ServiceWorkerRegistrati
     if (subscription) {
       if (vapidKey && 'Notification' in window && Notification.permission === 'granted') {
         const subscriptionJson = await subscribeRegistration(current, vapidKey);
-        currentBrowserSubscribed.value = true;
         currentBrowserEndpoint.value = subscriptionJson.endpoint;
+        confirmedServerSubscription.value = { userId: currentUserId(), endpoint: subscriptionJson.endpoint };
+        router.reload({ only: ['pwa'] });
       }
 
       await destroySubscription(subscription.endpoint);
@@ -291,15 +298,18 @@ export function usePWA() {
   // Check if THIS browser has an active push subscription
   // This checks the browser's actual subscription state, not just the server record
   const hasPushSubscription = computed(() => {
-    // If we've checked the browser, use that state
-    if (currentBrowserSubscribed.value !== null) {
-      return currentBrowserSubscribed.value;
+    const endpoint = currentBrowserEndpoint.value;
+    if (!endpoint) {
+      return false;
     }
-    // Fall back to checking if current browser's endpoint is in server list
     const page = usePage<PageProps>();
     const endpoints = page.props.pwa?.subscriptionEndpoints ?? [];
-    if (currentBrowserEndpoint.value && endpoints.length > 0) {
-      return endpoints.includes(currentBrowserEndpoint.value);
+    if (endpoints.includes(endpoint)) {
+      return true;
+    }
+    const confirmed = confirmedServerSubscription.value;
+    if (confirmed && confirmed.endpoint === endpoint && confirmed.userId === (page.props.auth?.user?.id ?? null)) {
+      return true;
     }
     // Unknown: another device's subscription says nothing about this browser.
     return false;
@@ -319,8 +329,10 @@ export function usePWA() {
         const registration = swRegistration || await navigator.serviceWorker.getRegistration();
         if (registration) {
           const subscription = await registration.pushManager.getSubscription();
-          currentBrowserSubscribed.value = subscription !== null;
           currentBrowserEndpoint.value = subscription?.endpoint ?? null;
+          if (!currentBrowserEndpoint.value || confirmedServerSubscription.value?.endpoint !== currentBrowserEndpoint.value) {
+            confirmedServerSubscription.value = null;
+          }
           return;
         }
       }
@@ -329,15 +341,8 @@ export function usePWA() {
       }
     }
 
-    // Fallback: check against server-side endpoints
-    const page = usePage<PageProps>();
-    const endpoints = page.props.pwa?.subscriptionEndpoints ?? [];
-    if (currentBrowserEndpoint.value) {
-      currentBrowserSubscribed.value = endpoints.includes(currentBrowserEndpoint.value);
-    }
-    else {
-      currentBrowserSubscribed.value = false;
-    }
+    currentBrowserEndpoint.value = null;
+    confirmedServerSubscription.value = null;
   };
 
   // Refresh subscription status from server and browser
@@ -386,8 +391,8 @@ export function usePWA() {
       const subscriptionJson = await subscribeRegistration(swRegistration, vapidKey);
 
       // Update local state to reflect subscription
-      currentBrowserSubscribed.value = true;
       currentBrowserEndpoint.value = subscriptionJson.endpoint;
+      confirmedServerSubscription.value = { userId: currentUserId(), endpoint: subscriptionJson.endpoint };
 
       // Reload page props to update hasPushSubscription
       router.reload({ only: ['pwa'] });
@@ -427,8 +432,8 @@ export function usePWA() {
           }
 
           // Update local state
-          currentBrowserSubscribed.value = false;
           currentBrowserEndpoint.value = null;
+          confirmedServerSubscription.value = null;
 
           // Reload page props
           router.reload({ only: ['pwa'] });
@@ -443,15 +448,15 @@ export function usePWA() {
         const response = await destroySubscription(currentBrowserEndpoint.value);
 
         if (response.ok) {
-          currentBrowserSubscribed.value = false;
           currentBrowserEndpoint.value = null;
+          confirmedServerSubscription.value = null;
           router.reload({ only: ['pwa'] });
           return true;
         }
       }
 
       // Nothing to remove in this browser: the "enabled" state was stale, so correct it.
-      currentBrowserSubscribed.value = false;
+      confirmedServerSubscription.value = null;
       router.reload({ only: ['pwa'] });
 
       return true;
@@ -477,6 +482,7 @@ export function usePWA() {
       }
 
       // Reload page props
+      confirmedServerSubscription.value = null;
       router.reload({ only: ['pwa'] });
 
       // Re-check current browser subscription in case we removed our own
@@ -660,7 +666,6 @@ export async function initPWA() {
           swRegistration = registration;
           serviceWorkerReady.value = true;
           const subscription = await registration.pushManager.getSubscription();
-          currentBrowserSubscribed.value = subscription !== null;
           currentBrowserEndpoint.value = subscription?.endpoint ?? null;
           console.log('[PWA] Found existing SW with push subscription:', subscription !== null);
         }
@@ -697,10 +702,8 @@ export async function initPWA() {
       }
 
       registration.pushManager.getSubscription().then((subscription: PushSubscription | null) => {
-        currentBrowserSubscribed.value = subscription !== null;
         currentBrowserEndpoint.value = subscription?.endpoint ?? null;
       }).catch(() => {
-        currentBrowserSubscribed.value = false;
         currentBrowserEndpoint.value = null;
       }).finally(() => migrateLegacyRegistration(registration));
 

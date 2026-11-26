@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'note_draft' => [
+        'saved' => 'Local draft saved at :time',
+        'restore' => 'Merge draft into notes',
+        'discard' => 'Discard draft',
+    ],
     'outcome' => [
         'matched_of' => ':matched of :total vote matched|:matched of :total votes matched',
         'votes' => 'vote:|votes:',

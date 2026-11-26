@@ -28,8 +28,9 @@ it('adds and saves a registration field using native sheet controls', function (
 
     $page->click('[data-testid=form-field-sheet] button:has-text("Pateikti")');
     $page->assertMissing('[data-testid=form-field-sheet]');
+    waitForInertiaRender($page, '[role=status]:has-text("Neišsaugota")');
     $page->click('[data-testid=form-page-save]');
-    $page->assertSee(__('messages.updated.f', ['model' => trans_choice('entities.form.model', 1)]));
+    waitForInertiaRender($page, '[role=status]:has-text("Visi pakeitimai išsaugoti")');
     $field = $form->formFields()->firstOrFail();
     expect($field->type)->toBe('string')
         ->and($field->subtype)->toBe('email')

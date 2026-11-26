@@ -11,9 +11,11 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import tailwindcss from '@tailwindcss/vite';
 import ziggy from 'vite-plugin-ziggy';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { VitePWA } from 'vite-plugin-pwa';
 
-import { codecovVitePlugin } from "@codecov/vite-plugin";
+import { codecovVitePlugin } from '@codecov/vite-plugin';
 
 export default defineConfig(({ command, isSsrBuild }) => {
   // Define common plugins that will be used in both build and test
@@ -61,12 +63,14 @@ export default defineConfig(({ command, isSsrBuild }) => {
     ziggy({
       sail: true,
     }),
-    ...(command === 'serve' ? [ziggy({
-      sail: true,
-      path: 'resources/js/ziggy.js',
-      types: false,
-      typesOnly: false,
-    })] : []),
+    ...(command === 'serve'
+      ? [ziggy({
+          sail: true,
+          path: 'resources/js/ziggy.js',
+          types: false,
+          typesOnly: false,
+        })]
+      : []),
   ];
 
   // Dev-only plugins - disabled for Storybook and builds
@@ -83,7 +87,7 @@ export default defineConfig(({ command, isSsrBuild }) => {
     ? [
         codecovVitePlugin({
           enableBundleAnalysis: true,
-          bundleName: "vusa-frontend",
+          bundleName: 'vusa-frontend',
           uploadToken: process.env.CODECOV_TOKEN,
         }),
       ]
@@ -91,6 +95,16 @@ export default defineConfig(({ command, isSsrBuild }) => {
 
   // The worker is built into public/build but served from /sw.js (ServiceWorkerController):
   // a worker at /build/sw.js could only ever control /build/, never the /mano pages.
+  const screenshotSize = (name: string) => {
+    const png = readFileSync(new URL(`./public/images/pwa/${name}.png`, import.meta.url));
+    const width = png.readUInt32BE(16);
+    const height = png.readUInt32BE(20);
+    if (Math.max(width, height) / Math.min(width, height) > 2.3) {
+      throw new Error(`PWA screenshot ${name}.png (${width}x${height}) exceeds Chrome's 2.3:1 aspect ratio limit.`);
+    }
+    return `${width}x${height}`;
+  };
+
   const pwaPlugin = VitePWA({
     registerType: 'prompt',
     buildBase: '/',
@@ -115,6 +129,10 @@ export default defineConfig(({ command, isSsrBuild }) => {
       display: 'standalone',
       scope: '/mano',
       start_url: '/mano?source=pwa',
+      shortcuts: [
+        { name: 'Užduotys', url: '/mano/tasks' },
+        { name: 'Pranešimai', url: '/mano/notifications' },
+      ],
       icons: [
         {
           src: '/images/icons/favicons/pwa-192x192.png',
@@ -139,14 +157,14 @@ export default defineConfig(({ command, isSsrBuild }) => {
       screenshots: [
         {
           src: '/images/pwa/screenshot-mobile.png',
-          sizes: '540x720',
+          sizes: screenshotSize('screenshot-mobile'),
           type: 'image/png',
           form_factor: 'narrow',
           label: 'VU SA Mano - Dashboard',
         },
         {
           src: '/images/pwa/screenshot-desktop.png',
-          sizes: '1280x720',
+          sizes: screenshotSize('screenshot-desktop'),
           type: 'image/png',
           form_factor: 'wide',
           label: 'VU SA Mano - Dashboard',
@@ -156,8 +174,17 @@ export default defineConfig(({ command, isSsrBuild }) => {
     workbox: {
       // Import custom push notification handler
       importScripts: ['/sw-push.js'],
-      // No rule for /mano pages: one URL answers both HTML and Inertia JSON, and pages are per-user.
+      additionalManifestEntries: [{
+        url: '/mano-offline.html',
+        revision: createHash('sha256').update(readFileSync(new URL('./public/mano-offline.html', import.meta.url))).digest('hex'),
+      }],
       runtimeCaching: [
+        {
+          urlPattern: ({ request, url, sameOrigin }) => sameOrigin && request.mode === 'navigate'
+            && (url.pathname === '/mano' || url.pathname.startsWith('/mano/')),
+          handler: 'NetworkOnly',
+          options: { precacheFallback: { fallbackURL: '/mano-offline.html' } },
+        },
         {
           urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
           handler: 'StaleWhileRevalidate',

@@ -22,7 +22,18 @@ it('keeps the home layout within the viewport at the redesign widths', function 
             $page->screenshot(fullPage: false, filename: 'admin-home-'.$width.($dark ? '-dark' : '-light'));
 
             if (! $dark && $width === 390) {
+                // 844 matches a standard phone viewport and stays under Chrome's 2.3:1 PWA screenshot limit.
+                $page->resize(390, 844);
                 docsScreenshot($page, 'admin-home-phone');
+                $page->resize(390, 900);
+                $headerTop = 'document.querySelector("[data-slot=mobile-context-bar]").getBoundingClientRect().top';
+                $top = $page->script($headerTop);
+
+                foreach ([300, 100, 0] as $offset) {
+                    $page->script('document.querySelector("[data-slot=admin-scroll-area]").scrollTop = '.$offset);
+                    expect($page->script('document.querySelector("[data-slot=admin-scroll-area]").scrollTop'))->toBe($offset)
+                        ->and($page->script($headerTop))->toBe($top);
+                }
             }
 
             // 840 ends the desktop frame after Tavo institucijos instead of on the next heading.

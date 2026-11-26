@@ -65,7 +65,11 @@ tests:
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - resources/js/Components/Layouts/Shell/__tests__/PaletteField.component.test.ts
   - resources/js/Components/Layouts/Shell/__tests__/ShellTopBar.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/AdminShell.component.test.ts
   - resources/js/Components/Layouts/Shell/__tests__/MobileBottomBar.component.test.ts
+  - resources/js/Composables/__tests__/swPush.test.ts
+  - resources/js/Composables/__tests__/useAgendaItemNotes.test.ts
+  - resources/js/Composables/__tests__/usePWA.test.ts
   - tests/Unit/Models/TranslatableExpectationsTest.php
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
@@ -114,8 +118,7 @@ Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip p
 Skilčių piktogramos nusako jų paskirtį: Wiki žymi knyga, tau skirtus straipsnius – knyga su varnele,
 Mano kelią – maršrutas, atstovus – žmonės. Tos pačios piktogramos naudojamos telefono meniu ir skilčių nuorodose.
 
-Slenkant puslapį, turinys po viršutine juosta suliejamas, kad navigacija ir formos veiksmai liktų aiškiai matomi.
-Didelio kontrasto režimu juostos fonas yra nepermatomas.
+Slenkant puslapį, viršutinė juosta lieka matoma viršuje, kad navigacija ir formos veiksmai visada būtų pasiekiami.
 
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
@@ -297,6 +300,16 @@ Lentelėje vienas eilutės veiksmas rodomas su tekstu: darbo žingsnis (pvz., �
 Stulpelį, kurio antraštėje yra rodyklės, galima rikiuoti: paspaudus antraštę tvarka apsiverčia. Tą pačią tvarką galima pasirinkti ir per „Rikiuoti“. Veiksmų stulpelis lieka dešinėje slenkant plačią lentelę. Kai nė viena rodoma eilutė neturi veiksmų, veiksmų stulpelis nerodomas. Meniu telefone atsidaro ekrano apačioje. Ištrintų įrašų atkūrimas ir galutinis ištrynimas taip pat yra ⋯ meniu; kai leidžiama tik atkurti, rodomas mygtukas „Atkurti“.
 
 Peržiūros srityje taip pat lieka nuorodos į susijusius įrašus, o rankiniu būdu atliekamą užduotį galima pažymėti atlikta arba grąžinti į neatliktas. Kol veiksmas vykdomas, tos užduoties veiksmai laikinai neprieinami.
+
+## Programėlė telefone {#programele-telefone}
+
+<ChangelogNote date="2026-11-26" title="Programėlė telefone">
+
+Be ryšio atvėręs programėlę, prisijunk prie interneto ir spausk **Bandyti dar kartą**, kad grįžtum į pasirinktą puslapį. Palaikomuose įrenginiuose palaikyk nuspaudęs programėlės piktogramą, kad atvertum užduotis ar pranešimus.
+
+</ChangelogNote>
+
+Jei nepavyko išsaugoti darbotvarkės klausimo pastabų, tuo pačiu įrenginiu ir ta pačia paskyra grįžk į klausimą. Peržiūrėk juodraštį ir pasirink, ar sujungti jį su pastabomis, ar atmesti.
 
 ## Techninė informacija {#technine-informacija}
 

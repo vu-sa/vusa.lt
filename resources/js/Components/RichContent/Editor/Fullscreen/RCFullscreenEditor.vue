@@ -10,7 +10,7 @@
       <div data-surface="public" class="@container flex h-full min-h-0 flex-col overflow-x-clip bg-background text-foreground font-public">
         <div ref="toolbarPortalRef" data-rc-smart-toolbar-portal />
 
-        <div class="z-40 flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background/95 px-3 py-2 backdrop-blur">
+        <div data-testid="fullscreen-toolbar" class="z-40 flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background/95 px-3 py-2 backdrop-blur">
           <Button v-if="!embedded" type="button" size="icon" class="size-11" variant="ghost" :title="$t('rich-content.close_fullscreen_editor')" @click="$emit('close')">
             <X class="size-4" />
           </Button>
