@@ -79,6 +79,8 @@ Adresas: `/mano/settings/purposes`. Puslapis turi dvi dalis:
   *Mentoriai* padalinių kontaktų puslapiuose. Nuorodos (`/kontaktai/koordinatoriai` ir kt.)
   nesikeičia. Kol tipas nepasirinktas, naudojamas tipas su ta pačia nuoroda.
 
+Ekrano skaitytuvas gali perskaityti pasirinkimo lauko pavadinimą, paaiškinimą ir klaidą. Tai galioja ir pareigybės tipo lauke, kuriame pasirinkimų galima ieškoti įvedus tekstą.
+
 Paskirtį atliekančios atsakomybės ar kontaktuose naudojamo tipo ištrinti negalima.
 
 ### Formų nustatymai {#formos}

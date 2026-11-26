@@ -51,7 +51,7 @@ class SyncDocumentsCommand extends Command
                     $query->whereNull('checked_at')
                         ->orWhere('checked_at', '<', now()->subDay());
                 })
-                ->where('sync_status', '!=', 'syncing')
+                ->where('sync_status', '!=', Document::SYNC_STATUS_SYNCING)
                 ->count();
 
             $this->info("Would sync {$staleCount} stale documents");
@@ -68,7 +68,7 @@ class SyncDocumentsCommand extends Command
     private function syncAllDocuments()
     {
         $query = $this->linkable()
-            ->where('sync_status', '!=', 'syncing')
+            ->where('sync_status', '!=', Document::SYNC_STATUS_SYNCING)
             ->orderBy('checked_at', 'asc');
 
         if ($this->option('shortcuts')) {
@@ -91,7 +91,7 @@ class SyncDocumentsCommand extends Command
                     $doc->id,
                     substr($doc->title ?? 'Untitled', 0, 50),
                     $doc->checked_at ? $doc->checked_at->format('Y-m-d H:i') : 'Never',
-                    $doc->sync_status ?? 'pending',
+                    $doc->sync_status ?? Document::SYNC_STATUS_PENDING,
                 ])
             );
 
@@ -131,7 +131,7 @@ class SyncDocumentsCommand extends Command
         $limit = $this->option('limit') ? (int) $this->option('limit') : 50;
 
         $query = $this->linkable()
-            ->where('sync_status', 'failed')
+            ->where('sync_status', Document::SYNC_STATUS_FAILED)
             ->where('sync_attempts', '<=', 5)
             ->orderBy('last_sync_attempt_at', 'asc')
             ->limit($limit);

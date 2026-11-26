@@ -19,7 +19,7 @@
       :disabled
       :required
       :aria-label
-      :aria-invalid="!!error"
+      :aria-invalid="ariaInvalid ?? !!error"
       :class="cn(
         'w-full appearance-none border border-border bg-secondary/50 transition-colors',
         showingPlaceholder ? 'text-muted-foreground' : 'text-foreground',
@@ -28,7 +28,7 @@
         size === 'sm'
           ? ['h-8 text-xs pr-8 pointer-coarse:min-h-11', icon ? 'pl-8' : 'px-2.5']
           : ['h-11 text-sm pr-9 pointer-coarse:min-h-11', icon ? 'pl-9' : 'px-3'],
-        error ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : '',
+        (error || ariaInvalid === true || ariaInvalid === 'true') ? 'border-destructive focus:border-destructive focus:ring-destructive/20' : '',
         selectClass
       )"
       @blur="emit('blur', $event)"
@@ -89,6 +89,7 @@ const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class'];
   selectClass?: HTMLAttributes['class'];
   ariaLabel?: string;
+  ariaInvalid?: HTMLAttributes['aria-invalid'];
 }>(), {
   id: undefined,
   options: () => [],
@@ -97,6 +98,7 @@ const props = withDefaults(defineProps<{
   error: undefined,
   size: 'default',
   icon: undefined,
+  ariaInvalid: undefined,
   class: undefined,
   selectClass: undefined,
   ariaLabel: undefined,

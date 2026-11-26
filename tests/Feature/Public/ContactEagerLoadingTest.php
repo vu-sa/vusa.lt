@@ -1,10 +1,13 @@
 <?php
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Tenant;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\SystemDutyTypes;
+use App\Settings\DutyTypeSettings;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -34,56 +37,40 @@ beforeEach(function (): void {
     $this->duty->users()->attach($this->user->id, ['start_date' => now()->subDay()]);
 });
 
-describe('contact eager loading with types', function (): void {
-    test('eager loading current_users.current_duties.types loads all relations without N+1', function (): void {
-        $types = collect([$this->type]);
+test('duty type contacts show current holders of matching duties once', function (): void {
+    $tenant = Tenant::main();
+    $alias = GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS;
+    $institution = Institution::where('alias', $alias)->first()
+        ?? Institution::factory()->for($tenant)->create(['alias' => $alias, 'is_active' => true]);
 
-        // This is the pattern used by ContactController::institutionDutyTypeContacts
-        $duties = $this->institution->load(['duties' => function ($query) use ($types): void {
-            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))
-                ->with('current_users.current_duties.types');
-        }])->duties;
+    $settings = app(DutyTypeSettings::class);
+    $settings->coordinator_type_id = $this->type->id;
+    $settings->save();
+    app(SystemDutyTypes::class)->flush();
 
-        expect($duties)->not->toBeEmpty();
+    $childType = DutyType::factory()->create(['parent_id' => $this->type->id]);
+    $rootDuty = Duty::factory()->for($institution)->create(['order' => 1]);
+    $childDuty = Duty::factory()->for($institution)->create(['order' => 2]);
+    $unrelatedDuty = Duty::factory()->for($institution)->create();
+    $rootDuty->types()->attach($this->type);
+    $childDuty->types()->attach($childType);
 
-        $duty = $duties->first();
-        expect($duty)->not->toBeNull();
+    $holder = makeUser($tenant);
+    $rootDuty->users()->attach($holder->id, ['start_date' => today()->subDay()]);
+    $childDuty->users()->attach($holder->id, ['start_date' => today()]);
+    $unrelatedDuty->users()->attach($holder->id, ['start_date' => today()]);
+    $rootDuty->users()->attach(makeUser($tenant)->id, ['start_date' => today()->addDay()]);
+    $childDuty->users()->attach(makeUser($tenant)->id, ['start_date' => today()->subDays(2), 'end_date' => today()->subDay()]);
 
-        $currentUsers = $duty->current_users;
-        expect($currentUsers)->not->toBeEmpty();
-
-        // Verify that the nested relations are loaded (not lazy-loaded)
-        $user = $currentUsers->first();
-        expect($user->relationLoaded('current_duties'))->toBeTrue();
-
-        if ($user->current_duties->isNotEmpty()) {
-            $firstDuty = $user->current_duties->first();
-            expect($firstDuty->relationLoaded('types'))->toBeTrue();
-        }
-    });
-
-    test('types are available for filtering without additional queries', function (): void {
-        $types = collect([$this->type]);
-
-        $duties = $this->institution->load(['duties' => function ($query) use ($types): void {
-            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))
-                ->with('current_users.current_duties.types');
-        }])->duties;
-
-        $contacts = $duties->pluck('current_users')->flatten()->unique('id');
-
-        // Filter duties by types - this should NOT trigger additional queries
-        // because types are already eager loaded
-        $contacts = $contacts->map(function ($contact) use ($types) {
-            $contact->filtered_current_duties = $contact->current_duties->filter(fn ($duty) => $duty->types->intersect($types)->count() > 0);
-
-            return $contact;
-        });
-
-        expect($contacts)->not->toBeEmpty();
-        $contact = $contacts->first();
-        expect($contact->filtered_current_duties)->not->toBeEmpty();
-    });
+    $this->get(LocalizedRouteSlugs::route('contacts.dutyType', ['subdomain' => 'www', 'type' => 'koordinatoriai'], 'lt'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowInstitution')
+            ->has('contacts', 1)
+            ->where('contacts.0.id', $holder->id)
+            ->has('contacts.0.duties', 2)
+            ->where('contacts.0.duties.0.id', $rootDuty->id)
+            ->where('contacts.0.duties.1.id', $childDuty->id));
 });
 
 test('public contacts preserve cross-locale pronouns and the assignment name override', function (string $grouping, string $contactPath): void {

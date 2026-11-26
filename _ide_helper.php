@@ -5,7 +5,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 13.43.0.
+ * Generated for Laravel 13.44.1.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -4120,6 +4120,18 @@ namespace  {
         {
             /** @var \Illuminate\Database\Query\Builder $instance */
             return $instance->lockForUpdate();
+        }
+
+        /**
+         * Lock the selected rows in the table for updating without blocking foreign key checks.
+         *
+         * @return \Illuminate\Database\Eloquent\Builder<static>
+         * @static
+         */
+        public static function lockForNoKeyUpdate()
+        {
+            /** @var \Illuminate\Database\Query\Builder $instance */
+            return $instance->lockForNoKeyUpdate();
         }
 
         /**

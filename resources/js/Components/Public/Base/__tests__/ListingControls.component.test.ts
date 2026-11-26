@@ -1,12 +1,12 @@
-import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
+import { afterEach, describe, expect, it } from 'vitest';
 import { nextTick } from 'vue';
 
 import PublicEmptyState from '../PublicEmptyState.vue';
 import PublicSearchInput from '../PublicSearchInput.vue';
 import PublicSortMenu from '../PublicSortMenu.vue';
 
-const passthrough = { template: '<div><slot /></div>' };
+enableAutoUnmount(afterEach);
 
 describe('PublicSearchInput', () => {
   const mountInput = (modelValue: string) => mount(PublicSearchInput, {
@@ -38,15 +38,20 @@ describe('PublicSortMenu', () => {
   ];
   const mountMenu = (modelValue: string) => mount(PublicSortMenu, {
     props: { modelValue, options, defaultValue: 'relevance' },
-    global: { stubs: { Popover: passthrough, PopoverTrigger: passthrough, PopoverContent: passthrough } },
+    attachTo: document.body,
   });
 
   it('marks the chosen order and emits a new one', async () => {
     const wrapper = mountMenu('relevance');
-    const radios = wrapper.findAll('[role="radio"]');
-    expect(radios.map(radio => radio.attributes('aria-checked'))).toEqual(['true', 'false']);
+    const trigger = wrapper.get('[data-slot="public-sort-menu"]');
+    await trigger.trigger('click');
+    await flushPromises();
+    const radios = Array.from(document.querySelectorAll<HTMLElement>('[role="menuitemradio"]'));
+    expect(radios.map(radio => radio.getAttribute('aria-checked'))).toEqual(['true', 'false']);
 
-    await radios[1]!.trigger('click');
+    radios[1]!.click();
+    await flushPromises();
+    expect(trigger.attributes('aria-expanded')).toBe('false');
     expect(wrapper.emitted('update:modelValue')).toEqual([['newest']]);
   });
 

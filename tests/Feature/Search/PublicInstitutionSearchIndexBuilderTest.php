@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -151,7 +152,7 @@ test('PublicInstitutionSearchIndexBuilder ranks key institutions ahead of the re
     expect($searchable['display_priority'])->toBe($expected);
 })->with([
     'VU SA itself' => [TenantType::Pagrindinis, true, false, 5],
-    'central office, right after VU SA' => [TenantType::Pagrindinis, false, true, 4, 'centrinis-biuras'],
+    'central office, right after VU SA' => [TenantType::Pagrindinis, false, true, 4, GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS],
     'VU SA governing body' => [TenantType::Pagrindinis, false, true, 3],
     'padalinys main institution' => [TenantType::Padalinys, true, false, 2],
     'PKP main institution' => [TenantType::Pkp, true, false, 1],

@@ -13,6 +13,7 @@
       :class="cn(
         singleSelectTriggerVariants({ variant, size }),
         disabled && 'opacity-50 cursor-not-allowed',
+        (error || ariaInvalid === true || ariaInvalid === 'true') && 'border-destructive focus-within:border-destructive focus-within:ring-destructive/20',
         props.class,
       )"
       @click.self="open = true"
@@ -20,6 +21,9 @@
       <slot name="prefix" :selected="selectedItem" />
       <ComboboxInput
         v-if="!disabled"
+        :id
+        :aria-describedby
+        :aria-invalid="ariaInvalid ?? (error ? true : undefined)"
         :display-value="getDisplayValue"
         class="flex-1 min-w-0 bg-transparent placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         :placeholder="!selectedItem ? placeholder : ''"
@@ -126,6 +130,10 @@ const singleSelectTriggerVariants = cva(
 const props = withDefaults(defineProps<{
   /** The v-model value - single selected item or null */
   modelValue: T | null;
+  id?: string;
+  error?: boolean | string;
+  ariaDescribedby?: string;
+  ariaInvalid?: HTMLAttributes['aria-invalid'];
   /** Available options to select from */
   options: T[];
   /** Property to use as the display label */
@@ -152,6 +160,9 @@ const props = withDefaults(defineProps<{
   size?: 'default' | 'sm' | 'xs';
   class?: HTMLAttributes['class'];
 }>(), {
+  id: undefined,
+  error: undefined,
+  ariaDescribedby: undefined,
   labelField: 'label',
   valueField: 'id',
   placeholder: 'Select an item...',
@@ -162,6 +173,7 @@ const props = withDefaults(defineProps<{
   itemClass: undefined,
   variant: 'default',
   size: 'default',
+  ariaInvalid: undefined,
   class: undefined,
 });
 

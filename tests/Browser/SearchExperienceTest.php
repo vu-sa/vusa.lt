@@ -74,8 +74,8 @@ it('renders document prefix search across widths and themes without JavaScript e
     navigateTo($page, '/lt/dokumentai');
     $page->assertVisible('[data-slot="recommended-documents"]');
     $page->click('button[aria-label="Rikiuoti"]');
-    $page->assertVisible('button[role="radio"][aria-checked="true"]:has-text("Naujausi pirmi")');
-    $page->click('button[role="radio"]:has-text("Naujausi pirmi")');
+    $newestFirst = '[role="menu"] [role="menuitemradio"][aria-checked="true"]:has-text("Naujausi pirmi")';
+    $page->assertVisible($newestFirst)->click($newestFirst);
     $page->assertVisible('[data-slot="recommended-documents"]');
 });
 

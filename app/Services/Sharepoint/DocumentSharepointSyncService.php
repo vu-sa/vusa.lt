@@ -23,7 +23,7 @@ class DocumentSharepointSyncService
      */
     public function sync(Document $document, bool $force = false): ?Document
     {
-        $document->sync_status = 'syncing';
+        $document->sync_status = Document::SYNC_STATUS_SYNCING;
         // Saturate the tinyint so repeated manual retries can still reach SharePoint.
         $document->sync_attempts = min(255, ($document->sync_attempts ?? 0) + 1);
         $document->last_sync_attempt_at = Carbon::now();
@@ -61,7 +61,7 @@ class DocumentSharepointSyncService
             if (! $force && $eTagMatches && ! $hasInvalidUrl && ! $needsShortcutTarget && ! $needsLink) {
                 Log::info('SharePoint document was already up to date', ['document_id' => $document->id]);
                 $document->checked_at = Carbon::now();
-                $document->sync_status = 'success';
+                $document->sync_status = Document::SYNC_STATUS_SUCCESS;
                 $document->sync_attempts = 0;
                 $document->save();
 
@@ -88,7 +88,7 @@ class DocumentSharepointSyncService
             // Only a published document may carry a public link; the rest just track metadata.
             if (! $document->isPublished()) {
                 $document->checked_at = Carbon::now();
-                $document->sync_status = 'success';
+                $document->sync_status = Document::SYNC_STATUS_SUCCESS;
                 $document->sync_attempts = 0;
                 $document->save();
 
@@ -133,7 +133,7 @@ class DocumentSharepointSyncService
                     ]);
 
                     $document->checked_at = Carbon::now();
-                    $document->sync_status = 'success';
+                    $document->sync_status = Document::SYNC_STATUS_SUCCESS;
                     $document->sync_attempts = 0;
                     $document->save();
                     $document->refresh();
@@ -189,7 +189,7 @@ class DocumentSharepointSyncService
                 $document->anonymous_url = $newUrl;
                 $document->sharepoint_permission_id = $permissionId;
                 $document->checked_at = Carbon::now();
-                $document->sync_status = 'success';
+                $document->sync_status = Document::SYNC_STATUS_SUCCESS;
                 $document->sync_attempts = 0;
                 $document->save();
 
@@ -209,7 +209,7 @@ class DocumentSharepointSyncService
                 }
 
                 $document->checked_at = Carbon::now();
-                $document->sync_status = 'success';
+                $document->sync_status = Document::SYNC_STATUS_SUCCESS;
                 $document->sync_attempts = 0;
                 $document->save();
 
@@ -281,7 +281,7 @@ class DocumentSharepointSyncService
             $document->anonymous_url = null;
         }
 
-        $document->sync_status = 'failed';
+        $document->sync_status = Document::SYNC_STATUS_FAILED;
         $document->sync_error_message = $message;
         $document->save();
     }

@@ -38,12 +38,12 @@
       </span>
     </div>
 
-    <slot />
+    <slot :control-attrs />
 
-    <p v-if="hint" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
+    <p v-if="hint" :id="hintId" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
       {{ hint }}
     </p>
-    <p v-if="error" class="text-xs text-destructive">
+    <p v-if="error" :id="errorId" class="text-xs text-destructive">
       {{ error }}
     </p>
   </div>
@@ -73,6 +73,13 @@ const props = defineProps<{
   valid?: boolean;
   invalid?: boolean;
 }>();
+
+const hintId = computed(() => `${props.id}-hint`);
+const errorId = computed(() => `${props.id}-error`);
+const controlAttrs = computed(() => ({
+  'aria-describedby': [props.hint && hintId.value, props.error && errorId.value].filter(Boolean).join(' ') || undefined,
+  'aria-invalid': props.error || props.invalid ? true : undefined,
+}));
 
 const charCountClass = computed(() => {
   if (props.charCount === undefined || props.maxLength === undefined) {

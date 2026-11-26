@@ -16,6 +16,7 @@
         v-for="purpose in purposes"
         :id="`purpose_${purpose.key}`"
         :key="purpose.key"
+        v-slot="{ controlAttrs }"
         :label="purpose.label"
         :hint="purpose.drives"
         :error="form.errors[`purposes.${purpose.key}`]"
@@ -29,6 +30,7 @@
           @dismiss="reservationSpotlight.dismiss()"
         >
           <NativeSelect
+            v-bind="controlAttrs"
             :id="`purpose_${purpose.key}`"
             v-model="form.purposes[purpose.key]"
             :options="responsibilityOptions"
@@ -40,6 +42,7 @@
         </SpotlightPopover>
         <NativeSelect
           v-else
+          v-bind="controlAttrs"
           :id="`purpose_${purpose.key}`"
           v-model="form.purposes[purpose.key]"
           :options="responsibilityOptions"
@@ -54,11 +57,13 @@
         v-for="part in dutyTypes"
         :id="`duty_type_${part.key}`"
         :key="part.key"
+        v-slot="{ controlAttrs }"
         :label="part.label"
         :hint="fallbackHint(part) ?? part.drives"
         :error="form.errors[`duty_types.${part.key}`]"
       >
         <TypeTreeSelect
+          v-bind="controlAttrs"
           :id="`duty_type_${part.key}`"
           v-model="form.duty_types[part.key]"
           :types="dutyTypeOptions"

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Actions\Media\AddImageMedia;
 use App\Enums\TenantType;
 use App\Models\Duty;
@@ -54,7 +55,7 @@ test('logging in does not expose inactive public institution pages', function ()
 
 test('duty type contact URLs follow the primary institution visibility', function (string $subdomain, string $locale): void {
     $tenant = $subdomain === 'www' ? Tenant::main() : Tenant::where('alias', $subdomain)->firstOrFail();
-    $alias = $tenant->isMain() ? 'centrinis-biuras' : $tenant->alias;
+    $alias = $tenant->isMain() ? GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS : $tenant->alias;
     $institution = Institution::where('alias', $alias)->first()
         ?? Institution::factory()->create([
             'tenant_id' => $tenant->id,
@@ -69,7 +70,10 @@ test('duty type contact URLs follow the primary institution visibility', functio
     app(SystemDutyTypes::class)->flush();
     $url = LocalizedRouteSlugs::route('contacts.dutyType', ['subdomain' => $subdomain, 'lang' => $locale, 'type' => 'koordinatoriai'], $locale);
 
-    $this->get($url)->assertOk();
+    $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Public/Contacts/ShowInstitution')
+        ->where('institution.id', $institution->id)
+    );
     $institution->update(['is_active' => false]);
     $this->get($url)->assertNotFound();
     $institution->update(['is_active' => true]);

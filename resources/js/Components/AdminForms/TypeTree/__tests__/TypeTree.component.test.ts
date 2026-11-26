@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
+import { h } from 'vue';
 
 import TypeTreeChecklist from '../TypeTreeChecklist.vue';
 import TypeTreeMultiSelect from '../TypeTreeMultiSelect.vue';
@@ -14,6 +15,19 @@ const types = [
 const manyTypes = Array.from({ length: 20 }, (_, index) => ({ id: index + 1, title: `Tipas ${String(index + 1).padStart(2, '0')}`, parent_id: index === 0 ? null : 1 }));
 
 describe('TypeTreeSelect', () => {
+  it.each([16, 17])('associates the label and invalid state with the control for %i options', (count) => {
+    const wrapper = mount({
+      render: () => h('div', [
+        h('label', { for: 'duty-type' }, 'Pareigybės tipas'),
+        h(TypeTreeSelect, { id: 'duty-type', types: manyTypes.slice(0, count), modelValue: 2, error: 'Pasirink tipą' }),
+      ]),
+    });
+    const control = wrapper.get(count === 16 ? 'select' : 'input[role="combobox"]');
+
+    expect(wrapper.get<HTMLLabelElement>('label').element.control).toBe(control.element);
+    expect(control.attributes('aria-invalid')).toBe('true');
+  });
+
   it('indents a native option per level and leaves out an excluded type with its subtypes', () => {
     const wrapper = mount(TypeTreeSelect, { props: { types, exclude: [9], placeholder: 'Nėra', modelValue: null } });
 

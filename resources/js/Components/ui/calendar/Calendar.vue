@@ -13,7 +13,7 @@
           <div class="relative flex h-8 items-center border border-border bg-background transition-colors hover:border-foreground/30 focus-within:border-brand">
             <select
               :value="String(currentPlaceholder.month)"
-              aria-label="Mėnuo"
+              :aria-label="$t('Mėnuo')"
               class="h-full appearance-none bg-transparent pl-2 pr-6 text-xs font-bold uppercase tracking-wider text-foreground outline-none cursor-pointer"
               @change="handleMonthSelect(($event.target as HTMLSelectElement).value)"
             >
@@ -27,7 +27,7 @@
           <div class="relative flex h-8 items-center border border-border bg-background transition-colors hover:border-foreground/30 focus-within:border-brand">
             <select
               :value="String(currentPlaceholder.year)"
-              aria-label="Metai"
+              :aria-label="$t('Metai')"
               class="h-full appearance-none bg-transparent pl-2 pr-6 text-xs font-bold text-foreground outline-none cursor-pointer"
               @change="handleYearSelect(($event.target as HTMLSelectElement).value)"
             >
@@ -78,6 +78,7 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch, type HTMLAttributes } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarRoot, type CalendarRootEmits, type CalendarRootProps, useForwardPropsEmits } from 'reka-ui';
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 import { ChevronDown } from '@lucide/vue';
