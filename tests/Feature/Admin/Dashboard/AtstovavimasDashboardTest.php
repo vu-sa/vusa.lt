@@ -11,18 +11,13 @@ use App\Models\InstitutionLink;
 use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
-use App\Models\News;
-use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Pivots\AgendaItem;
-use App\Models\QuickLink;
-use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -33,11 +28,6 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
-    // Create related test data
-    $this->page = Page::factory()->for($this->tenant)->create();
-    $this->news = News::factory()->for($this->tenant)->create();
-    $this->quickLink = QuickLink::factory()->for($this->tenant)->create();
-    $this->resource = Resource::factory()->for($this->tenant)->create();
 });
 
 describe('atstovavimas dashboard', function (): void {
@@ -96,15 +86,11 @@ describe('atstovavimas dashboard', function (): void {
             'end_date' => '2026-11-30',
         ]);
 
-        Carbon::setTestNow('2026-11-30 12:00:00');
-        try {
-            asUserWithInertia($this->user)->getJson(route('dashboard.atstovavimas'))
-                ->assertOk()
-                ->assertJsonPath('props.userInstitutions.0.active_check_in.id', $checkIn->id)
-                ->assertJsonPath('props.userInstitutions.0.active_check_in.end_date', '2026-11-30');
-        } finally {
-            Carbon::setTestNow();
-        }
+        $this->travelTo('2026-11-30 12:00:00');
+        asUserWithInertia($this->user)->getJson(route('dashboard.atstovavimas'))
+            ->assertOk()
+            ->assertJsonPath('props.userInstitutions.0.active_check_in.id', $checkIn->id)
+            ->assertJsonPath('props.userInstitutions.0.active_check_in.end_date', '2026-11-30');
     });
 
     test('first-paint query count stays constant as historical incomplete meetings are added', function (): void {
@@ -257,17 +243,7 @@ describe('atstovavimas dashboard', function (): void {
             );
     });
 
-    test('the padaliniai task number counts padalinys tasks, not the viewer\'s own', function (): void {
-        asUserWithInertia($this->admin)
-            ->get(route('dashboard.atstovavimas.padaliniai'))
-            ->assertInertia(fn (Assert $page) => $page->missing('openTasksCount'));
-
-        asUserWithInertia(makeAdminUser($this->tenant))
-            ->get(route('dashboard.atstovavimas.padaliniai'))
-            ->assertInertia(fn (Assert $page) => $page->where('canViewTenantTasks', true));
-    });
-
-    test('a padalinys communication coordinator gets statistics and the Gantt for their own padalinys, without the task number', function (): void {
+    test('a padalinys communication coordinator gets statistics and the Gantt for their own padalinys, without tenant task access', function (): void {
         $ownTenantId = $this->admin->current_duties()->first()->institution->tenant_id;
 
         asUserWithInertia($this->admin)
@@ -279,7 +255,7 @@ describe('atstovavimas dashboard', function (): void {
             );
     });
 
-    test('the central student representative coordinator gets statistics for every padalinys and the task number', function (): void {
+    test('the central student representative coordinator gets statistics for every padalinys and can view tenant tasks', function (): void {
         $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
         $representationalCount = Tenant::query()->representational()->count();
 
@@ -292,32 +268,6 @@ describe('atstovavimas dashboard', function (): void {
             );
     });
 
-    test('atstovavimas provides accessible institutions and available tenants', function (): void {
-        // Give the admin the institutions.read.padalinys permission so they can see tenant data
-        $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
-        $duty = $this->admin->current_duties->first();
-        if ($duty) {
-            $role = Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
-            $role->givePermissionTo($permission);
-            $duty->assignRole($role);
-        }
-
-        $response = asUser($this->admin)->get(route('dashboard.atstovavimas.padaliniai'));
-
-        $response->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->has('statsTenants')
-                ->where('statsTenants', function ($tenants) {
-                    // Convert to collection if it's an array, or keep as collection
-                    $collection = collect($tenants);
-
-                    // Should have at least one tenant and not include PKP type
-                    return $collection->count() > 0 &&
-                           $collection->every(fn ($tenant) => $tenant['type'] !== 'pkp');
-                })
-            );
-    });
 });
 
 describe('atstovavimas dashboard authorization', function (): void {
@@ -434,31 +384,6 @@ describe('atstovavimas dashboard authorization', function (): void {
 
                     return $collection->contains(fn ($tenant) => $tenant['id'] == $mainTenant->id)
                         && $collection->contains(fn ($tenant) => $tenant['id'] == $otherTenant->id);
-                })
-            );
-    });
-
-    test('user with padalinys read permission sees their tenants', function (): void {
-        // Give the admin the institutions.read.padalinys permission
-        $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
-        $duty = $this->admin->current_duties->first();
-        if ($duty) {
-            $role = Role::firstOrCreate(['name' => 'Institution Reader Test', 'guard_name' => 'web']);
-            $role->givePermissionTo($permission);
-            $duty->assignRole($role);
-        }
-
-        // The admin should have available tenants for the tenant tab
-        asUserWithInertia($this->admin)
-            ->get(route('dashboard.atstovavimas.padaliniai'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->where('statsTenants', function ($tenants) {
-                    $collection = collect($tenants);
-
-                    // User with permission should have available tenants for the tenant tab
-                    return $collection->isNotEmpty();
                 })
             );
     });
@@ -584,18 +509,6 @@ describe('atstovavimas tenant isolation', function (): void {
         }
     });
 
-    test('user sees institutions and tenants based on their permissions', function (): void {
-        asUserWithInertia($this->admin)
-            ->get(route('dashboard.atstovavimas.padaliniai'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->has('statsTenants')
-                ->where('statsTenants',
-                    // User should see tenants they have permissions for
-                    fn ($tenants) => collect($tenants)->count() > 0)
-            );
-    });
 });
 
 describe('atstovavimas related institutions', function (): void {

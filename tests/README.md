@@ -147,7 +147,7 @@ tests/Feature/
 │   ├── Permissions/# Permission, Role controllers
 │   ├── Reservations/# Reservation, cart, Resource, ResourceCategory controllers
 │   └── Resources/  # Document, Files, SharePoint controllers
-├── Api/Admin/      # {Controller}Test.php for each admin API controller
+├── Api/Admin/      # Includes Atstovavimas, Comment, Institution, Meeting and Resource API controllers
 ├── Approvals/      # ApprovalService and ApprovalController (one describe per action)
 ├── Duties/         # Duty update action and shared assignment service
 ├── Tasks/          # Mirrors app/Tasks/ structure

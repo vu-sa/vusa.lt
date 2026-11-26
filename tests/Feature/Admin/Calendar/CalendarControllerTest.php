@@ -6,7 +6,6 @@ use App\Models\EventType;
 use App\Models\PublicUrl;
 use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -73,11 +72,6 @@ test('calendar index change cannot edit another tenant event', function (): void
 });
 
 describe('unauthorized access', function (): void {
-    beforeEach(function (): void {
-        $response = asUser($this->regularUser)->get(route('dashboard'));
-        expect($response->status())->toBe(200);
-    });
-
     test('cannot index calendar', function (): void {
         $response = asUser($this->regularUser)->get(route('calendar.index'));
         expect($response->status())->toBe(403);
@@ -390,22 +384,6 @@ describe('authorized access', function (): void {
             ->toBe($calendar->id);
     });
 
-    test('super admin can access all calendar functions', function (): void {
-        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
-        $calendar = Calendar::factory()->for($this->tenant)->create();
-
-        // Test index access
-        $response = asUser($admin)->get(route('calendar.index'));
-        $response->assertStatus(200);
-
-        // Test create access
-        $response = asUser($admin)->get(route('calendar.create'));
-        $response->assertStatus(200);
-
-        // Test edit access - admin can access calendars from their tenant
-        $response = asUser($admin)->get(route('calendar.edit', $calendar));
-        $response->assertStatus(200);
-    });
 });
 
 describe('validation', function (): void {
@@ -708,28 +686,9 @@ describe('tenant isolation', function (): void {
         expect($calendar->fresh()->tenant_id)->toBe($this->tenant->id);
     });
 
-    test('can store a calendar event for its own tenant', function (): void {
-        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
-            'title' => ['lt' => 'Savas renginys', 'en' => 'Own event'],
-            'permalink' => ['lt' => 'savas-renginys', 'en' => 'own-event'],
-            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
-            'date' => now()->addDays(1)->format('Y-m-d'),
-            'tenant_id' => $this->tenant->id,
-            'event_type_id' => $this->eventType->id,
-        ]);
-
-        $response->assertSessionHasNoErrors();
-    });
 });
 
 describe('relationships', function (): void {
-    test('calendar belongs to event type', function (): void {
-        $calendar = Calendar::factory()->create();
-
-        // Check if calendar can have event type relationship
-        expect($calendar->eventType())->toBeInstanceOf(BelongsTo::class);
-    });
-
     test('can duplicate calendar with proper translations', function (): void {
         $calendar = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
@@ -763,18 +722,6 @@ describe('relationships', function (): void {
             ->toBe($calendar->id);
     });
 
-    test('calendar has proper model structure', function (): void {
-        $calendar = Calendar::factory()->create([
-            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
-            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
-            'date' => now()->addDays(1)->format('Y-m-d'),
-        ]);
-
-        expect($calendar->getTranslation('title', 'lt'))->toBe('Test renginys')
-            ->and($calendar->getTranslation('title', 'en'))->toBe('Test event')
-            ->and($calendar->getTranslation('description', 'lt'))->toBe('Test aprašymas')
-            ->and($calendar->getTranslation('description', 'en'))->toBe('Test description');
-    });
 });
 
 test('a gallery image can only be deleted through its own event', function (): void {

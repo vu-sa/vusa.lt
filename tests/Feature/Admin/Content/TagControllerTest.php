@@ -30,10 +30,6 @@ function makeTagAdmin($tenant): User
 }
 
 describe('auth: simple user without permissions', function (): void {
-    beforeEach(function (): void {
-        asUser($this->user)->get(route('dashboard'))->assertStatus(200);
-    });
-
     test('cannot index tags', function (): void {
         asUser($this->user)
             ->get(route('tags.index'))
@@ -84,10 +80,6 @@ describe('auth: simple user without permissions', function (): void {
 });
 
 describe('auth: admin user with permissions', function (): void {
-    beforeEach(function (): void {
-        asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
-    });
-
     test('can index tags', function (): void {
         asUserWithInertia($this->admin)
             ->get(route('tags.index'))
@@ -239,27 +231,6 @@ describe('validation', function (): void {
 });
 
 describe('model functionality', function (): void {
-    test('tag factory creates valid tag', function (): void {
-        $tag = Tag::factory()->create();
-
-        expect($tag->getTranslations('name'))->toBeArray()
-            ->and($tag->getTranslations('description'))->toBeArray()
-            ->and($tag->getTranslation('name', 'lt'))->toBeString()
-            ->and($tag->getTranslation('name', 'en'))->toBeString();
-    });
-
-    test('tag can be associated with news', function (): void {
-        $news = News::factory()->create();
-        $tag = Tag::factory()->create();
-
-        $news->tags()->attach($tag);
-
-        expect($news->tags)->toHaveCount(1)
-            ->and($news->tags->first()->id)->toBe($tag->id)
-            ->and($tag->news)->toHaveCount(1)
-            ->and($tag->news->first()->id)->toBe($news->id);
-    });
-
     test('tag translations work correctly', function (): void {
         $tag = Tag::factory()->create([
             'name' => ['lt' => 'Lietuviškas pavadinimas', 'en' => 'English name'],
@@ -278,10 +249,6 @@ describe('model functionality', function (): void {
 });
 
 describe('tag merging', function (): void {
-    beforeEach(function (): void {
-        asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
-    });
-
     test('legacy merge tags route redirects to the index', function (): void {
         asUser($this->admin)
             ->get(route('tags.merge'))

@@ -13,7 +13,6 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +26,6 @@ beforeEach(function (): void {
 describe('unauthorized access', function (): void {
     beforeEach(function (): void {
         $this->user = makeUser($this->tenant);
-        asUser($this->user)->get(route('dashboard'))->assertOk();
     });
 
     test('cannot index users', function (): void {
@@ -445,33 +443,6 @@ describe('relationships', function (): void {
         $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
-    test('user has proper model structure', function (): void {
-        $user = User::factory()->create([
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'phone' => '+370 123 4567',
-        ]);
-
-        expect($user->name)->toBe('John Doe')
-            ->and($user->email)->toBe('john@example.com')
-            ->and($user->phone)->toBe('+370 123 4567');
-    });
-
-    test('can retrieve user by email', function (): void {
-        $user = User::factory()->create(['email' => 'unique@example.com']);
-
-        $foundUser = User::where('email', 'unique@example.com')->first();
-
-        expect($foundUser)->not->toBeNull()
-            ->and($foundUser->id)->toBe($user->id);
-    });
-
-    test('user can have duties', function (): void {
-        $user = User::factory()->create();
-
-        // Check if user can have duties (relationship exists)
-        expect($user->duties())->toBeInstanceOf(BelongsToMany::class);
-    });
 });
 
 describe('duty removal', function (): void {
@@ -613,7 +584,7 @@ describe('duty assignment', function (): void {
 
 describe('create-form field coverage', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeAdminUser($this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $this->duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
     });
 
@@ -651,7 +622,7 @@ describe('create-form field coverage', function (): void {
 
 describe('editing the person leaves their associations alone', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeAdminUser($this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $this->person = makeUser($this->tenant);
     });
 

@@ -21,18 +21,12 @@ beforeEach(function (): void {
 
     $this->newsManager = User::factory()->create();
 
-    $communicationCoordinatorDuty = Duty::factory()->has(Institution::factory()->state(
-        ['tenant_id' => $this->tenant->id]
-    ))->hasAttached($this->newsManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
+    $communicationCoordinatorDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->hasAttached($this->newsManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
 
     $communicationCoordinatorDuty->assignRole('Komunikacijos koordinatorius');
 });
 
 describe('auth: simple user', function (): void {
-    beforeEach(function (): void {
-        asUser($this->user)->get(route('dashboard'))->assertStatus(200);
-    });
-
     test('can\'t index news', function (): void {
         asUser($this->user)->get(route('news.index'))->assertStatus(403);
     });
@@ -126,7 +120,6 @@ describe('auth: simple user', function (): void {
 
 describe('auth: news manager', function (): void {
     beforeEach(function (): void {
-        asUser($this->newsManager)->get(route('dashboard'))->assertStatus(200);
 
         // Duty::factory()->has(Institution::factory()->state(['tenant_id' => ...])) in the outer
         // beforeEach doesn't actually pin the institution to $this->tenant (a pre-existing factory
@@ -257,12 +250,6 @@ describe('auth: news manager', function (): void {
         ]);
     });
 
-    test('can access the news edit page', function (): void {
-        $news = News::query()->first();
-
-        asUser($this->newsManager)->get(route('news.edit', $news))->assertStatus(200);
-    })->todo();
-
     test('can update news', function (): void {
         $managerTenant = $this->newsManager->duties()->first()->institution->tenant;
         $news = News::factory()->for($managerTenant)->create();
@@ -301,9 +288,11 @@ describe('auth: news manager', function (): void {
     });
 
     test('can delete news', function (): void {
-        $news = News::query()->first();
+        $news = News::factory()->for($this->tenant)->create();
 
-        asUserWithInertia($this->newsManager)->delete(route('news.destroy', $news))->assertRedirect();
+        asUserWithInertia($this->newsManager)->delete(route('news.destroy', $news))
+            ->assertRedirectToRoute('news.index')->assertSessionHas('info');
+        $this->assertSoftDeleted($news);
     });
 
     test('can duplicate news', function (): void {

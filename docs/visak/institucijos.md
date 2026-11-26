@@ -6,7 +6,7 @@ tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Feature/Search/ListFreshnessTest.php
-  - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
+  - tests/Feature/Api/Admin/InstitutionApiControllerTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts

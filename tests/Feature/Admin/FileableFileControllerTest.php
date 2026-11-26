@@ -17,7 +17,8 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->admin = makeAdminUser($this->tenant);
+    $this->admin = makeUser($this->tenant);
+    $this->admin->givePermissionTo(['meetings.read.padalinys', 'meetings.update.padalinys']);
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->meeting = Meeting::factory()->create();
     $this->meeting->institutions()->attach($this->institution);

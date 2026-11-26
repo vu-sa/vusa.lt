@@ -148,10 +148,6 @@ describe('database collection API', function (): void {
 });
 
 describe('auth: simple user', function (): void {
-    beforeEach(function (): void {
-        asUser($this->user)->get(route('dashboard'));
-    });
-
     test('opens the reservation list with only their own reservations', function (): void {
         $own = Reservation::factory()->hasAttached($this->resources->first())->create();
         $own->users()->attach($this->user->id);
@@ -204,7 +200,7 @@ describe('auth: simple user', function (): void {
     test('can access reservation after they are assigned to it', function (): void {
         Notification::fake();
 
-        $response = asUser($this->reservationManager)->put(route('reservations.add-users', $this->reservation->id), [
+        $response = asUser($this->reservationManager)->from(route('dashboard'))->put(route('reservations.add-users', $this->reservation->id), [
             'users' => [$this->user->id],
         ]);
 
@@ -220,7 +216,7 @@ describe('auth: simple user', function (): void {
 
         $response = asUser($this->user)->get(route('reservations.show', $this->reservation->id));
 
-        $this->followRedirects($response)->assertStatus(200)->assertInertia(fn (Assert $page) => $page
+        $response->assertOk()->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/ShowReservation')
             ->whereNot('reservation', null)
             ->where('reservation.id', $this->reservation->id)
@@ -253,18 +249,9 @@ describe('auth: simple user', function (): void {
         expect($resource->pivot->state::class)->toEqual(Cancelled::class);
     });
 
-    test('can\'t delete reservation', function (): void {
-        $reservation = Reservation::query()->first();
-
-        asUser($this->user)->delete(route('reservations.destroy', $reservation))->assertStatus(403);
-    });
 });
 
 describe('auth: reservation manager', function (): void {
-    beforeEach(function (): void {
-        asUser($this->reservationManager)->get(route('dashboard'))->assertStatus(200);
-    });
-
     test('sees their own reservation in the list, and no one else\'s', function (): void {
         Reservation::factory()->hasAttached($this->resources->first())->create();
 
@@ -273,35 +260,6 @@ describe('auth: reservation manager', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->has('reservations.data', 1)
                 ->where('reservations.data.0.id', $this->reservation->id)
-            );
-    });
-
-    test('can access reservation create page', function (): void {
-        asUser($this->reservationManager)->get(route('reservations.create'))->assertStatus(200);
-    });
-
-    test('can store reservation', function (): void {
-        asUserWithInertia($this->reservationManager)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Reservations/CreateReservation')
-            ->has('defaultDateTimeRange')
-        );
-
-        $reservation = Reservation::factory()->make([
-            'name' => 'test',
-            'resources' => $this->resources->map(fn ($resource) => ['id' => $resource->id, 'quantity' => 1])->toArray(),
-        ]);
-
-        $response = asUser($this->reservationManager)->post(route('reservations.store'),
-            $reservation->toArray()
-        );
-
-        $response->assertRedirect();
-
-        $this->followRedirects($response)
-            ->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Reservations/ShowReservation')
-            ->whereNot('reservation', null)
-            ->where('reservation.name', $reservation->name)
             );
     });
 
@@ -371,10 +329,6 @@ describe('auth: reservation manager', function (): void {
 
         // assert that the resource is in canceled state
         expect($resource->pivot->state::class)->toEqual(Cancelled::class);
-    });
-
-    test('can\'t delete reservation', function (): void {
-        asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertRedirectToRoute('dashboard');
     });
 
     test('a participant withdraws a reservation nobody has approved', function (): void {

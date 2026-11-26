@@ -569,13 +569,22 @@ describe('merging stints', function (): void {
     });
 
     test('each removed row fires its own DutiableChanged event', function (): void {
+        $third = Dutiable::factory()->for($this->duty)->create([
+            'dutiable_id' => $this->holder->id,
+            'start_date' => '2025-07-01',
+            'end_date' => null,
+        ]);
         Event::fake([DutiableChanged::class]);
 
         asUserWithInertia($this->manager)->post(route('dutiables.timeline.merge'), [
-            'row_ids' => [$this->earlier->id, $this->later->id],
-        ])->assertRedirect();
+            'row_ids' => [$this->earlier->id, $this->later->id, $third->id],
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
-        Event::assertDispatched(DutiableChanged::class);
+        $deleted = Event::dispatched(DutiableChanged::class)
+            ->map(fn (array $arguments) => $arguments[0])
+            ->filter(fn (DutiableChanged $event) => $event->wasDeleted)
+            ->pluck('dutiableRowId')->all();
+        expect($deleted)->toEqualCanonicalizing([$this->later->id, $third->id]);
     });
 });
 

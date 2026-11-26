@@ -272,6 +272,8 @@ describe('update & delete', function (): void {
 
         asUser($this->coordinator)->patchJson(route('api.v1.admin.comments.update', $comment), ['body' => '<p>Vėl</p>'])->assertForbidden();
         asUser($this->coordinator)->deleteJson(route('api.v1.admin.comments.destroy', $comment))->assertForbidden();
+        asUser($this->coordinator)->putJson(route('api.v1.admin.comments.reactions.toggle', $comment), ['emoji' => '👍'])->assertForbidden();
+        expect($comment->reactions()->count())->toBe(0);
     });
 
     test('an erased comment no longer counts towards the discussion', function (): void {

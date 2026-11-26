@@ -4,7 +4,7 @@ title: Komentarai
 last_reviewed: 2026-11-11
 tests:
   - tests/Feature/Admin/Discussions/CommentAuthorizationTest.php
-  - tests/Feature/Admin/Discussions/CommentApiTest.php
+  - tests/Feature/Api/Admin/CommentApiControllerTest.php
   - tests/Feature/Admin/Discussions/CommentModelTest.php
   - tests/Feature/Admin/Discussions/PollVoteApiTest.php
   - tests/Feature/Notifications/CommentNotificationTest.php
@@ -175,4 +175,4 @@ pranešimų varpelyje, o pranešime į įrenginį rodoma trumpesnė ištrauka. I
 - Komentarų HTML valo `HtmlSanitizerService::sanitizeCommentBody()`.
 - Saugų trynimą be gijos pažeidimo atlieka `Comment::erase()`, užpildantis `erased_at` ir išvalantis asmens duomenis.
 - Tiesioginį atsinaujinimą užtikrina WebSocket transliavimo kanalas `comments.{type}.{id}` (`CommentBroadcast`).
-- Testai: `CommentAuthorizationTest`, `CommentApiTest`, `CommentModelTest`, `PollVoteApiTest`, `CommentNotificationTest`, `DiscussionPanel.component.test.ts`.
+- Testai: `CommentAuthorizationTest`, `CommentApiControllerTest`, `CommentModelTest`, `PollVoteApiTest`, `CommentNotificationTest`, `DiscussionPanel.component.test.ts`.

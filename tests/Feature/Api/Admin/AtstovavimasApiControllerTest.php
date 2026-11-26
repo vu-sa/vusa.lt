@@ -497,20 +497,17 @@ test('status history keeps closed days and invalidates live counts after a mutat
 
     app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(29), now()->subDay(), reconstructed: true);
 
-    asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline.history', $params))
+    $closed = asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline.history', $params))
         ->assertSuccessful()
-        ->assertJsonPath('data.points.29.all', 1);
+        ->assertJsonPath('data.points.29.all', 1)
+        ->json('data.points.28');
 
-    // A newly created institution is not reflected without a refresh...
+    // A new institution changes the live point while closed days keep their snapshot.
     Institution::factory()->for($this->tenant)->create();
 
     asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline.history', $params))
         ->assertSuccessful()
-        ->assertJsonPath('data.points.29.all', 2);
-
-    // ...but is picked up once the cache is bypassed
-    asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline.history', [...$params, 'refresh' => 1]))
-        ->assertSuccessful()
+        ->assertJsonPath('data.points.28', $closed)
         ->assertJsonPath('data.points.29.all', 2);
 });
 
@@ -804,9 +801,20 @@ test('meetings are cached per window and refresh bypasses the cache', function (
         ->assertSuccessful()
         ->assertJsonCount(2, 'data');
 
-    asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', [...$params, 'refresh' => 1]))
-        ->assertSuccessful()
-        ->assertJsonCount(2, 'data');
+    $second->updateQuietly(['title' => 'Updated second meeting']);
+
+    $meetingTitle = fn ($response) => collect($response->json('data'))->firstWhere('id', $second->id)['title'];
+
+    $cached = asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', $params))->assertOk();
+    expect($meetingTitle($cached))->toBe('Second');
+
+    asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', [
+        ...$params, 'until' => now()->subDays(5)->toDateString(),
+    ]))->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $first->id);
+
+    $refreshed = asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', [...$params, 'refresh' => 1]))
+        ->assertOk()->assertJsonCount(2, 'data');
+    expect($meetingTitle($refreshed))->toBe('Updated second meeting');
 });
 
 test('representative activity counts who acted today, this week, this month and never', function (): void {

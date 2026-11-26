@@ -9,7 +9,7 @@ tests:
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/InstitutionSubscriptionTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
-  - tests/Feature/Admin/Core/AtstovavimasApiTest.php
+  - tests/Feature/Api/Admin/AtstovavimasApiControllerTest.php
   - tests/Unit/Enums/InstitutionActivityStatusTest.php
   - tests/Unit/Services/AcademicCalendarServiceTest.php
   - tests/Unit/Services/MeetingCompletionServiceTest.php

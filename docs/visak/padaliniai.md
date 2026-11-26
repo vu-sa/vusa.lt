@@ -5,7 +5,7 @@ last_reviewed: 2026-11-21
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
-  - tests/Feature/Admin/Core/AtstovavimasApiTest.php
+  - tests/Feature/Api/Admin/AtstovavimasApiControllerTest.php
   - tests/Feature/Api/Admin/RepStatisticsTest.php
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
   - tests/Feature/Institutions/InstitutionScopeTest.php

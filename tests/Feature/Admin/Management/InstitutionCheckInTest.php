@@ -14,7 +14,8 @@ pest()->use(RefreshDatabase::class);
 
 test('allows creating check-in with past start date', function (): void {
     $tenant = Tenant::factory()->create();
-    $user = makeAdminUser($tenant);
+    $user = makeUser($tenant);
+    $user->givePermissionTo('institutions.update.padalinys');
     $institution = Institution::factory()->for($tenant)->create();
 
     $startDateTime = now()->subMonths(6)->startOfDay();
@@ -41,7 +42,8 @@ test('allows creating check-in with past start date', function (): void {
 
 test('rejects a check-in period that contains a recorded meeting', function (): void {
     $tenant = Tenant::factory()->create();
-    $user = makeAdminUser($tenant);
+    $user = makeUser($tenant);
+    $user->givePermissionTo('institutions.update.padalinys');
     $institution = Institution::factory()->for($tenant)->create();
     $meeting = Meeting::factory()->create(['start_time' => now()->subDays(10)]);
     $meeting->institutions()->attach($institution->id);
@@ -56,7 +58,8 @@ test('rejects a check-in period that contains a recorded meeting', function (): 
 
 test('rejects check-in end date beyond three months', function (): void {
     $tenant = Tenant::factory()->create();
-    $user = makeAdminUser($tenant);
+    $user = makeUser($tenant);
+    $user->givePermissionTo('institutions.update.padalinys');
     $institution = Institution::factory()->for($tenant)->create();
 
     $startDate = now()->toDateString();

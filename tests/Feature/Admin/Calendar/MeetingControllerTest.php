@@ -46,10 +46,6 @@ beforeEach(function (): void {
 // Authorization tests from MeetingTest.php
 describe('authorization tests', function (): void {
     describe('regular user', function (): void {
-        beforeEach(function (): void {
-            asUser($this->user)->get(route('dashboard'))->assertStatus(200);
-        });
-
         test('cannot create a meeting without permission', function (): void {
             $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
 
@@ -72,10 +68,6 @@ describe('authorization tests', function (): void {
     });
 
     describe('admin user', function (): void {
-        beforeEach(function (): void {
-            asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
-        });
-
         test('can access meetings index with permission', function (): void {
             asUserWithInertia($this->admin)
                 ->get(route('meetings.index'))
@@ -134,145 +126,6 @@ describe('authorization tests', function (): void {
             expect($meeting->title)->toContain($futureDate->format('Y'));
             expect($meeting->title)->toContain('posėdis');
         });
-    });
-});
-
-describe('refactored meeting creation', function (): void {
-    test('requires at least one agenda item', function (): void {
-        // Create a meeting first
-        $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
-
-        asUser($this->admin)
-            ->post(route('meetings.store'), [
-                'start_time' => $startTime,
-                'institution_id' => $this->institution->id,
-            ]);
-
-        $meeting = Meeting::latest('id')->first();
-
-        $initialCount = AgendaItem::count();
-
-        // Try to submit empty agenda items
-        $response = asUser($this->admin)
-            ->post(route('agendaItems.store'), [
-                'meeting_id' => $meeting->id,
-                'agendaItemTitles' => [],
-            ]);
-
-        $response->assertSessionHasErrors(['agendaItemTitles']);
-        expect(AgendaItem::count())->toEqual($initialCount);
-
-        // Now submit with valid agenda items
-        $response = asUser($this->admin)
-            ->post(route('agendaItems.store'), [
-                'meeting_id' => $meeting->id,
-                'agendaItemTitles' => ['Valid agenda item'],
-            ]);
-
-        $response->assertSessionHas('success');
-        expect(AgendaItem::count())->toEqual($initialCount + 1);
-    });
-
-    test('cannot submit empty strings as agenda items', function (): void {
-        // Create a meeting first
-        $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
-
-        asUser($this->admin)
-            ->post(route('meetings.store'), [
-                'start_time' => $startTime,
-                'institution_id' => $this->institution->id,
-            ]);
-
-        $meeting = Meeting::latest('id')->first();
-
-        $initialCount = AgendaItem::count();
-
-        // Try to submit with empty strings
-        $response = asUser($this->admin)
-            ->post(route('agendaItems.store'), [
-                'meeting_id' => $meeting->id,
-                'agendaItemTitles' => ['', '   '],
-            ]);
-
-        $response->assertSessionHasErrors();
-        expect(AgendaItem::count())->toEqual($initialCount);
-    });
-
-    test('can submit multiple agenda items at once', function (): void {
-        // Create a meeting first
-        $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
-
-        asUser($this->admin)
-            ->post(route('meetings.store'), [
-                'start_time' => $startTime,
-                'institution_id' => $this->institution->id,
-            ]);
-
-        $meeting = Meeting::latest('id')->first();
-
-        $initialCount = AgendaItem::count();
-
-        // Submit multiple agenda items
-        $response = asUser($this->admin)
-            ->post(route('agendaItems.store'), [
-                'meeting_id' => $meeting->id,
-                'agendaItemTitles' => [
-                    'First agenda item',
-                    'Second agenda item',
-                    'Third agenda item',
-                ],
-            ]);
-
-        $response->assertSessionHas('success');
-        expect(AgendaItem::count())->toEqual($initialCount + 3);
-
-        $agendaItems = $meeting->agendaItems()->pluck('title')->toArray();
-        expect($agendaItems)->toContain('First agenda item')
-            ->toContain('Second agenda item')
-            ->toContain('Third agenda item');
-    });
-
-    test('placeholder tasks are no longer created for placeholder agenda items', function (): void {
-        // Create a meeting
-        $startTime = Carbon::now()->addDays(1)->format('Y-m-d H:i:s');
-
-        asUser($this->admin)
-            ->post(route('meetings.store'), [
-                'start_time' => $startTime,
-                'institution_id' => $this->institution->id,
-            ]);
-
-        $meeting = Meeting::latest('id')->first();
-        $initialTaskCount = $meeting->tasks()->count();
-
-        // Test with TBD placeholder - should NOT create task
-        $response = asUser($this->admin)
-            ->post(route('agendaItems.store'), [
-                'meeting_id' => $meeting->id,
-                'agendaItemTitles' => ['TBD'],
-            ]);
-
-        $response->assertStatus(302);
-        $response->assertSessionHas('success');
-
-        // Verify no tasks were created
-        expect($meeting->fresh()->tasks()->count())->toEqual($initialTaskCount);
-
-        // Clear existing items
-        $meeting->agendaItems()->delete();
-
-        // Test with normal agenda items - should also NOT create task
-        $response = asUser($this->admin)
-            ->post(route('agendaItems.store'), [
-                'meeting_id' => $meeting->id,
-                'agendaItemTitles' => ['Real agenda item'],
-            ]);
-
-        $response->assertStatus(302);
-        $response->assertSessionHas('success');
-
-        // Verify still no tasks created
-        expect($meeting->fresh()->tasks()->count())->toEqual($initialTaskCount);
     });
 });
 

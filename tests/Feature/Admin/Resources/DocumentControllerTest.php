@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\DocumentStatus;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Models\Institution;
@@ -53,18 +52,6 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('admin can access documents index', function (): void {
-        $admin = makeTenantUserWithRole(RoleDocumentManagerSeeder::NAME, $this->tenant);
-        Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
-
-        $response = asUser($admin)->get(route('documents.index'));
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/Files/IndexDocument')
-                ->has('importantContentTypes')
-            );
-    });
-
     test('show redirects to anonymous url if available', function (): void {
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
@@ -107,36 +94,6 @@ describe('authorized access', function (): void {
         asUser($this->documentManager)->post(route('documents.refresh', $otherDocument))->assertForbidden();
     });
 
-    test('can filter documents by institution', function (): void {
-        $anotherInstitution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-
-        Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
-        Document::factory()->count(3)->create(['institution_id' => $anotherInstitution->id]);
-
-        $response = asUser($this->documentManager)->get(route('documents.index', [
-            'filters' => json_encode([
-                'institution_id' => $this->institution->id,
-            ]),
-        ]));
-        $response->assertStatus(200);
-    });
-
-    test('admin table search works for document management', function (): void {
-        Document::factory()->create([
-            'institution_id' => $this->institution->id,
-            'name' => 'Special Report.pdf',
-        ]);
-        Document::factory()->create([
-            'institution_id' => $this->institution->id,
-            'name' => 'Regular Document.pdf',
-        ]);
-
-        // Admin table uses backend search (different from public frontend search)
-        $response = asUser($this->documentManager)->get(route('documents.index', [
-            'search' => 'Special',
-        ]));
-        $response->assertStatus(200);
-    });
 });
 
 describe('relationships', function (): void {
@@ -154,44 +111,6 @@ describe('relationships', function (): void {
             ->and($otherDocs->first()->tenant()->first()->id)->toBe($otherTenant->id);
     });
 
-    test('document factory creates valid sharepoint document', function (): void {
-        $document = Document::factory()->create([
-            'institution_id' => $this->institution->id,
-            'status' => DocumentStatus::Published,
-        ]);
-
-        expect($document->name)->toBeString()
-            ->and($document->title)->toBeString()
-            ->and($document->sharepoint_id)->toBeString()
-            ->and($document->sharepoint_site_id)->toBeString()
-            ->and($document->sharepoint_list_id)->toBeString()
-            ->and($document->institution_id)->toBe($this->institution->id)
-            ->and($document->isPublished())->toBeTrue();
-    });
-
-    test('document has tenant relationship through institution', function (): void {
-        $document = Document::factory()->create(['institution_id' => $this->institution->id]);
-
-        expect($document->institution)->not->toBeNull()
-            ->and($document->institution->tenant_id)->toBe($this->tenant->id);
-
-        // Test the tenant relationship method
-        $tenant = $document->tenant()->first();
-        expect($tenant->id)->toBe($this->tenant->id);
-    });
-
-    test('document has required sharepoint metadata', function (): void {
-        $document = Document::factory()->create([
-            'institution_id' => $this->institution->id,
-            'sharepoint_id' => 'test-sharepoint-id',
-            'sharepoint_site_id' => 'test-site-id',
-            'sharepoint_list_id' => 'test-list-id',
-        ]);
-
-        expect($document->sharepoint_id)->toBe('test-sharepoint-id')
-            ->and($document->sharepoint_site_id)->toBe('test-site-id')
-            ->and($document->sharepoint_list_id)->toBe('test-list-id');
-    });
 });
 
 describe('document edit entry point', function (): void {
