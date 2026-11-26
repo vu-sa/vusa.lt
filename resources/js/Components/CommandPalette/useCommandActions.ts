@@ -41,7 +41,7 @@ export interface CommandAction {
 }
 
 /** Catalog `screen` targets are ActionWindow screens; each one is the first screen of a flow. */
-const flowForScreen: Record<string, OpenOptions['flow']> = {
+export const flowForScreen: Record<string, OpenOptions['flow']> = {
   'meeting.institution': 'meeting.create',
   'checkin.institution': 'check-in',
   'meeting.pick': 'meeting.complete',

@@ -77,12 +77,15 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { CalendarOff, CalendarPlus, ChevronRight, LifeBuoy, Plus, ShoppingBasket } from '@lucide/vue';
 import { computed, type Component } from 'vue';
 
-import { useCommandActions, type CommandAction } from '@/Components/CommandPalette/useCommandActions';
+import { flowForScreen } from '@/Components/CommandPalette/useCommandActions';
 import CollectionRowList from '@/Components/Collection/CollectionRowList.vue';
 import { ROW_LINK_CLASS } from '@/Components/Collection/rowList';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { formatReservationPeriod } from '@/Components/Reservations/reservationPeriod';
 import type { ReservationCartSummary } from '@/Components/Reservations/types';
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { useAdminNavigation, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<{
@@ -108,6 +111,14 @@ type ShortcutRow
   = | { kind: 'single'; id: string; shortcut: Shortcut }
     | { kind: 'split'; id: string; items: [Shortcut, Shortcut] };
 
+type WorkspaceCreateAction = AdminWorkspace['createActions'][number];
+
+interface CatalogShortcut {
+  id: string;
+  workspaceKey: string;
+  action: WorkspaceCreateAction;
+}
+
 const RECORD_MEETING = 'create-new_meeting';
 const NO_MEETING = 'create-no_meeting';
 const NEW_RESERVATION = 'create-new_reservation';
@@ -128,19 +139,24 @@ const HOME_ICONS: Record<string, Component> = {
   [NEW_SUPPORT_REQUEST]: LifeBuoy,
 };
 
-const { actions } = useCommandActions();
+const { workspaces } = useAdminNavigation();
+const actionWindow = useActionWindow();
 
 /** What we want people to do most often comes first; the two meeting answers share one row. */
 const PRIORITY = [RECORD_MEETING, NO_MEETING, 'create-new_problem', NEW_RESERVATION, NEW_SUPPORT_REQUEST];
 
-const toShortcut = (action: CommandAction, leading = false): Shortcut => {
-  const labelKey = HOME_LABEL_KEYS[action.id];
+const toShortcut = (entry: CatalogShortcut, leading = false): Shortcut => {
+  const { id, action } = entry;
+  const labelKey = HOME_LABEL_KEYS[id];
+  const entityIcon = action.entityType ? getEntityTypeDefinition(action.entityType)?.icon : undefined;
+  const target = action.target as WorkspaceCreateAction['target'] & { routeParams?: Record<string, string> };
 
   return {
-    id: action.id,
-    label: labelKey ? $t(labelKey) : action.label,
-    icon: HOME_ICONS[action.id] ?? action.icon,
-    action: action.action,
+    id,
+    label: labelKey ? $t(labelKey) : $t(action.label),
+    icon: HOME_ICONS[id] ?? entityIcon ?? Plus,
+    href: target.kind === 'route' ? route(target.routeName, target.routeParams) : undefined,
+    action: target.kind === 'screen' ? () => actionWindow.open({ flow: flowForScreen[target.screen] }) : undefined,
     leading,
   };
 };
@@ -166,34 +182,43 @@ const finishReservation = computed<Shortcut | null>(() => {
 });
 
 const shortcutRows = computed<ShortcutRow[]>(() => {
-  const permitted = actions.value.filter(action => action.category === 'create'
-    && !(finishReservation.value && action.id === NEW_RESERVATION));
-  const recordMeeting = permitted.find(action => action.id === RECORD_MEETING);
-  const noMeeting = permitted.find(action => action.id === NO_MEETING);
+  // Read workspace shortcuts rather than commandActions: the palette marks every create action with `+`
+  // and moves non-record actions (`no_meeting`, `duty_update`) out of `create`, while Home keeps all
+  // workspace shortcuts with their entity icons and excludes palette-only entries.
+  const permitted: CatalogShortcut[] = workspaces.value
+    .flatMap(workspace => workspace.createActions.map(action => ({
+      id: `create-${action.key}`,
+      workspaceKey: workspace.key,
+      action,
+    })))
+    .filter(entry => !(finishReservation.value && entry.id === NEW_RESERVATION));
+
+  const recordMeeting = permitted.find(entry => entry.id === RECORD_MEETING);
+  const noMeeting = permitted.find(entry => entry.id === NO_MEETING);
   const pairMeetings = Boolean(recordMeeting && noMeeting);
 
-  const prioritized = PRIORITY.flatMap(id => permitted.filter(action => action.id === id));
-  const rest = permitted.filter(action => !PRIORITY.includes(action.id));
-  const coveredWorkspaces = new Set(prioritized.map(action => action.workspaceKey));
-  const firstPerWorkspace = rest.filter((action, index) =>
-    action.workspaceKey && !coveredWorkspaces.has(action.workspaceKey)
-    && rest.findIndex(candidate => candidate.workspaceKey === action.workspaceKey) === index);
-  const selectedIds = new Set([...prioritized, ...firstPerWorkspace].map(action => action.id));
+  const prioritized = PRIORITY.flatMap(id => permitted.filter(entry => entry.id === id));
+  const rest = permitted.filter(entry => !PRIORITY.includes(entry.id));
+  const coveredWorkspaces = new Set(prioritized.map(entry => entry.workspaceKey));
+  const firstPerWorkspace = rest.filter((entry, index) =>
+    !coveredWorkspaces.has(entry.workspaceKey)
+    && rest.findIndex(candidate => candidate.workspaceKey === entry.workspaceKey) === index);
+  const selectedIds = new Set([...prioritized, ...firstPerWorkspace].map(entry => entry.id));
 
-  const orderedActions = [
+  const orderedEntries = [
     ...prioritized,
     ...firstPerWorkspace,
-    ...rest.filter(action => !selectedIds.has(action.id)),
+    ...rest.filter(entry => !selectedIds.has(entry.id)),
   ];
 
   const rows: ShortcutRow[] = [];
 
-  for (const action of orderedActions) {
-    if (pairMeetings && action.id === NO_MEETING) {
+  for (const entry of orderedEntries) {
+    if (pairMeetings && entry.id === NO_MEETING) {
       continue;
     }
 
-    if (pairMeetings && action.id === RECORD_MEETING && recordMeeting && noMeeting) {
+    if (pairMeetings && entry.id === RECORD_MEETING && recordMeeting && noMeeting) {
       rows.push({
         kind: 'split',
         id: 'meeting-activity',
@@ -204,8 +229,8 @@ const shortcutRows = computed<ShortcutRow[]>(() => {
 
     rows.push({
       kind: 'single',
-      id: action.id,
-      shortcut: toShortcut(action, action.id === RECORD_MEETING),
+      id: entry.id,
+      shortcut: toShortcut(entry, entry.id === RECORD_MEETING),
     });
   }
 
