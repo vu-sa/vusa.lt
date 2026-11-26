@@ -108,6 +108,11 @@ Mygtukas **Veiksmai** pažymėtas žymeklio simboliu ir rašomas didžiosiomis r
 rašomi įprastai, kad būtų lengviau juos perskaityti. Naršant klaviatūra, aktyvi nuoroda turi
 matomą apvadą.
 
+Viešuose naujienų, renginių, posėdžių ir dokumentų sąrašuose atverk **Rikiuoti** klavišu
+**Enter** arba tarpo klavišu. Parinktį rask rodyklėmis aukštyn ir žemyn, patvirtink **Enter**
+arba tarpo klavišu. **Esc** užveria meniu ir grąžina žymeklį į mygtuką. Kalendoriaus mėnesio
+ir metų laukų bei dialogų uždarymo mygtukų pavadinimai ekrano skaitytuvui pateikiami sąsajos kalba.
+
 Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
 
 Skilčių piktogramos nusako jų paskirtį: Wiki žymi knyga, tau skirtus straipsnius – knyga su varnele,

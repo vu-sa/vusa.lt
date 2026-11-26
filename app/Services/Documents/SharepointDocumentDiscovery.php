@@ -456,7 +456,7 @@ class SharepointDocumentDiscovery
                 'status' => $isBaseline ? DocumentStatus::Hidden : DocumentStatus::Pending,
             ]);
             $document->title = $item['name'];
-            $document->sync_status = 'success';
+            $document->sync_status = Document::SYNC_STATUS_SUCCESS;
             $document->checked_at = now();
         } elseif ($restored) {
             $document->removed_from_sharepoint_at = null;

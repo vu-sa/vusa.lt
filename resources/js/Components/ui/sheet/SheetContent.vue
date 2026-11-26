@@ -16,7 +16,7 @@
         ]"
       >
         <X class="size-4" />
-        <span class="sr-only">Close</span>
+        <span class="sr-only">{{ $t('Uždaryti') }}</span>
       </DialogClose>
     </DialogContent>
   </DialogPortal>
@@ -27,6 +27,7 @@ import type { DialogContentEmits, DialogContentProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 import { reactiveOmit } from '@vueuse/core';
 import { X } from '@lucide/vue';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
   DialogClose,
   DialogContent,

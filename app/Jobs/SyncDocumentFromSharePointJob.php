@@ -118,7 +118,7 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
 
         // Not through the job's model: a failed pass may have left a refused link on it.
         Document::query()->whereKey($this->document->getKey())->update([
-            'sync_status' => 'failed',
+            'sync_status' => Document::SYNC_STATUS_FAILED,
             'sync_error_message' => 'Job failed after '.$this->attempts().' attempts: '.$exception->getMessage(),
         ]);
     }

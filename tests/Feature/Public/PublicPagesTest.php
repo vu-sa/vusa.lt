@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Enums\TenantType;
 use App\Mail\FeedbackMail;
 use App\Models\Duty;
@@ -480,9 +481,9 @@ test('feedback requires a non-null message', function (): void {
 
 test('duty type contacts page shows a study-program-ordered duty as one grid', function (): void {
     // Find or create the central institution that's used by duty type contacts
-    $institution = Institution::where('alias', 'centrinis-biuras')->first();
+    $institution = Institution::where('alias', GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS)->first();
     if (! $institution) {
-        $institution = Institution::factory()->create(['alias' => 'centrinis-biuras']);
+        $institution = Institution::factory()->create(['alias' => GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS]);
     }
 
     $tenant = Tenant::factory()->create();
@@ -539,9 +540,9 @@ test('duty type contacts page shows a study-program-ordered duty as one grid', f
 
 test('duty type contacts page handles both grouped and flat duties correctly', function (): void {
     // Find or create the central institution that's used by duty type contacts
-    $institution = Institution::where('alias', 'centrinis-biuras')->first();
+    $institution = Institution::where('alias', GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS)->first();
     if (! $institution) {
-        $institution = Institution::factory()->create(['alias' => 'centrinis-biuras']);
+        $institution = Institution::factory()->create(['alias' => GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS]);
     }
 
     // Create a type for the duty

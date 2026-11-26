@@ -7,6 +7,7 @@ import { i18nVue, reset } from 'laravel-vue-i18n';
 import { ZiggyVue, route, type Config } from 'ziggy-js';
 
 import PublicLayout from './Components/Public/Layouts/PublicLayout.vue';
+import { serialRenderer } from './Utils/serialRenderer';
 import { VILNIUS_TIMEZONE } from './Utils/dateTime';
 
 // Render dates the way visitors' browsers (and Laravel's app.timezone) do; in UTC, anything near
@@ -22,29 +23,10 @@ const translations = import.meta.glob<{ default: Record<string, string> }>([
 // Mirrors Laravel's `inertia.ssr.timeout`: past it, Laravel has already fallen back to client rendering.
 const budgetMs = Number(process.env.INERTIA_SSR_TIMEOUT ?? 1) * 1000;
 
-function withinBudget<T>(work: Promise<T>): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const expired = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`SSR render exceeded ${budgetMs} ms`)), budgetMs);
-  });
-  return Promise.race([work, expired]).finally(() => clearTimeout(timer));
-}
-
-// Inertia and imported translation helpers share process state; serialize renders across locales.
-// Each render is capped so one that never settles cannot stall the queue, and renders Laravel has
-// already abandoned are dropped so a burst cannot build a backlog.
-let pending = Promise.resolve();
-const render = createServer((page) => {
-  const queuedAt = Date.now();
-  const result = pending.then(() => {
-    if (Date.now() - queuedAt >= budgetMs) {
-      throw new Error('SSR render dropped: waited past the Laravel timeout');
-    }
-    return withinBudget(renderPage(page));
-  });
-  pending = result.then(() => undefined, () => undefined);
-  return result;
-}, { host: '127.0.0.1', port: Number(process.env.INERTIA_SSR_PORT ?? 13714), cluster: false });
+const render = createServer(serialRenderer(renderPage, budgetMs, (elapsed) => {
+  console.error(`SSR render still pending after ${elapsed} ms; restarting renderer`);
+  process.exit(1);
+}), { host: '127.0.0.1', port: Number(process.env.INERTIA_SSR_PORT ?? 13714), cluster: false });
 
 async function renderPage(page: Page) {
   if (page.props.auth || !pages[`./Pages/${page.component}.vue`]) {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Actions\Media\AddImageMedia;
 use App\Actions\ResolveCommentAuthorDuty;
 use App\Enums\CommentKind;
@@ -884,7 +885,7 @@ describe('author duty', function (): void {
         $vusa = Institution::factory()->for($main)->create();
         $main->update(['primary_institution_id' => $vusa->id]);
         $centralOffice = Institution::factory()->for($main)->create();
-        $centralOffice->forceFill(['alias' => 'centrinis-biuras'])->saveQuietly();
+        $centralOffice->forceFill(['alias' => GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS])->saveQuietly();
 
         $ordinary = $assign(Institution::factory()->for($this->tenant)->create(), ['start_date' => today()]);
         $office = $assign($centralOffice);

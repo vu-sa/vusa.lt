@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Models\Banner;
 use App\Models\Calendar;
 use App\Models\Content;
@@ -57,7 +58,7 @@ class DatabaseSeeder extends Seeder
             ->create();
 
         Institution::factory()
-            ->state(['name' => 'Centrinis biuras', 'alias' => 'centrinis-biuras'])
+            ->state(['name' => 'Centrinis biuras', 'alias' => GenerateInstitutionAlias::CENTRAL_OFFICE_ALIAS])
             ->withType()
             ->recycle(Tenant::where('alias', 'vusa')->get())
             ->has(Duty::factory(10)->withType()->hasAttached(

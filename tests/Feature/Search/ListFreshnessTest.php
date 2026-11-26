@@ -24,7 +24,7 @@ beforeEach(function (): void {
 
 function indexedDocument(Institution|Meeting|AgendaItem $model): array
 {
-    return (new Client(config('scout.typesense.client-settings')))
+    return new Client(config('scout.typesense.client-settings'))
         ->collections[$model->searchableAs()]->documents[(string) $model->id]->retrieve();
 }
 
