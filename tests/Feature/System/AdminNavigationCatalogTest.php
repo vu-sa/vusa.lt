@@ -151,6 +151,19 @@ beforeEach(function (): void {
     $this->catalog = app(AdminNavigationCatalog::class);
 });
 
+test('palette commands follow create permissions and reuse the collection sheet target', function (): void {
+    $adminCommands = collect($this->catalog->for(makeAdminUser($this->tenant))['commandActions']);
+    $memberCommands = collect($this->catalog->for(makeUser($this->tenant))['commandActions']);
+
+    expect($adminCommands->firstWhere('key', 'new_news')['target']['routeName'])->toBe('news.create')
+        ->and($adminCommands->firstWhere('key', 'new_tag')['target'])->toBe([
+            'kind' => 'route', 'routeName' => 'tags.index', 'routeParams' => ['create' => '1'],
+        ])
+        ->and($adminCommands->pluck('key')->all())->toContain('new_learning_step', 'new_knowledge_item')
+        ->and($memberCommands->pluck('key')->all())->toContain('new_support_request', 'new_reservation')
+        ->and($memberCommands->pluck('key')->all())->not->toContain('new_news', 'new_tag');
+});
+
 describe('per-persona visibility', function (): void {
     test('a plain member sees Pradžia, the public ViSAK collections and the always-visible reservation entries', function (): void {
         $user = makeUser($this->tenant);

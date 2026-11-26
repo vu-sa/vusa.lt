@@ -133,6 +133,12 @@ Joje pateikiamos prieinamos skiltys, veiksmai ir įrašų paieška. Žvaigždute
 naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone paieška pasiekiama iš navigacijos.
 Puslapio prisegimas ir neseniai lankytų puslapių atnaujinimas išsaugomi nepriklausomai vienas nuo kito.
 
+<ChangelogNote date="2026-11-26" title="Tavo įrašai ir kūrimas komandų paletėje">
+
+Atvėrus paletę, **Tavo įrašai** veda į institucijas, kuriose eini pareigas arba esi sekretorius, sekamas institucijas ir šiuo metu einamas pareigybes. Įvesk „nauj“ arba „sukurti“, kad rastum tau prieinamas kūrimo komandas. Jas žymi pliusas. Kiti veiksmai pasirodo įvedus paiešką. „Naujas kelio žingsnis“ ir „Naujas Wiki įrašas“ pasiekiami per paiešką ir atitinkamus sąrašus.
+
+</ChangelogNote>
+
 Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., narys, pareigybė, naujiena ar darbotvarkės punktas). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
 

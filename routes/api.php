@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\ApprovalApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
 use App\Http\Controllers\Api\Admin\BannerApiController;
 use App\Http\Controllers\Api\Admin\CalendarApiController;
+use App\Http\Controllers\Api\Admin\CommandPaletteApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
@@ -190,6 +191,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Guided action window ("Veiksmų langas") personalised choices
         Route::get('action-window/context', [ActionWindowApiController::class, 'context'])->name('actionWindow.context');
+        Route::get('command-palette/personal-records', [CommandPaletteApiController::class, 'personalRecords'])->name('commandPalette.personalRecords');
         Route::get('activity-requests/candidates', [InstitutionActivityRequestApiController::class, 'candidates'])->name('activityRequests.candidates');
         Route::get('activity-requests/people', [InstitutionActivityRequestApiController::class, 'people'])->name('activityRequests.people');
         Route::post('activity-requests/preview', [InstitutionActivityRequestApiController::class, 'preview'])->name('activityRequests.preview');

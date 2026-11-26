@@ -3,7 +3,7 @@
 namespace App\Services\AdminNavigation;
 
 /**
- * A shortcut offered from **+ Sukurti**, the workspace picker or a Pradžia tile.
+ * A command palette entry that can also be offered as a workspace shortcut.
  *
  * The `target` vocabulary (`route` vs `screen`) matches
  * `resources/js/Composables/useActionWindowCatalog.ts`'s `ActionWindowAction['target']`, so a
@@ -12,7 +12,7 @@ namespace App\Services\AdminNavigation;
 final readonly class CreateAction
 {
     /**
-     * @param  array{kind: 'route', routeName: string}|array{kind: 'screen', screen: string}  $target
+     * @param  array{kind: 'route', routeName: string, routeParams?: array<string, string>}|array{kind: 'screen', screen: string}  $target
      */
     private function __construct(
         public string $key,
@@ -21,8 +21,11 @@ final readonly class CreateAction
         public ?string $entityType,
         public array $target,
         public Visibility $visibility,
+        public bool $paletteOnly,
+        public bool $createsRecord,
     ) {}
 
+    /** @param array<string, string> $routeParams */
     public static function route(
         string $key,
         string $labelKey,
@@ -30,8 +33,16 @@ final readonly class CreateAction
         ?string $entityType,
         string $routeName,
         Visibility $visibility,
+        bool $paletteOnly = false,
+        bool $createsRecord = true,
+        array $routeParams = [],
     ): self {
-        return new self($key, $labelKey, $descriptionKey, $entityType, ['kind' => 'route', 'routeName' => $routeName], $visibility);
+        $target = ['kind' => 'route', 'routeName' => $routeName];
+        if ($routeParams !== []) {
+            $target['routeParams'] = $routeParams;
+        }
+
+        return new self($key, $labelKey, $descriptionKey, $entityType, $target, $visibility, $paletteOnly, $createsRecord);
     }
 
     public static function screen(
@@ -41,12 +52,13 @@ final readonly class CreateAction
         ?string $entityType,
         string $screen,
         Visibility $visibility,
+        bool $createsRecord = true,
     ): self {
-        return new self($key, $labelKey, $descriptionKey, $entityType, ['kind' => 'screen', 'screen' => $screen], $visibility);
+        return new self($key, $labelKey, $descriptionKey, $entityType, ['kind' => 'screen', 'screen' => $screen], $visibility, false, $createsRecord);
     }
 
     /**
-     * @return array{key: string, label: string, description: string|null, entityType: string|null, target: array<string, string>}
+     * @return array{key: string, label: string, description: string|null, entityType: string|null, target: array<string, string|array<string, string>>}
      */
     public function toArray(): array
     {

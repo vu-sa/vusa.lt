@@ -75,6 +75,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
+import { useCreateSheetLink } from '@/Composables/useCreateSheetLink';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
@@ -130,7 +131,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'updated_at', label: $t('Atnaujinta'), class: 'w-36', defaultHidden: true, sortField: 'updated_at' },
 ]);
 
-const sheetOpen = ref(false);
+const sheetOpen = useCreateSheetLink(true);
 const editing = ref<Category | null>(null);
 const toDelete = ref<Category | null>(null);
 

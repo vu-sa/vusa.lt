@@ -57,6 +57,15 @@ describe('useActionWindowCatalog', () => {
     expect(resolveCatalog().personas.value).toEqual([]);
   });
 
+  it('keeps Wiki and learning creation out of the suggestions', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: catalog([
+      action('new_learning_step', { kind: 'route', routeName: 'learningSteps.create' }),
+      action('new_knowledge_item', { kind: 'route', routeName: 'knowledgeItems.create' }),
+    ]) }));
+
+    expect(resolveCatalog().hasAnyAction.value).toBe(false);
+  });
+
   it('uses the server catalog to choose actions and preserves their targets', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: catalog([
       action('new_meeting', { kind: 'screen', screen: 'meeting.institution' }),
