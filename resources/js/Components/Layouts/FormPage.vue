@@ -171,11 +171,11 @@
       :class="[
         'mt-8',
         // Two-column editors are dense; full-contrast labels keep the field names scannable.
-        $slots.aside ? 'grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:gap-12 [&_[data-slot=form-field]_label]:text-foreground' : 'space-y-8',
+        $slots.aside && 'grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:gap-12 [&_[data-slot=form-field]_label]:text-foreground',
       ]"
       @submit.prevent="mode !== 'view' && emit('submit')"
     >
-      <div :class="$slots.aside ? 'flex min-w-0 flex-col gap-8' : 'contents'">
+      <div class="flex min-w-0 flex-col gap-8" data-slot="form-page-main">
         <slot name="required-note">
           <FormRequiredNote :note="requiredNote" data-testid="form-page-required-note" />
         </slot>

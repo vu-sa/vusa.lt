@@ -8,24 +8,26 @@
     :dirty="form.isDirty"
     :errors="form.errors"
     :available-locales="[]"
-    required-note
     @submit="handleFormSubmit"
   >
-    <FormSection
+    <FormPanel
       :title="$t('settings.form_settings.registration_form_title')"
       :description="$t('settings.form_settings.registration_form_description')"
+      :icon="ListChecks"
     >
       <FormFieldWrapper
         id="member_registration_form_id"
-        required
         :label="$t('settings.form_settings.form_label')"
         :error="form.errors.member_registration_form_id"
       >
         <NativeSelect
           id="member_registration_form_id"
           v-model="form.member_registration_form_id"
+          :disabled="!canEdit"
+          placeholder-selectable
+          :placeholder-value="null"
           :options="formOptions"
-          :placeholder="$t('settings.form_settings.form_placeholder')"
+          :placeholder="$t('settings.form_settings.no_form_selected')"
         />
       </FormFieldWrapper>
 
@@ -48,11 +50,12 @@
           {{ $t('settings.form_settings.recipients_missing') }}
         </p>
       </div>
-    </FormSection>
+    </FormPanel>
 
-    <FormSection
+    <FormPanel
       :title="$t('settings.form_settings.student_rep_title')"
       :description="$t('settings.form_settings.student_rep_description')"
+      :icon="Users"
     >
       <FormFieldWrapper
         id="student_rep_registration_form_id"
@@ -62,6 +65,7 @@
         <NativeSelect
           id="student_rep_registration_form_id"
           v-model="form.student_rep_registration_form_id"
+          :disabled="!canEdit"
           placeholder-selectable
           :placeholder-value="null"
           :options="formOptions"
@@ -82,17 +86,18 @@
           :empty-text="$t('settings.form_settings.no_types_found')"
         />
       </FormFieldWrapper>
-    </FormSection>
+    </FormPanel>
   </FormPage>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
+import { ListChecks, Users } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import NativeSelect from '@/Components/ui/native-select/NativeSelect.vue';
 

@@ -56,7 +56,7 @@ function createWrapper(props: {
       stubs: {
         CollectionSelectDialog: CollectionSelectDialogStub,
         FormPage: { props: ['title'], template: '<form @submit.prevent><slot /></form>' },
-        FormSection: { template: '<section><slot /></section>' },
+        FormPanel: { template: '<section><slot /></section>' },
         FormFieldWrapper: { props: ['id', 'label', 'error'], template: '<div><label>{{ label }}</label><slot /></div>' },
         Button: { template: '<button type="button"><slot /></button>' },
       },

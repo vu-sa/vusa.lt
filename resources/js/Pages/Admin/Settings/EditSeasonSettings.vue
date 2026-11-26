@@ -8,12 +8,31 @@
     :dirty="form.isDirty"
     :errors="form.errors"
     :available-locales="[]"
+    required-note
     @submit="handleFormSubmit"
   >
-    <FormSection :title="$t('settings.pages.season.description')">
-      <FormFieldWrapper id="enabled" :label="$t('season.settings.enabled')" :error="form.errors.enabled">
-        <Switch id="enabled" v-model="form.enabled" :disabled="!canEdit" />
-      </FormFieldWrapper>
+    <FormPanel
+      :title="$t('settings.pages.season.title')"
+      :description="$t('settings.pages.season.description')"
+      :icon="TreePine"
+    >
+      <div class="space-y-1">
+        <label
+          for="enabled"
+          :class="['flex min-h-11 items-center gap-2.5 text-sm font-medium text-foreground', canEdit && 'cursor-pointer']"
+        >
+          <Checkbox
+            id="enabled"
+            :model-value="form.enabled"
+            :disabled="!canEdit"
+            @update:model-value="form.enabled = $event === true"
+          />
+          <span>{{ $t('season.settings.enabled') }}</span>
+        </label>
+        <p v-if="form.errors.enabled" class="text-xs text-destructive">
+          {{ form.errors.enabled }}
+        </p>
+      </div>
       <FormFieldWrapper
         v-for="field in dateFields"
         :id="field"
@@ -34,18 +53,19 @@
       >
         <Input :id="field" v-model.number="form[field]" variant="surface" :disabled="!canEdit" type="number" min="0" />
       </FormFieldWrapper>
-    </FormSection>
+    </FormPanel>
   </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
+import { TreePine } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
-import { Switch } from '@/Components/ui/switch';
 
 const props = defineProps<{
   canEdit: boolean;

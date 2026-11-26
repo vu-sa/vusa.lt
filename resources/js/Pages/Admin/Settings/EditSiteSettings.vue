@@ -10,9 +10,10 @@
     :available-locales="[]"
     @submit="handleFormSubmit"
   >
-    <FormSection
+    <FormPanel
       :title="$t('settings.site_settings.privacy_page_title')"
       :description="$t('settings.site_settings.privacy_page_description')"
+      :icon="Globe"
     >
       <FormFieldWrapper
         v-for="locale in LOCALES"
@@ -43,7 +44,7 @@
           </template>
         </CollectionSelectDialog>
       </FormFieldWrapper>
-    </FormSection>
+    </FormPanel>
   </FormPage>
 </template>
 
@@ -51,11 +52,11 @@
 import { reactive } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown } from '@lucide/vue';
+import { ChevronDown, Globe } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import { Button } from '@/Components/ui/button';
 import { CollectionSelectDialog } from '@/Components/Pickers';
 import { normalizeHit, type NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
