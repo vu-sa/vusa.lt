@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, ref } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { router as mockRouter } from '@/mocks/inertia.mock';
 
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '../useCollectionSource';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -34,7 +38,6 @@ describe('useDatabaseCollectionSource filters', () => {
     localStorage.clear();
     window.history.replaceState({}, '', '/mano/reservations');
   });
-  afterEach(() => vi.unstubAllGlobals());
 
   it('reads its filters from the page URL and ignores unknown values', () => {
     window.history.replaceState({}, '', '/mano/reservations?scope=administered&state=created,nonsense');
@@ -47,7 +50,7 @@ describe('useDatabaseCollectionSource filters', () => {
 
   it('sends a multi-value filter as field[] and a single one as a plain param', async () => {
     const fetchMock = respond();
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const source = makeSource();
 
     source.toggleFilter('scope', 'mine');
@@ -61,7 +64,7 @@ describe('useDatabaseCollectionSource filters', () => {
   });
 
   it('toggling the same value again clears it', () => {
-    vi.stubGlobal('fetch', respond());
+    stubGlobal('fetch', respond());
     const source = makeSource();
 
     source.toggleFilter('state', 'lent');
@@ -72,7 +75,7 @@ describe('useDatabaseCollectionSource filters', () => {
 
   it('comes back to the remembered filters and refetches the stale server-rendered page', async () => {
     const fetchMock = respond();
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     makeSource().setFilter('state', ['lent']);
     await vi.waitFor(() => expect(window.location.search).toContain('state=lent'));
 
@@ -87,7 +90,7 @@ describe('useDatabaseCollectionSource filters', () => {
 
   it.each(['state=lent', 'search=Jonas', 'sort=name:asc', ''])('refreshes cached rows for %s on history navigation and removes its listener on disposal', async (query) => {
     const fetchMock = respond(['matching']);
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     window.history.replaceState({}, '', `/mano/reservations?${query}`);
     const scope = effectScope();
     const source = scope.run(makeSource)!;
@@ -106,7 +109,7 @@ describe('useDatabaseCollectionSource filters', () => {
 
   it('uses the server rows for ordinary visits', () => {
     const fetchMock = respond();
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const scope = effectScope();
     scope.run(makeSource);
 
@@ -117,7 +120,7 @@ describe('useDatabaseCollectionSource filters', () => {
   });
 
   it('carries the filters in the URL after a fetch', async () => {
-    vi.stubGlobal('fetch', respond());
+    stubGlobal('fetch', respond());
     const source = makeSource();
 
     source.setFilter('state', ['created', 'lent']);
@@ -125,7 +128,7 @@ describe('useDatabaseCollectionSource filters', () => {
   });
 
   it('exposes one removable chip per selected value', () => {
-    vi.stubGlobal('fetch', respond());
+    stubGlobal('fetch', respond());
     const source = makeSource();
 
     source.setFilter('state', ['created', 'lent']);
@@ -142,7 +145,7 @@ describe('useDatabaseCollectionSource filters', () => {
     const fetchMock = vi.fn()
       .mockReturnValueOnce(new Promise((resolve) => { releaseStale = resolve; }))
       .mockResolvedValueOnce(fresh);
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const source = makeSource();
 
     source.setFilter('scope', 'mine');
@@ -156,7 +159,7 @@ describe('useDatabaseCollectionSource filters', () => {
   });
 
   it('clearFilters drops everything', () => {
-    vi.stubGlobal('fetch', respond());
+    stubGlobal('fetch', respond());
     const source = makeSource();
 
     source.setFilter('scope', 'mine');
@@ -168,11 +171,10 @@ describe('useDatabaseCollectionSource filters', () => {
 
 describe('useDatabaseCollectionSource without a first page', () => {
   beforeEach(() => window.history.replaceState({}, '', '/mano/pages?showDeleted=true'));
-  afterEach(() => vi.unstubAllGlobals());
 
   it('shows the skeleton and fetches the first page itself', async () => {
     const fetchMock = respond([{ id: 'a' }]);
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const source = useDatabaseCollectionSource({
       endpoint: '/api/v1/admin/trash/pages',
@@ -195,10 +197,9 @@ describe('useDatabaseCollectionSource facet counts', () => {
     localStorage.clear();
     window.history.replaceState({}, '', '/mano/reservations');
   });
-  afterEach(() => vi.unstubAllGlobals());
 
   it('shows no count until the filters ask for one', () => {
-    vi.stubGlobal('fetch', respond());
+    stubGlobal('fetch', respond());
     const source = makeSource();
 
     expect(source.facets.value[1].values.map(value => value.count)).toEqual([undefined, undefined]);
@@ -212,7 +213,7 @@ describe('useDatabaseCollectionSource facet counts', () => {
         data: { items: [], total: 0, per_page: 1, current_page: 1, last_page: 1, facets: { state: { created: 4, lent: 1 } } },
       }),
     });
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const source = makeSource();
 
     source.loadFacets?.();
@@ -242,7 +243,7 @@ describe('useDatabaseCollectionSource facet counts', () => {
         }),
       };
     });
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const scope = effectScope();
     const source = scope.run(() => useDatabaseCollectionSource<{ id: string }>({

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
 import {
@@ -352,35 +352,20 @@ describe('useDutyUserWizard', () => {
 });
 
 describe('utility functions', () => {
-  describe('getSuggestedEndDate', () => {
-    it('returns a date string in YYYY-MM-DD format', () => {
-      const date = getSuggestedEndDate();
-      expect(date).toMatch(/^\d{4}-07-01$/);
-    });
+  beforeEach(() => vi.useFakeTimers({ toFake: ['Date'] }));
+  afterEach(() => vi.useRealTimers());
 
-    it('always returns July 1st', () => {
-      const date = getSuggestedEndDate();
-      expect(date.endsWith('-07-01')).toBe(true);
-    });
+  it.each([
+    [new Date(2026, 2, 10, 12), '2026-07-01'],
+    [new Date(2026, 4, 10, 12), '2027-07-01'],
+  ])('suggests the appropriate July term end on %s', (now, expected) => {
+    vi.setSystemTime(now);
+    expect(getSuggestedEndDate()).toBe(expected);
   });
 
-  describe('getTodayDate', () => {
-    it('returns today in YYYY-MM-DD format', () => {
-      const today = getTodayDate();
-      expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    });
-
-    it('uses local timezone instead of UTC', () => {
-      // Capture local midnight to verify we match the browser's calendar date
-      const now = new Date();
-      const localYear = now.getFullYear();
-      const localMonth = String(now.getMonth() + 1).padStart(2, '0');
-      const localDay = String(now.getDate()).padStart(2, '0');
-      const expectedLocal = `${localYear}-${localMonth}-${localDay}`;
-
-      const today = getTodayDate();
-      expect(today).toBe(expectedLocal);
-    });
+  it('uses the local calendar date near midnight', () => {
+    vi.setSystemTime(new Date(2026, 2, 10, 0, 30));
+    expect(getTodayDate()).toBe('2026-03-10');
   });
 
   describe('formatDateForDisplay', () => {

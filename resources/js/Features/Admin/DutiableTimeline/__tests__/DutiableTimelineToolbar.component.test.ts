@@ -1,18 +1,7 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { commonStubs } from '@/tests/stubs';
-
-// The zoom Slider measures itself on mount; jsdom ships no ResizeObserver.
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-beforeAll(() => {
-  vi.stubGlobal('ResizeObserver', ResizeObserverStub);
-});
 
 const { default: DutiableTimelineToolbar } = await import('../DutiableTimelineToolbar.vue');
 const { getTimelineColors } = await import('../timelineColors');

@@ -6,8 +6,7 @@ import ShowLearningStep from '@/Pages/Admin/Learning/ShowLearningStep.vue';
 import { enterLearningStep } from '@/Composables/useRecordTrail';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
-
-import { step } from './fixtures';
+import { step } from '@/Features/Admin/Learning/__tests__/fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useRecordTrail');

@@ -11,7 +11,7 @@ tests:
   - tests/Feature/Admin/MailingLists/MailingListQueueTest.php
   - tests/Feature/Admin/MailingLists/MailingListUserMergeTest.php
   - tests/Browser/MailingListPagesTest.php
-  - resources/js/Features/Admin/MailingLists/__tests__/ShowMailingList.component.test.ts
+  - resources/js/Pages/Admin/MailingLists/__tests__/ShowMailingList.component.test.ts
   - resources/js/Features/Admin/MailingLists/__tests__/MailingListArchive.component.test.ts
   - resources/js/Features/Admin/MailingLists/__tests__/MailingListSourceSheet.component.test.ts
   - resources/js/Features/Admin/MailingLists/__tests__/MailingListRecipients.component.test.ts

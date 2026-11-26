@@ -4,15 +4,6 @@ import { ref } from 'vue';
 
 import { commonStubs } from '@/tests/stubs';
 
-// The toolbar's reka-ui Slider measures itself on mount; jsdom ships no ResizeObserver.
-// Polyfilled locally rather than in the shared setup so no other suite changes behaviour.
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-vi.stubGlobal('ResizeObserver', ResizeObserverStub);
-
 import DutiableTimelineEditor from '../DutiableTimelineEditor.vue';
 import type { TimelinePayload, TimelinePlanPayload } from '../types';
 

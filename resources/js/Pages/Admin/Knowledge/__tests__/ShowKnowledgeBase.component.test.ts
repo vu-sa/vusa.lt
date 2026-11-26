@@ -8,8 +8,7 @@ import { KnowledgeItemKind, KnowledgeSectionKind, LearningImportance } from '@/T
 import type { SelfLearnedItemData, WikiIndexEntry } from '@/Types/learning';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
-
-import { knowledge } from '../../Learning/__tests__/fixtures';
+import { knowledge } from '@/Features/Admin/Learning/__tests__/fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 beforeEach(() => {

@@ -1,5 +1,8 @@
+import { useForm } from '@inertiajs/vue3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+
+import type { MockForm } from '@/tests/helpers/createMockForm';
 
 import EditAtstovavimasSettings from '../EditAtstovavimasSettings.vue';
 
@@ -19,7 +22,7 @@ function render(canEdit = true) {
     },
     global: {
       stubs: {
-        FormPage: { template: '<form @submit.prevent="$emit(\'submit\')"><slot /></form>' },
+        FormPage: { emits: ['submit'], template: '<form @submit.prevent="$emit(\'submit\')"><slot /></form>' },
       },
     },
   });
@@ -35,12 +38,16 @@ describe('representation baseline settings', () => {
     expect(select.text()).toContain('2025–2026');
     expect(select.text()).toContain('2025');
     await select.setValue('older');
+    const form = vi.mocked(useForm).mock.results.at(-1)!.value as unknown as MockForm;
+    const submit = vi.fn(() => form.baseline_cadence_id);
+    form.post.mockImplementation(submit);
     await wrapper.get('form').trigger('submit');
-    const { form } = wrapper.vm as unknown as { form: { baseline_cadence_id: string | null; post: ReturnType<typeof vi.fn> } };
-    expect(form.baseline_cadence_id).toBe('older');
+    expect(submit).toHaveNthReturnedWith(1, 'older');
     expect(form.post).toHaveBeenCalledWith(expect.stringContaining('settings.atstovavimas.update'));
     await select.setValue(select.find('option').element.value);
-    expect(form.baseline_cadence_id).toBeNull();
+    await wrapper.get('form').trigger('submit');
+    expect(form.post).toHaveBeenCalledTimes(2);
+    expect(submit).toHaveNthReturnedWith(2, null);
   });
 
   it('prevents a settings reader from changing the baseline', () => {

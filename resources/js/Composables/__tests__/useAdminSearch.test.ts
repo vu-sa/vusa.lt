@@ -2,12 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, reactive, type EffectScope } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { adminSearchRequests } from '@/Components/Search/adminSearchCollections';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import { useAdminSearch } from '../useAdminSearch';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const config = {
   nodes: [{ protocol: 'http', host: 'typesense', port: 8108 }],
@@ -31,13 +35,12 @@ const createSearch = () => {
 beforeEach(() => {
   page = reactive(createMockPage({ auth: { user: { id: nextUserId++ } }, csrf_token: 'csrf-token' }));
   vi.mocked(usePage).mockReturnValue(page);
-  vi.stubGlobal('route', vi.fn((name: string) => `/${name}`));
+  stubGlobal('route', vi.fn((name: string) => `/${name}`));
 });
 
 afterEach(() => {
   scopes.splice(0).forEach(scope => scope.stop());
   vi.useRealTimers();
-  vi.unstubAllGlobals();
 });
 
 describe('useAdminSearch collection searches', () => {
@@ -49,7 +52,7 @@ describe('useAdminSearch collection searches', () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(json(initial))
       .mockResolvedValueOnce(json({ success: true, config: refreshed }))
       .mockResolvedValueOnce(json({ results: [{ hits: [{ document: { id: 'i1' } }], found: 1 }] }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const search = createSearch();
     await search.initialize();
 
@@ -65,7 +68,7 @@ describe('useAdminSearch collection searches', () => {
 
   it('shares a single config request between callers', async () => {
     const fetchMock = vi.fn().mockResolvedValue(json(config));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const first = createSearch();
     const second = createSearch();
 
@@ -79,7 +82,7 @@ describe('useAdminSearch collection searches', () => {
   it('drops the old keys immediately and refetches after a user change', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(json(config))
       .mockResolvedValueOnce(json({ ...config, headerKey: 'other-user-header' }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const first = createSearch();
     const second = createSearch();
     await first.initialize();
@@ -95,9 +98,11 @@ describe('useAdminSearch collection searches', () => {
 
   it('does not restore an old user config when its request finishes late', async () => {
     let resolveOld!: (response: ReturnType<typeof json>) => void;
-    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise((resolve) => { resolveOld = resolve; }))
+    const fetchMock = vi.fn().mockImplementationOnce(() => new Promise((resolve) => {
+      resolveOld = resolve;
+    }))
       .mockResolvedValueOnce(json({ ...config, headerKey: 'new-user-header' }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const search = createSearch();
     const oldRequest = search.initialize();
     const rejected = expect(oldRequest).rejects.toMatchObject({ name: 'AbortError' });
@@ -116,7 +121,7 @@ describe('useAdminSearch collection searches', () => {
       .mockResolvedValueOnce({ ok: false, status: 401, headers: new Headers(), text: async () => '' })
       .mockResolvedValueOnce(json({ success: true, config: refreshed }))
       .mockResolvedValueOnce(json({ results: [{ hits: [], found: 0 }] }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const search = createSearch();
 
     await search.searchWithFacets('institutions', '*', { facetBy: 'tenant_shortname' });
@@ -132,7 +137,7 @@ describe('useAdminSearch collection searches', () => {
   it('deduplicates refresh requests across callers', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(json(config))
       .mockResolvedValueOnce(json({ success: true, config }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const first = createSearch();
     const second = createSearch();
     await first.initialize();
@@ -149,7 +154,7 @@ describe('useAdminSearch collection searches', () => {
       .mockResolvedValueOnce(unauthorized)
       .mockResolvedValueOnce(json({ success: true, config }))
       .mockResolvedValueOnce(unauthorized);
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     await expect(createSearch().searchWithFacets('institutions', '*', { facetBy: 'tenant_shortname' })).rejects.toThrow();
 
@@ -173,7 +178,7 @@ describe('useAdminSearch collection searches', () => {
         searchLocale: 'en',
       }))
       .mockResolvedValueOnce(json({ results: [{ hits: [{ document: { id: 'match' } }], found: 4 }] }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const results = await createSearch().multiSearch('council', adminSearchRequests());
 
@@ -199,7 +204,7 @@ describe('useAdminSearch collection searches', () => {
       },
       searchProfiles: { pages: profile, meetings: profile, server_only: profile },
     }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     await expect(createSearch().multiSearch('test', adminSearchRequests())).resolves.toEqual({});
 
@@ -210,7 +215,7 @@ describe('useAdminSearch collection searches', () => {
     vi.useFakeTimers();
     const expiring = { ...config, expiresAt: Date.now() / 1000 + 61 };
     const fetchMock = vi.fn().mockResolvedValueOnce(json(expiring)).mockResolvedValueOnce(json(config));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const first = createSearch();
     const second = createSearch();
     await first.initialize();
@@ -228,7 +233,7 @@ describe('useAdminSearch collection searches', () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(json(config))
       .mockResolvedValueOnce(json({ results: [{ found: 196, page: 1, hits: [{ document: { id: 'i1' } }], facet_counts: [] }] }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const filterBy = `id:=[${Array.from({ length: 196 }, (_, index) => `01k${String(index).padStart(23, '0')}`).join(',')}]`;
     const result = await createSearch().searchWithFacets('institutions', '*', { filterBy, facetBy: 'tenant_shortname' });
@@ -244,7 +249,7 @@ describe('useAdminSearch collection searches', () => {
   });
 
   it('reports a failure multi_search returns inside a 200', async () => {
-    vi.stubGlobal('fetch', vi.fn()
+    stubGlobal('fetch', vi.fn()
       .mockResolvedValueOnce(json(config))
       .mockResolvedValueOnce(json({ results: [{ code: 400, error: 'Could not parse the filter query.' }] })));
 
@@ -256,7 +261,7 @@ describe('useAdminSearch collection searches', () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(json(config))
       .mockResolvedValueOnce({ ok: false, status: 429, headers: new Headers({ 'retry-after': '2' }), json: async () => ({}), text: async () => '' });
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const search = createSearch();
     await expect(search.searchWithFacets('institutions', '*', { facetBy: 'tenant_shortname' })).rejects.toThrow();

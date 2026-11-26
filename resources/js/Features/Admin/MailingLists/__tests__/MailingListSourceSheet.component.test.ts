@@ -1,11 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { useForm } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import MailingListSourceSheet from '@/Features/Admin/MailingLists/MailingListSourceSheet.vue';
 import type { MailingListSourceOptions } from '@/Features/Admin/MailingLists/types';
 import { TenantType } from '@/Types/enums';
 import { createMockForm } from '@/tests/helpers/createMockForm';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -58,7 +62,7 @@ function mountSheet(type: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal('route', (name: string, params?: string) => `/mocked/${name}/${params ?? ''}`);
+  stubGlobal('route', (name: string, params?: string) => `/mocked/${name}/${params ?? ''}`);
 });
 
 describe('MailingListSourceSheet', () => {

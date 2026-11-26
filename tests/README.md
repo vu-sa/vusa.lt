@@ -197,7 +197,8 @@ resources/js/
 ├── Utils/__tests__/UtilityName.test.ts
 ├── Components/<area>/__tests__/ComponentName.component.test.ts
 ├── Components/RichContent/Types/__tests__/registry.test.ts
-└── Pages/Admin/__tests__/ContentCollectionPublishing.component.test.ts
+├── Pages/Admin/__tests__/ContentCollectionPublishing.component.test.ts
+└── Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.component.test.ts
 ```
 
 **Coverage Target**: 75% minimum (branches, functions, lines, statements)

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
@@ -21,17 +21,12 @@ const graph: WikiGraphPayload = {
 };
 
 beforeEach(() => {
-  vi.stubGlobal('ResizeObserver', class {
-    observe = vi.fn();
-    disconnect = vi.fn();
-  });
   preferences.reduceMotion.value = true;
 });
 
 afterEach(() => {
   wrapper?.unmount();
   preferences.reset();
-  vi.unstubAllGlobals();
 });
 
 describe('WikiGraph', () => {

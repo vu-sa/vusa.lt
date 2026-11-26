@@ -1,12 +1,18 @@
 import { mount } from '@vue/test-utils';
 import { useForm } from '@inertiajs/vue3';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import EventTypeSheetForm from '@/Features/Admin/EventTypes/EventTypeSheetForm.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name: string, id?: string | number) => `/mocked-route/${name}${id ? `/${id}` : ''}`);
+beforeEach(() => {
+  stubGlobal('route', (name: string, id?: string | number) => `/mocked-route/${name}${id ? `/${id}` : ''}`);
+});
 
 const SheetFormStub = {
   props: ['open', 'title'],

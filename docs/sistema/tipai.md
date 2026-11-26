@@ -7,8 +7,8 @@ tests:
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
-  - resources/js/Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.test.ts
-  - resources/js/Pages/Admin/ModelMeta/__tests__/ShowType.test.ts
+  - resources/js/Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.component.test.ts
+  - resources/js/Pages/Admin/ModelMeta/__tests__/ShowType.component.test.ts
   - tests/Browser/TypeDirectoryTest.php
   - resources/js/Components/AdminForms/TypeTree/__tests__/TypeTree.component.test.ts
 ---

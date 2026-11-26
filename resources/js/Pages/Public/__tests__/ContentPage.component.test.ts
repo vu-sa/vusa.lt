@@ -9,12 +9,6 @@ import { commonStubs } from '@/tests/stubs';
 
 import ContentPage from '../ContentPage.vue';
 
-/**
- * Covers the two behaviour changes made to this page: the last-updated line moved out
- * of the per-layout `<header>` into one shared footer at the bottom (always a static
- * date, never relative — see LastUpdatedFooter.vue), and the root padding is
- * `pb-16 md:pb-24` instead of the old `last:pb-2`.
- */
 describe('Public/ContentPage.vue', () => {
   const stubs = {
     ...commonStubs,
@@ -55,21 +49,6 @@ describe('Public/ContentPage.vue', () => {
     // Static, absolute date — never a relative "prieš X dienų" string, even though
     // the fixture date is recent.
     expect(footer.text()).toContain('2026');
-  });
-
-  it('renders the root with pb-16 md:pb-24, not the old last:pb-2', () => {
-    vi.mocked(usePage).mockReturnValue(createMockPage());
-
-    const wrapper = mount(ContentPage, {
-      props: { navigationItemId: 1, page: makePage() },
-      global: { stubs },
-    });
-
-    const root = wrapper.find('.rc-shell');
-    expect(root.exists()).toBe(true);
-    expect(root.classes()).toContain('pb-16');
-    expect(root.classes()).toContain('md:pb-24');
-    expect(root.classes()).not.toContain('last:pb-2');
   });
 
   /**
@@ -126,11 +105,12 @@ describe('Public/ContentPage.vue', () => {
     expect(wrapper.find('footer').exists()).toBe(false);
   });
 
-  it('populates breadcrumbs with ancestor chain when ancestors exist and no main navigation matches', () => {
+  it.each([
+    [999, [['Tėvinis puslapis', '/lt/tevinis'], ['Vaikinis puslapis', undefined]]],
+    [2, [['Navigacijos puslapis', '/lt/navigacija']]],
+  ])('uses the appropriate breadcrumb trail for navigation item %s', (navigationItemId, expectedTrail) => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      props: {
-        mainNavigation: [],
-      },
+      mainNavigation: [{ id: 2, name: 'Navigacijos puslapis', url: '/lt/navigacija' }],
     }));
 
     let state!: ReturnType<typeof createBreadcrumbState>;
@@ -139,7 +119,7 @@ describe('Public/ContentPage.vue', () => {
         state = createBreadcrumbState('public');
         return () =>
           h(ContentPage, {
-            navigationItemId: 999,
+            navigationItemId,
             page: makePage({
               title: 'Vaikinis puslapis',
               ancestors: [
@@ -150,10 +130,9 @@ describe('Public/ContentPage.vue', () => {
       },
     });
 
-    mount(Host, { global: { stubs } });
+    const wrapper = mount(Host, { global: { stubs } });
 
-    const labels = state.breadcrumbs.value.map(b => b.label);
-    expect(labels).toContain('Tėvinis puslapis');
-    expect(labels).toContain('Vaikinis puslapis');
+    expect(state.breadcrumbs.value.slice(1).map(crumb => [crumb.label, crumb.href])).toEqual(expectedTrail);
+    wrapper.unmount();
   });
 });

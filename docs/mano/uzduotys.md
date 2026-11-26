@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: Užduotys
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-27
 tests:
   - tests/Feature/Tasks/TaskProgressTest.php
   - tests/Browser/VisakOverviewPagesTest.php
@@ -113,7 +113,7 @@ Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, n
 | Veiksmas | Kada rodomas |
 |---|---|
 | **Pranešti apie veiklą** | Neatlikta periodiškumo užduotis: registruojamas posėdis arba pranešimas, kad posėdžio nebuvo |
-| **Pridėti darbotvarkės klausimą** / **Peržiūrėti darbotvarkę** | Neatlikta darbotvarkės užduotis: nuoroda į posėdžio darbotvarkę |
+| **Pridėti darbotvarkės klausimą** / **Peržiūrėti darbotvarkę** | Neatlikta darbotvarkės užduotis su pasiekiamu posėdžiu: nuoroda į jo darbotvarkę |
 | **Pažymėti atlikta** / **Grąžinti į neatliktas** | Tik rankinė užduotis |
 | **Ištrinti** | Tik jei turi teisę ją ištrinti |
 

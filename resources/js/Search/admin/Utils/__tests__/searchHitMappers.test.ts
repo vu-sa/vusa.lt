@@ -161,12 +161,6 @@ describe('collectAllTabHits', () => {
   const meeting = { id: 'm1', title: 'Studijų kolegijos posėdis', start_time: 1_700_000_000, _text_match: meetingScore } as never;
   const institution = { id: 'i1', name_lt: 'Studijų kolegija', created_at: 1_500_000_000, _text_match: institutionScore } as never;
 
-  it('treats the two scores as a precision trap when compared as JS numbers', () => {
-    // Sanity check: the bug this test guards against — naive number comparison ties.
-    expect(Number(meetingScore)).toBe(Number(institutionScore));
-    expect(BigInt(institutionScore) > BigInt(meetingScore)).toBe(true);
-  });
-
   it('interleaves collections by relevance (text_match) when a query is present', () => {
     const results = makeResults({ meetings: [meeting], institutions: [institution] });
 
@@ -174,8 +168,7 @@ describe('collectAllTabHits', () => {
 
     // Institution scores higher (BigInt), so it must lead despite meetings ranking
     // first in the static order AND despite the meeting being far more recent.
-    expect(hits[0].collection).toBe('institutions');
-    expect(hits[1].collection).toBe('meetings');
+    expect(hits.map(hit => hit.collection)).toEqual(['institutions', 'meetings']);
   });
 
   it('falls back to recency as a tiebreak when relevance is equal', () => {
@@ -185,8 +178,7 @@ describe('collectAllTabHits', () => {
 
     const hits = collectAllTabHits(results, { query: 'posėdis' });
 
-    expect(hits[0].recordId).toBe('m2');
-    expect(hits[1].recordId).toBe('m1');
+    expect(hits.map(hit => hit.recordId)).toEqual(['m2', 'm1']);
   });
 
   it('uses the static collection order when there is no query (browse mode)', () => {
@@ -195,8 +187,7 @@ describe('collectAllTabHits', () => {
     const hits = collectAllTabHits(results, { query: '' });
 
     // No query: meetings precede institutions regardless of relevance score.
-    expect(hits[0].collection).toBe('meetings');
-    expect(hits[1].collection).toBe('institutions');
+    expect(hits.map(hit => hit.collection)).toEqual(['meetings', 'institutions']);
   });
 });
 

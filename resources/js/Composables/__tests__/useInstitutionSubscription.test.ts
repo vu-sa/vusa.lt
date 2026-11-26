@@ -2,8 +2,12 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('vue-sonner', () => ({
   toast: {
@@ -13,7 +17,9 @@ vi.mock('vue-sonner', () => ({
   },
 }));
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+beforeEach(() => {
+  stubGlobal('fetch', mockFetch);
+});
 
 describe('useInstitutionSubscription', () => {
   beforeEach(() => {

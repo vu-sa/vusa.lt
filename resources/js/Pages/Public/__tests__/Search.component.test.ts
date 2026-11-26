@@ -7,30 +7,37 @@
  * groups results by collection (not interleaved), and carries the query into "view all" links.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 import Search from '../Search.vue';
 
-/** One result per requested collection, keyed by collection name — mirrors the composable's own test fake. */
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
+/** Two results per requested collection, keyed by collection name — mirrors the composable's own test fake. */
 const fakeMultiSearchResponse = (searches: Array<{ collection: string }>) => ({
   results: searches.map((search) => {
     const found: Record<string, number> = {
       public_institutions: 3,
       public_meetings: 2,
       documents: 5,
-      public_news: 1,
+      public_news: 2,
       public_pages: 6,
       calendar: 4,
     };
     const count = found[search.collection] ?? 1;
     return {
       found: count,
-      hits: [{ document: { id: `${search.collection}-1`, title: `${search.collection} hit` }, text_match: 10 }],
+      hits: [1, 2].map(index => ({
+        document: { id: `${search.collection}-${index}`, title: `${search.collection} hit ${index}` },
+        text_match: 10,
+      })),
     };
   }),
 });
@@ -40,9 +47,7 @@ const mockFetch = vi.fn();
 describe('Public/Search.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // `route()` is already stubbed globally in tests/setup.ts — assign fetch directly rather
-    // than `vi.stubGlobal`/`vi.unstubAllGlobals`, which would tear that stub down too.
-    globalThis.fetch = mockFetch;
+    stubGlobal('fetch', mockFetch);
     mockFetch.mockImplementation(async (_url: string, init: { body: string }) => {
       const { searches } = JSON.parse(init.body);
       return {
@@ -122,13 +127,14 @@ describe('Public/Search.vue', () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    // One section heading per collection that has hits, each followed by its own hit list —
-    // not a single flat list mixing collections together.
-    expect(wrapper.text()).toContain('search.section_documents');
-    const documentHit = wrapper.text().indexOf('documents hit');
-    const newsHit = wrapper.text().indexOf('news hit');
-    expect(documentHit).toBeGreaterThan(-1);
-    expect(newsHit).toBeGreaterThan(-1);
+    for (const [heading, collection] of [['search.section_documents', 'documents'], ['search.section_news', 'public_news']]) {
+      const section = wrapper.findAll('h2').find(item => item.text() === heading)?.element.parentElement?.parentElement?.parentElement;
+      expect(section).toBeDefined();
+      expect(section?.textContent?.match(/(?:documents|public_news) hit [12]/g)).toEqual([
+        `${collection} hit 1`,
+        `${collection} hit 2`,
+      ]);
+    }
   });
 
   it('carries the current search term into "view all" links', async () => {

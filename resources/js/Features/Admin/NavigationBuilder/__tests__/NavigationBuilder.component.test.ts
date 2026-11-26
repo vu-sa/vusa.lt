@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
+import { commonStubs } from '@/tests/stubs';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuilder.vue';
@@ -25,9 +26,9 @@ const alertDialogStubs = {
   AlertDialogTrigger: { template: '<div><slot /></div>' },
   AlertDialogAction: { template: '<button class="confirm-delete" @click="$emit(\'click\')"><slot /></button>' },
   AlertDialogCancel: { template: '<button class="cancel-delete"><slot /></button>' },
-  Tooltip: { template: '<div><slot /></div>' },
-  TooltipTrigger: { template: '<div><slot /></div>' },
-  TooltipContent: { template: '<div><slot /></div>' },
+  Tooltip: commonStubs.Tooltip,
+  TooltipTrigger: commonStubs.TooltipTrigger,
+  TooltipContent: commonStubs.TooltipContent,
   MainNavigationMenuContent: { props: ['item'], template: '<div data-testid="preview-item">{{ item.name }}</div>' },
 };
 

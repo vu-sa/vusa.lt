@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "total": 2263,
+  "total": 2252,
   "fingerprints": {
     "docs/pdf/build-release.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,
     "docs/pdf/build-release.ts | TS2345 | Argument of type 'string | undefined' is not assignable to parameter of type 'string'.": 1,
@@ -1054,10 +1054,7 @@
     "resources/js/Pages/Admin/Settings/EditDocumentSettings.vue | TS2345 | Argument of type '{ phrases_text: string; document_id: string; enabled: boolean; show_without_query: boolean; } | undefined' is not assignable to parameter of type '{ phrases_text: string; document_id: string; enabled: boolean; show_without_query: boolean; }'.": 1,
     "resources/js/Pages/Admin/Settings/EditDocumentSettings.vue | TS2532 | Object is possibly 'undefined'.": 1,
     "resources/js/Pages/Admin/Settings/EditFormSettings.vue | TS2322 | Type '{ label: unknown[]; value: string; }[]' is not assignable to type 'NativeSelectOption[]'.": 2,
-    "resources/js/Pages/Admin/Settings/__tests__/EditCadenceSettings.component.test.ts | TS2532 | Object is possibly 'undefined'.": 1,
-    "resources/js/Pages/Admin/Settings/__tests__/EditDocumentSettings.component.test.ts | TS2322 | Type '{ selected_content_types: never[]; available_content_types: never[]; recommendations: { document_id: string; phrases: string[]; enabled: true; show_without_query: true; }[]; selected_documents: { ...; }[]; }' is not assignable to type 'VNodeProps & { __v_isVNode?: undefined; [Symbol.iterator]?: undefined; } & Record<string, any> & { readonly canEdit: boolean; readonly selected_content_types: string[]; readonly available_content_types: string[]; readonly recommendations: Recommendation[]; readonly selected_documents: { ...; }[]; } & AllowedComponen...'.": 1,
     "resources/js/Pages/Admin/Settings/__tests__/EditFormSettings.component.test.ts | TS2352 | Conversion of type '{ id: string; name: string; }[]' to type 'Form[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.": 1,
-    "resources/js/Pages/Admin/Settings/__tests__/EditSiteSettings.component.test.ts | TS2322 | Type '{ selectedPages: { lt: { id: string; title: string; lang: \"lt\" | \"en\"; tenant_shortname: string; } | null; en: { id: string; title: string; lang: \"lt\" | \"en\"; tenant_shortname: string; } | null; }; }' is not assignable to type 'VNodeProps & { __v_isVNode?: undefined; [Symbol.iterator]?: undefined; } & Record<string, any> & { readonly canEdit: boolean; readonly selectedPages: { lt: SelectedPage | null; en: SelectedPage | null; }; } & AllowedComponentProps & ComponentCustomProps'.": 1,
     "resources/js/Pages/Admin/ShowInstitutionGraph.vue | TS2322 | Type 'Institution[]' is not assignable to type 'GraphNodeData[]'.": 1,
     "resources/js/Pages/Admin/ShowNotificationSettings.vue | TS2322 | Type 'number | undefined' is not assignable to type 'string | number | boolean'.": 1,
     "resources/js/Pages/Admin/ShowNotificationSettings.vue | TS2322 | Type 'string | number | boolean' is not assignable to type 'number'.": 1,
@@ -1146,9 +1143,7 @@
     "resources/js/Search/admin/Config/collectionFacetConfig.ts | TS18048 | 'ADMIN_SEARCH_FALLBACKS.resources' is possibly 'undefined'.": 1,
     "resources/js/Search/admin/Config/collectionFacetConfig.ts | TS18048 | 'ADMIN_SEARCH_FALLBACKS.users' is possibly 'undefined'.": 2,
     "resources/js/Search/admin/Services/__tests__/AdminSearchService.test.ts | TS2739 | Type '{ fields: ({ field: string; label: string; type: \"checkbox\"; } | { field: string; label: string; type: \"year-pills\"; })[]; }' is missing the following properties from type 'CollectionFacetConfig': facetBy, queryBy, defaultSortBy": 1,
-    "resources/js/Search/admin/Utils/__tests__/searchHitMappers.component.test.ts | TS2532 | Object is possibly 'undefined'.": 6,
     "resources/js/Search/core/__tests__/FacetMerger.test.ts | TS2532 | Object is possibly 'undefined'.": 10,
-    "resources/js/Search/core/__tests__/SearchExperience.test.ts | TS2322 | Type 'unknown' is not assignable to type 'SearchMatch | undefined'.": 2,
     "resources/js/Search/core/__tests__/SearchExperience.test.ts | TS2532 | Object is possibly 'undefined'.": 5,
     "resources/js/Search/core/matches.ts | TS2322 | Type 'boolean | undefined' is not assignable to type 'boolean'.": 1,
     "resources/js/Search/core/matches.ts | TS2322 | Type 'string | undefined' is not assignable to type 'string'.": 1,

@@ -37,6 +37,7 @@ tests:
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Browser/SearchExperienceTest.php
   - resources/js/Search/core/__tests__/SearchExperience.test.ts
+  - resources/js/Search/core/__tests__/SearchExperience.component.test.ts
   - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Search/core/__tests__/FacetOptions.component.test.ts
   - resources/js/__tests__/designTokens.test.ts

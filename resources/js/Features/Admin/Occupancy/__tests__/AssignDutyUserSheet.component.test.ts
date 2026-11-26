@@ -44,6 +44,8 @@ const stubs = {
     emits: ['update:modelValue'],
     template: '<button type="button" data-testid="duty-search" @click="$emit(\'update:modelValue\', { id: \'duty-7\', name: \'Narys\', homeTenantId: 5 })" />',
   },
+  SelectContent: { template: '<div><slot /></div>' },
+  SelectItem: { template: '<div data-testid="study-program-option"><slot /></div>' },
   AccessChangeWarningDialog: true,
   UserAvatar: { template: '<span class="avatar" />' },
   InflectedDutyName: { props: ['name'], template: '<span>{{ typeof name === "string" ? name : name?.lt }}</span>' },
@@ -56,6 +58,12 @@ const mountSheet = (props: Record<string, unknown> = {}, realDatePickers = false
     props: { open: true, duty, ...props },
     global: { stubs: { ...stubs, DatePicker: realDatePickers ? false : stubs.DatePicker } },
   });
+
+async function openExtras(wrapper: ReturnType<typeof mountSheet>) {
+  const extras = wrapper.get<HTMLDetailsElement>('[data-testid="assign-extras"]');
+  extras.element.open = true;
+  await extras.trigger('toggle');
+}
 
 const lastForm = () => vi.mocked(useForm).mock.results.at(-1)!.value as FormMock;
 
@@ -306,12 +314,14 @@ describe('AssignDutyUserSheet.vue', () => {
       expect(wrapper.find('[data-testid="assign-extras"]').attributes('open')).toBeDefined();
     });
 
-    it('offers a study programme only on a curator duty', () => {
+    it('offers a study programme only on a curator duty', async () => {
       const plain = mountSheet({ duty: { ...duty, types: [{ id: 6 }] }, studyPrograms: programmes });
       const curator = mountSheet({ duty: { ...duty, types: [{ id: 8 }] }, studyPrograms: programmes });
+      await openExtras(plain);
+      await openExtras(curator);
 
-      expect((plain.vm as unknown as { showStudyProgram: boolean }).showStudyProgram).toBe(false);
-      expect((curator.vm as unknown as { showStudyProgram: boolean }).showStudyProgram).toBe(true);
+      expect(plain.find('[data-testid="assign-study-program"]').exists()).toBe(false);
+      expect(curator.find('[data-testid="assign-study-program"]').exists()).toBe(true);
     });
   });
 
@@ -351,9 +361,9 @@ describe('AssignDutyUserSheet.vue', () => {
 
       await wrapper.find('[data-testid="duty-search"]').trigger('click');
 
-      const offered = (wrapper.vm as unknown as { availableStudyPrograms: { name: string }[] }).availableStudyPrograms;
-
-      expect(offered.map(program => program.name)).toEqual(['Ekonomika']);
+      await openExtras(wrapper);
+      const studyProgram = wrapper.get('[data-testid="assign-study-program"]');
+      expect(studyProgram.findAll('[data-testid="study-program-option"]').map(option => option.text())).toEqual(['Nenurodyta', 'Ekonomika']);
     });
   });
 

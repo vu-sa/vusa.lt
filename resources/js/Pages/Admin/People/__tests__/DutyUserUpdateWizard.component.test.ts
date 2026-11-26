@@ -3,12 +3,6 @@ import { mount } from '@vue/test-utils';
 
 import DutyUserUpdateWizard from '../DutyUserUpdateWizard.vue';
 
-// Mock Ziggy route
-vi.mock('ziggy-js', () => ({
-  default: (name: string) => `/${name}`,
-  route: (name: string) => `/${name}`,
-}));
-
 describe('DutyUserUpdateWizard.vue', () => {
   const defaultProps = {
     institutions: [

@@ -1,18 +1,14 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
-
-// The shared mock's form is a plain object; the row needs to re-render when a checkbox changes.
-vi.mock('@inertiajs/vue3', async () => {
-  const [mock, { reactive }] = await Promise.all([import('@/mocks/inertia.mock'), import('vue')]);
-  return { ...mock, useForm: vi.fn((data: Record<string, unknown>) => reactive(mock.useForm(data))) };
-});
-
 import { useForm } from '@inertiajs/vue3';
+
+import type { MockForm } from '@/tests/helpers/createMockForm';
 
 import EditDocumentSettings from '../EditDocumentSettings.vue';
 
 const mountPage = (recommendation: Record<string, unknown> = {}) => mount(EditDocumentSettings, {
   props: {
+    canEdit: true,
     selected_content_types: [],
     available_content_types: [],
     recommendations: [{ document_id: '1', phrases: ['įstatai', 'VU SA įstatai'], enabled: true, show_without_query: true, ...recommendation }],
@@ -34,11 +30,24 @@ describe('EditDocumentSettings', () => {
     const input = wrapper.get<HTMLInputElement>('#recommendation-phrases-0');
     expect(input.element.value).toBe('įstatai, VU SA įstatai');
 
+    const form = vi.mocked(useForm).mock.results.at(-1)!.value as unknown as MockForm;
+    const submit = vi.fn(() => {
+      const transform = form.transform.mock.calls[0]?.[0];
+      return transform({
+        important_content_types: form.important_content_types,
+        recommendations: form.recommendations,
+      });
+    });
+    form.post.mockImplementation(submit);
+
     await input.setValue(' įstat ,VU SA įstatai, , ');
     await wrapper.get('form').trigger('submit');
-    const transform = vi.mocked(useForm).mock.results.at(-1)!.value.transform.mock.calls[0][0];
-    expect(transform({ important_content_types: [], recommendations: [{ document_id: '1', phrases_text: input.element.value, enabled: true, show_without_query: true }] }).recommendations)
-      .toEqual([{ document_id: '1', phrases: ['įstat', 'VU SA įstatai'], enabled: true, show_without_query: true }]);
+
+    expect(form.post).toHaveBeenCalledExactlyOnceWith('/mocked-route/settings.documents.update');
+    expect(submit).toHaveReturnedWith({
+      important_content_types: [],
+      recommendations: [{ document_id: '1', phrases: ['įstat', 'VU SA įstatai'], enabled: true, show_without_query: true }],
+    });
   });
 
   it('dims a recommendation paused through the inverted checkbox', async () => {

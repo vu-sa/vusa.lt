@@ -2,15 +2,21 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { apiRequest } from '@/Composables/apiRequest';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('vue-sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+beforeEach(() => {
+  stubGlobal('fetch', mockFetch);
+});
 
 function respond(body: unknown, status = 200) {
   return new Response(body === null ? null : JSON.stringify(body), {

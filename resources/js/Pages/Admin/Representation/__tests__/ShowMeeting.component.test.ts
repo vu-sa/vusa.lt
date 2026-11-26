@@ -1,17 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router, WhenVisible } from '@inertiajs/vue3';
 import * as i18n from 'laravel-vue-i18n';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
 import { commonStubs } from '@/tests/stubs';
 import { ActionType, AgendaItemType, MeetingKind, MeetingType } from '@/Types/enums';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name?: string, params?: unknown) => (name === undefined
-  ? { current: () => false }
-  : `/mocked/${name}${params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ''}`));
+beforeEach(() => {
+  stubGlobal('route', (name?: string, params?: unknown) => (name === undefined
+    ? { current: () => false }
+    : `/mocked/${name}${params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ''}`));
+});
 
 const stubs = {
   ...commonStubs,

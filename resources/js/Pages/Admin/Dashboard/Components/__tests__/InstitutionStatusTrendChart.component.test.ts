@@ -1,18 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import InstitutionStatusTrendChart from '../InstitutionStatusTrendChart.vue';
 import type { InstitutionStatusHistoryPoint } from '../../types';
-
-// jsdom has no ResizeObserver; a minimal stub lets the component mount so we can
-// assert its prop-driven wiring. Actual D3/SVG geometry (path shapes, pixel
-// positions) is a rendering concern that can't be meaningfully asserted in
-// jsdom — that gap is intentional, per resources/js/CLAUDE.md.
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
 
 function point(date: string, overrides: Partial<InstitutionStatusHistoryPoint> = {}): InstitutionStatusHistoryPoint {
   return {
@@ -30,16 +20,8 @@ function point(date: string, overrides: Partial<InstitutionStatusHistoryPoint> =
 
 describe('InstitutionStatusTrendChart', () => {
   let wrapper: ReturnType<typeof mount>;
-  let originalResizeObserver: typeof ResizeObserver | undefined;
-
-  beforeEach(() => {
-    originalResizeObserver = globalThis.ResizeObserver;
-    globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
-  });
-
   afterEach(() => {
     wrapper?.unmount();
-    globalThis.ResizeObserver = originalResizeObserver as typeof ResizeObserver;
     vi.restoreAllMocks();
   });
 

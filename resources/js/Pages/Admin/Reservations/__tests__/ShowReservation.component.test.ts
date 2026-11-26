@@ -1,10 +1,15 @@
 import type * as VueUse from '@vueuse/core';
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { ref } from 'vue';
+import { commonStubs } from '@/tests/stubs';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowReservation from '@/Pages/Admin/Reservations/ShowReservation.vue';
 import type { ReservationResourceState } from '@/Utils/ReservationStatus';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -30,7 +35,9 @@ const mockRoute = (name?: string, params?: Record<string, unknown>) => {
   return `/mocked-route/${name}${queryString}`;
 };
 
-vi.stubGlobal('route', mockRoute);
+beforeEach(() => {
+  stubGlobal('route', mockRoute);
+});
 
 const stubs = {
   RecordPage: {
@@ -83,15 +90,9 @@ const stubs = {
     props: ['open'],
     template: '<div data-testid="dialog"><slot /></div>',
   },
-  DialogContent: {
-    template: '<div><slot /></div>',
-  },
-  DialogHeader: {
-    template: '<div><slot /></div>',
-  },
-  DialogTitle: {
-    template: '<div><slot /></div>',
-  },
+  DialogContent: commonStubs.DialogContent,
+  DialogHeader: commonStubs.DialogHeader,
+  DialogTitle: commonStubs.DialogTitle,
   MultiSelect: {
     props: ['modelValue', 'options'],
     template: '<div data-testid="multi-select" />',

@@ -3,9 +3,13 @@ import { defineComponent } from 'vue';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import { useAdminCollectionSearch } from '../useAdminCollectionSearch';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -22,14 +26,13 @@ let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
   vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { id: userId++ } } }));
-  vi.stubGlobal('route', vi.fn((name: string) => `/${name}`));
+  stubGlobal('route', vi.fn((name: string) => `/${name}`));
   localStorage.clear();
   window.history.replaceState({}, '', '/mano/meetings');
 });
 
 afterEach(() => {
   wrapper?.unmount();
-  vi.unstubAllGlobals();
 });
 
 async function mountSearch(baseFilterBy?: string, collection: 'meetings' | 'institutions' = 'meetings') {
@@ -53,7 +56,7 @@ describe('collection first request', () => {
       hits: [{ document: { id: 'i1', name_lt: 'Taryba' } }], found: 1,
       facet_counts: excluded ? [] : [{ field_name: 'activity_status', counts: [{ value: 'overdue', count: 1 }] }],
     }] }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const search = await mountSearch(undefined, 'institutions');
 
@@ -69,7 +72,7 @@ describe('collection first request', () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(json(config)).mockResolvedValueOnce(json({
       results: [{ hits: [{ document: { id: 'm1' } }], found: 1, facet_counts: [yearFacet([{ value: '2025', count: 1 }])] }],
     }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const search = await mountSearch();
 
@@ -86,11 +89,13 @@ describe('collection first request', () => {
     let resolveSearch!: (response: ReturnType<typeof json>) => void;
     const fetchMock = vi.fn().mockResolvedValueOnce(json(config))
       .mockImplementationOnce(() => new Promise((resolve) => { resolveSearch = resolve; }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const search = await mountSearch();
     let finished = false;
 
-    const facets = search.loadInitialFacets().then(() => { finished = true; });
+    const facets = search.loadInitialFacets().then(() => {
+      finished = true;
+    });
     await flushPromises();
     expect(finished).toBe(false);
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -112,7 +117,7 @@ describe('collection first request', () => {
         { facet_counts: [yearFacet([{ value: '2025', count: 5 }, { value: '2024', count: 6 }]), { field_name: 'completion_status', counts: [{ value: 'complete', count: 5 }, { value: 'incomplete', count: 6 }] }] },
       ],
     }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
 
     const search = await mountSearch('tenant_id:=[7]');
 
