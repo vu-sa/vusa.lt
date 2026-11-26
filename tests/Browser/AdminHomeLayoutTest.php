@@ -19,8 +19,6 @@ it('keeps the home layout within the viewport at the redesign widths', function 
         foreach ([false, true] as $dark) {
             $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
 
-            $page->screenshot(fullPage: false, filename: 'admin-home-'.$width.($dark ? '-dark' : '-light'));
-
             if (! $dark && $width === 390) {
                 // 844 matches a standard phone viewport and stays under Chrome's 2.3:1 PWA screenshot limit.
                 $page->resize(390, 844);

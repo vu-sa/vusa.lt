@@ -36,7 +36,7 @@ describe('applySorting', function (): void {
         $result = $this->service->applySorting(News::query(), [['id' => 'title', 'desc' => false]]);
         $titles = $result->pluck('title')->all();
 
-        expect($titles)->toContain('Apple', 'Zebra');
+        expect($titles)->toBe(['Apple', 'Zebra']);
     });
 
     test('applies descending sort', function (): void {
@@ -46,7 +46,7 @@ describe('applySorting', function (): void {
         $result = $this->service->applySorting(News::query(), [['id' => 'title', 'desc' => true]]);
         $titles = $result->pluck('title')->all();
 
-        expect($titles)->toContain('Zebra', 'Apple');
+        expect($titles)->toBe(['Zebra', 'Apple']);
     });
 });
 
@@ -181,11 +181,15 @@ describe('filter key validation', function (): void {
     });
 
     test('still sorts by valid relationship column', function (): void {
-        News::factory()->for($this->tenant)->create();
+        [$firstTenant, $secondTenant] = Tenant::query()->orderBy('shortname')->take(2)->get()->all();
+        $secondNews = News::factory()->for($secondTenant)->create();
+        $firstNews = News::factory()->for($firstTenant)->create();
 
-        $result = $this->service->applySorting(News::query(), [['id' => 'tenant.shortname', 'desc' => false]]);
+        $ids = $this->service->applySorting(News::query(), [['id' => 'tenant.shortname', 'desc' => false]])
+            ->pluck('news.id')
+            ->all();
 
-        expect($result->count())->toBeGreaterThanOrEqual(1);
+        expect($ids)->toBe([$firstNews->id, $secondNews->id]);
     });
 
     test('keeps the model\'s own id when sorting through a joined relation', function (): void {
@@ -336,6 +340,10 @@ describe('applyGlobalSearch', function (): void {
 
 describe('applyPermissionFiltering', function (): void {
     test('returns query unchanged for super admin', function (): void {
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $firstNews = News::factory()->for($this->tenant)->create();
+        $secondNews = News::factory()->for($otherTenant)->create();
+
         $admin = makeAdminUser($this->tenant);
         Auth::login($admin);
 
@@ -343,7 +351,8 @@ describe('applyPermissionFiltering', function (): void {
         $authorizer = app(ModelAuthorizer::class);
         $result = $this->service->applyPermissionFiltering($query, 'tenant', 'news.read.padalinys', $authorizer);
 
-        expect($result)->toBeInstanceOf(Builder::class);
+        expect($result)->toBe($query)
+            ->and($result->pluck('id')->all())->toContain($firstNews->id, $secondNews->id);
     });
 });
 

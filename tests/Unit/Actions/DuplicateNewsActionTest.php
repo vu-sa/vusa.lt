@@ -209,36 +209,6 @@ describe('DuplicateNewsAction', function (): void {
             ->and($duplicatedNews->publish_time)->toBeNull(); // Should always be null
     });
 
-    test('creates new database record', function (): void {
-        $content = Content::factory()->create();
-
-        $originalCount = News::count();
-
-        $originalNews = News::factory()->create([
-            'content_id' => $content->id,
-        ]);
-
-        $duplicatedNews = DuplicateNewsAction::execute($originalNews);
-
-        expect(News::count())->toBe($originalCount + 2) // Original + duplicated
-            ->and($duplicatedNews->wasRecentlyCreated)->toBeTrue();
-    });
-
-    test('returns refreshed news instance', function (): void {
-        $content = Content::factory()->create();
-
-        $originalNews = News::factory()->create([
-            'content_id' => $content->id,
-        ]);
-
-        $result = DuplicateNewsAction::execute($originalNews);
-
-        expect($result)->toBeInstanceOf(News::class)
-            ->and($result->exists)->toBeTrue()
-            ->and($result->id)->toBeGreaterThan(0)
-            ->and($result->content)->toBeInstanceOf(Content::class);
-    });
-
     test('copies tags relationship', function (): void {
         $content = Content::factory()->create();
 
@@ -276,21 +246,6 @@ describe('DuplicateNewsAction', function (): void {
 
         expect($duplicatedNews->tags)->toBeEmpty()
             ->and($duplicatedNews->exists)->toBeTrue();
-    });
-
-    test('duplicated news publish_time is set to null', function (): void {
-        $content = Content::factory()->create();
-
-        $originalNews = News::factory()->create([
-            'title' => 'Original news',
-            'publish_time' => now(),
-            'draft' => 0,
-            'content_id' => $content->id,
-        ]);
-
-        $duplicatedNews = DuplicateNewsAction::execute($originalNews);
-
-        expect($duplicatedNews->publish_time)->toBeNull();
     });
 
     test('clears other_lang_id to avoid unique constraint violation', function (): void {

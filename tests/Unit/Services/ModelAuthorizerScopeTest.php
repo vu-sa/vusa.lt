@@ -44,7 +44,8 @@ describe('resolution', function (): void {
 
         expect($scope->granted)->toBeTrue()
             ->and($scope->isAllScope)->toBeTrue()
-            ->and($scope->tenants)->toHaveCount(Tenant::count());
+            ->and($scope->tenants)->toHaveCount(Tenant::count())
+            ->and($this->authorizer->allows($superAdmin, 'nonexistent.permission.scope'))->toBeTrue();
     });
 
     test('a duty-granted padalinys permission scopes to that duty tenant only', function (): void {
@@ -162,6 +163,16 @@ describe('memoization', function (): void {
             ->not->toBe($this->authorizer->scope($user, 'news.read.padalinys'))
             ->and($this->authorizer->scope($other, 'news.update.padalinys')->granted)->toBeFalse()
             ->and($this->authorizer->scope($user, 'news.update.padalinys')->granted)->toBeTrue();
+    });
+
+    test('allows, tenants and duties all read from the same memoized resolution', function (): void {
+        $user = actorWithPermissions($this->tenant, ['news.update.padalinys']);
+
+        $scope = $this->authorizer->scope($user, 'news.update.padalinys');
+
+        expect($this->authorizer->allows($user, 'news.update.padalinys'))->toBe($scope->granted)
+            ->and($this->authorizer->tenants($user, 'news.update.padalinys'))->toBe($scope->tenants)
+            ->and($this->authorizer->duties($user, 'news.update.padalinys'))->toBe($scope->duties);
     });
 });
 

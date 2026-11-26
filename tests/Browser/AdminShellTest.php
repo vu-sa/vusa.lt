@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
  */
 function openShell(int $width, int $height, string $path = '/mano/institutions'): mixed
 {
-    $user = makeAdminUser(Tenant::query()->first());
+    $user = makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::query()->first());
 
     $page = loginAsAdmin($user, $path, $width, $height);
     waitForInertiaRender($page);
@@ -30,6 +30,7 @@ it('swaps the top-bar create button and bell for the bottom bar on a phone', fun
     expect($page->script("getComputedStyle(document.querySelector('[data-slot=mobile-bottom-bar]')).display"))->toBe('flex')
         ->and($page->script("document.querySelector('[data-slot=shell-top-bar] button.bg-brand-fill').offsetParent"))->toBeNull()
         ->and($page->script("document.querySelector('[data-slot=shell-top-bar] [data-tour=notifications-indicator]').offsetParent"))->toBeNull();
+    $page->assertNoJavaScriptErrors();
 });
 
 it('opens only the active workspace in the phone menu and switches sections when tapped', function (): void {
@@ -72,4 +73,5 @@ it('focuses a collection search with /', function (): void {
     $page->script("window.dispatchEvent(new KeyboardEvent('keydown', { key: '/', cancelable: true }))");
 
     expect($page->script("document.activeElement?.hasAttribute('data-admin-collection-search')"))->toBeTrue();
+    $page->assertNoJavaScriptErrors();
 });

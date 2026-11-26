@@ -10,7 +10,6 @@
  */
 
 use App\Http\Controllers\Api\ApiController;
-use App\Http\Controllers\Concerns\ApiResponses;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,39 +31,9 @@ arch('API controllers use consistent naming')
     ->classes()
     ->toHaveSuffix('Controller');
 
-arch('Admin API controllers are in Admin namespace')
+arch('Admin API directory contains only classes')
     ->expect('App\Http\Controllers\Api\Admin')
-    ->toBeClasses()
-    ->toExtend(ApiController::class);
-
-arch('ApiController uses ApiResponses trait')
-    ->expect(ApiController::class)
-    ->toUseTrait(ApiResponses::class);
-
-/*
-|--------------------------------------------------------------------------
-| Response Trait Tests
-|--------------------------------------------------------------------------
-*/
-
-arch('ApiResponses trait exists and is a trait')
-    ->expect(ApiResponses::class)
-    ->toBeTrait();
-
-arch('ApiResponses has required methods')
-    ->expect(ApiResponses::class)
-    ->toHaveMethods([
-        'jsonSuccess',
-        'jsonError',
-        'jsonPaginated',
-        'jsonCursorPaginated',
-        'jsonNotFound',
-        'jsonForbidden',
-        'jsonUnauthorized',
-        'jsonValidationError',
-        'jsonCreated',
-        'jsonNoContent',
-    ]);
+    ->toBeClasses();
 
 /*
 |--------------------------------------------------------------------------

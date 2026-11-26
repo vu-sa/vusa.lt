@@ -35,6 +35,7 @@
         <Field>
           <FieldLabel>{{ $t('rich-content.button_text') }}</FieldLabel>
           <Input
+            data-testid="hero-button-text"
             :model-value="button.text"
             type="text"
             :placeholder="$t('rich-content.enter_button_text')"

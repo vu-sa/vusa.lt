@@ -275,6 +275,7 @@ describe('Puslapiai', function (): void {
 
         $page->click('[data-slot=collection-rows] li:nth-child(2) article p');
         expect($page->script('document.querySelector("[data-slot=collection-preview] h2").textContent.trim() === document.querySelector("[data-slot=collection-rows] li:nth-child(2) [data-collection-open]").textContent.trim()'))->toBeTrue();
+        $page->assertNoJavaScriptErrors();
     });
 });
 

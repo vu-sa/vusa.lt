@@ -8,7 +8,7 @@ tests:
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/InstitutionSubscriptionTest.php
-  - tests/Unit/InstitutionActivityStatusServiceTest.php
+  - tests/Unit/Services/InstitutionActivityStatusServiceTest.php
   - tests/Feature/Api/Admin/AtstovavimasApiControllerTest.php
   - tests/Unit/Enums/InstitutionActivityStatusTest.php
   - tests/Unit/Services/AcademicCalendarServiceTest.php

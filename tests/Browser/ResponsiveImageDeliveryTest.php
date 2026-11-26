@@ -67,7 +67,7 @@ test('the browser loads a generated image in the public page at phone and deskto
         expect($image['naturalWidth'])->toBeGreaterThan(0)
             ->and($image['currentSrc'])->toContain('/conversions/')->not->toContain('undefined');
     }
-    $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: 'responsive-image-delivery');
+    $page->assertNoJavaScriptErrors();
 });
 
 test('a CMS hero advertises its real source width and selects the original on a large screen', function (): void {
@@ -89,5 +89,5 @@ test('a CMS hero advertises its real source width and selects the original on a 
     $image = settledImage($page, 'main [data-slot=media-image]', '/uploads/files/hero.jpg');
     expect($image['srcset'])->toBe('/img/400/files/hero.jpg 400w, /img/900/files/hero.jpg 900w, /uploads/files/hero.jpg 1600w')
         ->and($image['currentSrc'])->toContain('/uploads/files/hero.jpg');
-    $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: 'cms-hero-image-delivery');
+    $page->assertNoJavaScriptErrors();
 });

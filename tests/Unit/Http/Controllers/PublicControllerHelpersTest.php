@@ -7,36 +7,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    // Create main tenant (vusa -> www subdomain)
-    $this->mainTenant = Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
+    $this->mainTenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
+    $this->mifTenant = Tenant::query()->where('alias', 'mif')->firstOrFail();
 
-    // Create a padalinys tenant (mif subdomain)
-    $this->mifTenant = Tenant::firstOrCreate(
-        ['alias' => 'mif'],
-        [
-            'shortname' => 'VU SA MIF',
-            'shortname_vu' => 'MIF',
-            'fullname' => 'VU SA Matematikos ir informatikos fakultetas',
-            'type' => 'padalinys',
-        ]
-    );
-
-    // Create a test controller instance to test protected methods
     $this->controller = new class extends PublicController
     {
-        // Make protected methods accessible for testing
-        public function __construct()
-        {
-            // Skip parent constructor for unit testing
-        }
+        public function __construct() {}
 
         public function setTenant(Tenant $tenant): void
         {
@@ -211,29 +187,17 @@ describe('subdomain consistency', function (): void {
     it('maps vusa alias to www subdomain consistently', function (): void {
         $this->controller->setTenant($this->mainTenant);
 
-        // Test via getSubdomainForTenant
         $subdomain = $this->controller->publicGetSubdomainForTenant($this->mainTenant);
         expect($subdomain)->toBe('www');
 
-        // Test via tenantRoute - should use www subdomain, not vusa
         $url = $this->controller->publicTenantRoute('home', ['lang' => 'lt'], $this->mainTenant);
-        expect($url)->toContain('www.');
-        // The URL should start with www. subdomain (not vusa. subdomain)
-        expect($url)->toMatch('/^https?:\/\/www\./');
+        expect($url)->toContain('www.')
+            ->toMatch('/^https?:\/\/www\./');
     });
 
     it('preserves non-vusa aliases as subdomains', function (): void {
         $this->controller->setTenant($this->mainTenant);
-
-        $ifTenant = Tenant::firstOrCreate(
-            ['alias' => 'if'],
-            [
-                'shortname' => 'VU SA IF',
-                'shortname_vu' => 'IF',
-                'fullname' => 'VU SA Istorijos fakultetas',
-                'type' => 'padalinys',
-            ]
-        );
+        $ifTenant = Tenant::query()->where('alias', 'if')->firstOrFail();
 
         $subdomain = $this->controller->publicGetSubdomainForTenant($ifTenant);
         expect($subdomain)->toBe('if');

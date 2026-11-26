@@ -2,9 +2,10 @@
 
 use App\Services\Media\LegacyImageResolver;
 use App\Services\Media\LegacyImageSource;
+use Illuminate\Support\Facades\File;
 
 beforeAll(function (): void {
-    $root = sys_get_temp_dir().'/legacy-resolver-test';
+    $root = resolverRoot();
     $files = [
         'uploads/news/„ARK šablonas“ kopija.webp',
         'uploads/contacts/jonas.webp',
@@ -20,9 +21,13 @@ beforeAll(function (): void {
     }
 });
 
+afterAll(function (): void {
+    File::deleteDirectory(resolverRoot());
+});
+
 function resolverRoot(): string
 {
-    return sys_get_temp_dir().'/legacy-resolver-test';
+    return sys_get_temp_dir().'/legacy-resolver-test-'.getmypid();
 }
 
 function resolveLegacy(?string $value): LegacyImageSource

@@ -2,10 +2,8 @@
 
 use App\Enums\SharepointConfigEnum;
 use App\Services\Sharepoint\SharepointGraphService;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
-use Microsoft\Graph\GraphServiceClient;
 
 describe('SharePoint Service Robustness', function (): void {
     beforeEach(function (): void {
@@ -46,8 +44,11 @@ describe('SharePoint Service Robustness', function (): void {
             expect($result)->toBe('success')
                 ->and($attempts)->toBe(4);
 
-            // Test that the operation eventually succeeds after retries
-            // (We can't easily mock usleep in this context)
+            Sleep::assertSequence([
+                Sleep::for(1000)->milliseconds(),
+                Sleep::for(2000)->milliseconds(),
+                Sleep::for(4000)->milliseconds(),
+            ]);
         });
 
         test('gives up after maximum retries', function (): void {
@@ -86,6 +87,8 @@ describe('SharePoint Service Robustness', function (): void {
 
             expect($result)->toBe('immediate-success')
                 ->and($attempts)->toBe(1);
+
+            Sleep::assertNeverSlept();
         });
 
         test('handles different exception types appropriately', function (): void {
@@ -182,178 +185,6 @@ describe('SharePoint Service Robustness', function (): void {
                 'param2' => '',  // Empty
                 'param3' => 'value3',
             ]))->toThrow(InvalidArgumentException::class, "Parameter 'param2' cannot be empty");
-        });
-
-        test('validation error messages are informative', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('validateNotEmpty');
-
-            try {
-                $method->invoke($this->service, ['important_parameter' => null]);
-                expect(false)->toBeTrue(); // Should not reach here
-            } catch (InvalidArgumentException $e) {
-                expect($e->getMessage())->toContain('important_parameter')
-                    ->toContain('cannot be empty');
-            }
-        });
-
-        test('handles array parameters correctly', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('validateNotEmpty');
-
-            // Empty array should be considered empty
-            expect(fn () => $method->invoke($this->service, ['array_param' => []]))
-                ->toThrow(InvalidArgumentException::class);
-
-            // Non-empty array should be valid
-            $method->invoke($this->service, ['array_param' => ['value']]);
-            expect(true)->toBeTrue();
-        });
-    });
-
-    describe('error handling scenarios', function (): void {
-        test('handles network timeout gracefully', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $operation = fn () => throw new Exception('Request timeout');
-
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
-            Log::shouldReceive('error')->once();
-
-            expect(fn () => $method->invoke($this->service, $operation, 'timeout-test'))
-                ->toThrow(Exception::class, 'Request timeout');
-        });
-
-        test('handles API rate limiting', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $attempts = 0;
-            $operation = function () use (&$attempts) {
-                $attempts++;
-                if ($attempts <= 2) {
-                    throw new Exception('Rate limit exceeded (429)');
-                }
-
-                return 'success-after-rate-limit';
-            };
-
-            Log::shouldReceive('info')->times(3); // 2 retries + 1 success
-
-            $result = $method->invoke($this->service, $operation, 'rate-limit-test');
-
-            expect($result)->toBe('success-after-rate-limit')
-                ->and($attempts)->toBe(3);
-        });
-
-        test('handles authentication failures', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $operation = fn () => throw new Exception('Authentication failed (401)');
-
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
-            Log::shouldReceive('error')->once();
-
-            expect(fn () => $method->invoke($this->service, $operation, 'auth-failure-test'))
-                ->toThrow(Exception::class, 'Authentication failed (401)');
-        });
-
-        test('handles service unavailable errors', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $attempts = 0;
-            $operation = function () use (&$attempts) {
-                $attempts++;
-                if ($attempts === 1) {
-                    throw new Exception('Service Unavailable (503)');
-                }
-
-                return 'service-restored';
-            };
-
-            Log::shouldReceive('info')->twice(); // 1 retry + 1 success
-
-            $result = $method->invoke($this->service, $operation, 'service-unavailable-test');
-
-            expect($result)->toBe('service-restored');
-        });
-
-        test('handles malformed API responses', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $operation = fn () => throw new Exception('Invalid JSON response');
-
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
-            Log::shouldReceive('error')->once();
-
-            expect(fn () => $method->invoke($this->service, $operation, 'malformed-response-test'))
-                ->toThrow(Exception::class, 'Invalid JSON response');
-        });
-    });
-
-    describe('performance characteristics', function (): void {
-        test('retry delays increase appropriately', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $attempts = 0;
-
-            $operation = function () use (&$attempts) {
-                $attempts++;
-                if ($attempts <= 3) {
-                    throw new Exception('Performance test');
-                }
-
-                return 'success';
-            };
-
-            Log::shouldReceive('info')->times(4);
-
-            $result = $method->invoke($this->service, $operation, 'performance-test');
-
-            // Verify that retry logic works and eventually succeeds
-            expect($result)->toBe('success');
-            expect($attempts)->toBe(4); // 3 failures + 1 success
-        });
-
-        test('total retry time is bounded', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $operation = fn () => throw new Exception('Bounded time test');
-
-            Log::shouldReceive('info')->times((int) SharepointConfigEnum::MAX_RETRIES->label());
-            Log::shouldReceive('error')->once();
-
-            // Calculate maximum possible retry time
-            $maxRetryTime = 0;
-            for ($i = 1; $i <= (int) SharepointConfigEnum::MAX_RETRIES->label(); $i++) {
-                $maxRetryTime += (int) SharepointConfigEnum::RETRY_DELAY_MS->label() * 2 ** ($i - 1);
-            }
-
-            // Should be reasonable (less than 30 seconds)
-            expect($maxRetryTime)->toBeLessThan(30000);
-
-            expect(fn () => $method->invoke($this->service, $operation, 'bounded-time-test'))
-                ->toThrow(Exception::class);
-        });
-
-        test('does not add unnecessary delay on immediate success', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('executeWithRetry');
-
-            $operation = fn () => 'immediate-success';
-
-            // Should not log any retry attempts for immediate success
-            Log::shouldReceive('info')->never();
-
-            $result = $method->invoke($this->service, $operation, 'no-delay-test');
-
-            expect($result)->toBe('immediate-success');
         });
     });
 
@@ -480,66 +311,6 @@ describe('SharePoint Service Robustness', function (): void {
                 ->toThrow(TypeError::class);
         });
 
-        test('createPublicPermission handles different datetime scenarios', function (): void {
-            // Mock the GraphServiceClient behavior
-            $mockGraphClient = Mockery::mock(GraphServiceClient::class);
-            $mockDriveBuilder = Mockery::mock();
-            $mockItemsBuilder = Mockery::mock();
-            $mockItemBuilder = Mockery::mock();
-            $mockCreateLinkBuilder = Mockery::mock();
-
-            $mockGraphClient->shouldReceive('drives->byDriveId->items->byDriveItemId->createLink->withUrl->post')
-                ->andReturn(Mockery::mock());
-
-            // Test with false datetime (no expiration)
-            // Test with null datetime (uses default settings)
-            // Test with specific datetime
-
-            // These are unit tests for the logic, not integration tests
-        });
-
-        test('updateDriveItemByPath validates input parameters', function (): void {
-            // Test that the method exists and has proper structure
-            expect(method_exists($this->service, 'updateDriveItemByPath'))->toBeTrue();
-
-            $reflection = new ReflectionMethod($this->service, 'updateDriveItemByPath');
-            $parameters = $reflection->getParameters();
-
-            expect($parameters)->toHaveCount(2)
-                ->and($parameters[0]->getName())->toBe('path')
-                ->and($parameters[1]->getName())->toBe('fields');
-        });
-
-        test('uploadDriveItem handles file upload structure', function (): void {
-            // Test method signature and basic validation
-            expect(method_exists($this->service, 'uploadDriveItem'))->toBeTrue();
-
-            $reflection = new ReflectionMethod($this->service, 'uploadDriveItem');
-            $parameters = $reflection->getParameters();
-
-            expect($parameters)->toHaveCount(2)
-                ->and($parameters[0]->getName())->toBe('filePath')
-                ->and($parameters[1]->getName())->toBe('file');
-        });
-
-        test('deleteDriveItem method exists with correct signature', function (): void {
-            expect(method_exists($this->service, 'deleteDriveItem'))->toBeTrue();
-
-            $reflection = new ReflectionMethod($this->service, 'deleteDriveItem');
-            expect($reflection->getNumberOfRequiredParameters())->toBe(1);
-        });
-
-        test('getListItem and updateListItem methods exist', function (): void {
-            expect(method_exists($this->service, 'getListItem'))->toBeTrue()
-                ->and(method_exists($this->service, 'updateListItem'))->toBeTrue();
-
-            $getListItemMethod = new ReflectionMethod($this->service, 'getListItem');
-            expect($getListItemMethod->getNumberOfRequiredParameters())->toBe(3);
-
-            $updateListItemMethod = new ReflectionMethod($this->service, 'updateListItem');
-            expect($updateListItemMethod->getNumberOfRequiredParameters())->toBe(3);
-        });
-
         test('logging methods work correctly', function (): void {
             $reflection = new ReflectionClass($this->service);
 
@@ -552,101 +323,6 @@ describe('SharePoint Service Robustness', function (): void {
 
             $logInfoMethod->invoke($this->service, 'Test info message');
             $logErrorMethod->invoke($this->service, 'Test error message', ['error' => 'context']);
-        });
-
-        test('service initialization handles different parameter combinations', function (): void {
-            // Test various initialization scenarios
-            $scenarios = [
-                [null, null, null],  // All defaults
-                ['custom-site', null, null],  // Custom site only
-                ['custom-site', 'custom-drive', null],  // Site and drive
-                ['custom-site', 'custom-drive', 'custom-list'],  // Site, drive, and list
-            ];
-
-            foreach ($scenarios as $params) {
-                [$siteId, $driveId, $listId] = $params;
-
-                $reflection = new ReflectionClass(SharepointGraphService::class);
-                $constructor = $reflection->getConstructor();
-
-                expect($constructor->getNumberOfParameters())->toBe(3);
-
-                $params = $constructor->getParameters();
-                expect($params[0]->getName())->toBe('siteId')
-                    ->and($params[1]->getName())->toBe('driveId')
-                    ->and($params[2]->getName())->toBe('listId');
-            }
-        });
-
-        test('permission handling methods work correctly', function (): void {
-            // Test getDriveItemPermissions and getDriveItemPublicLink method existence
-            expect(method_exists($this->service, 'getDriveItemPublicLink'))->toBeTrue();
-
-            $reflection = new ReflectionClass($this->service);
-
-            // Check getDriveItemPermissions is protected and exists
-            expect($reflection->hasMethod('getDriveItemPermissions'))->toBeTrue();
-
-            $permMethod = $reflection->getMethod('getDriveItemPermissions');
-            expect($permMethod->isProtected())->toBeTrue()
-                ->and($permMethod->getNumberOfRequiredParameters())->toBe(1);
-
-            $publicLinkMethod = $reflection->getMethod('getDriveItemPublicLink');
-            expect($publicLinkMethod->getNumberOfRequiredParameters())->toBe(1);
-        });
-    });
-
-    describe('error handling edge cases', function (): void {
-        test('validates SharePoint configuration before operations', function (): void {
-            // Test that the service validates required configuration
-            $requiredConfigs = [
-                'filesystems.sharepoint.tenant_id',
-                'filesystems.sharepoint.client_id',
-                'filesystems.sharepoint.client_secret',
-                'filesystems.sharepoint.site_id',
-            ];
-
-            foreach ($requiredConfigs as $config) {
-                // These should be validated during service instantiation
-                expect(strlen($config))->toBeGreaterThan(0);
-            }
-        });
-    });
-
-    describe('integration points', function (): void {
-        test('integrates with Document model correctly', function (): void {
-            // The fields SharepointDocumentFields maps onto a Document
-            $documentFields = [
-                'name', 'title', 'eTag', 'document_date', 'effective_date',
-                'expiration_date', 'language', 'content_type', 'summary',
-                'anonymous_url', 'checked_at',
-            ];
-
-            // Verify these are the fields that should be updated
-            foreach ($documentFields as $field) {
-                expect(strlen($field))->toBeGreaterThan(0);
-            }
-        });
-
-        test('handles Carbon date parsing correctly', function (): void {
-            // Test different date formats that SharePoint might return
-            $dateFormats = [
-                '2024-01-15T10:00:00Z',
-                '2024-01-15T10:00:00.000Z',
-                '2024-01-15 10:00:00',
-                null, // Should handle null dates
-            ];
-
-            foreach ($dateFormats as $dateString) {
-                if ($dateString) {
-                    try {
-                        Carbon::parseFromLocale($dateString, null, 'UTC');
-                        expect(true)->toBeTrue(); // If no exception, parsing succeeded
-                    } catch (Exception) {
-                        expect(false)->toBeTrue("Failed to parse date: {$dateString}"); // This will fail the test
-                    }
-                }
-            }
         });
     });
 });

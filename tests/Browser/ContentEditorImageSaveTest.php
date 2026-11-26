@@ -38,7 +38,6 @@ it('confirms an uploaded image save and permits saving again', function (string 
     waitForInertiaRender($page, '[data-sonner-toast]:nth-child(2):has-text("Išsaugota")');
     waitForInertiaRender($page, '[role=status]:has-text("Visi pakeitimai išsaugoti")');
     $page->assertDontSee('Kažkas išsaugojo naujesnę versiją')->assertNoJavaScriptErrors();
-    $page->screenshot(fullPage: false, filename: 'content-image-save-'.$kind);
 })->with(['news', 'pages']);
 
 it('renders pending upload feedback in the built editor on phone and desktop in both themes', function (): void {
@@ -63,15 +62,6 @@ it('renders pending upload feedback in the built editor on phone and desktop in 
     })()');
     $page->attach('[data-slot=upload] input[type=file]', Storage::disk('local')->path($uploadPath));
     waitForInertiaRender($page, '[data-slot=image-upload-status]');
-
-    foreach ([390, 1440] as $width) {
-        $page->resize($width, 1000);
-        foreach (['light', 'dark'] as $theme) {
-            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-            $page->script('document.querySelector("[data-slot=image-upload-status]").scrollIntoView({ block: "center" })');
-            $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: "image-upload-{$width}-{$theme}");
-        }
-    }
 
     $page->script('window.releaseImageUpload()');
     waitForInertiaRender($page, '[data-slot=image-upload-success]');

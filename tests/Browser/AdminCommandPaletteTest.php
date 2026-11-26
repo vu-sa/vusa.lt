@@ -39,4 +39,5 @@ it('opens a create sheet with the keyboard from another page and from its own co
         $page->assertMissing($sheet);
         expect($page->script('location.search'))->toBe('');
     }
+    $page->assertNoJavaScriptErrors();
 });

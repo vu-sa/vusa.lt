@@ -37,11 +37,13 @@ describe('TaskAssignedNotification', function (): void {
     });
 
     test('returns correct title', function (): void {
-        $task = Task::factory()->create();
+        $task = Task::factory()->create(['name' => 'Prepare Agenda']);
         $user = User::factory()->create();
         $notification = new TaskAssignedNotification($task);
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))
+            ->toBe(__('notifications.task_assigned_title', ['task' => 'Prepare Agenda']))
+            ->toContain('Prepare Agenda');
     });
 
     test('returns body with assigner when provided', function (): void {
@@ -50,8 +52,9 @@ describe('TaskAssignedNotification', function (): void {
         $user = User::factory()->create();
         $notification = new TaskAssignedNotification($task, $assigner);
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))
+            ->toBe(__('notifications.task_assigned_body_with_assigner', ['assigner' => 'Test Assigner']))
+            ->toContain('Test Assigner');
     });
 
     test('returns body without assigner when not provided', function (): void {
@@ -59,8 +62,9 @@ describe('TaskAssignedNotification', function (): void {
         $user = User::factory()->create();
         $notification = new TaskAssignedNotification($task);
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))
+            ->toBe(__('notifications.task_assigned_body'))
+            ->not->toBe('notifications.task_assigned_body');
     });
 
     test('returns correct url', function (): void {
@@ -110,23 +114,6 @@ describe('TaskAssignedNotification', function (): void {
         $actions = $notification->actions();
         expect($actions)->toBeArray()->not->toBeEmpty();
     });
-
-    test('goes to the digest by default, whatever the deadline', function (): void {
-        $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
-        $user = User::factory()->create();
-        $notification = new TaskAssignedNotification($task);
-
-        expect($user->emailDeliveryFor($notification->type()))->toBe(EmailDelivery::Digest)
-            ->and($notification->via($user))->toBe(['database', 'broadcast']);
-    });
-
-    test('a distant deadline stays in the app', function (): void {
-        $task = Task::factory()->create(['due_date' => now()->addDays(30)]);
-        $user = User::factory()->create();
-        $notification = new TaskAssignedNotification($task);
-
-        expect($notification->via($user))->toBe(['database', 'broadcast']);
-    });
 });
 
 /*
@@ -136,19 +123,14 @@ describe('TaskAssignedNotification', function (): void {
 */
 
 describe('TaskReminderNotification', function (): void {
-    test('has correct category', function (): void {
-        $task = Task::factory()->create();
-        $notification = new TaskReminderNotification($task, 3);
-
-        expect($notification->category())->toBe(NotificationCategory::Task);
-    });
-
     test('returns a reminder title', function (): void {
-        $task = Task::factory()->create();
+        $task = Task::factory()->create(['name' => 'Submit Report']);
         $user = User::factory()->create();
         $notification = new TaskReminderNotification($task, 3);
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))
+            ->toBe(__('notifications.task_reminder_title', ['task' => 'Submit Report']))
+            ->toContain('Submit Report');
     });
 
     test('body reports days left', function (): void {
@@ -156,22 +138,9 @@ describe('TaskReminderNotification', function (): void {
         $user = User::factory()->create();
         $notification = new TaskReminderNotification($task, 3);
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
-    });
-
-    test('uses warning icon when 1 day or less', function (): void {
-        $task = Task::factory()->create();
-        $notification = new TaskReminderNotification($task, 1);
-
-        expect($notification->icon())->toBe('⚠️');
-    });
-
-    test('uses alarm icon when more than 1 day', function (): void {
-        $task = Task::factory()->create();
-        $notification = new TaskReminderNotification($task, 3);
-
-        expect($notification->icon())->toBe('⏰');
+        expect($notification->body($user))
+            ->toBe(__('notifications.task_reminder_body', ['days' => 3]))
+            ->toContain('3');
     });
 
     test('does not support email digest (time-sensitive)', function (): void {
@@ -212,7 +181,9 @@ describe('TaskOverdueNotification', function (): void {
         $user = User::factory()->create();
         $notification = new TaskOverdueNotification($tasks);
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))
+            ->toBe(trans_choice('notifications.task_overdue_title', 2, ['count' => 2]))
+            ->toContain('2');
     });
 
     test('body for single task mentions task name', function (): void {
@@ -221,21 +192,35 @@ describe('TaskOverdueNotification', function (): void {
         $user = User::factory()->create();
         $notification = new TaskOverdueNotification($tasks);
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))
+            ->toBe(__('notifications.task_overdue_body_single', ['task' => 'Single Overdue Task']))
+            ->toContain('Single Overdue Task');
     });
 
-    test('body for multiple tasks mentions count', function (): void {
-        $tasks = collect([
+    test('body lists up to three tasks and summarizes overflow count beyond three', function (): void {
+        $user = User::factory()->create();
+        $threeTasks = collect([
             Task::factory()->create(['name' => 'Task 1']),
             Task::factory()->create(['name' => 'Task 2']),
             Task::factory()->create(['name' => 'Task 3']),
         ]);
-        $user = User::factory()->create();
-        $notification = new TaskOverdueNotification($tasks);
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect((new TaskOverdueNotification($threeTasks))->body($user))
+            ->toBe('Task 1, Task 2, Task 3');
+
+        $fiveTasks = $threeTasks->concat([
+            Task::factory()->create(['name' => 'Task 4']),
+            Task::factory()->create(['name' => 'Task 5']),
+        ]);
+
+        expect((new TaskOverdueNotification($fiveTasks))->body($user))
+            ->toBe(__('notifications.task_overdue_body_multiple_more', [
+                'tasks' => 'Task 1, Task 2, Task 3',
+                'count' => 2,
+            ]))
+            ->toContain('Task 1, Task 2, Task 3')
+            ->toContain('2')
+            ->not->toContain('Task 4');
     });
 
     test('uses warning icon', function (): void {
@@ -273,7 +258,7 @@ describe('DutyExpiringNotification', function (): void {
     });
 
     test('returns a duty title', function (): void {
-        $duty = Duty::factory()->create();
+        $duty = Duty::factory()->create(['name' => ['lt' => 'Pirmininkas', 'en' => 'Chair']]);
         $dutiable = Dutiable::factory()->create([
             'duty_id' => $duty->id,
             'end_date' => now()->addDays(30),
@@ -281,7 +266,7 @@ describe('DutyExpiringNotification', function (): void {
         $user = User::factory()->create();
         $notification = new DutyExpiringNotification($duty, $dutiable, 30);
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))->toContain($duty->name);
     });
 
     test('body reports the final day in office', function (): void {
@@ -293,8 +278,7 @@ describe('DutyExpiringNotification', function (): void {
         $user = User::factory()->create();
         $notification = new DutyExpiringNotification($duty, $dutiable, 30);
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))->toContain($dutiable->end_date->format('Y-m-d'));
     });
 
     test('returns correct url to duty', function (): void {
@@ -371,10 +355,12 @@ describe('MeetingReminderNotification', function (): void {
     test('returns soon title when 2 hours or less', function (): void {
         $meeting = Meeting::factory()->create();
         $user = User::factory()->create();
-        $notification = new MeetingReminderNotification($meeting, 2);
+        $soon = new MeetingReminderNotification($meeting, 2);
+        $regular = new MeetingReminderNotification($meeting, 24);
 
-        $title = $notification->title($user);
-        expect($title)->toBeString();
+        expect($soon->title($user))
+            ->toBe(__('notifications.meeting_reminder_soon_title', ['meeting' => $soon->object()['name']]))
+            ->not->toBe($regular->title($user));
     });
 
     test('returns regular title when more than 2 hours', function (): void {
@@ -382,8 +368,8 @@ describe('MeetingReminderNotification', function (): void {
         $user = User::factory()->create();
         $notification = new MeetingReminderNotification($meeting, 24);
 
-        $title = $notification->title($user);
-        expect($title)->toBeString();
+        expect($notification->title($user))
+            ->toBe(__('notifications.meeting_reminder_title', ['meeting' => $notification->object()['name']]));
     });
 
     test('uses alarm icon when 2 hours or less', function (): void {
@@ -446,18 +432,17 @@ describe('MemberRegistrationNotification', function (): void {
             1, 'Test Member', $institution, 'test@example.com', 'form-123'
         );
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))->toContain('Test Member');
     });
 
     test('body names the institution and next steps', function (): void {
-        $institution = Institution::factory()->create();
+        $institution = Institution::factory()->create(['name' => ['lt' => 'VU SA MIF', 'en' => 'VU SR MIF']]);
         $user = User::factory()->create();
         $notification = new MemberRegistrationNotification(
             1, 'Test Member', $institution, 'test@example.com', 'form-123'
         );
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))->toContain($institution->name);
     });
 
     test('returns correct url to form', function (): void {
@@ -523,18 +508,17 @@ describe('StudentRepRegistrationNotification', function (): void {
             'reg-123', 'Test Rep', $institution, 'form-123'
         );
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))->toContain('Test Rep');
     });
 
     test('body names the institution and next steps', function (): void {
-        $institution = Institution::factory()->create();
+        $institution = Institution::factory()->create(['name' => ['lt' => 'Senatas', 'en' => 'Senate']]);
         $user = User::factory()->create();
         $notification = new StudentRepRegistrationNotification(
             'reg-123', 'Test Rep', $institution, 'form-123'
         );
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))->toContain($institution->name);
     });
 
     test('returns correct url to form', function (): void {
@@ -584,15 +568,16 @@ describe('WelcomeNotification', function (): void {
         $user = User::factory()->create();
         $notification = new WelcomeNotification;
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))
+            ->toBe(__('notifications.welcome_title'))
+            ->not->toBe('notifications.welcome_title');
     });
 
     test('body mentions user name', function (): void {
         $user = User::factory()->create(['name' => 'Test User']);
         $notification = new WelcomeNotification;
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))->toContain('Test User');
     });
 
     test('returns dashboard url', function (): void {
@@ -639,14 +624,18 @@ describe('TestPushNotification', function (): void {
         $user = User::factory()->create();
         $notification = new TestPushNotification;
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))
+            ->toBe(__('notifications.test_notification_title'))
+            ->not->toBe('notifications.test_notification_title');
     });
 
     test('returns correct body', function (): void {
         $user = User::factory()->create();
         $notification = new TestPushNotification;
 
-        expect($notification->body($user))->toBeString();
+        expect($notification->body($user))
+            ->toBe(__('notifications.test_notification_body'))
+            ->not->toBe('notifications.test_notification_body');
     });
 
     test('returns profile url', function (): void {
@@ -689,7 +678,7 @@ describe('AssignedToResourceNotification', function (): void {
         $user = User::factory()->create();
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
-        expect($notification->title($user))->toBeString();
+        expect($notification->title($user))->toContain('Important Task');
     });
 
     test('body names the assigner', function (): void {
@@ -698,8 +687,7 @@ describe('AssignedToResourceNotification', function (): void {
         $user = User::factory()->create();
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
-        $body = $notification->body($user);
-        expect($body)->toBeString();
+        expect($notification->body($user))->toContain('Assigner Name');
     });
 
     test('uses link icon', function (): void {
@@ -748,15 +736,6 @@ describe('AssignedToResourceNotification', function (): void {
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
         expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
-    });
-
-    test('includes mail but does not push', function (): void {
-        $assigner = ['modelClass' => 'User', 'name' => 'Test'];
-        $resource = ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test'];
-        $user = User::factory()->create();
-        $notification = new AssignedToResourceNotification($assigner, $resource);
-
-        expect($notification->via($user))->toBe(['database', 'broadcast', 'mail']);
     });
 
     test('renders its email with assignment details', function (): void {

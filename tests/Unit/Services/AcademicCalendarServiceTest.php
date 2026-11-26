@@ -42,30 +42,6 @@ describe('isVacationDate', function (): void {
 });
 
 describe('effectiveDaysBetween', function (): void {
-    test('benchmarks thirty-six thousand calendar intervals against the legacy algorithm', function (): void {
-        $moments = [];
-        for ($index = 0; $index < 360; $index++) {
-            $moments[] = CarbonImmutable::parse('2026-04-23')->addHours($index * 12);
-        }
-        $starts = [];
-        for ($index = 0; $index < 100; $index++) {
-            $starts[] = CarbonImmutable::parse('2025-01-01')->addDays($index * 4);
-        }
-        $totals = [];
-        foreach (['legacy' => new LegacyAcademicCalendarService, 'optimized' => $this->calendar] as $name => $calendar) {
-            $start = hrtime(true);
-            $total = 0;
-            foreach ($starts as $from) {
-                foreach ($moments as $to) {
-                    $total += $calendar->effectiveDaysBetween($from, $to);
-                }
-            }
-            $totals[$name] = $total;
-            fwrite(STDOUT, json_encode(['implementation' => $name, 'intervals' => 36000, 'ms' => round((hrtime(true) - $start) / 1_000_000, 1)]).PHP_EOL);
-        }
-        expect($totals['optimized'])->toBe($totals['legacy']);
-    })->skip(fn () => ! getenv('RUN_PERF_BENCHMARKS'), 'Run explicitly with RUN_PERF_BENCHMARKS=1');
-
     test('matches interval counting across vacation boundaries leap years and DST', function (): void {
         $legacy = new LegacyAcademicCalendarService;
         $dates = ['2023-12-23', '2024-01-01', '2024-02-29', '2024-03-31', '2024-07-01', '2024-08-31', '2024-09-01', '2024-10-27', '2025-01-02', '2026-02-04', '2026-04-07'];
@@ -139,16 +115,14 @@ describe('effectiveDaysBetween', function (): void {
         expect($backwards)->toBe($forwards)->toBeGreaterThan(0);
     });
 
-    test('does not subtract overlapping vacation days twice', function (): void {
-        // Spans winter (Dec 24 - Jan 1) and late January vacation of the next year.
+    test('subtracts winter and late-January vacations accurately across a year boundary', function (): void {
+        // 90 calendar days minus winter (Dec 24 - Jan 1 = 9 days) and late Jan (Jan 26 - Feb 4 = 10 days).
         $days = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-12-01'),
             CarbonImmutable::parse('2026-03-01'),
         );
 
-        $calendarDays = CarbonImmutable::parse('2025-12-01')->diffInDays(CarbonImmutable::parse('2026-03-01'));
-
-        expect($days)->toBeLessThan((int) $calendarDays)->toBeGreaterThan(0);
+        expect($days)->toBe(71);
     });
 });
 

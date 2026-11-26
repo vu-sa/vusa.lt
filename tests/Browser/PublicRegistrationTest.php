@@ -5,7 +5,6 @@ use App\Models\FormField;
 use App\Models\Registration;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\File;
 
 pest()->use(RefreshDatabase::class);
 
@@ -46,14 +45,6 @@ it('validates and submits a public registration through the built frontend', fun
     expect(Registration::query()->count())->toBe(0);
     $page->click("label[for=registration-field-{$checkbox->id}]");
     $page->assertAttribute("#registration-field-{$checkbox->id}", 'aria-checked', 'true');
-
-    File::ensureDirectoryExists(base_path('tests/Browser/Screenshots/migration'));
-    foreach (['light', 'dark'] as $theme) {
-        $page->script('document.documentElement.classList.'.($theme === 'dark' ? 'add' : 'remove').'("dark")');
-        foreach ([390, 820, 1180, 1440] as $width) {
-            $page->resize($width, 900)->screenshot(filename: "migration/registration-{$theme}-{$width}");
-        }
-    }
 
     $page->type("#registration-field-{$email->id}", 'student@example.com');
     $page->select("#registration-field-{$choice->id}", '0');

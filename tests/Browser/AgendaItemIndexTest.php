@@ -30,7 +30,8 @@ it('offers a super admin every action on an item of their own institution, on ro
     $seesAllActions();
 
     foreach (['table', 'preview&item='.$item->id] as $view) {
-        $page->navigate('/mano/agendaItems?tenant_shortnames='.$tenant->shortname.'&view='.$view);
+        navigateTo($page, '/mano/agendaItems?tenant_shortnames='.$tenant->shortname.'&view='.$view);
+        waitForInertiaRender($page, '[data-slot=admin-shell]');
         $page->assertSee('Aptarimas');
         $openMenu();
         $seesAllActions();

@@ -70,7 +70,6 @@ tests:
   - resources/js/Composables/__tests__/swPush.test.ts
   - resources/js/Composables/__tests__/useAgendaItemNotes.test.ts
   - resources/js/Composables/__tests__/usePWA.test.ts
-  - tests/Unit/Models/TranslatableExpectationsTest.php
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
 

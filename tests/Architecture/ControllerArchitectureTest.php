@@ -23,13 +23,6 @@ arch('all controllers extend base Controller')
     ->classes()
     ->toExtend(Controller::class);
 
-arch('AdminController provides response helpers')
-    ->expect(AdminController::class)
-    ->toHaveMethods([
-        'redirectResponse',
-        'redirectBack',
-    ]);
-
 /*
 |--------------------------------------------------------------------------
 | Admin Controller Tests
