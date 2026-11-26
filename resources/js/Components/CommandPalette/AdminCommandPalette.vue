@@ -8,8 +8,7 @@
         :aria-label="$t('shell.chrome.search_field')"
         class="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
         @keydown.escape="close"
-        @keydown.down.prevent="focusFirstResult"
-        @keydown.enter.prevent="selectFirstResult">
+        @keydown.down="focusFirstResult">
       <TopProgressBar :active="isSearching" class="absolute inset-x-0 -bottom-px" />
     </div>
 
@@ -329,17 +328,27 @@ watch(isOpen, (opened, _previous, onCleanup) => {
       searchInputRef.value?.focus();
       // Fallback in case dialog animation delays rendering
       setTimeout(() => {
-        searchInputRef.value?.focus();
+        const input = searchInputRef.value;
+        if (input && !input.closest('[role="dialog"]')?.contains(document.activeElement)) {
+          input.focus();
+        }
       }, 50);
     });
   }
 }, { immediate: true });
 
-const resultList = () => searchInputRef.value?.closest('[data-slot="command"]')
-  ?.querySelector<HTMLElement>('[data-slot="command-list"]');
+function focusFirstResult(event: KeyboardEvent): void {
+  if (event.isComposing) return;
 
-const focusFirstResult = () => resultList()?.focus();
-const selectFirstResult = () => resultList()?.querySelector<HTMLElement>('[role="option"]')?.click();
+  const list = searchInputRef.value?.closest('[data-slot="command"]')
+    ?.querySelector<HTMLElement>('[data-slot="command-list"]');
+
+  if (!list?.querySelector('[role="option"]:not([data-disabled])')) return;
+
+  event.preventDefault();
+  // Let the listbox highlight and focus the first current option in one step.
+  list.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true }));
+}
 
 // Handle a flat search hit selection
 const handleHitSelect = (hit: NormalizedSearchHit) => {

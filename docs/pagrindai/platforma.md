@@ -135,7 +135,7 @@ Puslapio prisegimas ir neseniai lankytų puslapių atnaujinimas išsaugomi nepri
 
 <ChangelogNote date="2026-11-26" title="Tavo įrašai ir kūrimas komandų paletėje">
 
-Atvėrus paletę, **Tavo įrašai** veda į institucijas, kuriose eini pareigas arba esi sekretorius, sekamas institucijas ir šiuo metu einamas pareigybes. Įvesk „nauj“ arba „sukurti“, kad rastum tau prieinamas kūrimo komandas. Jas žymi pliusas. Kiti veiksmai pasirodo įvedus paiešką. „Naujas kelio žingsnis“ ir „Naujas Wiki įrašas“ pasiekiami per paiešką ir atitinkamus sąrašus.
+Atvėrus paletę, **Tavo įrašai** veda į institucijas, kuriose eini pareigas arba esi sekretorius, sekamas institucijas ir šiuo metu einamas pareigybes. Įvesk „nauj“ arba „sukurti“, kad rastum tau prieinamas kūrimo komandas. Jas žymi pliusas. Kiti veiksmai pasirodo įvedus paiešką. Klaviatūra paspausk **↓**, kad pereitum į pirmą rezultatą, tada **Enter**, kad atvertum pasirinktą rezultatą. „Naujas kelio žingsnis“ ir „Naujas Wiki įrašas“ pasiekiami per paiešką ir atitinkamus sąrašus.
 
 </ChangelogNote>
 

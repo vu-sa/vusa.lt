@@ -18,10 +18,17 @@ it('opens a create sheet with the keyboard from another page and from its own co
         $page->script(sprintf('document.documentElement.classList.toggle("dark", %s)', $width === 390 ? 'true' : 'false'));
         $page->page()->locator('body')->press('Control+k');
         waitForInertiaRender($page, $search);
+        $page->type($search, 'zzzz-no-matching-command');
+        $page->keys($search, 'ArrowDown');
+        expect($page->script('document.activeElement?.matches(\'[data-slot="command"] input\')'))->toBeTrue();
+
         $page->type($search, 'Nauja žyma');
         waitForInertiaRender($page, $command);
+        $page->keys($search, 'Enter');
+        expect($page->script('document.activeElement?.matches(\'[data-slot="command"] input\')'))->toBeTrue();
+
         $page->keys($search, 'ArrowDown');
-        expect($page->script('document.activeElement?.matches(\'[data-slot="command-item"]\')'))->toBeTrue();
+        expect($page->script('document.activeElement?.matches(\'[data-slot="command-item"][data-highlighted]\')'))->toBeTrue();
         $page->keys($command, 'Enter');
 
         waitForInertiaRender($page, $sheet);
