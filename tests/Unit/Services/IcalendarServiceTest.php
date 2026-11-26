@@ -4,6 +4,7 @@ use App\Models\Calendar;
 use App\Services\IcalendarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -12,51 +13,53 @@ beforeEach(function (): void {
     Calendar::factory()->count(3)->create([
         'is_draft' => false,
         'is_international' => false,
+        'title' => ['lt' => 'Vietinis renginys', 'en' => 'Local Only Event'],
     ]);
 
     Calendar::factory()->count(2)->create([
         'is_draft' => false,
         'is_international' => true,
+        'title' => ['lt' => 'Tarptautinis renginys', 'en' => 'International Event'],
     ]);
 });
 
 describe('IcalendarService caching', function (): void {
-    test('get returns cached result on second call', function (): void {
+    test('get returns cached result on second call without querying database', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
-
-        // Simulate request with lang parameter
         request()->merge(['lang' => 'lt']);
 
         $result1 = $service->get();
+        expect(Cache::has('ical:calendar:lt'))->toBeTrue();
+
+        $queries = 0;
+        DB::listen(function () use (&$queries): void {
+            $queries++;
+        });
+
         $result2 = $service->get();
 
-        expect($result1)->toBeString()->toEqual($result2)->toContain('BEGIN:VCALENDAR');
+        expect($queries)->toBe(0)
+            ->and($result2)->toBe($result1)
+            ->toContain('BEGIN:VCALENDAR');
     });
 
-    test('cache is keyed by language', function (): void {
+    test('cache is keyed by language with distinct event counts', function (): void {
         IcalendarService::clearCache();
 
         $service = new IcalendarService;
 
-        // Get LT calendar
         request()->merge(['lang' => 'lt']);
         $ltResult = $service->get();
 
-        // Get EN calendar (international only)
         request()->merge(['lang' => 'en']);
         $enResult = $service->get();
 
-        // Both should be valid iCal
-        expect($ltResult)->toContain('BEGIN:VCALENDAR');
-        expect($enResult)->toContain('BEGIN:VCALENDAR');
-
-        // LT result should have more events (all events) than EN (international only)
-        $ltEventCount = substr_count($ltResult, 'BEGIN:VEVENT');
-        $enEventCount = substr_count($enResult, 'BEGIN:VEVENT');
-
-        expect($ltEventCount)->toBeGreaterThanOrEqual($enEventCount);
+        expect(Cache::has('ical:calendar:lt'))->toBeTrue()
+            ->and(Cache::has('ical:calendar:en'))->toBeTrue()
+            ->and(substr_count($ltResult, 'BEGIN:VEVENT'))->toBe(5)
+            ->and(substr_count($enResult, 'BEGIN:VEVENT'))->toBe(2);
     });
 
     test('clearCache clears all language caches', function (): void {
@@ -155,6 +158,35 @@ describe('IcalendarService output', function (): void {
 
         $result = $service->get();
 
-        expect($result)->toContain('Student activity calendar');
+        expect($result)->toContain('Student activity calendar')
+            ->toContain('International Event')
+            ->not->toContain('Local Only Event')
+            ->and(substr_count($result, 'BEGIN:VEVENT'))->toBe(2);
+    });
+
+    test('includes event location, all-day flag, and call-to-action url in ICS output', function (): void {
+        Calendar::query()->delete();
+        Calendar::factory()->create([
+            'is_draft' => false,
+            'is_international' => true,
+            'is_all_day' => true,
+            'date' => '2026-07-10 10:00:00',
+            'end_date' => '2026-07-10 18:00:00',
+            'title' => ['lt' => 'Dienos renginys', 'en' => 'Full Day Event'],
+            'location' => ['lt' => 'Universiteto g. 3', 'en' => 'Universiteto St. 3'],
+            'cto_url' => ['lt' => 'https://vusa.lt/lt/registracija', 'en' => 'https://vusa.lt/en/register'],
+        ]);
+        IcalendarService::clearCache();
+
+        $service = new IcalendarService;
+        request()->merge(['lang' => 'en']);
+
+        $result = $service->get();
+
+        expect($result)
+            ->toContain('LOCATION:Universiteto St. 3')
+            ->toContain('X-MICROSOFT-CDO-ALLDAYEVENT:TRUE')
+            ->toContain('VALUE=DATE:20260710')
+            ->toContain('URL:https://vusa.lt/en/register');
     });
 });
