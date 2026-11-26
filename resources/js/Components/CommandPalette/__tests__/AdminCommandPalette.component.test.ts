@@ -64,12 +64,37 @@ describe('admin palette relevance', () => {
       users: [], duties: [], news: [],
       agendaItems: [{ id: 'a1', title: 'Punktas' }],
     },
-  ])('ranks $name', async ({ workspace, query, first, users, duties, news, agendaItems = [] }) => {
+    {
+      name: 'an exact institution match above duties that mention it',
+      workspace: 'visak', query: 'VU Senatas', first: 'VU Senatas',
+      users: [], news: [],
+      institutions: [{ id: 'i1', name_lt: 'VU Senatas', short_name_lt: 'Senatas', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'VU Senatas', matched: true }] }], _text_match: '1763176949298560780', _tokens_matched: 3 }],
+      duties: [
+        { id: 'd1', name_lt: 'Studentų atstovas VU Senate', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senate', matched: true }] }], _text_match: '1763168118846291468', _tokens_matched: 3 },
+        { id: 'd2', name_lt: 'Studentų atstovas VU Senato Studijų komitete', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senato Studijų komitete', matched: true }] }], _text_match: '1763168118846291468', _tokens_matched: 3 },
+      ],
+    },
+    {
+      name: 'an institution prefix match above duties that mention it',
+      workspace: 'visak', query: 'VU Senat', first: 'VU Senatas',
+      users: [], news: [],
+      institutions: [{ id: 'i1', name_lt: 'VU Senatas', short_name_lt: 'Senatas', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'VU Senatas', matched: true }] }], _text_match: '100', _tokens_matched: 2 }],
+      duties: [{ id: 'd1', name_lt: 'Studentų atstovas VU Senate', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senate', matched: true }] }], _text_match: '100', _tokens_matched: 2 }],
+    },
+    {
+      name: 'an institution matched by exact short name above duties mentioning it',
+      workspace: 'visak', query: 'Senatas', first: 'VU Senatas',
+      users: [], news: [],
+      institutions: [{ id: 'i1', name_lt: 'VU Senatas', short_name_lt: 'Senatas', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'VU Senatas', matched: true }] }], _text_match: '80', _tokens_matched: 1 }],
+      duties: [{ id: 'd1', name_lt: 'Studentų atstovas VU Senate', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senate', matched: true }] }], _text_match: '90', _tokens_matched: 1 }],
+    },
+  ])('ranks $name', async ({ workspace, query, first, users, duties, news, institutions = [], agendaItems = [] }) => {
     vi.mocked(useCommandActions).mockReturnValue({
       filterActions: () => [], activeWorkspace: ref({ key: workspace }),
     } as unknown as ReturnType<typeof useCommandActions>);
     const results = {
       users: { hits: users, found: users.length },
+      institutions: { hits: institutions, found: institutions.length },
       duties: { hits: duties, found: duties.length },
       news: { hits: news, found: news.length },
       agenda_items: { hits: agendaItems, found: agendaItems.length },

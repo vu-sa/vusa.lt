@@ -26,9 +26,12 @@ class DocumentRecommendations
         if ($query === '' || $query === '*') {
             $ids = $rules->filter(fn ($rule) => $rule['show_without_query'])->pluck('document_id')->all();
         } else {
+            $accentedQuery = $this->explicitAccentedAcronymQuery($query);
             try {
                 $result = $this->client->collections[$this->collectionName()]->documents->search([
-                    'q' => $query, 'query_by' => 'phrase_lt,phrase_en', 'prefix' => true,
+                    'q' => $accentedQuery ?? $query,
+                    'query_by' => $accentedQuery !== null ? 'phrase_lt' : 'phrase_lt,phrase_en',
+                    'prefix' => true,
                     'num_typos' => 0, 'drop_tokens_threshold' => 0,
                     'sort_by' => 'position:asc', 'per_page' => 200, 'include_fields' => 'document_id',
                 ]);
@@ -85,6 +88,27 @@ class DocumentRecommendations
         if ($rows !== []) {
             $this->client->collections[$name]->documents->import($rows, ['action' => 'create']);
         }
+    }
+
+    private function explicitAccentedAcronymQuery(string $query): ?string
+    {
+        $normalized = class_exists(\Normalizer::class)
+            ? (\Normalizer::normalize($query, \Normalizer::FORM_C) ?: $query)
+            : $query;
+        if (! preg_match('/(?<![\p{L}\p{M}\p{N}])ša(?![\p{L}\p{M}\p{N}])/iu', $normalized)) {
+            return null;
+        }
+
+        $squished = preg_replace('/\s+/u', ' ', trim($normalized)) ?? $normalized;
+        $parts = explode('"', $squished);
+        $vuShaPattern = '/(?<![\p{L}\p{M}\p{N}])vu\s+ša(?![\p{L}\p{M}\p{N}])/iu';
+        foreach ($parts as $index => $part) {
+            if ($index % 2 === 0) {
+                $parts[$index] = preg_replace($vuShaPattern, '"vu ša"', $part) ?? $part;
+            }
+        }
+
+        return implode('"', $parts);
     }
 
     private function collectionName(): string

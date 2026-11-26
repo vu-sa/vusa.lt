@@ -12,6 +12,55 @@ export interface SearchProfileConfig {
   searchLocale?: string;
 }
 
+const explicitShaPattern = /(?<![\p{L}\p{M}\p{N}])ša(?![\p{L}\p{M}\p{N}])/iu;
+const explicitVuSaGlobal = /(?<![\p{L}\p{M}\p{N}])vu\s+ša(?![\p{L}\p{M}\p{N}])/giu;
+
+function quoteExplicitVuSa(query: string): string {
+  return query.trim().replace(/\s+/gu, ' ').split('"')
+    .map((part, index) => index % 2 ? part : part.replace(explicitVuSaGlobal, '"vu ša"'))
+    .join('"');
+}
+
+function preserveAccentedAcronym(parameters: Record<string, unknown>): Record<string, unknown> {
+  const query = String(parameters.q ?? '').normalize('NFC');
+  if (!explicitShaPattern.test(query)) return parameters;
+
+  const phraseQuery = quoteExplicitVuSa(query);
+  const fields = String(parameters.query_by ?? '').split(',').map(field => field.trim()).filter(Boolean);
+
+  // Default Typesense fields fold š -> s at index time; search_text_lt uses locale: lt and preserves š.
+  if (fields.includes('search_text_lt')) {
+    return {
+      ...parameters,
+      q: phraseQuery,
+      query_by: 'search_text_lt',
+      query_by_weights: '1',
+      infix: 'off',
+      num_typos: '2',
+      ...(parameters.highlight_fields ? { highlight_fields: 'search_text_lt' } : {}),
+      drop_tokens_threshold: 0,
+      split_join_tokens: 'off',
+      enable_synonyms: false,
+      enable_curations: false,
+      pinned_hits: undefined,
+    };
+  }
+
+  // Fallback for profiles without search_text_lt: never fold š -> s into VU SA.
+  return {
+    ...parameters,
+    q: phraseQuery.toLowerCase(),
+    pre_segmented_query: true,
+    drop_tokens_threshold: 0,
+    num_typos: 0,
+    infix: 'off',
+    split_join_tokens: 'off',
+    enable_synonyms: false,
+    enable_curations: false,
+    pinned_hits: undefined,
+  };
+}
+
 export function splitSortExpressions(value: string): string[] {
   const result: string[] = [];
   let depth = 0;
@@ -33,7 +82,7 @@ export function splitSortExpressions(value: string): string[] {
 }
 
 export function buildProfileParams(profile: SearchProfile | undefined, input: Record<string, unknown>, locale = 'lt'): Record<string, unknown> {
-  if (!profile) return { ...input };
+  if (!profile) return preserveAccentedAcronym({ ...input });
   const parameters = { ...input, ...profile.parameters };
   const fields = String(parameters.query_by).split(',');
   const aligned = ['query_by_weights', 'infix', 'num_typos'];
@@ -65,5 +114,5 @@ export function buildProfileParams(profile: SearchProfile | undefined, input: Re
     const field = expression.split(':')[0];
     if (field !== '_text_match' && !profile.sortFields.includes(field)) throw new Error(`Invalid sort field: ${field}`);
   }
-  return parameters;
+  return preserveAccentedAcronym(parameters);
 }

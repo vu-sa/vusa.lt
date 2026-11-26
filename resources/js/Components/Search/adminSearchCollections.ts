@@ -4,6 +4,7 @@ import { calendarEventPreviewFromSearch } from '@/Components/Calendar/calendarEv
 import { dutyPreviewFromSearch } from '@/Components/Duties/dutyPreview';
 import { userPreviewFromSearch } from '@/Components/Users/userPreview';
 import type { MultiSearchResults } from '@/Search/core/types';
+import { hasExactNameMatch, normalizeSearchName } from '@/Search/core/matches';
 import {
   getSearchHitMatchTier,
   getSearchHitTextMatch,
@@ -73,7 +74,7 @@ export const adminSearchCollections = {
   institutions: defineCollection(mapInstitution, {
     entityType: 'institution',
     limit: 3,
-    rank: 2,
+    rank: 1,
     dateField: 'created_at',
     preview: {
       component: defineAsyncComponent(() => import('@/Components/Institutions/InstitutionPreview.vue')),
@@ -99,7 +100,7 @@ export const adminSearchCollections = {
   duties: defineCollection(mapDuty, {
     entityType: 'duty',
     limit: 3,
-    rank: 1,
+    rank: 2,
     preview: {
       component: defineAsyncComponent(() => import('@/Components/Duties/DutyPreview.vue')),
       props: (doc, hit) => ({ duty: dutyPreviewFromSearch(doc), isExternal: hit.isExternal }),
@@ -190,10 +191,12 @@ export function collectAllTabHits(
   { query, mapperContext }: { query?: string; mapperContext?: MapperContext } = {},
 ): NormalizedSearchHit[] {
   const hits = collectionIds.flatMap(id => (results[id]?.hits ?? []).map(doc => ({ id, doc })));
-  if (query?.trim()) {
+  const normalizedQuery = normalizeSearchName(query ?? '');
+  if (normalizedQuery) {
     hits.sort((a, b) => {
       const scoreDifference = getSearchHitTextMatch(b.doc) - getSearchHitTextMatch(a.doc);
-      return getSearchHitMatchTier(b.doc) - getSearchHitMatchTier(a.doc)
+      return Number(hasExactNameMatch(b.doc, normalizedQuery)) - Number(hasExactNameMatch(a.doc, normalizedQuery))
+        || getSearchHitMatchTier(b.doc) - getSearchHitMatchTier(a.doc)
         || getSearchHitTokens(b.doc) - getSearchHitTokens(a.doc)
         || adminSearchCollections[a.id].rank - adminSearchCollections[b.id].rank
         || (scoreDifference > 0n ? 1 : scoreDifference < 0n ? -1 : 0)
