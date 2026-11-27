@@ -77,7 +77,7 @@
           />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" layout="preview" full-labels @select="key => selectRowAction(key, item)" />
         </template>
       </DutyPreview>
     </template>

@@ -76,7 +76,7 @@
           <UserAvatar :user="item" :size="56" />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+          <CollectionRowActions :actions="recordActions" layout="preview" full-labels @select="key => actions.select(key, item.force_delete_blocked_reason)" />
         </template>
         <StatusBadge v-if="!isTrash && noUnit(item)" :status="withoutUnit" />
         <PreviewSection v-if="!isTrash && !noUnit(item)" :title="$t('Pareigos')">

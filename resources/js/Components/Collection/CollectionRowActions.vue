@@ -1,5 +1,9 @@
 <template>
-  <div v-if="actions.length" :class="['flex shrink-0 items-center gap-2', emphasis ? 'justify-start' : 'justify-end']" data-slot="collection-row-actions">
+  <div
+    v-if="actions.length"
+    :class="['flex shrink-0 items-center gap-2', layout === 'preview' ? 'justify-start' : 'justify-end']"
+    data-slot="collection-row-actions"
+  >
     <template v-for="action in visibleActions" :key="action.key">
       <component
         :is="action.href && !action.external && !action.plain ? Link : action.href ? 'a' : 'button'"
@@ -47,8 +51,7 @@ const props = defineProps<{
   actions: CollectionRowAction[];
   fullLabels?: boolean;
   spotlight?: boolean;
-  /** Fills the primary action, for a pane where it is the region's one call to action. */
-  emphasis?: boolean;
+  layout?: 'preview';
   /** For `CollectionRow`: the title opens the record, so only a primary open action stays, and only on a wide row. */
   stacked?: boolean;
   /** Moves the primary action to the top of the menu, for a row too narrow to show it. */
@@ -63,7 +66,7 @@ const labelledAction = computed(() =>
   ?? (props.stacked ? undefined : availableActions.value.find(action => action.role === 'open')),
 );
 const visibleActions = computed(() => {
-  if (props.stacked || props.emphasis) {
+  if (props.stacked || props.layout === 'preview') {
     return labelledAction.value && !props.foldPrimary ? [labelledAction.value] : [];
   }
 
@@ -96,10 +99,6 @@ const emit = defineEmits<{
 
 function actionHoverClass(action: CollectionRowAction): string {
   const labelled = action === labelledAction.value;
-
-  if (props.emphasis && labelled) {
-    return 'border-brand-fill bg-brand-fill text-brand-foreground hover:opacity-90';
-  }
 
   return [
     labelled && 'border-(--button-outline-border) bg-(--button-outline-fill) text-foreground active:bg-(--button-outline-active-fill)',

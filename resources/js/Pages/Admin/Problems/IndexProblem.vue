@@ -103,7 +103,7 @@
     <template #preview="{ item, actions: recordActions }">
       <ProblemPreview :key="item.id" :problem="item" :trashed="isDeleted">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" layout="preview" full-labels class="flex-wrap" @select="key => selectRowAction(key, item)" />
         </template>
       </ProblemPreview>
     </template>

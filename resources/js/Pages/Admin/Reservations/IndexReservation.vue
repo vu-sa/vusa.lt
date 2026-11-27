@@ -79,7 +79,7 @@
     <template #preview="{ item, actions }">
       <ReservationPreview :key="item.id" :reservation="item">
         <template #actions>
-          <CollectionRowActions :actions emphasis full-labels class="flex-wrap" @select="key => openDecision(key as ReservationDecision, item)" />
+          <CollectionRowActions :actions layout="preview" full-labels class="flex-wrap" @select="key => openDecision(key as ReservationDecision, item)" />
         </template>
       </ReservationPreview>
     </template>

@@ -98,7 +98,7 @@
           />
         </template>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => onRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" layout="preview" full-labels @select="key => onRowAction(key, item)" />
         </template>
       </InstitutionPreview>
     </template>

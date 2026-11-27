@@ -173,11 +173,10 @@
               v-if="item.is_reservable && canReserve"
               :resource-id="String(item.id)"
               size="sm"
-              variant="brand"
               without-draft="reserve"
               :label="$t('reservations.cart.add_to_reservation')"
             />
-            <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => collectionActions.select(key)" />
+            <CollectionRowActions :actions="recordActions" layout="preview" full-labels @select="key => collectionActions.select(key)" />
           </template>
         </ResourcePreview>
       </template>

@@ -44,6 +44,19 @@ describe('CollectionRowActions', () => {
     expect(wrapper.get('button').text()).toBe('Atidaryti darbotvarkę');
   });
 
+  it('uses the row action styling and a single labelled action in previews', async () => {
+    const list = actions.map(action => action.role === 'open' ? { ...action, primary: true } : action);
+    const wrapper = render(list);
+    const rowActionClasses = wrapper.get('[data-action="open"]').classes();
+
+    await wrapper.setProps({ layout: 'preview', fullLabels: true });
+
+    expect(wrapper.get('[data-action="open"]').classes()).toEqual(rowActionClasses);
+    expect(rowActionClasses).toContain('bg-(--button-outline-fill)');
+    expect(wrapper.findAll('a')).toHaveLength(1);
+    expect(wrapper.getComponent(RecordActionMenu).props('actions')).toEqual(list.slice(1));
+  });
+
   it('keeps even one secondary command in the menu and forwards selection', () => {
     const wrapper = render([actions[3]]);
     expect(wrapper.find('button').exists()).toBe(false);

@@ -174,7 +174,7 @@ Sąrašai ir paieška naudoja tą pačią įrašo peržiūrą. Peržiūra atsira
 
 </ChangelogNote>
 
-Plačiame ekrane sąrašą galima rodyti kaip **Peržiūrą**: kairėje lieka įrašai, dešinėje – pasirinkto įrašo pagrindiniai duomenys, būsena ir veiksmai. Ši parinktis siūloma tik tuose sąrašuose, kurie turi peržiūrą. Pasirinktas įrašas įrašomas į puslapio adresą, todėl nuoroda atveria tą patį įrašą.
+Plačiame ekrane sąrašą galima rodyti kaip **Peržiūrą**: kairėje lieka įrašai, dešinėje – pasirinkto įrašo pagrindiniai duomenys, būsena ir veiksmai. Ši parinktis siūloma tik tuose sąrašuose, kurie turi peržiūrą. Peržiūros veiksmai rodomi tokio pat stiliaus mygtukais kaip sąrašo veiksmai. Pasirinktas įrašas įrašomas į puslapio adresą, todėl nuoroda atveria tą patį įrašą.
 
 Peržiūroje klavišais **↑** ir **↓** pereinama prie kito įrašo, o **Enter** atveria jo puslapį. Kol rašoma lauke, klavišai lieka laukui. Tokia pati peržiūra rodoma ir susijusių įrašų pasirinkimo languose; ten rodyklėmis galima judėti ir iš paieškos laukelio. Joje matoma tik santrauka: ilgi sąrašai, pvz., institucijos ryšiai, sutrumpinami, o visi duomenys ir jų tvarkymas lieka įrašo puslapyje.
 

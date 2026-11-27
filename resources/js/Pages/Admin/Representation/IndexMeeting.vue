@@ -44,7 +44,7 @@
     <template v-if="!isTrash" #preview="{ item, actions: recordActions }">
       <MeetingPreview :key="item.id" :meeting="item">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => actions.select(key)" />
+          <CollectionRowActions :actions="recordActions" layout="preview" full-labels @select="key => actions.select(key)" />
         </template>
       </MeetingPreview>
     </template>

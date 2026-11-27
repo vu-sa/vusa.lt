@@ -45,7 +45,7 @@
     <template #preview="{ item, actions: recordActions }">
       <TagPreview :key="item.id" :tag="item">
         <template #actions>
-          <CollectionRowActions :actions="actionsFor(item, recordActions)" emphasis full-labels @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="actionsFor(item, recordActions)" layout="preview" full-labels @select="key => selectRowAction(key, item)" />
         </template>
       </TagPreview>
     </template>

@@ -13,7 +13,7 @@
 
     <template #actions>
       <slot name="actions">
-        <Button as-child variant="brand" size="sm">
+        <Button as-child variant="outline" voice="sentence" size="sm">
           <Link :href="editHref">
             {{ $t('Redaguoti puslapį') }}
           </Link>
