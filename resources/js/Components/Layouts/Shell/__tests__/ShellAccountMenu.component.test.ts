@@ -27,6 +27,8 @@ describe('ShellAccountMenu', () => {
     const wrapper = mountMenu();
     const trigger = wrapper.find('button');
 
+    expect(trigger.attributes('aria-label')).toBe('shell.chrome.account');
+    expect(trigger.classes()).not.toContain('border-l');
     expect(trigger.text()).toContain('TU'); // Test User initials
     expect(trigger.text()).toContain('Test User');
     // The name keeps its own casing: the trigger does not take the uppercase button voice.

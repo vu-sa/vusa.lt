@@ -5,7 +5,7 @@
         variant="ghost"
         voice="plain"
         data-slot="account-menu-trigger"
-        class="u-touch h-8 gap-2 border-l border-border pl-3 pr-2.5 transition-colors hover:bg-secondary focus-visible:bg-secondary"
+        class="u-touch h-8 gap-2 pl-3 pr-2.5 transition-colors hover:bg-secondary focus-visible:bg-secondary"
         :class="{ 'bg-secondary': isOpen }"
         :aria-label="$t('shell.chrome.account')"
       >

@@ -23,7 +23,7 @@ tests:
 
 # Paskyra ir prieiga
 
-Viršutinėje juostoje paspaudus savo nuotrauką arba vardą, atveriamas paskyros meniu.
+Paskyros meniu atversi paspaudęs savo nuotrauką arba vardą viršutinėje juostoje.
 Jame pasiekiami punktai **Paskyra**, **Pranešimų nustatymai**,
 **Kalba**, **Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
 juose rodomi tavo duomenys.
