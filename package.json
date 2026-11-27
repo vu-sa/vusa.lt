@@ -110,7 +110,7 @@
     "@storybook/addon-docs": "11.0.0-beta.5",
     "@storybook/addon-vitest": "11.0.0-beta.5",
     "@storybook/vue3-vite": "11.0.0-beta.5",
-    "@stylistic/eslint-plugin": "^5.7.0",
+    "@stylistic/eslint-plugin": "^6.0.1",
     "@tailwindcss/vite": "^4.0.8",
     "@types/d3": "^7.4.0",
     "@types/node": "^26.0.0",
