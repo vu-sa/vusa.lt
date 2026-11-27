@@ -71,6 +71,7 @@
 
     <div ref="bottomStack" class="shrink-0 md:contents" data-slot="shell-bottom-stack">
       <StartFmPlayer surface="admin" />
+      <div :id="SHELL_BOTTOM_ACTIONS_ID" class="shrink-0" />
       <div :id="SHELL_MOBILE_ACTIONS_ID" class="md:hidden" />
       <MobileBottomBar
         v-if="!focused"
@@ -105,7 +106,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import StartFmPlayer from '@/Components/Shared/StartFmPlayer.vue';
 import { useStartFm } from '@/Composables/useStartFm';
 import { SeasonSnowGust, useSeasonSnow } from '@/Features/Admin/Seasons';
-import { SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
+import { SHELL_BOTTOM_ACTIONS_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 
 import ShellTopBar from './ShellTopBar.vue';
 import SectionTabs from './SectionTabs.vue';

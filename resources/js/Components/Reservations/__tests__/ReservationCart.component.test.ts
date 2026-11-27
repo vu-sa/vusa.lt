@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { nextTick, reactive } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
 import AddToReservationButton from '@/Components/Reservations/AddToReservationButton.vue';
@@ -146,10 +147,27 @@ describe('reservation cart', () => {
   });
 
   describe('ReservationCartBar', () => {
-    it('stays hidden while the cart is empty', () => {
+    it('stays hidden when no draft exists', () => {
       withCart(null);
       wrapper = mount(ReservationCartBar, { global: { stubs } });
 
+      expect(wrapper.find('[data-slot="reservation-cart-bar"]').exists()).toBe(false);
+    });
+
+    it('shows Review immediately for an empty draft and hides when it is cleared', async () => {
+      const page = reactive(createMockPage({ reservationCart: null }));
+      vi.mocked(usePage).mockReturnValue(page as never);
+      wrapper = mount(ReservationCartBar, { global: { stubs } });
+
+      page.props.reservationCart = { items: [] };
+      await nextTick();
+
+      const bar = wrapper.get('[data-slot="reservation-cart-bar"]');
+      expect(bar.get('button').text()).toBe('reservations.cart.review');
+      expect(bar.find('a').exists()).toBe(false);
+
+      page.props.reservationCart = null;
+      await nextTick();
       expect(wrapper.find('[data-slot="reservation-cart-bar"]').exists()).toBe(false);
     });
 
