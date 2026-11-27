@@ -26,16 +26,16 @@ vi.mock('@/Composables/useCollectionSource', () => {
   return { useTypesenseCollectionSource: source, useLocalCollectionSource: source, useDatabaseCollectionSource: source };
 });
 vi.mock('@/Components/Reservations/useReservationCart', () => ({
-  useReservationCart: () => ({ period: ref(null), hasPeriod: ref(false), openSheet: vi.fn() }),
+  useReservationCart: () => ({ period: ref(null), hasDraft: ref(false), hasPeriod: ref(false), openSheet: vi.fn() }),
 }));
 vi.mock('@/Search/admin/Composables/useResourceAvailability', () => ({
   useResourceAvailability: () => ({ availability: ref(new Map()), ensure: vi.fn() }),
 }));
 
 const emptyPage = { data: [], meta: { total: 0, current_page: 1, per_page: 50, last_page: 1, from: 0, to: 0 }, total: 0, per_page: 50, current_page: 1, last_page: 1 };
-const cases: { name: string; component: Component; props: Record<string, unknown>; noDelete?: boolean }[] = [
+const cases: { name: string; component: Component; props: Record<string, unknown>; noDelete?: boolean; titleOpensRecord?: boolean }[] = [
   { name: 'agenda items', component: IndexAgendaItem, props: { defaultTenantShortnames: [] } },
-  { name: 'resources', component: IndexResource, props: { reservationCart: null, mainTenantId: 1, managedTenantIds: [] } },
+  { name: 'resources', component: IndexResource, props: { reservationCart: null, mainTenantId: 1, managedTenantIds: [] }, titleOpensRecord: true },
   { name: 'responsibilities', component: IndexResponsibility, props: { responsibilities: [] } },
   { name: 'mailing lists', component: IndexMailingList, props: { mailingLists: [], tenants: [], domain: '', openCreate: false, canCreate: false, canImport: false, mailmanConfigured: false }, noDelete: true },
   { name: 'goals', component: IndexGoal, props: { goals: [], canCreate: false } },
@@ -68,7 +68,7 @@ beforeEach(() => window.history.replaceState({}, '', '/mano'));
 describe.each(cases)('$name row abilities', (testCase) => {
   it.each([true, false])('shows edit and delete only when allowed (%s)', (allowed) => {
     const actions = actionsFor(testCase, allowed);
-    expect(actions.some(action => action.role === 'open')).toBe(true);
+    expect(actions.some(action => action.role === 'open')).toBe(!testCase.titleOpensRecord);
     expect(actions.some(action => action.role === 'edit')).toBe(allowed);
     expect(actions.some(action => action.destructive)).toBe(allowed && !testCase.noDelete);
     expect(actions.some(action => action.disabled)).toBe(false);

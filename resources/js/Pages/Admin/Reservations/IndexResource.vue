@@ -2,6 +2,7 @@
   <div>
     <CollectionPage
       :row-actions
+      :can-show-table-action="showCartAction"
       :source
       :quick-filters
       collection="resources"
@@ -41,7 +42,7 @@
       </template>
 
       <template #card="{ item, actions: recordActions }">
-        <!-- The name link stretches over the whole card; the add button sits above it. -->
+        <!-- The name link stretches over the whole card; the footer controls sit above it. -->
         <article
           :class="[
             'group relative flex h-full flex-col border border-border bg-card transition-colors hover:border-foreground/40',
@@ -77,56 +78,65 @@
               <span v-if="item.location">{{ item.location }}</span>
             </p>
 
-            <div class="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
+            <div class="mt-auto flex min-h-11 flex-wrap items-center gap-2 pt-3 pointer-coarse:min-h-14" data-slot="resource-card-footer">
               <StatusBadge v-if="!item.is_reservable" :status="notReservableStatus" />
-              <template v-else>
-                <span
-                  class="text-sm tabular-nums"
-                  :class="isFullyBooked(item) ? 'font-medium text-status-attention' : 'text-muted-foreground'"
-                  data-slot="resource-availability"
-                >{{ availabilityLabel(item) }}</span>
-                <div v-if="canReserve && hasDraft" class="relative z-10">
-                  <AddToReservationButton :resource-id="String(item.id)" />
-                </div>
-              </template>
+              <span
+                v-else
+                class="text-sm tabular-nums"
+                :class="isFullyBooked(item) ? 'font-medium text-status-attention' : 'text-muted-foreground'"
+                data-slot="resource-availability"
+              >{{ availabilityLabel(item) }}</span>
+              <div class="relative z-10 ml-auto flex items-center gap-2 empty:hidden">
+                <AddToReservationButton
+                  v-if="showCartAction(item)"
+                  :resource-id="String(item.id)"
+                  size="xs"
+                  class="pointer-coarse:h-11"
+                />
+                <CollectionRowActions :actions="recordActions" @select="key => collectionActions.select(key)" />
+              </div>
             </div>
-            <CollectionRowActions :actions="recordActions.filter(action => action.role !== 'open')" class="relative z-10 mt-3" @select="key => collectionActions.select(key)" />
           </div>
         </article>
       </template>
 
       <template #row="{ item, actions: recordActions, view }">
         <CollectionRow :spotlight="item === source?.items.value[0]" :actions="view === 'preview' ? [] : recordActions" class="px-3 py-3 sm:px-4" data-slot="resource-collection-row" @select="key => collectionActions.select(key)">
-          <Link
-            :href="route('resources.show', item.id)"
-            prefetch
-            data-collection-open
-            class="flex min-w-0 flex-1 items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-          >
-            <img
-              v-if="item.image_url"
-              :src="item.image_url"
-              alt=""
-              loading="lazy"
-              class="size-12 shrink-0 border border-border object-cover"
+          <div class="flex min-w-0 items-center gap-2">
+            <Link
+              :href="route('resources.show', item.id)"
+              prefetch
+              data-collection-open
+              class="flex min-w-0 flex-1 items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
-            <EntityTypeMark v-else type="resource" size="lg" icon-only class="size-12 justify-center" />
-            <span class="min-w-0 flex-1">
-              <span class="block truncate text-base font-medium text-foreground">
-                <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
+              <img
+                v-if="item.image_url"
+                :src="item.image_url"
+                alt=""
+                loading="lazy"
+                class="size-12 shrink-0 border border-border object-cover"
+              >
+              <EntityTypeMark v-else type="resource" size="lg" icon-only class="size-12 justify-center" />
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-base font-medium text-foreground">
+                  <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
+                </span>
+                <span class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+                  <template v-for="(part, index) in rowFacts(item)" :key="index">
+                    <span v-if="index > 0" aria-hidden="true">·</span>
+                    <span><SearchMatch :match="part.match" :title="part.title" /></span>
+                  </template>
+                </span>
               </span>
-              <span class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
-                <template v-for="(part, index) in rowFacts(item)" :key="index">
-                  <span v-if="index > 0" aria-hidden="true">·</span>
-                  <span><SearchMatch :match="part.match" :title="part.title" /></span>
-                </template>
-              </span>
-            </span>
-          </Link>
-          <StatusBadge v-if="view !== 'preview' && !item.is_reservable" :status="notReservableStatus" class="mt-1.5" />
-          <div v-else-if="view !== 'preview' && canReserve" class="mt-1.5">
-            <AddToReservationButton :resource-id="String(item.id)" />
+            </Link>
+            <AddToReservationButton
+              v-if="view !== 'preview' && showCartAction(item)"
+              :resource-id="String(item.id)"
+              size="xs"
+              class="pointer-coarse:h-11"
+            />
           </div>
+          <StatusBadge v-if="view !== 'preview' && !item.is_reservable" :status="notReservableStatus" class="mt-1.5" />
         </CollectionRow>
       </template>
 
@@ -151,11 +161,12 @@
         <span v-else-if="column.key === 'availability'" class="tabular-nums" :class="isFullyBooked(item) && 'text-status-attention'">
           {{ item.is_reservable ? availabilityLabel(item) : (item.capacity ?? '—') }}
         </span>
-        <template v-else-if="column.key === 'status'">
-          <StatusBadge v-if="!item.is_reservable" :status="notReservableStatus" />
-          <AddToReservationButton v-else-if="canReserve" :resource-id="String(item.id)" />
-        </template>
+        <StatusBadge v-else-if="column.key === 'status' && !item.is_reservable" :status="notReservableStatus" />
         <span v-else-if="column.key === 'created_at' || column.key === 'updated_at'" class="tabular-nums">{{ formatRecordDate(item[column.key]) }}</span>
+      </template>
+
+      <template #table-action="{ item }">
+        <AddToReservationButton :resource-id="String(item.id)" size="xs" class="pointer-coarse:h-11" />
       </template>
 
       <template #preview="{ item, actions: recordActions }">
@@ -172,7 +183,8 @@
             <AddToReservationButton
               v-if="item.is_reservable && canReserve"
               :resource-id="String(item.id)"
-              size="sm"
+              size="xs"
+              class="pointer-coarse:h-11"
               without-draft="reserve"
               :label="$t('reservations.cart.add_to_reservation')"
             />
@@ -200,7 +212,7 @@
 </template>
 
 <script setup lang="ts">
-import { Trash2, Pencil, ArrowUpRight, CalendarClock, Plus } from '@lucide/vue';
+import { Trash2, Pencil, CalendarClock, Plus } from '@lucide/vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { capitalize, computed, onMounted, watch } from 'vue';
@@ -301,6 +313,7 @@ const columns = computed<CollectionColumn[]>(() => [
 // --- Availability: for the cart's period, or right now until one is picked ---------------------
 
 const { period, hasDraft, hasPeriod, openSheet } = useReservationCart();
+const showCartAction = (item: ResourceSearchResult) => item.is_reservable && canReserve.value && hasDraft.value;
 
 // Captured once: a "now" that ticked would invalidate the availability cache on every render.
 const openedAt = Date.now();
@@ -357,7 +370,6 @@ onMounted(() => {
   window.history.replaceState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
 });
 const rowActions = (item: ResourceSearchResult): AdminRecordAction[] => [
-  { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, role: 'open' as const, primary: true, href: route('resources.show', item.id) },
   ...(rowAbilities.can(item.id, 'update') ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, role: 'edit' as const, menuOnly: true, href: route('resources.edit', item.id) }] : []),
   ...(rowAbilities.can(item.id, 'delete') ? [{ key: `delete:${item.id}:${nameOf(item)}`, label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
 ];

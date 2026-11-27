@@ -32,10 +32,20 @@ vi.mock('@/Composables/useRowAbilities', () => ({
 }));
 
 const CollectionPage = {
-  props: ['quickFilters', 'rowActions', 'columns'],
+  props: ['quickFilters', 'rowActions', 'columns', 'canShowTableAction'],
   emits: ['quickFilter'],
   setup: () => ({ resource: { id: 'r1', name_lt: 'Projektorius', is_reservable: true, capacity: 3 } }),
-  template: '<div><slot name="card" :item="resource" :actions="rowActions(resource)" /></div>',
+  template: `
+    <div>
+      <slot name="card" :item="resource" :actions="rowActions(resource)" />
+      <slot name="row" :item="resource" :actions="rowActions(resource)" view="rows" />
+      <div data-testid="resource-table-row">
+        <slot name="cell" :item="resource" :column="{ key: 'name' }" />
+        <slot name="cell" :item="resource" :column="{ key: 'status' }" />
+        <slot v-if="canShowTableAction(resource)" name="table-action" :item="resource" />
+      </div>
+    </div>
+  `,
 };
 
 const render = (managedTenantIds: number[]) => mount(IndexResource, {
@@ -83,27 +93,35 @@ describe('resource managed quick filter', () => {
     expect(wrapper.findComponent(CollectionPage).props('quickFilters')[0].active).toBe(true);
     wrapper.unmount();
   });
-  it.each([false, true])('renders a single detail link with draft active: %s', (hasDraft) => {
+  it.each([
+    { hasDraft: false, canReserve: true, expected: 0 },
+    { hasDraft: true, canReserve: false, expected: 0 },
+    { hasDraft: true, canReserve: true, expected: 1 },
+  ])('gates cart actions in cards, rows and tables (draft: $hasDraft, permission: $canReserve)', ({ hasDraft, canReserve, expected }) => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { can: { create: { reservation: true } } },
+      auth: { can: { create: { reservation: canReserve } } },
       reservationCart: hasDraft ? { items: [] } : null,
     }));
 
     const wrapper = render([]);
-    const card = wrapper.get('[data-slot="resource-collection-card"]');
+    const selectors = ['[data-slot="resource-collection-card"]', '[data-slot="resource-collection-row"]', '[data-testid="resource-table-row"]'];
 
-    expect(card.findAll('a')).toHaveLength(1);
-    expect(card.get('a[data-card-link]').attributes('href')).toContain('/resources.show');
-    expect(card.findAll('[data-testid="add-to-reservation"]')).toHaveLength(hasDraft ? 1 : 0);
+    for (const selector of selectors) {
+      const row = wrapper.get(selector);
+      expect(row.findAll('a')).toHaveLength(1);
+      expect(row.get('a').attributes('href')).toContain('/resources.show');
+      expect(row.findAll('[data-testid="add-to-reservation"]')).toHaveLength(expected);
+    }
+
     wrapper.unmount();
   });
 
-  it('keeps opening primary and offers hidden timestamp columns', () => {
+  it('has title links for opening records and offers hidden timestamp columns', () => {
     const wrapper = render([]);
     const collection = wrapper.findComponent(CollectionPage);
     const actions = collection.props('rowActions')({ id: 'r1', name_lt: 'Išteklius' });
 
-    expect(actions[0]).toMatchObject({ role: 'open', primary: true, href: route('resources.show', 'r1') });
+    expect(actions).toEqual([]);
     expect(collection.props('columns')).toEqual(expect.arrayContaining([
       expect.objectContaining({ key: 'created_at', defaultHidden: true, sortField: 'created_at' }),
       expect.objectContaining({ key: 'updated_at', defaultHidden: true, sortField: 'updated_at' }),

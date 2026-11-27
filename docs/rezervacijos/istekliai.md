@@ -75,7 +75,7 @@ Pilną rezervaciją mato tik tie, kas turi teisę ją peržiūrėti (žr.
 [Rezervacijos → Teisės](/rezervacijos/rezervacijos#teises)).
 :::
 
-Išteklių kortelę atversi paspaudęs jos pavadinimą. Pradėjus rezervaciją, skolinamų išteklių kortelėse rodomas ir krepšelio veiksmas.
+Išteklio puslapį atversi paspaudęs jo pavadinimą. Kortelės apačioje šalia užimtumo arba būsenos rodomi galimi veiksmai. Pradėjus rezervaciją, krepšelio mygtukas rodomas kortelėse, eilutėse ir lentelėje. Lentelėje jis rodomas stulpelyje „Veiksmai“.
 
 ### Greitoji peržiūra sąraše {#greitoji-perziura}
 

@@ -142,7 +142,15 @@
                     @click.capture="rememberShift"
                     @update:model-value="value => toggleRow(row.id, value === true, { range: shiftHeld })"
                   />
-                  <CollectionRowActions v-else-if="cell.column.id === ACTIONS_COLUMN_ID" :actions="rowActions?.(row.original) ?? []" :spotlight="row.id === table.getRowModel().rows[0]?.id" @select="key => emit('rowAction', row.original, key)" @navigate="key => emit('rowNavigate', row.original, key)" />
+                  <div v-else-if="cell.column.id === ACTIONS_COLUMN_ID" class="flex items-center justify-end gap-2">
+                    <slot v-if="canShowTableAction?.(row.original)" name="table-action" :item="row.original" />
+                    <CollectionRowActions
+                      :actions="rowActions?.(row.original) ?? []"
+                      :spotlight="row.id === table.getRowModel().rows[0]?.id"
+                      @select="key => emit('rowAction', row.original, key)"
+                      @navigate="key => emit('rowNavigate', row.original, key)"
+                    />
+                  </div>
                   <slot
                     v-else-if="cell.column.id !== SELECT_COLUMN_ID"
                     name="cell"
@@ -257,6 +265,7 @@ const props = withDefaults(defineProps<{
   itemKey: (item: T) => string;
   columns?: CollectionColumn[];
   rowActions?: (item: T) => AdminRecordAction[];
+  canShowTableAction?: (item: T) => boolean;
   isLoading: boolean;
   isLoadingMore: boolean;
   hasSearched: boolean;
@@ -279,6 +288,7 @@ const props = withDefaults(defineProps<{
   rowMuted?: (item: T) => boolean;
 }>(), {
   pinned: () => [],
+  canShowTableAction: undefined,
   columns: () => [],
   canSelect: undefined,
   sortBy: '',
@@ -298,11 +308,12 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
-  row: (props: { item: T; index: number; actions: AdminRecordAction[]; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
-  card?: (props: { item: T; actions: AdminRecordAction[]; pinned: boolean }) => unknown;
-  cell: (props: { item: T; actions: AdminRecordAction[]; column: CollectionColumn; pinned: boolean }) => unknown;
-  preview: (props: { item: T; actions: AdminRecordAction[] }) => unknown;
-  empty: () => unknown;
+  'row': (props: { item: T; index: number; actions: AdminRecordAction[]; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
+  'card'?: (props: { item: T; actions: AdminRecordAction[]; pinned: boolean }) => unknown;
+  'cell': (props: { item: T; actions: AdminRecordAction[]; column: CollectionColumn; pinned: boolean }) => unknown;
+  'table-action'?: (props: { item: T }) => unknown;
+  'preview': (props: { item: T; actions: AdminRecordAction[] }) => unknown;
+  'empty': () => unknown;
 }>();
 
 const pinnedList = computed(() => {
@@ -321,7 +332,7 @@ const { table, hideableColumns, toggleRow } = useCollectionTable<T>({
   items: allItems,
   itemKey: props.itemKey,
   columns: toRef(props, 'columns'),
-  hasRowActions: computed(() => allItems.value.some(item => (props.rowActions?.(item).length ?? 0) > 0)),
+  hasRowActions: computed(() => allItems.value.some(item => props.canShowTableAction?.(item) || (props.rowActions?.(item).length ?? 0) > 0)),
   actionsLabel: $t('Veiksmai'),
   selectable: toRef(props, 'selectable'),
   canSelect: item => props.canSelect?.(item) ?? true,
