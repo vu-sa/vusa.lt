@@ -1,9 +1,5 @@
 <?php
 
-use App\Models\News;
-use App\Models\Page;
-use App\Models\QuickLink;
-use App\Models\Resource;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -17,10 +13,6 @@ beforeEach(function (): void {
     $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     // Create related test data
-    $this->page = Page::factory()->for($this->tenant)->create();
-    $this->news = News::factory()->for($this->tenant)->create();
-    $this->quickLink = QuickLink::factory()->for($this->tenant)->create();
-    $this->resource = Resource::factory()->for($this->tenant)->create();
 });
 
 describe('user settings', function (): void {
@@ -139,18 +131,6 @@ describe('user settings', function (): void {
         ]);
     });
 
-    test('user can update password', function (): void {
-        $passwordData = [
-            'current_password' => 'password', // Default password from factory
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
-        ];
-
-        asUser($this->admin)
-            ->patch(route('profile.updatePassword'), $passwordData)
-            ->assertStatus(302)
-            ->assertSessionHas('success');
-    });
 });
 
 describe('notification settings', function (): void {

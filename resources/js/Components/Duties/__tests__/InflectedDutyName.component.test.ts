@@ -5,6 +5,9 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { commonStubs } from '@/tests/stubs';
 import { documentWithMatch, type SearchMatchDocument } from '@/Search/core/matches';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 describe('InflectedDutyName.vue', () => {
   let wrapper: ReturnType<typeof mount>;
@@ -40,7 +43,7 @@ describe('InflectedDutyName.vue', () => {
     useAccessibilityPreferences().reset();
     vi.useRealTimers();
     vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+    restoreGlobals();
   });
 
   it('uses a solid branded underline and inherits the surrounding text color', () => {
@@ -70,7 +73,7 @@ describe('InflectedDutyName.vue', () => {
 
   it('keeps reduced motion on the masculine form without a timer', async () => {
     vi.useFakeTimers();
-    vi.stubGlobal('matchMedia', vi.fn(() => ({
+    stubGlobal('matchMedia', vi.fn(() => ({
       matches: true, media: '(prefers-reduced-motion: reduce)', onchange: null,
       addEventListener: vi.fn(), removeEventListener: vi.fn(),
       addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn(),

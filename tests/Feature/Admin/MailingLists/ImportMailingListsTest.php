@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Sleep;
 
 pest()->use(RefreshDatabase::class);
 
@@ -44,6 +45,7 @@ it('imports new manual lists and refreshes metadata without replacing managed so
     Http::assertNotSent(fn (Request $request) => $request->method() !== 'GET');
     Queue::assertPushed(SyncManagedMailingLists::class);
 
+    Sleep::fake(syncWithCarbon: true);
     $lock = cache()->lock('mailing-list:'.$managed->id, 900);
     $lock->get();
     try {

@@ -112,15 +112,12 @@ describe('authorized access', function (): void {
     });
 
     test('index shows study programs from all tenants for super admin', function (): void {
-        $this->actingAs($this->superAdmin);
+        $otherProgram = StudyProgram::factory()->for(Tenant::factory())->create();
 
-        $response = $this->get(route('studyPrograms.index'));
-        $response->assertStatus(200);
-
-        $studyPrograms = $response->viewData('page')['props']['studyPrograms'];
-
-        // Ensure we can see study programs (super admin sees all tenants)
-        expect($studyPrograms)->toBeArray()->not->toBeEmpty();
+        asUserWithInertia($this->superAdmin)->get(route('studyPrograms.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('studyPrograms', fn ($rows) => collect($rows)->pluck('id')->contains($this->studyProgram->id)
+                && collect($rows)->pluck('id')->contains($otherProgram->id)));
     });
 
     test('can access study program create page', function (): void {
@@ -240,17 +237,11 @@ describe('validation', function (): void {
     });
 
     test('cannot delete study program when in use by dutiables', function (): void {
-        $this->actingAs($this->admin);
+        Dutiable::factory()->create(['study_program_id' => $this->studyProgram->id]);
 
-        // Create a dutiable that uses this study program
-        Dutiable::factory()->create([
-            'study_program_id' => $this->studyProgram->id,
-        ]);
-
-        $response = $this->delete(route('studyPrograms.destroy', $this->studyProgram));
-        $response->assertStatus(302);
-
-        $this->assertDatabaseHas('study_programs', ['id' => $this->studyProgram->id]);
+        asUser($this->admin)->delete(route('studyPrograms.destroy', $this->studyProgram))
+            ->assertRedirect()->assertSessionHas('error');
+        $this->assertNotSoftDeleted($this->studyProgram);
     });
 
     test('study program name must be unique within tenant', function (): void {
@@ -283,23 +274,6 @@ describe('validation', function (): void {
         ]);
     });
 
-    test('study program validates degree field', function (): void {
-        $this->actingAs($this->admin);
-
-        $response = $this->post(route('studyPrograms.store'), [
-            'name' => ['lt' => 'Test Program', 'en' => 'Test Program'],
-            'degree' => 'PHD', // This might be valid, let's use INVALID
-            'tenant_id' => $this->tenant->id,
-        ]);
-
-        // PHD might be valid, so let's just check the response is successful if it's valid
-        if ($response->status() === 302 && $response->getSession()->has('errors')) {
-            $response->assertSessionHasErrors(['degree']);
-        } else {
-            $response->assertStatus(302);
-            // If PHD is valid, the test passes by creating successfully
-        }
-    });
 });
 
 describe('merge functionality', function (): void {
@@ -367,33 +341,6 @@ describe('merge functionality', function (): void {
         ]);
         $response->assertStatus(302);
         $response->assertSessionHasErrors(['source_study_program_ids.0']);
-    });
-});
-
-describe('relationships', function (): void {
-    test('study program belongs to tenant', function (): void {
-        expect($this->studyProgram->tenant->id)->toBe($this->tenant->id);
-    });
-
-    test('study program can have dutiables', function (): void {
-        $dutiable = Dutiable::factory()->create([
-            'study_program_id' => $this->studyProgram->id,
-        ]);
-
-        expect($this->studyProgram->dutiables->first()->id)->toBe($dutiable->id);
-    });
-
-    test('study program has translatable name field', function (): void {
-        expect($this->studyProgram->getTranslation('name', 'lt'))->toBe('Informatikos bakalauras')
-            ->and($this->studyProgram->getTranslation('name', 'en'))->toBe('Computer Science Bachelor');
-    });
-
-    test('study program factory creates valid data', function (): void {
-        $program = StudyProgram::factory()->create();
-
-        expect($program->getTranslations('name'))->toBeArray()
-            ->toHaveKeys(['lt', 'en'])
-            ->and($program->degree)->toBeIn(['BA', 'MA', 'PHD', 'INTEGRATED_STUDIES', 'PROFESSIONAL_PEDAGOGY', 'OTHER']);
     });
 });
 

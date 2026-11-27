@@ -4,17 +4,7 @@ import { mount } from '@vue/test-utils';
 import BannerForm from '@/Components/AdminForms/BannerForm.vue';
 import { commonStubs } from '@/tests/stubs';
 
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
-  return {
-    ...actual,
-    usePage: () => ({
-      props: {
-        app: { locale: 'lt' },
-      },
-    }),
-  };
-});
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 describe('BannerForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
@@ -66,11 +56,6 @@ describe('BannerForm.vue', () => {
 
   afterEach(() => {
     wrapper?.unmount();
-  });
-
-  it('renders the form', () => {
-    wrapper = createWrapper();
-    expect(wrapper.find('form').exists()).toBe(true);
   });
 
   it('reflects the initial is_active state in ContentPublishPanel', () => {

@@ -1,17 +1,22 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowReservations from '@/Pages/Admin/Dashboard/ShowReservations.vue';
 import { commonStubs } from '@/tests/stubs';
 import type { DashboardReservation, ReservationPivot, ReservationResourceState } from '@/Utils/ReservationStatus';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name: string, params: Record<string, unknown> = {}) => {
-  const query = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&');
-
-  return `/mocked/${name}${query ? `?${query}` : ''}`;
+beforeEach(() => {
+  stubGlobal('route', (name: string, params: Record<string, unknown> = {}) => {
+    const query = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&');
+    return `/mocked/${name}${query ? `?${query}` : ''}`;
+  });
 });
 
 const counts = { waitingForMe: 3, lentOut: 5, overdue: 1, mine: 2, myOverdue: 0 };

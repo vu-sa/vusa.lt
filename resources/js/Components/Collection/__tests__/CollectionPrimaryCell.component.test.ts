@@ -50,12 +50,15 @@ describe('CollectionPrimaryCell', () => {
     expect(link.attributes('title')).toBe(title);
   });
 
-  it('exposes the full title attribute on button and paragraph variants', () => {
+  it('exposes the full title attribute on button and paragraph variants', async () => {
     const title = 'A long title on a button or plain text';
     const buttonWrapper = mount(CollectionPrimaryCell, { props: { title, clickable: true } });
     expect(buttonWrapper.get('button').attributes('title')).toBe(title);
 
     const textWrapper = mount(CollectionPrimaryCell, { props: { title } });
     expect(textWrapper.get('p').attributes('title')).toBe(title);
+    expect(textWrapper.get('p').classes()).toContain('truncate');
+    await textWrapper.setProps({ titleLines: 2 });
+    expect(textWrapper.get('p').classes()).toContain('line-clamp-2');
   });
 });

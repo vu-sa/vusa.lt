@@ -65,7 +65,6 @@ it('fits an ended check-in status and date at working widths in both themes', fu
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 900);
             expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
-            $page->screenshot(fullPage: false, filename: "recent-check-in-{$theme}-{$width}");
         }
     }
 

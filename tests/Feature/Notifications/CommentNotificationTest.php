@@ -83,6 +83,7 @@ test('a reply notifies thread participants only, not the whole audience', functi
     // assert only on the reply's recipients).
     $this->actingAs($this->rep);
     $root = $this->agendaItem->comment('<p>Opening question</p>');
+    $this->agendaItem->comment('<p>Extra context</p>', $root->id);
 
     Notification::fake();
 
@@ -90,7 +91,7 @@ test('a reply notifies thread participants only, not the whole audience', functi
     $this->agendaItem->comment('<p>My reply</p>', $root->id);
 
     // The root author (a thread participant) is notified…
-    Notification::assertSentTo($this->rep, CommentPostedNotification::class);
+    Notification::assertSentToTimes($this->rep, CommentPostedNotification::class, 1);
     // …but an audience member who never joined the thread is not, and neither is the replier.
     Notification::assertNotSentTo($this->bystander, CommentPostedNotification::class);
     Notification::assertNotSentTo($this->author, CommentPostedNotification::class);

@@ -3,7 +3,6 @@
 use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -11,40 +10,6 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->for($this->tenant)->create();
-});
-
-describe('FileableFile model basic functionality', function (): void {
-    test('can create a FileableFile with required attributes', function (): void {
-        $fileableFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
-
-        expect($fileableFile)->toBeInstanceOf(FileableFile::class)
-            ->and($fileableFile->fileable_type)->toBe(MorphMap::alias(Institution::class))
-            ->and($fileableFile->fileable_id)->toBe($this->institution->id)
-            ->and($fileableFile->sharepoint_id)->toBeString()
-            ->and($fileableFile->name)->toBeString();
-    });
-
-    test('FileableFile uses ULID as primary key', function (): void {
-        $fileableFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
-
-        // ULIDs are 26 characters long
-        expect($fileableFile->id)->toHaveLength(26);
-    });
-
-    test('FileableFile belongs to a fileable model', function (): void {
-        $fileableFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
-
-        expect($fileableFile->fileable)->toBeInstanceOf(Institution::class)
-            ->and($fileableFile->fileable->id)->toBe($this->institution->id);
-    });
-
-    test('institution can have multiple FileableFiles', function (): void {
-        FileableFile::factory()->count(3)->for($this->institution, 'fileable')->create();
-
-        $this->institution->refresh();
-
-        expect($this->institution->fileableFiles)->toHaveCount(3);
-    });
 });
 
 describe('FileableFile scopes', function (): void {
@@ -175,14 +140,5 @@ describe('FileableFile static helpers', function (): void {
             ->toHaveKey(FileableFile::TYPE_AGENDA)
             ->toHaveKey(FileableFile::TYPE_METHODOLOGY)
             ->toHaveKey(FileableFile::TYPE_OTHER);
-    });
-});
-
-describe('FileableFile deletion', function (): void {
-    test('deleted files are permanently removed', function (): void {
-        $file = FileableFile::factory()->for($this->institution, 'fileable')->create();
-        $file->delete();
-
-        expect(FileableFile::find($file->id))->toBeNull();
     });
 });

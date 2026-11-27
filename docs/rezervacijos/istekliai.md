@@ -7,7 +7,7 @@ tests:
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
   - tests/Feature/Reservations/ResourceCapacityCalculatorTest.php
   - tests/Feature/Api/Admin/ResourceApiControllerTest.php
-  - tests/Feature/Admin/Search/ResourcePreviewApiTest.php
+  - tests/Feature/Api/Admin/ResourceApiControllerTest.php
   - tests/Unit/Models/ResourceTest.php
   - tests/Unit/Policies/ResourcePolicyTest.php
   - resources/js/Pages/Admin/Reservations/__tests__/ShowResource.component.test.ts

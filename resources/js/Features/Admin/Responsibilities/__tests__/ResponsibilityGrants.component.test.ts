@@ -1,11 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router, useForm } from '@inertiajs/vue3';
 import { nextTick } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockForm, type MockForm } from '@/tests/helpers/createMockForm';
 import ResponsibilityGrants from '@/Features/Admin/Responsibilities/ResponsibilityGrants.vue';
 import type { ResponsibilityGrantsPayload } from '@/Features/Admin/Responsibilities/types';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -53,7 +57,7 @@ function mountGrants(props: Record<string, unknown> = {}, extraStubs: Record<str
 }
 
 beforeEach(() => {
-  vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
+  stubGlobal('route', (name: string) => `/mocked/${name}`);
   form = createMockForm({ grantee_type: 'duty', grantee_id: '', scope_type: 'tenant', scope_id: '' });
   vi.mocked(useForm).mockReturnValue(form as unknown as ReturnType<typeof useForm>);
 });

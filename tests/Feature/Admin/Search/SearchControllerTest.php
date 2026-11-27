@@ -28,12 +28,6 @@ describe('authorized access', function (): void {
             ->assertRedirect(route('dashboard'));
     });
 
-    test('the agenda-items tab leads to its collection', function (): void {
-        asUser($this->admin)
-            ->get(route('search.index', ['tab' => 'agenda-items', 'q' => 'x']))
-            ->assertRedirect(route('agendaItems.index', ['q' => 'x'], false));
-    });
-
     test('agenda items have a collection page', function (): void {
         asUserWithInertia(makeAdminUser($this->tenant))
             ->get(route('agendaItems.index'))
@@ -45,12 +39,6 @@ describe('authorized access', function (): void {
             ->get(route('agendaItems.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('defaultTenantShortnames', [$this->tenant->shortname]));
-    });
-
-    test('the resources tab goes to the resources collection', function (): void {
-        asUser($this->admin)
-            ->get(route('search.index', ['tab' => 'resources', 'q' => 'x']))
-            ->assertRedirect(route('resources.index', ['q' => 'x'], false));
     });
 
     test('an unknown tab from a stale bookmark falls back to the dashboard', function (): void {

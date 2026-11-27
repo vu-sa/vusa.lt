@@ -1,8 +1,13 @@
 import { effectScope, nextTick, ref } from 'vue';
 import { flushPromises } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
+
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import { useRowAbilities } from '../useRowAbilities';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const mock = vi.hoisted(() => ({ execute: vi.fn(), abort: vi.fn(), queries: [] as { type: string; ids: string[] }[] }));
 const payload = ref<Record<string, { update: boolean; delete: boolean }> | null>(null);
@@ -27,7 +32,7 @@ beforeEach(() => {
   mock.queries = [];
   payload.value = null;
   success.value = true;
-  vi.stubGlobal('route', (_name: string, query: { type: string; ids: string[] }) => {
+  stubGlobal('route', (_name: string, query: { type: string; ids: string[] }) => {
     mock.queries.push(query);
     return JSON.stringify(query);
   });
@@ -40,7 +45,9 @@ beforeEach(() => {
 describe('useRowAbilities', () => {
   it('hides actions until the batch resolves, then uses only returned decisions', async () => {
     let resolve!: () => void;
-    mock.execute.mockImplementation(() => new Promise<void>((done) => { resolve = done; }));
+    mock.execute.mockImplementation(() => new Promise<void>((done) => {
+      resolve = done;
+    }));
     const state = setup(['one', 'denied']);
     expect(state.can('one', 'update')).toBe(false);
     payload.value = { one: { update: true, delete: false } };
@@ -94,8 +101,12 @@ describe('useRowAbilities', () => {
 
   it('discards an in-flight decision invalidated by a mutation', async () => {
     let resolve!: () => void;
-    mock.execute.mockImplementationOnce(() => new Promise<void>((done) => { resolve = done; }));
-    mock.execute.mockImplementation(async () => { payload.value = {}; });
+    mock.execute.mockImplementationOnce(() => new Promise<void>((done) => {
+      resolve = done;
+    }));
+    mock.execute.mockImplementation(async () => {
+      payload.value = {};
+    });
     const state = setup(['one']);
     state.invalidate(['one']);
     payload.value = { one: { update: true, delete: true } };

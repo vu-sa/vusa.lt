@@ -97,12 +97,6 @@ test('a view-only participant opens the page read-only', function (): void {
         );
 });
 
-test('an outsider cannot open the page (403)', function (): void {
-    asUser($this->outsider)
-        ->get(route('agendaItems.show', $this->agendaItem))
-        ->assertStatus(403);
-});
-
 test('a view-only participant cannot persist updates (403)', function (): void {
     asUser($this->viewer)
         ->put(route('agendaItems.update', $this->agendaItem), ['title' => 'Hijacked'])

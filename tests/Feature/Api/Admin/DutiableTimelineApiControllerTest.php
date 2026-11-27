@@ -225,22 +225,23 @@ describe('tenant isolation', function (): void {
         $foreignInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
         $foreignDuty = Duty::factory()->create(['institution_id' => $foreignInstitution->id]);
 
-        Dutiable::factory()->create([
+        $assignment = Dutiable::factory()->create([
             'duty_id' => $foreignDuty->id,
             'dutiable_id' => User::factory()->create()->id,
             'start_date' => '2025-07-01',
         ]);
 
-        $superAdmin = makeUser($this->tenant);
-        $superAdmin->assignRole(config('permission.super_admin_role_name'));
+        $reader = makeUser($otherTenant);
+        $reader->givePermissionTo('duties.read.padalinys');
 
-        $response = asUser($superAdmin)
-            ->getJson(timelineUrl('institution', $foreignInstitution->id))
-            ->assertOk();
+        $rows = asUser($reader)
+            ->getJson(timelineUrl('duty', $foreignDuty->id))
+            ->assertOk()
+            ->json('data.rows');
 
-        // A super admin manages everything, so this pins the positive side of the
-        // editable flag; the negative side is covered by the derived-row test above.
-        expect(collect($response->json('data.rows'))->pluck('editable')->unique()->all())->toBe([true]);
+        expect($rows)->toHaveCount(1)
+            ->and($rows[0]['id'])->toBe($assignment->id)
+            ->and($rows[0]['editable'])->toBeFalse();
     });
 });
 

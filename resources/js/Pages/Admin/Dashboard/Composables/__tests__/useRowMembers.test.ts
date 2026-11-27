@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import { useRowMembers } from '../useRowMembers';
 import type { AtstovavimasInstitution } from '../../types';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const rows = Array.from({ length: 360 }, (_, i) => `inst-${String(i).padStart(2, '0')}`);
 const urls: string[] = [];
@@ -33,14 +38,10 @@ describe('useRowMembers', () => {
   beforeEach(() => {
     urls.splice(0);
     failNext = false;
-    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+    stubGlobal('fetch', vi.fn(async (url: string) => {
       urls.push(String(url));
       return respond();
     }));
-  });
-
-  afterEach(() => {
-    vi.stubGlobal('fetch', undefined);
   });
 
   it('loads the selection in one request and preserves pending and empty history', async () => {
@@ -76,7 +77,9 @@ describe('useRowMembers', () => {
   it('ignores a response completed after the selection changes', async () => {
     const members = useRowMembers();
     let resolveOld!: (response: Response) => void;
-    vi.mocked(fetch).mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }));
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveOld = resolve;
+    }));
     const obsolete = members.load(['1']);
     await members.load(['2']);
     resolveOld(respond([]));

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { commonStubs } from '@/tests/stubs';
@@ -196,22 +196,25 @@ describe('TagList', () => {
 });
 
 describe('DateCell', () => {
+  beforeEach(() => vi.useFakeTimers({ toFake: ['Date'], now: new Date('2024-01-17T12:00:00Z') }));
+  afterEach(() => vi.useRealTimers());
+
   it('renders absolute date by default', () => {
     const wrapper = mount(DateCell, {
       props: { date: '2024-01-15T10:30:00' },
       global: { stubs: commonStubs },
     });
 
-    expect(wrapper.text().length).toBeGreaterThan(0);
+    expect(wrapper.text()).toBe('2024-01-15');
   });
 
   it('renders relative time when mode is relative', () => {
     const wrapper = mount(DateCell, {
-      props: { date: new Date().toISOString(), mode: 'relative' },
+      props: { date: '2024-01-15T12:00:00Z', mode: 'relative' },
       global: { stubs: commonStubs },
     });
 
-    expect(wrapper.text().length).toBeGreaterThan(0);
+    expect(wrapper.get('span').text()).toBe('prieš 2 d.');
   });
 
   it('renders em-dash for null date', () => {

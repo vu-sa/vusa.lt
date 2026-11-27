@@ -59,7 +59,7 @@ describe('Document short URL redirect', function (): void {
         expect($response->headers->get('Location'))->toBe('https://sharepoint.example.com/document/123?download=1');
     });
 
-    it('appends download and web=1 query parameters correctly when anonymous_url already has a query string', function (): void {
+    it('appends download without web=1 when anonymous_url already has a query string', function (): void {
         $document = Document::factory()->create([
             'anonymous_url' => 'https://sharepoint.example.com/document/123?cid=abc',
         ]);

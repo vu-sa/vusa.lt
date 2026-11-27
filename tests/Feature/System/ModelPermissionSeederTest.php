@@ -89,6 +89,8 @@ test('permission seeder preserves existing allowed permissions without changing 
         'roles.create.*',  // This should exist and be preserved
     ])->get()->keyBy('name');
 
+    expect($existingPermissions)->toHaveCount(2);
+
     // Run the seeder
     $seeder = new ModelPermissionSeeder;
     $seeder->run();

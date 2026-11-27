@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -37,6 +38,6 @@ test('the tracker is omitted when no website id is configured', function (): voi
 });
 
 test('admin pages are never tracked', function (): void {
-    asUser(makeAdminUser())
+    asUser(User::factory()->create())
         ->get(route('dashboard'))->assertOk()->assertDontSeeHtml('https://analytics.example.test/script.js');
 });

@@ -739,10 +739,11 @@ test('owning-tenant TransferList update does not touch cross-tenant reps', funct
 });
 
 test('batchUpdateUsers can remove user with future end_date', function (): void {
+    $this->freezeTime();
     $crossUser = makeUser($this->assignableTenant);
 
     // Simulate a wizard-added user with a future end_date.
-    Dutiable::factory()->create([
+    $assignment = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
         'dutiable_type' => MorphMap::alias(User::class),
@@ -760,12 +761,7 @@ test('batchUpdateUsers can remove user with future end_date', function (): void 
     $response->assertRedirect();
     $response->assertSessionHasNoErrors();
 
-    $dutiable = Dutiable::where('duty_id', $this->duty->id)
-        ->where('dutiable_id', $crossUser->id)
-        ->where('tenant_id', $this->assignableTenant->id)
-        ->first();
-
-    expect($dutiable->end_date)->not->toBeNull();
+    expect($assignment->refresh()->end_date?->toDateString())->toBe(today()->toDateString());
 });
 
 test('batchUpdateUsers quota allows swap when removing future-end-dated user', function (): void {
@@ -811,11 +807,12 @@ test('batchUpdateUsers quota allows swap when removing future-end-dated user', f
 });
 
 test('an admin with global duty scope can remove a wizard-added cross-tenant user', function (): void {
+    $this->freezeTime();
     $this->owningAdmin->givePermissionTo('duties.update.*');
     $crossUser = makeUser($this->assignableTenant);
 
     // Wizard adds user with a future end_date.
-    Dutiable::factory()->create([
+    $assignment = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
         'dutiable_type' => MorphMap::alias(User::class),
@@ -833,14 +830,9 @@ test('an admin with global duty scope can remove a wizard-added cross-tenant use
         'assignable_tenants' => [
             ['tenant_id' => $this->assignableTenant->id, 'quota' => 2, 'user_ids' => []],
         ],
-    ])->assertRedirect();
+    ])->assertRedirect()->assertSessionHasNoErrors();
 
-    $dutiable = Dutiable::where('duty_id', $this->duty->id)
-        ->where('dutiable_id', $crossUser->id)
-        ->where('tenant_id', $this->assignableTenant->id)
-        ->first();
-
-    expect($dutiable->end_date)->not->toBeNull();
+    expect($assignment->refresh()->end_date?->toDateString())->toBe(today()->subDay()->toDateString());
 });
 
 test('saving the duty form without user_ids keeps cross-tenant reps', function (): void {
@@ -868,10 +860,11 @@ test('saving the duty form without user_ids keeps cross-tenant reps', function (
 });
 
 test('removing assignable tenant end-dates all active reps including future end_dated ones', function (): void {
+    $this->freezeTime();
     $this->owningAdmin->givePermissionTo('duties.update.*');
     $crossUser = makeUser($this->assignableTenant);
 
-    Dutiable::factory()->create([
+    $assignment = Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
         'dutiable_id' => $crossUser->id,
         'dutiable_type' => MorphMap::alias(User::class),
@@ -887,14 +880,10 @@ test('removing assignable tenant end-dates all active reps including future end_
         'places_to_occupy' => 1,
         'contacts_grouping' => 'none',
         'assignable_tenants' => [],
-    ])->assertRedirect();
+    ])->assertRedirect()->assertSessionHasNoErrors();
 
-    $dutiable = Dutiable::where('duty_id', $this->duty->id)
-        ->where('dutiable_id', $crossUser->id)
-        ->where('tenant_id', $this->assignableTenant->id)
-        ->first();
-
-    expect($dutiable->end_date)->not->toBeNull();
+    expect($assignment->refresh()->end_date?->toDateString())->toBe(today()->subDay()->toDateString());
+    expect($this->duty->assignableTenants()->whereKey($this->assignableTenant->id)->exists())->toBeFalse();
 });
 
 describe('store (Priskirti sheet)', function (): void {

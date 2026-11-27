@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import type { DocumentSearchFilters } from '@/Types/DocumentSearchTypes';
 
 import { DocumentSearchService } from '../DocumentSearchService';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 // Define interfaces to match actual implementation
 interface SearchClient {
@@ -104,18 +108,6 @@ describe('DocumentSearchService', () => {
   afterEach(() => {
     // Cancel any ongoing searches
     service.cancelCurrentSearch();
-    vi.unstubAllGlobals();
-  });
-
-  describe('constructor', () => {
-    it('initializes with search client', () => {
-      expect(service).toBeInstanceOf(DocumentSearchService);
-    });
-
-    it('accepts null client and handles gracefully', () => {
-      const nullService = new DocumentSearchService(null);
-      expect(nullService).toBeInstanceOf(DocumentSearchService);
-    });
   });
 
   describe('performSearch', () => {
@@ -125,7 +117,7 @@ describe('DocumentSearchService', () => {
 
     it('promotes important types and pins recommendations once while retaining filters', async () => {
       const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true, data: { ids: ['2'] } }) });
-      vi.stubGlobal('fetch', fetch);
+      stubGlobal('fetch', fetch);
       service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai', 'Šablonai'], recommendationsUrl: '/api/v1/documents/recommendations' });
       const result = await service.performSearch({ ...baseFilters, query: 'įstatų', languages: ['Lithuanian'] }, 24, false, 0);
       expect(new URL(fetch.mock.calls[0][0]).searchParams.get('q')).toBe('įstatų');
@@ -140,7 +132,7 @@ describe('DocumentSearchService', () => {
 
     it('honours explicit date sorting without fetching recommendations or promoting types', async () => {
       const fetch = vi.fn();
-      vi.stubGlobal('fetch', fetch);
+      stubGlobal('fetch', fetch);
       service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai'], recommendationsUrl: '/api/v1/documents/recommendations' });
       const result = await service.performSearch({ ...baseFilters, query: 'įstatų', sort: 'date_asc' }, 24, false, 0);
       expect(fetch).not.toHaveBeenCalled();
@@ -149,7 +141,7 @@ describe('DocumentSearchService', () => {
     });
 
     it('keeps default browsing newest first and includes initial recommendations', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true, data: { ids: ['2'] } }) }));
+      stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true, data: { ids: ['2'] } }) }));
       service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai'], recommendationsUrl: '/api/v1/documents/recommendations' });
       const result = await service.performSearch(baseFilters, 24, false, 0);
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
@@ -164,7 +156,7 @@ describe('DocumentSearchService', () => {
 
     it('keeps the first page pins when loading more without asking for recommendations again', async () => {
       const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ success: true, data: { ids: ['2'] } }) });
-      vi.stubGlobal('fetch', fetch);
+      stubGlobal('fetch', fetch);
       service = new DocumentSearchService(mockClient, 'documents', { recommendationsUrl: '/api/v1/documents/recommendations' });
       await service.performSearch({ ...baseFilters, query: 'įstatų' }, 24, false, 0);
       await service.performSearch({ ...baseFilters, query: 'įstatų' }, 24, true, 1);
@@ -173,7 +165,7 @@ describe('DocumentSearchService', () => {
     });
 
     it('continues ordinary search if recommendations are temporarily unavailable', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) }));
+      stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503, json: async () => ({}) }));
       service = new DocumentSearchService(mockClient, 'documents', { recommendationsUrl: '/api/v1/documents/recommendations' });
       const result = await service.performSearch(baseFilters, 24, false, 0);
       expect(result.hits).toHaveLength(2);
@@ -221,6 +213,15 @@ describe('DocumentSearchService', () => {
         q: 'test search',
         query_by: 'title,summary,content_type,document_year,document_date_formatted',
         query_by_weights: '10,3,2,6,4',
+        max_facet_values: 50,
+        prefix: true,
+        infix: 'fallback',
+        prioritize_exact_match: true,
+        prioritize_token_position: true,
+        typo_tokens_threshold: 2,
+        min_len_1typo: 4,
+        min_len_2typo: 7,
+        drop_tokens_threshold: 10,
         sort_by: '_text_match:desc,document_date:desc',
         filter_by: 'is_active:=true',
       }), expect.any(AbortSignal));
@@ -486,48 +487,22 @@ describe('DocumentSearchService', () => {
 
   describe('request cancellation', () => {
     it('supports AbortSignal for cancelling requests', async () => {
-      const abortController = new AbortController();
+      vi.mocked(mockClient.search).mockImplementation((_collection, _params, signal) => new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => reject(Object.assign(new Error('Search was cancelled'), { name: 'AbortError' })), { once: true });
+      }));
 
-      // Mock a slow response
-      vi.mocked(mockClient.search).mockImplementation(async (collection, params, signal) => {
-        return new Promise((resolve, reject) => {
-          const timeout = setTimeout(() => resolve(createMockSearchResponse()), 1000);
-          signal?.addEventListener('abort', () => {
-            clearTimeout(timeout);
-            reject(new Error('AbortError'));
-          });
-        });
-      });
-
-      const searchPromise = service.performSearch(baseFilters, 24, false, 0);
-
-      // Cancel the request
-      service.cancelCurrentSearch();
-
-      await expect(searchPromise).rejects.toThrow();
-    });
-
-    it('cancels ongoing search when cancelCurrentSearch is called', () => {
-      const spy = vi.spyOn(service, 'cancelCurrentSearch');
+      const result = service.performSearch(baseFilters, 24, false, 0);
+      const signal = vi.mocked(mockClient.search).mock.calls[0]?.[2];
+      expect(signal?.aborted).toBe(false);
 
       service.cancelCurrentSearch();
 
-      expect(spy).toHaveBeenCalled();
+      expect(signal?.aborted).toBe(true);
+      await expect(result).rejects.toMatchObject({ name: 'AbortError' });
     });
   });
 
   describe('search parameter validation', () => {
-    it('handles page numbers correctly', async () => {
-      vi.mocked(mockClient.search).mockResolvedValue(createMockSearchResponse());
-
-      // Test normal page handling
-      await service.performSearch(baseFilters, 24, false, 0);
-
-      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        page: 1, // First page for new search
-      }), expect.any(AbortSignal));
-    });
-
     it('passes through per_page values as provided', async () => {
       vi.mocked(mockClient.search).mockResolvedValue(createMockSearchResponse());
 
@@ -546,44 +521,6 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         per_page: 1000, // Passes through large values
-      }), expect.any(AbortSignal));
-    });
-  });
-
-  describe('search optimization', () => {
-    it('uses consistent search settings for all queries', async () => {
-      vi.mocked(mockClient.search).mockResolvedValue(createMockSearchResponse());
-      const filters = { ...baseFilters, query: 'specific search terms' };
-
-      await service.performSearch(filters, 24, false, 0);
-
-      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        query_by: 'title,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,3,2,6,4',
-        sort_by: '_text_match:desc,document_date:desc',
-        max_facet_values: 50,
-        prefix: true,
-        infix: 'fallback',
-        prioritize_exact_match: true,
-        prioritize_token_position: true,
-        typo_tokens_threshold: 2,
-        min_len_1typo: 4,
-        min_len_2typo: 7,
-        drop_tokens_threshold: 10,
-      }), expect.any(AbortSignal));
-    });
-
-    it('uses same settings for wildcard queries', async () => {
-      vi.mocked(mockClient.search).mockResolvedValue(createMockSearchResponse());
-      const filters = { ...baseFilters, query: '*' };
-
-      await service.performSearch(filters, 24, false, 0);
-
-      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
-        q: '*',
-        query_by: 'title,summary,content_type,document_year,document_date_formatted',
-        query_by_weights: '10,3,2,6,4',
-        sort_by: 'document_date:desc,created_at:desc',
       }), expect.any(AbortSignal));
     });
   });

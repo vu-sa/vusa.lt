@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 
 it('edits event type and status in the table and offers meeting creation in the form', function (): void {
     $tenant = Tenant::query()->first();
-    $user = makeAdminUser($tenant);
+    $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
     $type = EventType::factory()->create(['name' => ['lt' => 'Seminaras', 'en' => 'Seminar']]);
     $event = Calendar::factory()->for($tenant)->create([
         'title' => ['lt' => 'Renginio tipas', 'en' => 'Event type'],
@@ -33,6 +33,5 @@ it('edits event type and status in the table and offers meeting creation in the 
     navigateTo($page, '/mano/calendar/'.$event->id.'/edit');
     waitForInertiaRender($page, '[data-slot=form-page]');
     $page->assertSee('Sukurti posėdį iš renginio');
-    $page->script('window.__pestBrowser.jsErrors = window.__pestBrowser.jsErrors.filter(error => !error.message.startsWith("ResizeObserver loop completed"))');
     $page->assertNoJavaScriptErrors();
 });

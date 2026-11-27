@@ -135,10 +135,6 @@ test('a cadency setting change invalidates a warmed tenant report', function ():
         ->assertJsonMissingPath('data.supplementary')->assertJsonMissingPath('data.metrics.0.target')->assertJsonMissingPath('data.metrics.0.trend');
 });
 
-test('the retired standalone metrics page is gone', function (): void {
-    asUser(makeAdminUser($this->tenant))->get('/mano/rep-metrics')->assertNotFound();
-});
-
 test('agenda completion includes non-voting items and requires the main vote for voting items', function (): void {
     $meeting = cadenceMeeting($this->institution, '2026-08-01', '2026-08-01');
     AgendaItem::factory()->informational()->create(['meeting_id' => $meeting->id]);

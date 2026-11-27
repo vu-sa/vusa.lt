@@ -1,15 +1,10 @@
+import { usePage } from '@inertiajs/vue3';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { nextTick, reactive } from 'vue';
 
-const mockPageProps = reactive({
-  flash: {
-    access_change_warning: null as null | Record<string, unknown>,
-  },
-});
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: () => ({ props: mockPageProps }),
-}));
+let mockPageProps: { flash: { access_change_warning: null | Record<string, unknown> } };
 
 import { useAccessChangeGuard } from '../useAccessChangeGuard';
 
@@ -20,7 +15,9 @@ const warning = {
 
 describe('useAccessChangeGuard', () => {
   beforeEach(() => {
-    mockPageProps.flash.access_change_warning = null;
+    const page = reactive(createMockPage({ flash: { access_change_warning: null } }));
+    mockPageProps = page.props;
+    vi.mocked(usePage).mockReturnValue(page);
   });
 
   test('opens the dialog with the report when a warning flashes after a guarded submit', async () => {

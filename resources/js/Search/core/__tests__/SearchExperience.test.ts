@@ -1,19 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
 
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import { buildProfileParams, splitSortExpressions, type SearchProfile } from '../profiles';
-import { descriptionMatch, documentWithMatch, hasExactNameMatch, highlightText, matchTitle, normalizeSearchName, type SearchMatchDocument } from '../matches';
+import { descriptionMatch, documentWithMatch, hasExactNameMatch, matchTitle, normalizeSearchName, type SearchMatchDocument } from '../matches';
 import { SearchClientFactory } from '../services/SearchClientFactory';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const profile: SearchProfile = {
   version: 2,
   parameters: { query_by: 'title,description_lt,description_en,body,search_text_lt,search_text_en', query_by_weights: '10,4,4,2,1,1', infix: 'fallback,off,off,off,off,off', num_typos: '2,2,2,2,2,2' },
   defaultSort: 'created_at:desc', facetFields: ['lang', 'tenant'], sortFields: ['title', 'created_at'],
 };
-
-afterEach(() => vi.unstubAllGlobals());
 
 describe('search profiles and matches', () => {
   it('preserves type promotion expressions containing multiple or comma-containing labels', () => {
@@ -24,14 +24,6 @@ describe('search profiles and matches', () => {
     expect(() => buildProfileParams(profile, { q: 'įstat', sort_by: sort })).toThrow('Invalid sort');
   });
 
-  it('highlights inflected title words from stemmed fields without adding an excerpt', () => {
-    const title = 'VU SA Įstatai (nuo 2025 m.)';
-    const doc = documentWithMatch({ document: { title }, highlights: [{ field: 'search_text_lt', snippet: 'VU SA ⟦Įstatai⟧ (nuo 2025 m.)' }] }) as SearchMatchDocument;
-    const wrapper = mount(SearchMatch, { props: { match: matchTitle(title, doc._searchTitleMatches) } });
-    expect(wrapper.text()).toBe(title);
-    expect(wrapper.get('mark').text()).toBe('Įstatai');
-    expect(doc._searchMatch).toBeUndefined();
-  });
   it('keeps locale fields aligned with weights and flags, with relevance before recency', () => {
     const result = buildProfileParams(profile, { q: 'students', query_by: 'title' }, 'en');
     expect(result.query_by).toBe('description_en,search_text_en,title,description_lt,body,search_text_lt');
@@ -105,29 +97,6 @@ describe('search profiles and matches', () => {
     expect(hasExactNameMatch({ alias: '' }, '')).toBe(false);
   });
 
-  it('prefers body excerpts and renders untrusted highlight text without HTML', () => {
-    const document = documentWithMatch({ document: { title: 'Guide' }, highlights: [
-      { field: 'title', snippet: '⟦Guide⟧' },
-      { field: 'body', snippet: '<img src=x onerror=alert(1)> ⟦students⟧ & friends' },
-    ] });
-    const wrapper = mount(SearchMatch, { props: { match: document._searchMatch } });
-    expect(wrapper.find('img').exists()).toBe(false);
-    expect(wrapper.find('mark').text()).toBe('students');
-    expect(wrapper.text()).toBe('students & friends');
-  });
-
-  it('strips stored and encoded HTML while keeping highlighted text and block spacing', () => {
-    for (const snippet of [
-      '<p>For <strong>⟦students⟧</strong></p><p>&amp; representatives</p><script>alert(1)</script>',
-      '&lt;p&gt;For &lt;strong&gt;⟦students⟧&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&amp;amp; representatives&lt;/p&gt;',
-    ]) {
-      const doc = documentWithMatch({ document: { title: 'Guide' }, highlights: [{ field: 'description', snippet }] });
-      const wrapper = mount(SearchMatch, { props: { match: doc._searchMatch } });
-      expect(wrapper.text()).toBe('For students & representatives');
-      expect(wrapper.find('mark').text()).toBe('students');
-    }
-  });
-
   it('omits excerpts from title and name highlights and content snippets that only repeat the title', () => {
     for (const [field, snippet] of [['title', '⟦Guide⟧'], ['name_lt', '⟦Guide⟧'], ['body', '<p>⟦Guide⟧</p>']]) {
       expect(documentWithMatch({ document: { title: 'Guide' }, highlights: [{ field, snippet }] })).not.toHaveProperty('_searchMatch');
@@ -139,18 +108,6 @@ describe('search profiles and matches', () => {
     expect(doc._searchMatch).toMatchObject({ field: 'description' });
   });
 
-  it('keeps metadata matches out of the excerpt and highlights them where the row shows them', () => {
-    const doc = documentWithMatch({ document: { title: 'Guide', content_type: 'VU SA Įstatai', summary: 'Rules for students' }, highlights: [
-      { field: 'content_type', snippet: 'VU SA ⟦Įstatai⟧' },
-      { field: 'summary', snippet: 'Rules for ⟦stud⟧ents' },
-    ] }) as SearchMatchDocument;
-    expect(doc._searchMatch?.field).toBe('summary');
-    expect(highlightText('Įstatai', doc._searchFieldMatches?.content_type)?.segments).toEqual([{ text: 'Įstatai', matched: true }]);
-    const summary = mount(SearchMatch, { props: { match: descriptionMatch(doc, 'summary') } });
-    expect(summary.text()).toBe('Rules for students');
-    expect(summary.get('mark').text()).toBe('stud');
-  });
-
   it('prefers a row\'s own description field over a body excerpt', () => {
     const doc = documentWithMatch({ document: { title: 'Guide', short: '<p>Short for students</p>' }, highlights: [
       { field: 'body', snippet: 'Body about ⟦students⟧' },
@@ -159,16 +116,6 @@ describe('search profiles and matches', () => {
     expect(descriptionMatch(doc, 'short')?.segments.map(segment => segment.text).join('')).toBe('Short for students');
     expect(descriptionMatch(doc, 'summary')?.field).toBe('body');
   });
-
-  it('preserves the complete displayed title when the highlighted snippet is truncated', () => {
-    const title = 'A long guide for students and their representatives';
-    const doc = documentWithMatch({ document: { title }, highlights: [{ field: 'title', snippet: 'guide for ⟦students⟧ and their' }] }) as SearchMatchDocument;
-    const match = matchTitle(title, doc._searchTitleMatches);
-    const wrapper = mount(SearchMatch, { props: { match } });
-    expect(wrapper.text()).toBe(title);
-    expect(wrapper.get('mark').text()).toBe('students');
-    expect(matchTitle('A different translation', doc._searchTitleMatches)).toBeUndefined();
-  });
 });
 
 it('counts facets without their own filter and retains mandatory filters in option searches', async () => {
@@ -176,7 +123,7 @@ it('counts facets without their own filter and retains mandatory filters in opti
     { hits: [], found: 1, facet_counts: [{ field_name: 'lang', counts: [{ value: 'lt', count: 1 }] }] },
     { facet_counts: [{ field_name: 'lang', counts: [{ value: 'lt', count: 1 }, { value: 'en', count: 2 }] }] },
   ] }) }).mockResolvedValueOnce({ ok: true, json: async () => ({ facet_counts: [{ field_name: 'lang', counts: [{ value: 'en', count: 2 }] }] }) });
-  vi.stubGlobal('fetch', fetch);
+  stubGlobal('fetch', fetch);
   const client = SearchClientFactory.createTypesenseClient({ apiKey: 'public-key', nodes: [{ protocol: 'https', host: 'search.example.com', port: 443 }] });
   const result = await client.search('documents', { q: 'student', per_page: 20, facet_by: 'lang', filter_by: 'is_active:=true && tenant:=MIF && lang:=lt', facetFilters: { lang: 'is_active:=true && tenant:=MIF' } });
   const body = JSON.parse(fetch.mock.calls[0][1].body);
@@ -190,7 +137,7 @@ it('counts facets without their own filter and retains mandatory filters in opti
 });
 
 it('does not retain misleading counts when a facet query fails', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ results: [
+  stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ results: [
     { hits: [], found: 1, facet_counts: [{ field_name: 'lang', counts: [{ value: 'lt', count: 1 }] }] },
     { error: 'Unavailable', code: 503 },
   ] }) }));
@@ -204,7 +151,7 @@ it('matches pinned records normally in the same scoped request to recover title 
     { hits: [{ document: { id: '42', title: 'VU SA Įstatai' }, highlights: [] }], found: 1 },
     { hits: [{ document: { id: '42', title: 'VU SA Įstatai' }, highlights: [{ field: 'search_text_lt', snippet: 'VU SA ⟦Įstatai⟧' }] }] },
   ] }) });
-  vi.stubGlobal('fetch', fetch);
+  stubGlobal('fetch', fetch);
   const client = SearchClientFactory.createTypesenseClient({ apiKey: 'scoped-key', nodes: [{ protocol: 'https', host: 'search.example.com', port: 443 }] });
   const result = await client.search('documents', { q: 'įstatų', per_page: 24, pinned_hits: '42:1', filter_by: 'is_active:=true && language_code:=lt' });
   expect(fetch).toHaveBeenCalledTimes(1);

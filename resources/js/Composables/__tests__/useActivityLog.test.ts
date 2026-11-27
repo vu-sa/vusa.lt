@@ -1,11 +1,17 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useActivityLog } from '@/Composables/useActivityLog';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+beforeEach(() => {
+  stubGlobal('fetch', mockFetch);
+});
 
 function jsonResponse(body: unknown, ok = true) {
   return {

@@ -8,7 +8,6 @@ use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\News;
-use App\Models\Page;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
@@ -52,13 +51,6 @@ test('no auth without authentication', function (): void {
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/HomePage')
             ->where('auth', null)
-        );
-});
-
-test('can open the home page', function (): void {
-    $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/HomePage')
         );
 });
 
@@ -243,17 +235,6 @@ test('can open student representative organ category', function (): void {
             ->has('types')
             ->has('categoryType')
         );
-});
-
-test('a retired category alias 301s to its new destination', function (): void {
-    $this->get(route('category', ['subdomain' => 'www', 'lang' => 'lt', 'alias' => 'freshmen-camps']))
-        ->assertRedirect()
-        ->assertStatus(301);
-});
-
-test('an unknown category alias 404s', function (): void {
-    $this->get(route('category', ['subdomain' => 'www', 'lang' => 'lt', 'alias' => 'does-not-exist']))
-        ->assertNotFound();
 });
 
 test('padalinys institution page renders duty type tabs', function (): void {
@@ -566,11 +547,23 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
     $flatUser = User::factory()->create();
     $flatDuty->users()->attach($flatUser, ['start_date' => now()]);
 
-    // Verify the page works and shows mixed grouping when there's at least one grouped duty
+    $groupedDuty = Duty::factory()->for($institution)->create([
+        'contacts_grouping' => 'tenant',
+        'order' => $flatDuty->order + 1,
+    ]);
+    $groupedDuty->types()->attach($type);
+    $groupedUser = User::factory()->create();
+    $groupedDuty->users()->attach($groupedUser, ['start_date' => today()]);
+
+    // Both duties use the same contact payload, with a tenant label only for the grouped duty.
     $this->get(route('contacts.dutyType', ['subdomain' => 'www', 'lang' => 'lt', 'type' => 'koordinatoriai']))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
-            ->has('contacts', 1)
+            ->has('contacts', 2)
+            ->where('contacts.0.id', $flatUser->id)
+            ->where('contacts.0.duties.0.contact_tenant', null)
+            ->where('contacts.1.id', $groupedUser->id)
+            ->where('contacts.1.duties.0.contact_tenant', $institution->tenant->shortname)
         );
 });

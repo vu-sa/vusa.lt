@@ -87,9 +87,6 @@ it('offers the manager the next step for each item on the reservation page', fun
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 900);
             expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width);
-            if (env('DOCS_SCREENSHOTS')) {
-                $page->screenshot(fullPage: false, filename: "reservation-contacts-{$theme}-{$width}");
-            }
         }
     }
 

@@ -116,7 +116,7 @@ describe('buildFilterString', () => {
     expect(result).toBe('');
   });
 
-  it('builds filter with array values', () => {
+  it('matches complete tenant names containing spaces', () => {
     const result = buildFilterString(
       { query: '', tenant: ['VU SA', 'VU SA MIF'] },
       mockFacetConfig,
@@ -159,14 +159,6 @@ describe('buildFilterString', () => {
   it('ignores query field', () => {
     const result = buildFilterString(
       { query: 'search term', tenant: ['VU SA'] },
-      mockFacetConfig,
-    );
-    expect(result).toBe('tenant:=[`VU SA`]');
-  });
-
-  it('uses exact-match operator for string arrays so spaces do not match partial tenants', () => {
-    const result = buildFilterString(
-      { query: '', tenant: ['VU SA'] },
       mockFacetConfig,
     );
     expect(result).toBe('tenant:=[`VU SA`]');

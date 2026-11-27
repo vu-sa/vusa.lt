@@ -15,7 +15,8 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->admin = makeAdminUser($this->tenant);
+    $this->admin = makeUser($this->tenant);
+    $this->admin->givePermissionTo('settings.update.*');
 });
 
 function purposesPayload(array $purposes = [], array $dutyTypes = []): array
@@ -85,7 +86,7 @@ test('the chosen contacts type cannot be deleted', function (): void {
     expect(app(DutyTypeSettings::class)->coordinator_type_id)->toBe($type->id)
         ->and(app(SystemDutyTypes::class)->id(SystemDutyType::Coordinator))->toBe($type->id);
 
-    asUser($this->admin)->delete(route('dutyTypes.destroy', $type))->assertSessionHas('error');
+    asUser(makeAdminUser($this->tenant))->delete(route('dutyTypes.destroy', $type))->assertSessionHas('error');
 
     $this->assertNotSoftDeleted($type);
 });

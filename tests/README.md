@@ -137,7 +137,7 @@ They are skipped in the default SQLite suite, which cannot exercise MySQL row lo
 ```
 tests/Feature/
 ├── Admin/          # MAIN: Comprehensive admin controller tests
-│   ├── Calendar/   # AgendaItem, Calendar, Meeting controllers
+│   ├── Calendar/   # AgendaItem, Calendar, Meeting, Vote controllers
 │   ├── Content/    # Banner, Category, News, Page, Tag controllers  
 │   ├── Core/       # Dashboard controller
 │   ├── Dashboard/  # One {Workspace}DashboardTest.php per workspace overview
@@ -146,8 +146,9 @@ tests/Feature/
 │   ├── Navigation/ # Navigation controller
 │   ├── Permissions/# Permission, Role controllers
 │   ├── Reservations/# Reservation, cart, Resource, ResourceCategory controllers
+│   ├── System/     # Mail queue and system administration
 │   └── Resources/  # Document, Files, SharePoint controllers
-├── Api/Admin/      # {Controller}Test.php for each admin API controller
+├── Api/Admin/      # Includes Atstovavimas, Comment, Institution, Meeting and Resource API controllers
 ├── Approvals/      # ApprovalService and ApprovalController (one describe per action)
 ├── Duties/         # Duty update action and shared assignment service
 ├── Tasks/          # Mirrors app/Tasks/ structure
@@ -194,7 +195,10 @@ resources/js/
 ├── Search/<area>/__tests__/ServiceName.test.ts
 ├── Composables/__tests__/useComposable.test.ts  
 ├── Utils/__tests__/UtilityName.test.ts
-└── Components/ComponentName/__tests__/ComponentName.component.test.ts
+├── Components/<area>/__tests__/ComponentName.component.test.ts
+├── Components/RichContent/Types/__tests__/registry.test.ts
+├── Pages/Admin/__tests__/ContentCollectionPublishing.component.test.ts
+└── Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.component.test.ts
 ```
 
 **Coverage Target**: 75% minimum (branches, functions, lines, statements)

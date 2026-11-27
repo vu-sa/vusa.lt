@@ -56,9 +56,6 @@ it('opens scoped responsibility grants from a type across widths and themes', fu
             }
             $page->assertVisible('[data-testid="type-grant-needs-scope"]');
             expect($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
-            $page->script('document.querySelector("[data-testid=type-responsibility-grants]").scrollIntoView({block: "center"})');
-            $theme = $dark ? 'dark' : 'light';
-            $page->screenshot(fullPage: false, filename: "type-grants-{$width}-{$theme}");
         }
     }
 

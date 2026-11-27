@@ -23,9 +23,10 @@ describe('MeetingCompletionService', function (): void {
 
         test('returns incomplete when agenda item has no votes', function (): void {
             $meeting = Meeting::factory()->create();
-            AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
+            AgendaItem::factory()->voting()->create(['meeting_id' => $meeting->id]);
 
-            expect($this->service->calculate($meeting))->toBe('incomplete');
+            expect($this->service->calculate($meeting))->toBe('incomplete')
+                ->and($this->service->missingActions($meeting)[0]['type'])->toBe('agenda_item_vote_missing');
         });
 
         test('returns complete when all voting items have complete main votes', function (): void {
@@ -44,7 +45,7 @@ describe('MeetingCompletionService', function (): void {
 
         test('returns incomplete when main vote is missing fields', function (): void {
             $meeting = Meeting::factory()->create();
-            $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
+            $item = AgendaItem::factory()->voting()->create(['meeting_id' => $meeting->id]);
             Vote::factory()->create([
                 'agenda_item_id' => $item->id,
                 'is_main' => true,
@@ -53,7 +54,11 @@ describe('MeetingCompletionService', function (): void {
                 'student_benefit' => null,
             ]);
 
-            expect($this->service->calculate($meeting))->toBe('incomplete');
+            expect($this->service->calculate($meeting))->toBe('incomplete')
+                ->and($this->service->missingActions($meeting)[0])->toMatchArray([
+                    'type' => 'agenda_item_vote_missing',
+                    'missing_fields' => ['decision', 'student_benefit'],
+                ]);
         });
 
         test('an item without a type stays incomplete even with a complete vote', function (): void {

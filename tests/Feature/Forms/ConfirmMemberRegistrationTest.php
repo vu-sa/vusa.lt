@@ -1,6 +1,5 @@
 <?php
 
-use App\Helpers\GenitivizeHelper;
 use App\Mail\ConfirmMemberRegistration;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -13,7 +12,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::factory()->create();
     $this->institution = Institution::factory()->for($this->tenant)->create();
-    $this->user = User::factory()->create();
+    $this->user = User::factory()->create(['name' => 'Jonas Jonaitis']);
     $this->duty = Duty::factory()
         ->for($this->institution)
         ->hasAttached($this->user, ['start_date' => now()->subDay(), 'end_date' => now()->addDay()])
@@ -23,27 +22,15 @@ beforeEach(function (): void {
 });
 
 describe('ConfirmMemberRegistration Mail', function (): void {
-    it('can be constructed with valid parameters', function (): void {
-        $mail = new ConfirmMemberRegistration(
-            'Jonas Jonaitis',
-            $this->institution,
-            $this->duty
-        );
-
-        expect($mail->name)->toBe('Jonas Jonaitis')
-            ->and($mail->institution)->toBe($this->institution)
-            ->and($mail->dutyContact)->toBe($this->duty);
-    });
 
     it('sets contact name from duty user when available', function (): void {
         $mail = new ConfirmMemberRegistration(
-            'Jonas Jonaitis',
+            'Jonas Petraitis',
             $this->institution,
             $this->duty
         );
 
-        $expectedContactName = GenitivizeHelper::genitivizeEveryWord($this->user->name);
-        expect($mail->contactName)->toBe($expectedContactName);
+        expect($mail->contactName)->toBe('Jono Jonaičio');
     });
 
     it('falls back to duty email when no user is assigned', function (): void {
@@ -53,7 +40,7 @@ describe('ConfirmMemberRegistration Mail', function (): void {
             ->create(['email' => 'fallback@example.com']);
 
         $mail = new ConfirmMemberRegistration(
-            'Jonas Jonaitis',
+            'Jonas Petraitis',
             $this->institution,
             $dutyWithoutUser
         );
@@ -63,7 +50,7 @@ describe('ConfirmMemberRegistration Mail', function (): void {
 
     it('builds email with correct subject and reply-to', function (): void {
         $mail = new ConfirmMemberRegistration(
-            'Jonas Jonaitis',
+            'Jonas Petraitis',
             $this->institution,
             $this->duty
         );
@@ -78,15 +65,4 @@ describe('ConfirmMemberRegistration Mail', function (): void {
             ->and($builtMail->markdown)->toBe('emails.memberRegistration.confirm');
     });
 
-    it('throws TypeError when dutyContact is null', function (): void {
-        // This test documents the current behavior that causes the error
-        // In PHP 8+, passing null to a typed parameter throws TypeError
-        // We need to suppress the static analysis error since we're intentionally testing invalid input
-        /** @phpstan-ignore-next-line */
-        expect(fn () => new ConfirmMemberRegistration(
-            'Jonas Jonaitis',
-            $this->institution,
-            null
-        ))->toThrow(TypeError::class);
-    });
 });

@@ -9,8 +9,6 @@ vi.mock('@/Composables/useToasts', () => ({
   useToasts: () => ({ success, error, info: vi.fn(), showToast: vi.fn(), initializeToasts: vi.fn() }),
 }));
 
-vi.mock('laravel-vue-i18n', () => ({ trans: (key: string) => key }));
-
 /** jsdom ships neither `navigator.share` nor `navigator.clipboard`, so each test installs its own. */
 function stubNavigator(props: Partial<Navigator>): void {
   for (const [key, value] of Object.entries(props)) {

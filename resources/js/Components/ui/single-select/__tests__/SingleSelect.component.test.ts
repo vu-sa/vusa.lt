@@ -6,6 +6,19 @@ import SingleSelect from '@/Components/ui/single-select/SingleSelect.vue';
 import { commonStubs } from '@/tests/stubs';
 
 describe('SingleSelect.vue', () => {
+  type Option = typeof options[number];
+  interface SelectVm {
+    getItemLabel: (option: Option) => string;
+    getItemValue: (option?: Option | null) => number | null;
+    displayValue: (option: Option | null) => string;
+    filteredOptions: Option[];
+    searchTerm: string;
+    open: boolean;
+    selectedItem: Option | null;
+    reset: () => void;
+    shouldVirtualize: boolean;
+  }
+
   let wrapper: ReturnType<typeof mount>;
 
   const options = [
@@ -14,7 +27,7 @@ describe('SingleSelect.vue', () => {
     { id: 3, name: 'Institution C', tenant: { shortname: 'VU IF' } },
   ];
 
-  const createWrapper = (props: Record<string, any> = {}) => {
+  const createWrapper = (props: Record<string, unknown> = {}) => {
     return mount(SingleSelect, {
       props: {
         modelValue: null,
@@ -34,9 +47,11 @@ describe('SingleSelect.vue', () => {
     });
   };
 
+  const scrollIntoView = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
+
   beforeEach(() => {
     if (!Element.prototype.scrollIntoView) {
-      Element.prototype.scrollIntoView = vi.fn() as any;
+      Element.prototype.scrollIntoView = vi.fn();
     }
     vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
   });
@@ -44,14 +59,10 @@ describe('SingleSelect.vue', () => {
   afterEach(() => {
     wrapper?.unmount();
     vi.restoreAllMocks();
+    if (!scrollIntoView) Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
   });
 
   describe('rendering', () => {
-    it('mounts without errors', () => {
-      wrapper = createWrapper();
-      expect(wrapper.find('[role="combobox"]').exists()).toBe(true);
-    });
-
     it('exposes the standard form trigger slot and size', () => {
       wrapper = createWrapper();
       const trigger = wrapper.find('[data-slot="select-trigger"]');
@@ -74,29 +85,29 @@ describe('SingleSelect.vue', () => {
   describe('internal logic', () => {
     it('getItemLabel returns correct label', () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
-      expect(vm.getItemLabel(options[0])).toBe('Institution A');
-      expect(vm.getItemLabel(options[1])).toBe('Institution B');
+      const vm = wrapper.vm as unknown as SelectVm;
+      expect(vm.getItemLabel(options[0]!)).toBe('Institution A');
+      expect(vm.getItemLabel(options[1]!)).toBe('Institution B');
     });
 
     it('getItemValue returns correct value', () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
       expect(vm.getItemValue(options[0])).toBe(1);
       expect(vm.getItemValue(options[1])).toBe(2);
     });
 
     it('getItemValue handles null safely', () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
       expect(vm.getItemValue(null)).toBeNull();
       expect(vm.getItemValue(undefined)).toBeNull();
     });
 
     it('displayValue formats selected item text', () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
-      expect(vm.displayValue(options[0])).toBe('Institution A');
+      const vm = wrapper.vm as unknown as SelectVm;
+      expect(vm.displayValue(options[0]!)).toBe('Institution A');
       expect(vm.displayValue(null)).toBe('');
     });
   });
@@ -104,13 +115,13 @@ describe('SingleSelect.vue', () => {
   describe('filtered options', () => {
     it('returns all options when searchTerm is empty', () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
       expect(vm.filteredOptions).toEqual(options);
     });
 
     it('filters options by label when searchTerm is set', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
 
       vm.searchTerm = 'B';
       await nextTick();
@@ -121,7 +132,7 @@ describe('SingleSelect.vue', () => {
 
     it('is case-insensitive', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
 
       vm.searchTerm = 'b';
       await nextTick();
@@ -134,7 +145,7 @@ describe('SingleSelect.vue', () => {
 
     it('returns empty array when nothing matches', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
 
       vm.searchTerm = 'xyz';
       await nextTick();
@@ -148,31 +159,22 @@ describe('SingleSelect.vue', () => {
       wrapper = createWrapper({ modelValue: options[0] });
       await nextTick();
 
-      const vm = wrapper.vm as any;
-      // searchTerm is filter-only and starts empty regardless of pre-selected value
-      expect(vm.searchTerm).toBe('');
+      const trigger = wrapper.get('button[aria-haspopup="listbox"]');
+      const visibleOptions = () => [...document.querySelectorAll('[role="option"]')].map(option => option.textContent?.trim());
+      await trigger.trigger('click');
+      await wrapper.get('input').setValue('Institution B');
+      expect(visibleOptions()).toEqual(['Institution B']);
 
-      vm.open = true;
-      await nextTick();
-
-      expect(vm.searchTerm).toBe('');
-    });
-
-    it('getDisplayValue returns selected label for the closed-state input text', async () => {
-      wrapper = createWrapper({ modelValue: options[1] });
-      await nextTick();
-
-      const vm = wrapper.vm as any;
-      // reka-ui calls displayValue(selectedItem) via its resetSearchTermOnBlur hook;
-      // verify the helper produces the correct string
-      expect(vm.displayValue(options[1])).toBe('Institution B');
+      await trigger.trigger('click');
+      await trigger.trigger('click');
+      expect(visibleOptions()).toEqual(options.map(option => option.name));
     });
 
     it('shows all options when opened with a selection', async () => {
       wrapper = createWrapper({ modelValue: options[0] });
       await nextTick();
 
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
       // searchTerm starts empty so all options are available from the start
       expect(vm.filteredOptions).toEqual(options);
 
@@ -186,8 +188,8 @@ describe('SingleSelect.vue', () => {
   describe('v-model', () => {
     it('emits update:modelValue when selectedItem changes', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
-      vm.selectedItem = options[1];
+      const vm = wrapper.vm as unknown as SelectVm;
+      vm.selectedItem = options[1]!;
       await nextTick();
 
       const emitted = wrapper.emitted('update:modelValue');
@@ -202,7 +204,7 @@ describe('SingleSelect.vue', () => {
       await wrapper.setProps({ modelValue: options[2] });
       await nextTick();
 
-      expect((wrapper.vm as any).selectedItem).toEqual(options[2]);
+      expect((wrapper.vm as unknown as SelectVm).selectedItem).toEqual(options[2]);
     });
 
     it('does not infinite loop when modelValue matches internal state', async () => {
@@ -222,7 +224,7 @@ describe('SingleSelect.vue', () => {
       wrapper = createWrapper({ modelValue: options[0] });
       await nextTick();
 
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as SelectVm;
       expect(vm.selectedItem).toEqual(options[0]);
 
       vm.reset();
@@ -231,7 +233,7 @@ describe('SingleSelect.vue', () => {
       expect(vm.selectedItem).toBeNull();
       const emitted = wrapper.emitted('update:modelValue');
       expect(emitted).toBeTruthy();
-      expect(emitted!.some((e: any) => e[0] === null)).toBe(true);
+      expect(emitted!.some(([value]) => value === null)).toBe(true);
     });
   });
 
@@ -243,17 +245,17 @@ describe('SingleSelect.vue', () => {
       }));
 
       wrapper = createWrapper({ options: manyOptions, virtualizationThreshold: 50 });
-      expect((wrapper.vm as any).shouldVirtualize).toBe(true);
+      expect((wrapper.vm as unknown as SelectVm).shouldVirtualize).toBe(true);
     });
 
     it('disables virtualization when options are below threshold', () => {
       wrapper = createWrapper();
-      expect((wrapper.vm as any).shouldVirtualize).toBe(false);
+      expect((wrapper.vm as unknown as SelectVm).shouldVirtualize).toBe(false);
     });
   });
 
   describe('custom slot', () => {
-    it('accepts option slot', () => {
+    it('renders custom option content with the matching item', async () => {
       wrapper = mount(SingleSelect, {
         props: {
           modelValue: null,
@@ -269,7 +271,8 @@ describe('SingleSelect.vue', () => {
         global: { stubs: { ...commonStubs } },
       });
 
-      expect(wrapper.vm.$slots.option).toBeDefined();
+      await wrapper.get('button[aria-haspopup="listbox"]').trigger('click');
+      expect([...document.querySelectorAll('.custom-option')].map(option => option.textContent)).toEqual(options.map(option => option.name));
     });
   });
 });

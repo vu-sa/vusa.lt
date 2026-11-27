@@ -1,6 +1,9 @@
+import { usePage } from '@inertiajs/vue3';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { effectScope, nextTick, reactive, ref } from 'vue';
 import { toast } from 'vue-sonner';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import { useToasts } from '../useToasts';
 
@@ -17,7 +20,7 @@ vi.mock('vue-sonner', () => ({
 const mockToast = vi.mocked(toast);
 
 // Simple reactive mock - just like Inertia would provide
-const mockPageProps = reactive({
+const createPage = () => reactive(createMockPage({
   flash: {
     success: null,
     error: null,
@@ -28,30 +31,24 @@ const mockPageProps = reactive({
     env: 'local',
   },
   errors: {},
-});
+}));
+let mockPageProps: ReturnType<typeof createPage>['props'];
 
 // Mock Inertia usePage - keep it simple
-vi.mock('@inertiajs/vue3', () => ({
-  usePage: () => ({ props: mockPageProps }),
-}));
 
 describe('useToasts', () => {
   let scope: ReturnType<typeof effectScope>;
   beforeEach(() => {
     scope = effectScope();
     vi.clearAllMocks();
-    // Reset flash messages and errors
-    mockPageProps.flash.success = null;
-    mockPageProps.flash.error = null;
-    mockPageProps.flash.info = null;
-    mockPageProps.flash.warning = null;
-    mockPageProps.errors = {};
-    mockPageProps.app.env = 'local';
+    const page = createPage();
+    mockPageProps = page.props;
+    vi.mocked(usePage).mockReturnValue(page);
   });
 
   afterEach(() => {
     scope.stop();
-    vi.clearAllTimers();
+    vi.useRealTimers();
   });
 
   describe('showToast functionality', () => {
@@ -77,8 +74,6 @@ describe('useToasts', () => {
       vi.advanceTimersByTime(1000);
       showToast('success', 'Duplicate message');
       expect(mockToast.success).toHaveBeenCalledTimes(3);
-
-      vi.useRealTimers();
     });
   });
 

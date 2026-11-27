@@ -65,9 +65,6 @@ it('renders document prefix search across widths and themes without JavaScript e
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 844);
             expect($page->script('document.documentElement.scrollWidth > innerWidth + 1'))->toBeFalse();
-            if (getenv('SEARCH_SCREENSHOTS') && $dark && in_array($width, [390, 1440], true)) {
-                $page->screenshot(fullPage: false, filename: 'document-highlight-'.$width);
-            }
         }
     }
     $page->assertNoJavaScriptErrors();
@@ -121,7 +118,7 @@ it('renders searchable public filters and body excerpts across widths and themes
 
 it('renders admin body excerpts and filters without overflow across widths and themes', function (): void {
     seedSearchExperience();
-    $page = loginAsAdmin(makeAdminUser(), '/mano/news?q=unikalusturinys');
+    $page = loginAsAdmin(makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::main()), '/mano/news?q=unikalusturinys');
     $page->assertVisible('[data-slot="search-match"]');
     foreach ([false, true] as $dark) {
         $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
@@ -142,7 +139,7 @@ it('keeps the most relevant record first in the command palette across workspace
     $duty->users()->attach($user, ['start_date' => now()->subDay()]);
     $duty->refresh()->searchable();
     $user->refresh()->searchable();
-    $page = loginAsAdmin(makeAdminUser(), $path);
+    $page = loginAsAdmin(makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', Tenant::main()), $path);
     waitForInertiaRender($page);
     $page->click('[data-tour="command-palette"]:visible');
     $page->fill('[data-slot="dialog-content"] input[type="text"]', $query);
@@ -153,9 +150,6 @@ it('keeps the most relevant record first in the command palette across workspace
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 844);
             expect($page->script('document.documentElement.scrollWidth > innerWidth + 1'))->toBeFalse();
-            if (getenv('SEARCH_SCREENSHOTS') && $width === 390 && $dark) {
-                $page->screenshot(fullPage: false, filename: 'search-ranking-'.$expected);
-            }
         }
     }
     $page->assertNoJavaScriptErrors();

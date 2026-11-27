@@ -7,6 +7,9 @@ import NotificationsIndicator from '@/Components/Layouts/Shell/NotificationsIndi
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useRealtimeNotifications } from '@/Components/Notifications/useRealtimeNotifications';
 import { markNotificationRead } from '@/Composables/markNotificationRead';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Components/Notifications/useRealtimeNotifications');
@@ -49,12 +52,12 @@ describe('NotificationsIndicator', () => {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn(),
     });
-    vi.stubGlobal('route', vi.fn((name: string, id?: string) => id ? `/routes/${name}/${id}` : `/routes/${name}`));
+    stubGlobal('route', vi.fn((name: string, id?: string) => id ? `/routes/${name}/${id}` : `/routes/${name}`));
   });
 
   afterEach(() => {
     document.body.innerHTML = '';
-    vi.unstubAllGlobals();
+    restoreGlobals();
   });
 
   it('renders indicator with unread count badge when there are unread notifications', () => {

@@ -58,8 +58,6 @@ test('simple user can\'t create contact', function (): void {
 test('contact manager can\'t create user without duty', function (): void {
     $admin = asUser($this->admin);
 
-    $admin->get(route('dashboard'));
-
     $response = $admin->get(route('users.create'));
 
     $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
@@ -76,11 +74,7 @@ test('contact manager can\'t create user without duty', function (): void {
 
     $response->assertStatus(302)->assertRedirectToRoute('users.create');
 
-    $this->followRedirects($response)
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/CreateUser')
-            ->whereNot('errors.current_duties', null)
-        );
+    $response->assertSessionHasErrors('current_duties');
 
     $this->assertDatabaseMissing('users', [
         'name' => 'Test 2',
@@ -89,8 +83,6 @@ test('contact manager can\'t create user without duty', function (): void {
 
 test('contact manager can create user with duty', function (): void {
     $admin = asUser($this->admin);
-
-    $admin->get(route('dashboard'));
 
     $response = $admin->get(route('users.create'));
 
@@ -125,8 +117,6 @@ test('contact manager can detach duty from user', function (): void {
 
     $duty = $this->user->current_duties->first();
 
-    $admin->get(route('dashboard'));
-
     $response = $admin->get(route('users.index'));
 
     $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
@@ -136,7 +126,7 @@ test('contact manager can detach duty from user', function (): void {
 
     $response = $admin->get(route('users.edit', $this->user->id))->assertStatus(200);
 
-    $this->followRedirects($response)->assertInertia(fn (Assert $page) => $page
+    $response->assertInertia(fn (Assert $page) => $page
         ->component('Admin/People/EditUser')
     );
 
@@ -168,54 +158,6 @@ test('contact manager can detach duty from user', function (): void {
     expect($dutiable->end_date)->not->toBeNull();
 });
 
-test('contact manager can delete and restore user', function (): void {
-    $admin = asUser($this->admin);
-
-    $admin->get(route('dashboard'));
-
-    $response = $admin->get(route('users.index'));
-
-    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-        ->component('Admin/People/IndexUser')
-        ->has('users.data')
-    );
-
-    $response = $admin->delete(route('users.destroy', $this->user->id));
-
-    $response->assertStatus(302)->assertRedirectToRoute('users.index');
-
-    $this->followRedirects($response)
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/IndexUser')
-            ->has('flash.success')
-        );
-
-    $this->assertSoftDeleted('users', [
-        'id' => $this->user->id,
-    ]);
-
-    $response = $admin->get(route('users.index', ['showSoftDeleted' => true]));
-
-    $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-        ->component('Admin/People/IndexUser')
-        ->has('users.data')
-    );
-
-    $response = $admin->patch(route('users.restore', $this->user->id));
-
-    $response->assertStatus(302)->assertRedirectToRoute('users.index', ['showSoftDeleted' => true]);
-
-    $this->followRedirects($response)
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/IndexUser')
-            ->has('flash.success')
-        );
-
-    $this->assertDatabaseHas('users', [
-        'id' => $this->user->id,
-    ]);
-})->skip('Deleting users is disabled almost for all');
-
 test('contact manager can add type to duty', function (): void {
     $admin = asUser($this->admin);
     $userDuty = $this->user->current_duties->first();
@@ -227,8 +169,6 @@ test('contact manager can add type to duty', function (): void {
     $this->assertDatabaseHas('duty_types', [
         'id' => TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID,
     ]);
-
-    $admin->get(route('dashboard'));
 
     $response = $admin->get(route('duties.index'));
 

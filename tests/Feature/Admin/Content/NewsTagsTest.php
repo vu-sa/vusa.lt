@@ -1,68 +1,18 @@
 <?php
 
-use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->user = makeUser($this->tenant);
-
-    // Create a user with Communication Coordinator role for news management
-    $this->newsManager = User::factory()->create();
-    $communicationCoordinatorDuty = Duty::factory()->has(Institution::factory()->state(
-        ['tenant_id' => $this->tenant->id]
-    ))->hasAttached($this->newsManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
-    $communicationCoordinatorDuty->assignRole('Komunikacijos koordinatorius');
+    $this->newsManager = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 describe('News Tag Functionality', function (): void {
-
-    test('news can have tags attached', function (): void {
-        $news = News::factory()->create();
-        $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
-        $tag2 = Tag::factory()->create(['name' => ['lt' => 'Testas 2', 'en' => 'Test 2']]);
-
-        $news->tags()->sync([$tag1->id, $tag2->id]);
-
-        expect($news->tags)->toHaveCount(2)
-            ->and($news->tags->pluck('id')->toArray())->toEqual([$tag1->id, $tag2->id]);
-    });
-
-    test('tags can be updated on news', function (): void {
-        $news = News::factory()->create();
-        $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
-        $tag2 = Tag::factory()->create(['name' => ['lt' => 'Testas 2', 'en' => 'Test 2']]);
-        $tag3 = Tag::factory()->create(['name' => ['lt' => 'Testas 3', 'en' => 'Test 3']]);
-
-        // Initial tags
-        $news->tags()->sync([$tag1->id, $tag2->id]);
-        expect($news->tags)->toHaveCount(2);
-
-        // Update tags
-        $news->tags()->sync([$tag2->id, $tag3->id]);
-        $news->refresh(); // Refresh to get updated relationships
-        expect($news->tags)->toHaveCount(2);
-        expect($news->tags->pluck('id')->sort()->values()->toArray())->toEqual(collect([$tag2->id, $tag3->id])->sort()->values()->toArray());
-    });
-
-    test('all tags can be removed from news', function (): void {
-        $news = News::factory()->create();
-        $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
-
-        $news->tags()->sync([$tag1->id]);
-        expect($news->tags)->toHaveCount(1);
-
-        $news->tags()->sync([]);
-        $news->refresh(); // Refresh to get updated relationships
-        expect($news->tags)->toBeEmpty();
-    });
 
     test('news can be created with tags via controller', function (): void {
         $tag1 = Tag::factory()->create(['name' => ['lt' => 'Testas 1', 'en' => 'Test 1']]);
@@ -89,11 +39,7 @@ describe('News Tag Functionality', function (): void {
             'tenant_id' => $this->tenant->id, // Ensure news is created for correct tenant
         ];
 
-        // Use super admin to avoid permission issues for this test
-        $superAdmin = User::factory()->create();
-        $superAdmin->assignRole(config('permission.super_admin_role_name'));
-
-        $response = asUser($superAdmin)->post(route('news.store'), $newsData);
+        $response = asUser($this->newsManager)->post(route('news.store'), $newsData);
 
         $news = News::where('title', 'Test News')->firstOrFail();
         $response->assertRedirect(route('news.edit', $news))->assertSessionHas('success');
@@ -132,11 +78,7 @@ describe('News Tag Functionality', function (): void {
             'tags' => [$tag2->id, $tag3->id], // Update tags
         ];
 
-        // Use super admin to avoid permission issues for this test
-        $superAdmin = User::factory()->create();
-        $superAdmin->assignRole(config('permission.super_admin_role_name'));
-
-        $response = asUser($superAdmin)
+        $response = asUser($this->newsManager)
             ->patch(route('news.update', $news), $updateData)
             ->assertSessionHas('success');
 

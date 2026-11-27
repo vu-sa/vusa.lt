@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -11,8 +11,11 @@ import type { HomeTask } from '../types';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 10, 26, 12) });
   vi.mocked(usePage).mockReturnValue(createMockPage() as ReturnType<typeof usePage>);
 });
+
+afterEach(() => vi.useRealTimers());
 
 const day = 24 * 60 * 60 * 1000;
 
@@ -32,16 +35,6 @@ const stats = { total: 1, overdue: 0, dueSoon: 0 };
 
 const mountQueue = (tasks: HomeTask[], overrides: Partial<typeof stats> = {}) =>
   mount(AttentionQueue, { props: { tasks, stats: { ...stats, ...overrides }, moreHref: '/mano/tasks' } });
-
-vi.mock('@/Composables/useTaskPresentation', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-
-  return {
-    ...actual,
-    getTaskableUrl: () => '/mano/meetings/m1',
-    getMeetingAgendaUrl: () => '/mano/meetings/m1?tab=agenda',
-  };
-});
 
 describe('AttentionQueue', () => {
   it('shows simple task rows beneath a quiet heading', () => {
@@ -68,7 +61,7 @@ describe('AttentionQueue', () => {
     const wrapper = mountQueue([task()]);
     const row = wrapper.find('ul a');
 
-    expect(row.attributes('href')).toBe('/mano/meetings/m1?tab=agenda');
+    expect(row.attributes('href')).toBe(`${route('meetings.show', 'm1')}?tab=agenda`);
     expect(wrapper.text()).toContain('Užpildyti darbotvarkę');
     expect(wrapper.text()).toContain('Senato posėdis');
   });
@@ -126,9 +119,10 @@ describe('AttentionQueue', () => {
 
   it('renders a task with nothing left to link to as plain text, not a dead link', () => {
     const wrapper = mount(AttentionQueue, {
-      props: { tasks: [task({ taskable: null, taskable_type: 'unknown' })], stats, moreHref: '/mano/tasks' },
+      props: { tasks: [task({ taskable: null })], stats, moreHref: '/mano/tasks' },
     });
 
-    expect(wrapper.text()).toContain('Užpildyti darbotvarkę');
+    expect(wrapper.get('ul li').text()).toContain('Užpildyti darbotvarkę');
+    expect(wrapper.get('ul li').find('a').exists()).toBe(false);
   });
 });

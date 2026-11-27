@@ -124,38 +124,6 @@ describe('digest queuing via QueueNotificationForDigest listener', function (): 
     });
 });
 
-describe('digest grouping', function (): void {
-    test('multiple notifications are grouped by category in queue', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        // Queue multiple comment notifications
-        for ($i = 0; $i < 3; $i++) {
-            NotificationDigestQueue::create([
-                'user_id' => $user->id,
-                'notification_class' => CommentPostedNotification::class,
-                'category' => NotificationCategory::Comment->value,
-                'data' => ['title' => "Comment $i", 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
-            ]);
-        }
-
-        // Queue a task notification
-        NotificationDigestQueue::create([
-            'user_id' => $user->id,
-            'notification_class' => TaskAssignedNotification::class,
-            'category' => NotificationCategory::Task->value,
-            'data' => ['title' => 'Task assigned', 'body' => 'Body', 'url' => '/test', 'icon' => '☑️'],
-        ]);
-
-        $items = $this->getDigestQueueItemsForUser($user);
-
-        expect($items)->toHaveCount(4);
-
-        $groupedByCategory = $items->groupBy('category');
-        expect($groupedByCategory->get('comment'))->toHaveCount(3)
-            ->and($groupedByCategory->get('task'))->toHaveCount(1);
-    });
-});
-
 describe('digest processing command', function (): void {
     test('command respects user digest frequency setting', function (): void {
         Mail::fake();
@@ -230,41 +198,18 @@ describe('digest processing command', function (): void {
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('orphaned items for deleted users are cleaned up', function (): void {
-        // Note: With the foreign key constraint and ON DELETE CASCADE,
-        // orphaned items are automatically deleted by the database when a user is deleted.
-        // This test verifies the command handles the case gracefully when it encounters
-        // a user_id for which User::find() returns null (which can happen in edge cases
-        // or when FK constraints aren't enforced).
-        //
-        // We'll test the happy path by verifying the command doesn't fail when
-        // processing users that exist.
-        Mail::fake();
-
+    test('force-deleting a user cascades to their digest rows', function (): void {
         $user = $this->createUserWithPreferences();
-        $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
-
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
             'notification_class' => CommentPostedNotification::class,
             'category' => 'comment',
             'data' => ['title' => 'Test', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
         ]);
-        $item->forceFill(['created_at' => now()->subHours(10)])->saveQuietly();
 
-        $initialCount = NotificationDigestQueue::where('user_id', $user->id)->count();
-        expect($initialCount)->toBe(1);
-
-        // Delete user - cascade should clean up digest items
-        $userId = $user->id;
         $user->forceDelete();
 
-        // Verify cascade worked
-        expect(NotificationDigestQueue::where('user_id', $userId)->count())->toBe(0);
-
-        // Command should handle gracefully with no items
-        Artisan::call('notifications:send-digests');
-        Mail::assertNothingSent();
+        $this->assertModelMissing($item);
     });
 
     test('command handles no pending digests gracefully', function (): void {
@@ -280,13 +225,13 @@ describe('digest processing command', function (): void {
     });
 
     test('digest email contains all grouped notifications', function (): void {
+        $this->travelTo('2026-11-26 13:00:00');
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
         $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
 
         // Add notifications from different categories with old timestamps
-        $items = collect();
 
         $item1 = NotificationDigestQueue::create([
             'user_id' => $user->id,
@@ -316,7 +261,12 @@ describe('digest processing command', function (): void {
 
         Mail::assertSent(NotificationDigest::class,
             // The mail should be queued to the correct user
-            fn ($mail) => $mail->hasTo($user->notificationEmails()[0]));
+            function (NotificationDigest $mail) use ($user): bool {
+                expect(array_column($mail->groupedItems['comment'], 'title'))->toBe(['Comment 1', 'Comment 2']);
+                expect(array_column($mail->groupedItems['task'], 'title'))->toBe(['Task 1']);
+
+                return $mail->hasTo($user->notificationEmails()[0]);
+            });
     });
 });
 

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { usePage } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 
+import type { MockForm } from '@/tests/helpers/createMockForm';
 import LoginForm from '@/Pages/Admin/LoginForm.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
@@ -102,11 +103,26 @@ describe('LoginForm', () => {
     const emailInput = wrapper.find('input[id="email"]');
     const passwordInput = wrapper.find('input[id="password"]');
 
-    await emailInput.setValue('test@vu.lt');
-    await passwordInput.setValue('secret123');
+    const form = vi.mocked(useForm).mock.results[0]!.value as unknown as MockForm;
+    const submitted = vi.fn();
+    form.post.mockImplementation(() => submitted({
+      email: form.email,
+      password: form.password,
+      remember: form.remember,
+    }));
 
-    await wrapper.find('form').trigger('submit.prevent');
+    await emailInput.setValue('reader@example.test');
+    await passwordInput.setValue('synthetic-password');
+    await wrapper.get('form').trigger('submit');
 
-    expect(wrapper.find('form').exists()).toBe(true);
+    expect(form.post).toHaveBeenCalledExactlyOnceWith('/mocked-route/login', expect.objectContaining({ onFinish: expect.any(Function) }));
+    expect(submitted).toHaveBeenCalledExactlyOnceWith({
+      email: 'reader@example.test',
+      password: 'synthetic-password',
+      remember: false,
+    });
+    expect(form.reset).not.toHaveBeenCalled();
+    form.post.mock.calls[0]?.[1].onFinish();
+    expect(form.reset).toHaveBeenCalledExactlyOnceWith('password');
   });
 });

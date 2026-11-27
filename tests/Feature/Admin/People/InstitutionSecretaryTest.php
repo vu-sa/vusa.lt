@@ -18,7 +18,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeUser($this->tenant);
-    $this->admin->assignRole(config('permission.super_admin_role_name'));
+    $this->admin->givePermissionTo('institutions.update.padalinys');
     $this->outsider = makeUser($this->tenant);
 
     $this->institution = Institution::factory()->for($this->tenant)->create();

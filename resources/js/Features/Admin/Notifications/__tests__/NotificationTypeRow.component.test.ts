@@ -1,3 +1,4 @@
+import { Inbox, MailX, Send } from '@lucide/vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
@@ -30,10 +31,10 @@ describe('NotificationTypeRow', () => {
     expect(wrapper.emitted('update:email')?.[0]).toEqual(['digest']);
   });
 
-  it('passes the active delivery icon to NativeSelect', () => {
-    const wrapper = mountRow({ email: 'immediate' });
+  it.each([['immediate', Send], ['digest', Inbox], ['off', MailX]])('passes the %s delivery icon to NativeSelect', (email, icon) => {
+    const wrapper = mountRow({ email });
     const select = wrapper.findComponent(NativeSelect);
-    expect(select.props('icon')).toBeDefined();
+    expect(select.props('icon')).toBe(icon);
   });
 
   it('toggles push while a device is connected', async () => {

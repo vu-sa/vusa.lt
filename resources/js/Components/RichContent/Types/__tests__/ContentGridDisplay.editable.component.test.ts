@@ -124,8 +124,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
 
     const title = wrapper.find('[contenteditable]');
     title.element.textContent = 'New title';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const patched = wrapper.emitted('update:element')!.at(-1)![0] as { json_content: ContentGrid['json_content'] };
     const value = patched.json_content[0]?.columns[0]?.content.value as { title?: string; description?: string };

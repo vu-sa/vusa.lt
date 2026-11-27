@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { ArrowUp } from '@lucide/vue';
 import { nextTick } from 'vue';
 
 import DataTable from '@/Components/ui/data-table/DataTable.vue';
@@ -56,10 +57,10 @@ describe('DataTable.vue', () => {
           Pagination: { template: '<div data-testid="pagination"><slot /></div>' },
           PaginationContent: { template: '<div><slot /></div>' },
           PaginationItem: { template: '<div><slot /></div>', props: ['value'] },
-          PaginationNext: { template: '<button data-testid="next-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
-          PaginationPrevious: { template: '<button data-testid="prev-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
-          PaginationFirst: { template: '<button data-testid="first-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
-          PaginationLast: { template: '<button data-testid="last-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
+          PaginationNext: { emits: ['click'], template: '<button data-testid="next-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
+          PaginationPrevious: { emits: ['click'], template: '<button data-testid="prev-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
+          PaginationFirst: { emits: ['click'], template: '<button data-testid="first-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
+          PaginationLast: { emits: ['click'], template: '<button data-testid="last-page" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>', props: ['disabled'] },
           PaginationEllipsis: { template: '<span>...</span>' },
           Input: {
             template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value); $emit(\'input\', $event)" />',
@@ -92,25 +93,23 @@ describe('DataTable.vue', () => {
     });
   };
 
+  const scrollTo = Object.getOwnPropertyDescriptor(HTMLDivElement.prototype, 'scrollTo');
+
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     // Mock scrollTo on HTMLDivElement to prevent unhandled errors from scrollTableToTop
     if (!HTMLDivElement.prototype.scrollTo) {
-      HTMLDivElement.prototype.scrollTo = vi.fn() as any;
+      HTMLDivElement.prototype.scrollTo = vi.fn();
     }
   });
 
   afterEach(() => {
     wrapper?.unmount();
     vi.useRealTimers();
+    if (!scrollTo) Reflect.deleteProperty(HTMLDivElement.prototype, 'scrollTo');
   });
 
   describe('rendering', () => {
-    it('mounts without errors', () => {
-      wrapper = createWrapper();
-      expect(wrapper.find('table').exists()).toBe(true);
-    });
-
     it('renders table headers from ColumnDef', () => {
       wrapper = createWrapper();
       const headers = wrapper.findAll('th');
@@ -209,9 +208,9 @@ describe('DataTable.vue', () => {
       wrapper = createWrapper({ initialSort: [{ id: 'name', desc: false }] });
       await nextTick();
 
-      // The sort indicator is rendered in the header
-      const nameHeader = wrapper.findAll('th')[1];
-      expect(nameHeader!.text()).toContain('Name');
+      const nameHeader = wrapper.get('th[aria-sort="ascending"]');
+      expect(nameHeader.text()).toContain('Name');
+      expect(nameHeader.findComponent(ArrowUp).exists()).toBe(true);
     });
   });
 
@@ -232,40 +231,21 @@ describe('DataTable.vue', () => {
       expect(rows.length).toBe(2);
     });
 
-    it('limits rows to pageSize', () => {
+    it('moves to the next page using the pagination controls', async () => {
       wrapper = createWrapper({ pagination: true, pageSize: 2 });
-      const rows = wrapper.findAll('tbody tr');
-      expect(rows.length).toBe(2);
-    });
+      const previous = wrapper.get<HTMLButtonElement>('[data-testid="prev-page"]');
+      const next = wrapper.get<HTMLButtonElement>('[data-testid="next-page"]');
 
-    it('emits update:pagination when page changes via exposed table', async () => {
-      wrapper = createWrapper({ pagination: true, pageSize: 2 });
-      const vm = wrapper.vm as any;
+      expect(previous.element.disabled).toBe(true);
+      expect(next.element.disabled).toBe(false);
+      expect(wrapper.findAll('tbody tr td:nth-child(2)').map(cell => cell.text())).toEqual(['Alice', 'Bob']);
 
-      vm.table.nextPage();
-      await nextTick();
+      await next.trigger('click');
 
-      expect(wrapper.emitted('update:pagination')).toBeTruthy();
-    });
-
-    it('starts on page index 0', () => {
-      wrapper = createWrapper({ pagination: true, pageSize: 2 });
-      const vm = wrapper.vm as any;
-      expect(vm.table.store.get().pagination.pageIndex).toBe(0);
-    });
-
-    it('can navigate to next page via table API', async () => {
-      wrapper = createWrapper({ pagination: true, pageSize: 2 });
-      const vm = wrapper.vm as any;
-
-      expect(vm.table.getCanPreviousPage()).toBe(false);
-      expect(vm.table.getCanNextPage()).toBe(true);
-
-      vm.table.nextPage();
-      await nextTick();
-
-      expect(vm.table.store.get().pagination.pageIndex).toBe(1);
-      expect(vm.table.getCanNextPage()).toBe(false);
+      expect(wrapper.findAll('tbody tr td:nth-child(2)').map(cell => cell.text())).toEqual(['Charlie', 'Diana']);
+      expect(wrapper.emitted('update:pagination')?.at(-1)).toEqual([{ pageIndex: 1, pageSize: 2 }]);
+      expect(previous.element.disabled).toBe(false);
+      expect(next.element.disabled).toBe(true);
     });
 
     it('uses custom pagination slot when provided', () => {
@@ -365,12 +345,14 @@ describe('DataTable.vue', () => {
       await rowCheckbox!.setValue(true);
       await nextTick();
 
-      const clearButton = wrapper.findAll('button').find(b => b.text().includes('×'));
+      expect(wrapper.text()).toContain('tables.selected');
+      const clearButton = wrapper.findAll('button').find(b => b.text().includes('tables.clear_selection'));
       await clearButton!.trigger('click');
       await nextTick();
 
-      // After clearing, selection count should not be visible
-      expect(wrapper.text()).not.toContain('Selected: 1');
+      expect(wrapper.text()).not.toContain('tables.selected');
+      expect((rowCheckbox!.element as HTMLInputElement).checked).toBe(false);
+      expect(wrapper.emitted('update:rowSelection')?.at(-1)).toEqual([{}]);
     });
   });
 
@@ -384,7 +366,7 @@ describe('DataTable.vue', () => {
         enableRowSelection: true,
         enableRowSelectionColumn: true,
       });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as { getSelectedRows: () => TestRow[]; clearRowSelection: () => void };
 
       const rowCheckbox = wrapper.findAll('input[type="checkbox"]')[1];
       await rowCheckbox!.setValue(true);
@@ -403,7 +385,7 @@ describe('DataTable.vue', () => {
         enableRowSelection: true,
         enableRowSelectionColumn: true,
       });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as { getSelectedRows: () => TestRow[]; clearRowSelection: () => void };
 
       const rowCheckbox = wrapper.findAll('input[type="checkbox"]')[1];
       await rowCheckbox!.setValue(true);
@@ -447,12 +429,6 @@ describe('DataTable.vue', () => {
   });
 
   describe('pageSize prop', () => {
-    it('respects pageSize prop', () => {
-      wrapper = createWrapper({ pagination: true, pageSize: 2 });
-      const rows = wrapper.findAll('tbody tr');
-      expect(rows.length).toBe(2);
-    });
-
     it('updates pageSize when prop changes', async () => {
       wrapper = createWrapper({ pagination: true, pageSize: 2 });
       expect(wrapper.findAll('tbody tr').length).toBe(2);

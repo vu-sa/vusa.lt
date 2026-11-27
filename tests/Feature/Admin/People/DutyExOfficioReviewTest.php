@@ -236,7 +236,8 @@ test('split starts today are synthetic and do not send an access notice', functi
     $changes = GetRecentAccessChanges::execute($this->holder, 0);
     expect(collect($changes)->where('kind', 'started'))->toBeEmpty();
     $this->artisan('notifications:access-changes')->assertSuccessful();
-    Notification::assertSentTo($this->holder, AccessChangedNotification::class, fn ($notice) => true);
+    Notification::assertSentTo($this->holder, AccessChangedNotification::class, fn (AccessChangedNotification $notice) => ! collect($notice->context($this->holder))->contains(fn (array $entry) => str_contains($entry['value'], (string) $this->targetDuty->name)
+            && $entry['label'] === __('notifications.context.access_started', ['date' => today()->toDateString()])));
 });
 
 test('ending the actor own seat warns and rolls back until acknowledged', function (): void {

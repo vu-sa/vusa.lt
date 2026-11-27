@@ -2,10 +2,14 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { effectScope, type EffectScope } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 import { useLogout } from '../useLogout';
 import { useAdminSearch } from '../useAdminSearch';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -21,16 +25,15 @@ const config = () => ({
 beforeEach(() => {
   scope = effectScope();
   vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { id: userId++ } } }));
-  vi.stubGlobal('route', vi.fn((name: string) => `/${name}`));
+  stubGlobal('route', vi.fn((name: string) => `/${name}`));
 });
 
 afterEach(() => {
   scope.stop();
-  vi.unstubAllGlobals();
 });
 
 it.each(['logout', 'logoutMicrosoft'] as const)('clears shared search credentials when %s starts', async (action) => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => config() }));
+  stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => config() }));
   const search = scope.run(() => useAdminSearch())!;
   await search.initialize();
   expect(search.config.value?.headerKey).toBe('transport-key');
@@ -44,7 +47,9 @@ it.each(['logout', 'logoutMicrosoft'] as const)('clears shared search credential
 
 it('does not restore credentials from a request that finishes after logout', async () => {
   let resolve!: (response: { ok: boolean; json: () => Promise<ReturnType<typeof config>> }) => void;
-  vi.stubGlobal('fetch', vi.fn(() => new Promise((response) => { resolve = response; })));
+  stubGlobal('fetch', vi.fn(() => new Promise((response) => {
+    resolve = response;
+  })));
   const search = scope.run(() => useAdminSearch())!;
   const pending = search.initialize();
   const rejected = expect(pending).rejects.toMatchObject({ name: 'AbortError' });

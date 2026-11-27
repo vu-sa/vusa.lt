@@ -37,6 +37,7 @@ tests:
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Browser/SearchExperienceTest.php
   - resources/js/Search/core/__tests__/SearchExperience.test.ts
+  - resources/js/Search/core/__tests__/SearchExperience.component.test.ts
   - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Search/core/__tests__/FacetOptions.component.test.ts
   - resources/js/__tests__/designTokens.test.ts
@@ -70,7 +71,6 @@ tests:
   - resources/js/Composables/__tests__/swPush.test.ts
   - resources/js/Composables/__tests__/useAgendaItemNotes.test.ts
   - resources/js/Composables/__tests__/usePWA.test.ts
-  - tests/Unit/Models/TranslatableExpectationsTest.php
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
 
@@ -231,6 +231,8 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 - **Operaciniai įrašai** (pvz., **rezervacijos**) į šiukšlinę nekeliami: juos ištrynus, įrašas iš karto negrįžtamai pašalinamas kartu su susijusiais tarpiniais duomenimis.
 
 ### Daugiakalbiškumas ir vertimai {#vertimai}
+
+Atvėrus svetainės nuorodą be kalbos kodo, ji nukreipia į pasirinktos kalbos puslapį. Nuorodoje nurodyti filtrai, paieškos tekstas ir puslapio numeris išsaugomi.
 
 VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
 - **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaujamasi forma bei jos gidu.

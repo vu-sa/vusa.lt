@@ -1,9 +1,14 @@
 import { defineComponent, nextTick, ref } from 'vue';
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { toast } from 'vue-sonner';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import { usePublicEditLinkToast, type PublicEditLink } from '../usePublicEditLinkToast';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('vue-sonner', () => ({
   toast: Object.assign(
@@ -19,7 +24,7 @@ const openMock = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal('open', openMock);
+  stubGlobal('open', openMock);
 });
 
 /**

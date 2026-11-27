@@ -9,23 +9,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('keeps the duty responsibilities readable across admin widths and themes', function (): void {
-    Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
-
     $tenant = Tenant::query()->firstOrFail();
     $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
     ResponsibilityGrant::factory()->forDuty($duty)->forTenant($tenant)->create();
     // The docs frame contrasts responsibilities with roles; an empty roles column hides that.
     $duty->assignRole('Studentų atstovų koordinatorius');
 
-    $page = loginAsAdmin(makeAdminUser($tenant), '/mano/duties/'.$duty->id);
+    $page = loginAsAdmin(makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant), '/mano/duties/'.$duty->id);
     waitForInertiaRender($page);
     $page->click('button[role="tab"]:has-text("Atsakomybės")');
     $page->assertPresent('[data-slot="duty-responsibilities"]');

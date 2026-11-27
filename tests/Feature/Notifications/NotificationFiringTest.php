@@ -33,18 +33,6 @@ beforeEach(function (): void {
 });
 
 describe('task notifications', function (): void {
-    test('TaskAssignedNotification fires on task creation event', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        $task = Task::factory()->create([
-            'due_date' => now()->addDays(7),
-        ]);
-        $task->users()->attach($user);
-
-        event(new TaskCreated($task));
-
-        Notification::assertSentTo($user, TaskAssignedNotification::class);
-    });
 
     test('TaskAssignedNotification is sent to all assigned users', function (): void {
         $user1 = $this->createUserWithPreferences();
@@ -173,42 +161,12 @@ describe('meeting reminder notifications', function (): void {
 });
 
 describe('comment notifications', function (): void {
-    test('CommentPostedNotification fires on new comment event', function (): void {
-        $user = $this->createUserWithPreferences();
-        $commenter = $this->createUserWithPreferences();
-
-        ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        $comment = Comment::factory()->create([
-            'commentable_type' => MorphMap::alias(ReservationResource::class),
-            'commentable_id' => $reservationResource->id,
-            'user_id' => $commenter->id,
-            'body' => 'Test comment',
-        ]);
-
-        event(new CommentPosted($comment));
-
-        Notification::assertSentTo($user, CommentPostedNotification::class);
-    });
 
     // Note: Decision/status-change comments are now handled through the Approvals system
     // (see 2026_01_15_160000 migration). Comments are purely for discussion.
 });
 
 describe('reservation notifications', function (): void {
-    test('ReservationStatusChangedNotification fires on state transition', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        ['reservationResource' => $reservationResource, 'reservation' => $reservation] = $this->createReservationWithResource($user);
-
-        // Manually dispatch state changed event (normally done by Spatie state machine)
-        $initialState = $reservationResource->state;
-        // No request here: withoutDefer flushes immediately per transition.
-        $this->withoutDefer();
-        $reservationResource->state->transitionTo(Reserved::class);
-
-        Notification::assertSentTo($user, ReservationStatusChangedNotification::class);
-    });
 
     test('ReservationStatusChangedNotification contains correct state information', function (): void {
         $user = $this->createUserWithPreferences();
@@ -222,30 +180,17 @@ describe('reservation notifications', function (): void {
         Notification::assertSentTo(
             $user,
             ReservationStatusChangedNotification::class,
-            function ($notification, $channels) {
-                $data = $notification->toArray($notification);
+            function ($notification) use ($user, $reservationResource) {
+                $data = $notification->toArray($user);
                 expect($data['category'])->toBe('reservation');
+                expect($notification->body($user))->toContain($reservationResource->resource->name);
+                expect($notification->icon())->toBe('✅');
 
                 return true;
             }
         );
     });
 
-    test('ReservationStatusChangedNotification sends to all reservation users', function (): void {
-        $user1 = $this->createUserWithPreferences();
-        $user2 = $this->createUserWithPreferences();
-
-        // Create reservation and attach both users
-        ['reservation' => $reservation, 'reservationResource' => $reservationResource] = $this->createReservationWithResource($user1);
-        $reservation->users()->attach($user2);
-
-        // No request here: withoutDefer flushes immediately per transition.
-        $this->withoutDefer();
-        $reservationResource->state->transitionTo(Reserved::class);
-
-        Notification::assertSentTo($user1, ReservationStatusChangedNotification::class);
-        Notification::assertSentTo($user2, ReservationStatusChangedNotification::class);
-    });
 });
 
 describe('notification not sent to commenter', function (): void {

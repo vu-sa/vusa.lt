@@ -282,7 +282,7 @@ class Document extends Model
         $now = now();
         $docDate = $this->document_date;
 
-        $monthsAgo = $now->diffInMonths($docDate);
+        $monthsAgo = $docDate->diffInMonths($now);
 
         if ($monthsAgo <= 1) {
             return 'recent_1month';

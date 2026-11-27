@@ -253,8 +253,10 @@ describe('channel policy', function (): void {
 
     test('a new task waits for the digest whatever its deadline; reminders carry the urgency', function (): void {
         $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
+        $assigned = new TaskAssignedNotification($task);
 
-        expect($this->user->emailDeliveryFor(new TaskAssignedNotification($task)->type()))->toBe(EmailDelivery::Digest)
+        expect($this->user->emailDeliveryFor($assigned->type()))->toBe(EmailDelivery::Digest)
+            ->and($assigned->via($this->user))->toBe(['database', 'broadcast'])
             ->and($this->user->emailDeliveryFor(new TaskReminderNotification($task, 3)->type()))->toBe(EmailDelivery::Immediate);
     });
 

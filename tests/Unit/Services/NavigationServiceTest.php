@@ -4,6 +4,7 @@ use App\Models\Navigation;
 use App\Services\NavigationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -29,17 +30,23 @@ beforeEach(function (): void {
 });
 
 describe('NavigationService caching', function (): void {
-    test('getNavigationForPublic returns cached result on second call', function (): void {
-        // Clear any existing cache
+    test('getNavigationForPublic returns cached result on second call without querying database', function (): void {
         NavigationService::clearCache();
+        app()->setLocale('lt');
 
-        // First call should query the database
         $result1 = NavigationService::getNavigationForPublic();
+        expect(Cache::has('navigation:public:lt'))->toBeTrue();
 
-        // Second call should use cache - verify by checking the result is identical
+        $queries = 0;
+        DB::listen(function () use (&$queries): void {
+            $queries++;
+        });
+
         $result2 = NavigationService::getNavigationForPublic();
 
-        expect($result1)->toBeArray()->toEqual($result2)->not->toBeEmpty();
+        expect($queries)->toBe(0)
+            ->and($result2)->toBe($result1)
+            ->not->toBeEmpty();
     });
 
     test('cache is keyed by locale', function (): void {

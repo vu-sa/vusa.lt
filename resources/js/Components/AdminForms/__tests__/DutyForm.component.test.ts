@@ -1,8 +1,9 @@
-import type * as Inertia from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref, type Component } from 'vue';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
 import type { DutySimilarityMatches } from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -12,22 +13,7 @@ vi.mock('@/Composables/useFeatureSpotlight', () => ({
   useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: dismissSeatSpotlight }),
 }));
 
-// Use the real Inertia useForm (reactive) rather than the global plain-object mock —
-// the reactive headline must react to typing, which only a reactive form gives us.
-// Same pattern as NewsForm.component.test.ts.
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
-  return {
-    ...actual,
-    Head: { name: 'Head', template: '<div style="display:none"><slot /></div>' },
-    usePage: () => ({
-      props: {
-        app: { locale: 'lt', url: 'https://vusa.test' },
-        auth: { user: { isSuperAdmin: true } },
-      },
-    }),
-  };
-});
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 // The duplicate-check debounce/query logic has its own unit test
 // (useDuplicateDutyCheck.test.ts) — here we only need to control what it returns.
@@ -93,6 +79,7 @@ const emptyDuty = (overrides: Record<string, unknown> = {}) => ({
 });
 
 beforeEach(() => {
+  vi.mocked(usePage).mockReturnValue(createMockPage({ app: { url: 'https://vusa.test' }, auth: { user: { isSuperAdmin: true } } }));
   useDuplicateDutyCheckMock.mockClear();
   duplicateMatches.value = { same_institution: [], other_institution: [], other_institution_count: 0 };
 });
@@ -199,42 +186,6 @@ describe('DutyForm.vue — reactive headline', () => {
     await wrapper.get('input#duty-name').setValue('Coordinator');
     expect(wrapper.get('h1').text()).toBe('Coordinator');
     expect(wrapper.get('[data-testid="form-page-bar-title"]').text()).toBe('Vadovas');
-  });
-});
-
-describe('DutyForm.vue — missing-language advisory', () => {
-  let wrapper: ReturnType<typeof mount>;
-
-  afterEach(() => {
-    wrapper?.unmount();
-  });
-
-  it('shows no advisory while the missing-language alert is intentionally disabled', () => {
-    wrapper = mountForm();
-
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_lt');
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_en');
-  });
-
-  it('shows no advisory when only Lithuanian is filled', () => {
-    wrapper = mountForm(emptyDuty({ name: { lt: 'Pirmininkas', en: '' } }));
-
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_en');
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_lt');
-  });
-
-  it('shows no advisory when only English is filled', () => {
-    wrapper = mountForm(emptyDuty({ name: { lt: '', en: 'Chair' } }));
-
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_lt');
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_en');
-  });
-
-  it('shows no advisory when both name locales are filled', () => {
-    wrapper = mountForm(emptyDuty({ name: { lt: 'Pirmininkas', en: 'Chair' } }));
-
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_lt');
-    expect(wrapper.text()).not.toContain('forms.helpers.duty_name_missing_en');
   });
 });
 
@@ -650,14 +601,18 @@ describe('DutyForm informational seat count', () => {
       FormPage: { name: 'FormPage', emits: ['submit'], template: '<div><slot /><slot name="aside" /></div>' },
     });
     wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
-    const form = wrapper.emitted('submit:form')!.at(-1)![0] as {
+    const form = wrapper.emitted('submit:form')!.at(-1)![0] as unknown as {
       errors: { places_to_occupy?: string };
-      setError: (field: string, message: string) => void;
+      clearErrors: ReturnType<typeof vi.fn>;
     };
-    form.setError('places_to_occupy', 'Invalid count');
+    form.errors.places_to_occupy = 'Invalid count';
+    form.clearErrors.mockImplementation(() => {
+      delete form.errors.places_to_occupy;
+    });
     await nextTick();
     expect(wrapper.find('input#places_to_occupy').exists()).toBe(true);
     await wrapper.get('[data-testid="duty-seats-clear"]').trigger('click');
+    expect(form.clearErrors).toHaveBeenCalledWith('places_to_occupy');
     expect(form.errors.places_to_occupy).toBeUndefined();
     expect(wrapper.find('[data-testid="duty-seats-add"]').exists()).toBe(true);
   });

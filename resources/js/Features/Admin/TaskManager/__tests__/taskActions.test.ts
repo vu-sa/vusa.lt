@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { TaskActionType } from '@/Types/TaskTypes';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import { getTaskActions, getTaskRowActions } from '../taskActions';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const task = (overrides: Partial<TaskDisplayData> = {}): TaskDisplayData => ({
   id: 'task-1',
@@ -43,17 +47,33 @@ describe('task actions', () => {
   });
 
   it('links an open agenda task to the meeting agenda, adding items only while it is being created', () => {
-    const creation = task({ taskable_type: 'meeting', taskable_id: 'meeting-1', action_type: TaskActionType.AgendaCreation, can_be_manually_completed: false });
+    stubGlobal('route', (name: string, id: string) => `/mocked/${name}/${id}`);
+    const creation = task({ taskable_type: 'meeting', taskable_id: 'meeting-1', taskable: { id: 'meeting-1', name: 'Posėdis' }, action_type: TaskActionType.AgendaCreation, can_be_manually_completed: false });
     const completion = { ...creation, action_type: TaskActionType.AgendaCompletion };
 
     const [add] = getTaskActions(creation);
     const [view] = getTaskActions(completion);
 
     expect(add).toMatchObject({ key: 'agenda', label: 'tasks.agenda.action_add_items' });
-    expect(add.href).toContain('action=add');
+    expect(add.href).toBe('/mocked/meetings.show/meeting-1?tab=agenda&action=add');
     expect(view).toMatchObject({ key: 'agenda', label: 'tasks.agenda.action_view_agenda' });
-    expect(view.href).not.toContain('action=add');
+    expect(view.href).toBe('/mocked/meetings.show/meeting-1?tab=agenda');
     expect(keys(getTaskActions({ ...completion, completed_at: '2026-01-01T00:00:00Z' }))).toEqual([]);
+  });
+
+  it.each([TaskActionType.AgendaCreation, TaskActionType.AgendaCompletion])('omits the agenda action when the meeting is missing (%s)', (action_type) => {
+    const orphan = task({
+      action_type,
+      taskable_type: 'meeting',
+      taskable_id: 'missing-meeting',
+      taskable: null,
+      can_be_manually_completed: false,
+      can_delete: true,
+    });
+
+    expect(keys(getTaskActions(orphan))).toEqual(['delete']);
+    expect(getTaskRowActions(orphan)).toMatchObject([{ key: 'open', primary: true }, { key: 'delete' }]);
+    expect(keys(getTaskActions({ ...orphan, can_delete: false }))).toEqual([]);
   });
 
   it('offers reopening a completed manual task and deletion only where it would succeed', () => {

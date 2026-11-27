@@ -41,15 +41,15 @@ describe('Sitemap Index', function (): void {
             ->toContain('/sitemap-news-google.xml');
     });
 
-    it('caches sitemap index', function (): void {
-        // First request should generate sitemap
-        $response1 = $this->get('/sitemap.xml', ['HTTP_HOST' => 'www.vusa.test']);
-        expect($response1->status())->toBe(200);
+    it('serves cached index timestamps until the cache expires', function (): void {
+        $this->freezeTime();
+        $initial = $this->get('/sitemap.xml')->assertOk()->getContent();
 
-        // Second request should use cache (same content)
-        $response2 = $this->get('/sitemap.xml', ['HTTP_HOST' => 'www.vusa.test']);
-        expect($response2->status())->toBe(200)
-            ->and($response2->getContent())->toBe($response1->getContent());
+        $this->travel(5)->minutes();
+        expect($this->get('/sitemap.xml')->assertOk()->getContent())->toBe($initial);
+
+        $this->travel(1)->hours();
+        expect($this->get('/sitemap.xml')->assertOk()->getContent())->not->toBe($initial);
     });
 });
 
@@ -240,46 +240,33 @@ describe('Cache Invalidation', function (): void {
     it('clears sitemap cache when news is updated', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'title' => 'Original Title',
+            'permalink' => 'original-sitemap-slug',
+            'publish_time' => now()->subDay(),
             'draft' => false,
             'lang' => 'lt',
         ]);
 
-        // Generate initial sitemap to populate cache
-        $response1 = $this->get('/sitemap-news.xml', ['HTTP_HOST' => 'www.vusa.test']);
-        expect($response1->status())->toBe(200);
+        $url = '/sitemap-news.xml';
+        $this->get($url)->assertOk()->assertSee('original-sitemap-slug');
 
-        // Update news - this should trigger cache invalidation
-        $news->update(['title' => 'Updated Title']);
+        $news->update(['permalink' => 'updated-sitemap-slug']);
 
-        // New request should reflect the update
-        $response2 = $this->get('/sitemap-news.xml', ['HTTP_HOST' => 'www.vusa.test']);
-        expect($response2->status())->toBe(200);
-
-        // Test passes if no exceptions thrown
-        expect(true)->toBeTrue();
+        $this->get($url)->assertOk()->assertSee('updated-sitemap-slug')->assertDontSee('original-sitemap-slug');
     });
 
     it('clears sitemap cache when page is updated', function (): void {
         $page = Page::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'title' => 'Original Title',
+            'permalink' => 'original-sitemap-slug',
             'is_active' => true,
         ]);
 
-        // Generate initial sitemap to populate cache
-        $response1 = $this->get('/sitemap-pages.xml', ['HTTP_HOST' => 'www.vusa.test']);
-        expect($response1->status())->toBe(200);
+        $url = '/sitemap-pages.xml';
+        $this->get($url)->assertOk()->assertSee('original-sitemap-slug');
 
-        // Update page - this should trigger cache invalidation
-        $page->update(['title' => 'Updated Title']);
+        $page->update(['permalink' => 'updated-sitemap-slug']);
 
-        // New request should reflect the update
-        $response2 = $this->get('/sitemap-pages.xml', ['HTTP_HOST' => 'www.vusa.test']);
-        expect($response2->status())->toBe(200);
-
-        // Test passes if no exceptions thrown
-        expect(true)->toBeTrue();
+        $this->get($url)->assertOk()->assertSee('updated-sitemap-slug')->assertDontSee('original-sitemap-slug');
     });
 });
 

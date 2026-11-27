@@ -24,32 +24,14 @@ it('explains closure before saving and preserves the ended assignment after the 
     ]);
     $duty = Duty::factory()->for($institution)->create();
     $term = Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => today()->subYear()]);
-    $page = loginAsAdmin($actor, "/mano/institutions/{$institution->id}/edit");
+    $page = loginAsAdmin($actor, "/mano/institutions/{$institution->id}/edit", 1440, 900);
     waitForInertiaRender($page, '[data-testid=institution-active-false]');
     $page->click('[data-testid=institution-active-false]');
     $page->assertVisible('[data-testid=institution-deactivation-warning]');
 
-    foreach (['lt', 'en'] as $locale) {
-        if ($locale === 'en') {
-            navigateTo($page, "/mano/institutions/{$institution->id}/edit?lang=en");
-            waitForInertiaRender($page, '[data-testid=institution-active-false]');
-            $page->click('[data-testid=institution-active-false]');
-        }
-        foreach (['light', 'dark'] as $theme) {
-            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-            foreach ([390, 820, 1180, 1440] as $width) {
-                $page->resize($width, 900);
-                $page->screenshotElement('[data-testid=institution-deactivation-warning]', filename: "institution-closure-{$locale}-{$theme}-{$width}");
-                $page->screenshotElement('[data-slot=form-panel]:has([data-testid=institution-active-false])', filename: "institution-status-{$locale}-{$theme}-{$width}");
-            }
-        }
-        if ($locale === 'lt') {
-            $page->script('document.documentElement.classList.remove("dark")');
-            $page->script('document.querySelector("[data-testid=form-page-aside] [data-slot=form-panel]").scrollIntoView({ block: "center" })');
-            docsScreenshot($page, 'institution-deactivation');
-            docsScreenshot($page, 'v3-institution-deactivation', highlights: ['[data-testid=institution-deactivation-warning]']);
-        }
-    }
+    $page->script('document.querySelector("[data-testid=form-page-aside] [data-slot=form-panel]").scrollIntoView({ block: "center" })');
+    docsScreenshot($page, 'institution-deactivation');
+    docsScreenshot($page, 'v3-institution-deactivation', highlights: ['[data-testid=institution-deactivation-warning]']);
 
     $page->click('[data-testid=form-page-save]');
     waitForInertiaRender($page, '[data-testid=form-page-bar] [data-save-state=saved]');
@@ -69,14 +51,6 @@ it('applies list status changes and retains inactive institution tags across nav
     $page = loginAsAdmin($actor, '/mano/institutions?view=preview', 1440, 1000);
     waitForInertiaRender($page, '[data-slot=collection-status-menu]');
 
-    foreach (['light', 'dark'] as $theme) {
-        $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-        foreach ([390, 820, 1180, 1440] as $width) {
-            $page->resize($width, 1000);
-            $page->screenshot(filename: "institution-activity-list-{$theme}-{$width}", fullPage: false);
-        }
-    }
-
     $page->click('[data-slot=collection-rows] li:has-text("Būsenos patikra") [data-collection-open]');
     $page->click('[data-slot=collection-preview] [data-slot=collection-status-menu]');
     $page->click('[role=menuitemradio]:has-text("Nebeveikianti")');
@@ -90,23 +64,14 @@ it('applies list status changes and retains inactive institution tags across nav
     // The preview opens the first row; the actor's own (randomly named) duty can sort before this one.
     $page->click('[data-slot=collection-rows] li:has-text("Būsenos pareigybė") [data-collection-open]');
     $page->assertSee('Nebeveikianti institucija');
-    foreach (['light', 'dark'] as $theme) {
-        $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-        foreach ([390, 820, 1180, 1440] as $width) {
-            $page->resize($width, 1000);
-            $page->screenshot(filename: "duty-activity-list-{$theme}-{$width}", fullPage: false);
-        }
-    }
     $page->click('[data-slot=collection-preview] [data-slot=collection-status-menu]');
     $page->click('[role=menuitemradio]:has-text("Nebeveikianti")');
     waitForInertiaRender($page, '[data-slot=collection-preview] [data-slot=collection-status-menu] [data-status-role=neutral]');
     expect($duty->fresh()->is_active)->toBeFalse();
     navigateTo($page, '/mano/institutions?view=table');
     waitForInertiaRender($page, '[data-slot=collection-table]');
-    $page->screenshot(filename: 'institution-activity-table', fullPage: false);
     navigateTo($page, '/mano/duties?view=table');
     waitForInertiaRender($page, '[data-slot=collection-table]');
-    $page->screenshot(filename: 'duty-activity-table', fullPage: false);
     $page->assertNoJavaScriptErrors();
 });
 
@@ -129,6 +94,5 @@ it('opens a restored untitled institution and keeps it identifiable in the live 
     expect($institution->fresh()->getRawOriginal('name'))->toBeNull();
     navigateTo($page, '/mano/institutions');
     waitForInertiaRender($page, '[data-slot=institution-collection-row]:has-text("'.$institution->alias.'")');
-    $page->screenshot(filename: 'untitled-institution-restored', fullPage: false);
     $page->assertNoJavaScriptErrors();
 });

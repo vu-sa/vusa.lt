@@ -2,9 +2,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import IndexNavigation from '@/Pages/Admin/Navigation/IndexNavigation.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -31,7 +35,9 @@ const mockRoute = (name?: string, params?: Record<string, unknown> | string | nu
   return `/mocked-route/${name}${queryString}`;
 };
 
-vi.stubGlobal('route', mockRoute);
+beforeEach(() => {
+  stubGlobal('route', mockRoute);
+});
 
 const pageStubs = {
   ...commonStubs,

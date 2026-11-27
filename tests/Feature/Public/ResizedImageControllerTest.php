@@ -3,11 +3,8 @@
 use App\Models\ContentPart;
 use App\Support\Media\ImageData;
 use App\Support\Media\ResizableImage;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-
-pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Storage::fake();

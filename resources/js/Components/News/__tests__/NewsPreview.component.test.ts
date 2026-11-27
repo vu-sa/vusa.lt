@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
 import { commonStubs } from '@/tests/stubs';
@@ -26,7 +26,10 @@ const mountPreview = (news: Record<string, unknown> = {}) =>
 const publicLink = (wrapper: ReturnType<typeof mount>) =>
   wrapper.find('a[href*="/mocked-route/news?"]');
 
+afterEach(() => vi.useRealTimers());
+
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-26T12:00:00Z') });
   vi.mocked(usePage).mockReturnValue(
     createMockPage({ tenants: [{ id: 5, alias: 'mif', shortname: 'MIF' }] }),
   );

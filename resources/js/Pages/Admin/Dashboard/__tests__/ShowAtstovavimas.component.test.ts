@@ -2,10 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowAtstovavimas from '@/Pages/Admin/Dashboard/ShowAtstovavimas.vue';
 import type { AtstovavimasUser } from '@/Pages/Admin/Dashboard/types';
 import type { HomeFollowedInstitutions } from '@/Components/Home/types';
 import { commonStubs } from '@/tests/stubs';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 // The page orchestrates several composables and heavy Gantt/dialog children. The data
 // composables are reduced to stable refs and the heavy children are stubbed: this test is about the
@@ -99,13 +103,12 @@ let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
   institutions.value = [institution('1', 'overdue', 1), institution('2', 'healthy'), institution('3', 'approaching')];
-  vi.stubGlobal('route', (name: string, params?: Record<string, string>) =>
+  stubGlobal('route', (name: string, params?: Record<string, string>) =>
     `/mano/${name}${params ? `?${new URLSearchParams(params).toString()}` : ''}`);
 });
 
 afterEach(() => {
   wrapper?.unmount();
-  vi.unstubAllGlobals();
 });
 
 describe('the padalinys overview', () => {
@@ -165,7 +168,7 @@ describe('layout', () => {
   it('carries no tenant-wide trend chart', () => {
     wrapper = createWrapper(true);
 
-    expect(wrapper.find('[data-testid="trend-chart"]').exists()).toBe(false);
+    expect(wrapper.findComponent({ name: 'InstitutionStatusTrendChart' }).exists()).toBe(false);
   });
 });
 

@@ -19,17 +19,7 @@ pest()->use(RefreshDatabase::class);
  */
 function seedArticle(): News
 {
-    $tenant = Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
-
-    return News::factory()->for($tenant)->create([
+    return News::factory()->for(Tenant::main())->create([
         'lang' => 'lt',
         'title' => 'Pradedama kandidatų registracija',
         'permalink' => 'pradedama-kandidatu-registracija',
@@ -78,18 +68,33 @@ it('paints the masthead darker than the canvas in dark mode', function (): void 
         (() => {
           const band = document.querySelector('[data-slot="news-article"] > header');
           const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+          const canvas = document.createElement('canvas');
+          canvas.width = 1;
+          canvas.height = 1;
+          const ctx = canvas.getContext('2d');
+          const luminance = (color) => {
+            ctx.clearRect(0, 0, 1, 1);
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, 1, 1);
+            const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          };
+          const bandColor = getComputedStyle(band).backgroundColor;
+          const bodyColor = getComputedStyle(document.body).backgroundColor;
 
           return {
-            band: getComputedStyle(band).backgroundColor,
-            body: getComputedStyle(document.body).backgroundColor,
+            band: bandColor,
+            body: bodyColor,
+            bandLuminance: luminance(bandColor),
+            bodyLuminance: luminance(bodyColor),
             inkDefined: ink.length > 0,
           };
         })()
     JS);
 
     expect($grounds['inkDefined'])->toBeTrue()
-        // The band is a distinct ground, not the page's own — that is the whole point of it.
-        ->and($grounds['band'])->not->toBe($grounds['body']);
+        ->and($grounds['band'])->not->toBe($grounds['body'])
+        ->and($grounds['bandLuminance'])->toBeLessThan($grounds['bodyLuminance']);
 
     $page->assertNoJavaScriptErrors();
 });

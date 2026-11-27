@@ -6,15 +6,14 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tag;
 use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->superAdmin = User::factory()->create();
-    $this->superAdmin->assignRole(config('permission.super_admin_role_name'));
+    $this->editor = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $this->editor->givePermissionTo(['tags.update.*', 'tags.delete.*']);
 });
 
 describe('taggables morph pivot', function (): void {
@@ -85,7 +84,7 @@ describe('page tagging via controller', function (): void {
         $payload['tenant_id'] = $this->tenant->id;
         $payload['tags'] = [$tag1->id, $tag2->id];
 
-        $response = asUser($this->superAdmin)->post(route('pages.store'), $payload);
+        $response = asUser($this->editor)->post(route('pages.store'), $payload);
 
         $page = Page::where('title', $payload['title'])->firstOrFail();
         $response->assertRedirect(route('pages.edit', $page))->assertSessionHas('success');
@@ -103,7 +102,7 @@ describe('page tagging via controller', function (): void {
         $payload = getControllerTestData('Page')['valid'];
         $payload['tags'] = [$tag2->id];
 
-        asUser($this->superAdmin)
+        asUser($this->editor)
             ->patch(route('pages.update', $page), $payload)
             ->assertSessionHas('success');
 
@@ -126,7 +125,7 @@ describe('calendar tagging via controller', function (): void {
             'tags' => [$tag1->id, $tag2->id],
         ];
 
-        $response = asUser($this->superAdmin)->post(route('calendar.store'), $payload);
+        $response = asUser($this->editor)->post(route('calendar.store'), $payload);
 
         $calendar = Calendar::query()->latest('id')->firstOrFail();
         $response->assertRedirect(route('calendar.edit', $calendar))->assertSessionHas('success');
@@ -148,7 +147,7 @@ describe('tag merge', function (): void {
         $source->pages()->attach($page);
         $source->calendars()->attach($calendar);
 
-        asUser($this->superAdmin)
+        asUser($this->editor)
             ->post(route('tags.processMerge'), [
                 'target_tag_id' => $target->id,
                 'source_tag_ids' => [$source->id],

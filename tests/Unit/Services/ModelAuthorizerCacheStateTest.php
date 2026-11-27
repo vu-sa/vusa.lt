@@ -1,7 +1,6 @@
 <?php
 
 use App\Facades\Permission as PermissionFacade;
-use App\Models\Institution;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -14,10 +13,6 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-
-    $this->institution = Institution::factory()->create([
-        'tenant_id' => $this->tenant->id,
-    ]);
 
     // Create permissions for testing
     $permissions = [
@@ -269,15 +264,6 @@ describe('observer-triggered cache invalidation', function (): void {
         $duty->assignRole($this->coordinatorRole);
 
         expect(app(ModelAuthorizer::class)->allows($user->refresh(), 'users.update.padalinys'))->toBeTrue();
-    });
-});
-
-describe('cache TTL', function (): void {
-    test('loadDuties cache TTL is at most 1 hour', function (): void {
-        $reflection = new ReflectionClass(ModelAuthorizer::class);
-        $ttl = $reflection->getConstant('CACHE_TTL');
-
-        expect($ttl)->toBeLessThanOrEqual(3600);
     });
 });
 

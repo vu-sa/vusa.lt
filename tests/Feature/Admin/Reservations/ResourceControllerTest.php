@@ -457,14 +457,12 @@ describe('restore and forceDelete', function (): void {
     });
 
     test('user with resources.forceDelete permission can permanently delete a resource', function (): void {
-        $superAdmin = User::factory()->create();
-        $superAdmin->assignRole(config('permission.super_admin_role_name'));
-
+        $this->resourceManager->givePermissionTo('resources.forceDelete.padalinys');
         $this->resource->delete();
 
-        asUser($superAdmin)->delete(route('resources.forceDelete', $this->resource))
+        asUser($this->resourceManager)->delete(route('resources.forceDelete', $this->resource))
             ->assertRedirect();
 
-        expect(Resource::withTrashed()->where('id', $this->resource->id)->exists())->toBeFalse();
+        $this->assertModelMissing($this->resource);
     });
 });

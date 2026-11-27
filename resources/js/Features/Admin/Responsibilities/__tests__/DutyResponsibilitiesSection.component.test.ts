@@ -1,10 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { useForm } from '@inertiajs/vue3';
 import { nextTick, reactive, ref } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue';
 import type { DutyResponsibilityItem, DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useFeatureSpotlight', () => ({
@@ -77,7 +81,7 @@ function mountSection(items = [direct, viaType], canUpdate = true) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
+  stubGlobal('route', (name: string) => `/mocked/${name}`);
   vi.mocked(useForm).mockReturnValue(reactive({
     role_id: 'role-coordination',
     scope_type: 'tenant',

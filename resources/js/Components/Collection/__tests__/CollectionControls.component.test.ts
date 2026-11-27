@@ -7,7 +7,6 @@ import CollectionActiveChips from '../CollectionActiveChips.vue';
 import CollectionFacetOptions from '../CollectionFacetOptions.vue';
 import CollectionControlRow from '../CollectionControlRow.vue';
 import CollectionFilterBar from '../CollectionFilterBar.vue';
-import CollectionPrimaryCell from '../CollectionPrimaryCell.vue';
 import CollectionResults from '../CollectionResults.vue';
 import CollectionViewToggle from '../CollectionViewToggle.vue';
 
@@ -40,20 +39,6 @@ describe('collection controls', () => {
     expect(closedWithFilters.text()).toContain('2');
 
     expect(toggleOf(true, 0).classes()).toContain('border-brand');
-  });
-
-  it('clamps a title to two lines when requested', () => {
-    const wrapped = mount(CollectionPrimaryCell, {
-      props: { title: 'A long page title', titleLines: 2 },
-      global: { stubs: commonStubs },
-    });
-    const defaultCell = mount(CollectionPrimaryCell, {
-      props: { title: 'A long page title' },
-      global: { stubs: commonStubs },
-    });
-
-    expect(wrapped.find('p').classes()).toContain('line-clamp-2');
-    expect(defaultCell.find('p').classes()).toContain('truncate');
   });
 
   it('keeps the deleted filter inside the filter band and emits its toggle', async () => {

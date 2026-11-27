@@ -1,14 +1,20 @@
 import { mount } from '@vue/test-utils';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import StepSheetForm from '@/Features/Admin/Goals/StepSheetForm.vue';
 import type { GoalStep, StepParent } from '@/Features/Admin/Goals/types';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name: string, params: Record<string, string> = {}) => `/mocked-route/${name}?${new URLSearchParams(params).toString()}`);
+beforeEach(() => {
+  stubGlobal('route', (name: string, params: Record<string, string> = {}) => `/mocked-route/${name}?${new URLSearchParams(params).toString()}`);
+});
 
 const SheetFormStub = {
   props: ['open', 'title'],

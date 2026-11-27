@@ -2,7 +2,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import UserTimelineSection from '../UserTimelineSection.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const timelineFilters = {
   userTenantFilter: ref(['1']),
@@ -50,11 +55,10 @@ describe('UserTimelineSection', () => {
   afterEach(() => {
     wrapper?.unmount();
     vi.clearAllMocks();
-    vi.unstubAllGlobals();
   });
 
   function mountSection(activityRequests: unknown[] = []) {
-    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       callback(0);
       return 1;
     });

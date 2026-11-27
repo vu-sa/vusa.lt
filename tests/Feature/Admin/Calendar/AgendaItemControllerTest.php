@@ -70,6 +70,15 @@ describe('agenda items controller', function (): void {
         expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount);
     });
 
+    test('agenda items require at least one title', function (): void {
+        asUser($this->admin)->post(route('agendaItems.store'), [
+            'meeting_id' => $this->meeting->id,
+            'agendaItemTitles' => [],
+        ])->assertSessionHasErrors('agendaItemTitles');
+
+        expect($this->meeting->agendaItems()->count())->toBe(0);
+    });
+
     test('agenda items require a meeting id', function (): void {
         $response = asUser($this->admin)
             ->post(route('agendaItems.store'), [
@@ -82,13 +91,13 @@ describe('agenda items controller', function (): void {
         expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount);
     });
 
-    test('agenda items creation does not trigger task creation', function (): void {
+    test('agenda item creation does not trigger task creation', function (string $title): void {
         $initialTaskCount = $this->meeting->tasks()->count();
 
         $response = asUser($this->admin)
             ->post(route('agendaItems.store'), [
                 'meeting_id' => $this->meeting->id,
-                'agendaItemTitles' => ['TBD Item'],
+                'agendaItemTitles' => [$title],
             ]);
 
         $response->assertStatus(302);
@@ -99,7 +108,7 @@ describe('agenda items controller', function (): void {
 
         // Verify no tasks were created regardless of agenda item content
         expect($this->meeting->fresh()->tasks()->count())->toEqual($initialTaskCount);
-    });
+    })->with(['TBD Item', 'Ordinary item']);
 
     test('can update agenda item details with votes', function (): void {
         // First create an agenda item

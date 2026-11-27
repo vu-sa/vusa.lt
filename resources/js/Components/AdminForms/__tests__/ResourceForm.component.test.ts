@@ -129,11 +129,6 @@ describe('ResourceForm.vue', () => {
     expect(wrapper.get('select#resource-category option').attributes('disabled')).toBeUndefined();
   });
 
-  it('renders the form', () => {
-    wrapper = createWrapper();
-    expect(wrapper.find('form').exists()).toBe(true);
-  });
-
   it('edits in edit mode and creates in create mode', () => {
     wrapper = createWrapper();
     expect(wrapper.find('[data-testid="form-page"]').attributes('data-mode')).toBe('edit');
@@ -222,8 +217,11 @@ describe('ResourceForm.vue', () => {
   describe('identifier field', () => {
     it('binds the identifier input directly to form.identifier', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as unknown as ResourceFormVm;
-      expect(vm.form.identifier).toBe('PRJ-01');
+      const identifier = wrapper.get<HTMLInputElement>('input#resource-identifier');
+      expect(identifier.element.value).toBe('PRJ-01');
+      await identifier.setValue('PRJ-02');
+      wrapper.getComponent({ name: 'FormPage' }).vm.$emit('submit');
+      expect(wrapper.emitted('submit:form')?.at(-1)).toEqual([expect.objectContaining({ identifier: 'PRJ-02' })]);
     });
   });
 });

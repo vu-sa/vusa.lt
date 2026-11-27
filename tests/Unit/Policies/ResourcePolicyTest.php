@@ -8,7 +8,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenantA = Tenant::query()->first();
-    $this->tenantB = Tenant::factory()->create();
+    $this->tenantB = Tenant::query()->whereKeyNot($this->tenantA->id)->firstOrFail();
 
     $this->simpleUser = makeUser($this->tenantA);
     $this->resource = Resource::factory()->for($this->tenantB)->create();

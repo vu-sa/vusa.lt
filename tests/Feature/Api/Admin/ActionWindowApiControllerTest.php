@@ -54,6 +54,8 @@ test('it returns the caller institutions with their activity status', function (
 
 describe('meeting pattern', function (): void {
     test('it guesses the weekday and time from the meetings that actually happened', function (): void {
+        $this->travelTo('2026-11-26 12:00:00');
+
         // Three Tuesdays at 18:00 and one stray Friday: the Tuesday wins, and the time
         // comes from the most recent Tuesday rather than an average.
         foreach ([21, 14, 7] as $daysAgo) {

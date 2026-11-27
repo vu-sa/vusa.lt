@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { afterEach, describe, it, expect } from 'vitest';
+import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { Extension } from '@tiptap/core';
 
@@ -7,6 +7,8 @@ import TiptapEditor from '../TiptapEditor.vue';
 import TiptapInsertMenu from '../TiptapInsertMenu.vue';
 import TiptapLinkButton from '../TiptapLinkButton.vue';
 import TiptapMoreMenu from '../TiptapMoreMenu.vue';
+
+enableAutoUnmount(afterEach);
 
 async function mountEditor(props: Record<string, unknown>) {
   const wrapper = mount(TiptapEditor, { props: { modelValue: null, ...props } });

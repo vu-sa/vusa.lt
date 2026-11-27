@@ -6,7 +6,7 @@ tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Feature/Search/ListFreshnessTest.php
-  - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
+  - tests/Feature/Api/Admin/InstitutionApiControllerTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
@@ -45,7 +45,7 @@ tests:
   - tests/Browser/InstitutionActivityReplyTest.php
   - tests/Browser/VisakRecordPagesTest.php
   - resources/js/Components/ActionWindow/__tests__/InstitutionPickerScreen.component.test.ts
-  - tests/Unit/InstitutionActivityStatusServiceTest.php
+  - tests/Unit/Services/InstitutionActivityStatusServiceTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Components/AdminForms/__tests__/InstitutionForm.component.test.ts

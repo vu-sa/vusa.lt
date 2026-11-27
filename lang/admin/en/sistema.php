@@ -31,6 +31,9 @@ return [
             'future_duty_holders' => 'People with upcoming duties',
         ],
     ],
+    'status' => [
+        'database_check_failed' => 'The database health check failed.',
+    ],
     'maintenance' => [
         'title' => 'Maintenance',
         'lead' => 'Actions that would otherwise need a server shell. Each one is recorded in the activity log.',

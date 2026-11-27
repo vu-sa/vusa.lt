@@ -104,6 +104,7 @@ it('moves a bar by whole months and keeps the day of month', function (): void {
     // Read from the side panel, which also proves the drag kept the bar selected.
     expect($page->script('document.querySelector("#selection-start")?.value ?? null'))
         ->toBe('2024-07-18');
+    $page->assertNoJavaScriptErrors();
 });
 
 /**
@@ -121,11 +122,8 @@ it('fits the page to the screen and scrolls long charts inside it', function ():
         ]);
     }
 
-    $page = loginAsAdmin($this->admin);
-    $page->resize(1180, 800);
-
     $timeline = route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false);
-    navigateTo($page, $timeline);
+    $page = loginAsAdmin($this->admin, $timeline, 1180, 800);
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
     $measure = <<<'JS'
@@ -175,6 +173,7 @@ it('fits the page to the screen and scrolls long charts inside it', function ():
         ->and($tall['pageScrolls'])->toBeFalse()
         ->and($tall['saveInView'])->toBeTrue()
         ->and($tall['panelInView'])->toBeTrue();
+    $page->assertNoJavaScriptErrors();
 });
 
 /**
@@ -185,9 +184,9 @@ it('takes the chart full screen over the shell and keeps its popovers on top', f
     $this->seed(DocsSeeder::class);
 
     $parliament = Institution::query()->where('name->lt', DocsSeeder::TIMELINE_INSTITUTION)->firstOrFail();
+    $coordinator = User::query()->firstWhere('email', DocsSeeder::CENTRAL_COORDINATOR_EMAIL);
 
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->resize(1440, 900);
+    $page = loginAsAdmin($coordinator, '/mano', 1440, 900);
 
     // Zoomed out so the docs frame shows all three terms rather than the current months only.
     $page->script('localStorage.setItem("dutiable-timeline-view", JSON.stringify({ monthWidthPx: 28, includeEnded: true }))');
@@ -244,8 +243,9 @@ it('edits a duty period in a side sheet on desktop and a bottom sheet on a phone
     $this->seed(DocsSeeder::class);
 
     $chair = Duty::query()->where('name->lt', 'Pirmininkas (-ė)')->firstOrFail();
+    $coordinator = User::query()->firstWhere('email', DocsSeeder::CENTRAL_COORDINATOR_EMAIL);
 
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), route('duties.show', $chair, absolute: false), 1440, 900);
+    $page = loginAsAdmin($coordinator, route('duties.show', $chair, absolute: false), 1440, 900);
     waitForInertiaRender($page, '[data-testid="member-term-edit"]');
 
     $page->click('[data-testid="member-term-edit"] >> nth=0');
@@ -292,4 +292,5 @@ it('edits a duty period in a side sheet on desktop and a bottom sheet on a phone
 
     expect($page->script($placement))->toMatchArray(['bottom' => true, 'fullWidth' => true])
         ->and($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
+    $page->assertNoJavaScriptErrors();
 });

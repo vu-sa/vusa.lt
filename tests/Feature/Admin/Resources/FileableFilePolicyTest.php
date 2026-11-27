@@ -6,7 +6,6 @@ use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Gate;
 
 pest()->use(RefreshDatabase::class);
 
@@ -16,125 +15,44 @@ beforeEach(function (): void {
     $this->file = FileableFile::factory()->for($this->institution, 'fileable')->create();
 });
 
-describe('FileableFilePolicy', function (): void {
-    describe('viewAny permission', function (): void {
-        test('any authenticated user can view files list', function (): void {
-            $user = makeUser($this->tenant);
-
-            expect(Gate::forUser($user)->allows('viewAny', FileableFile::class))->toBeTrue();
-        });
-    });
-
-    describe('view permission', function (): void {
-        test('user can view file if they can view the parent fileable', function (): void {
-            $user = makeUser($this->tenant);
-            $user->assignRole('Super Admin');
-
-            expect(Gate::forUser($user)->allows('view', $this->file))->toBeTrue();
-        });
-
-        test('user cannot view file if they cannot view the parent fileable', function (): void {
-            // Create a file for an institution the user doesn't have access to
-            $otherTenant = Tenant::factory()->create();
-            $otherInstitution = Institution::factory()->for($otherTenant)->create();
-            $file = FileableFile::factory()->for($otherInstitution, 'fileable')->create();
-
-            // User without specific permissions to view that institution
-            $user = makeUser($this->tenant);
-
-            // The FileableFilePolicy delegates to the parent's view permission
-            // Regular users typically cannot view institutions from other tenants
-            expect(Gate::forUser($user)->allows('view', $file))->toBeFalse();
-        });
-
-        test('returns false if fileable is null', function (): void {
-            $orphanFile = FileableFile::factory()->create([
-                'fileable_type' => MorphMap::alias(Institution::class),
-                'fileable_id' => 'nonexistent-id',
-            ]);
-
-            $user = makeUser($this->tenant);
-
-            expect(Gate::forUser($user)->allows('view', $orphanFile))->toBeFalse();
-        });
-    });
-
-    describe('update permission', function (): void {
-        test('super admin can update any file', function (): void {
-            $user = makeUser($this->tenant);
-            $user->assignRole('Super Admin');
-
-            expect(Gate::forUser($user)->allows('update', $this->file))->toBeTrue();
-        });
-
-        test('user can update file if they can update the parent fileable', function (): void {
-            $user = makeUser($this->tenant);
-            $user->assignRole('Super Admin');
-
-            expect(Gate::forUser($user)->allows('update', $this->file))->toBeTrue();
-        });
-    });
-
-    describe('delete permission', function (): void {
-        test('super admin can delete any file', function (): void {
-            $user = makeUser($this->tenant);
-            $user->assignRole('Super Admin');
-
-            expect(Gate::forUser($user)->allows('delete', $this->file))->toBeTrue();
-        });
-
-        test('user can delete file if they can update the parent fileable', function (): void {
-            $user = makeUser($this->tenant);
-            $user->assignRole('Super Admin');
-
-            expect(Gate::forUser($user)->allows('delete', $this->file))->toBeTrue();
-        });
-
-        test('returns false if fileable is null for regular user', function (): void {
-            $orphanFile = FileableFile::factory()->create([
-                'fileable_type' => MorphMap::alias(Institution::class),
-                'fileable_id' => 'nonexistent-id',
-            ]);
-
-            // Use a regular user (not super admin) to test the policy logic
-            $user = makeUser($this->tenant);
-
-            expect(Gate::forUser($user)->allows('delete', $orphanFile))->toBeFalse();
-        });
-    });
-
-    describe('restore and forceDelete permissions', function (): void {
-        test('restore delegates to delete permission', function (): void {
-            $user = makeUser($this->tenant);
-            $user->assignRole('Super Admin');
-
-            $this->file->delete();
-
-            expect(Gate::forUser($user)->allows('restore', $this->file))->toBeTrue();
-        });
-
-        test('forceDelete delegates to delete permission', function (): void {
-            $user = makeUser($this->tenant);
-            $user->assignRole('Super Admin');
-
-            expect(Gate::forUser($user)->allows('forceDelete', $this->file))->toBeTrue();
-        });
-    });
+test('any authenticated user can list files', function (): void {
+    expect(makeUser($this->tenant)->can('viewAny', FileableFile::class))->toBeTrue();
 });
 
-describe('FileableFile with different fileable types', function (): void {
-    test('policy works with Meeting as fileable', function (): void {
-        $meeting = Meeting::factory()->create();
-        $file = FileableFile::factory()->create([
-            'fileable_type' => MorphMap::alias(Meeting::class),
-            'fileable_id' => $meeting->id,
-        ]);
+test('view and editing follow the parent policy', function (string $parentType): void {
+    if ($parentType === 'meeting') {
+        $meeting = Meeting::factory()->hasAttached($this->institution)->create();
+        $this->file = FileableFile::factory()->for($meeting, 'fileable')->create();
+    }
 
-        $user = makeUser($this->tenant);
-        $user->assignRole('Super Admin');
+    $reader = makeUser($this->tenant);
+    $reader->givePermissionTo($parentType.'s.read.padalinys');
 
-        expect(Gate::forUser($user)->allows('view', $file))->toBeTrue()
-            ->and(Gate::forUser($user)->allows('update', $file))->toBeTrue()
-            ->and(Gate::forUser($user)->allows('delete', $file))->toBeTrue();
-    });
+    $editor = makeUser($this->tenant);
+    $editor->givePermissionTo($parentType.'s.update.padalinys');
+
+    $otherTenantEditor = makeUser(Tenant::factory()->create());
+    $otherTenantEditor->givePermissionTo([$parentType.'s.read.padalinys', $parentType.'s.update.padalinys']);
+
+    expect($reader->can('view', $this->file))->toBeTrue()
+        ->and($reader->can('update', $this->file))->toBeFalse()
+        ->and($reader->can('delete', $this->file))->toBeFalse()
+        ->and($editor->can('update', $this->file))->toBeTrue()
+        ->and($editor->can('delete', $this->file))->toBeTrue()
+        ->and($otherTenantEditor->can('view', $this->file))->toBeFalse()
+        ->and($otherTenantEditor->can('update', $this->file))->toBeFalse()
+        ->and($otherTenantEditor->can('delete', $this->file))->toBeFalse();
+})->with(['institution', 'meeting']);
+
+test('access is denied when the file has no parent', function (): void {
+    $orphan = FileableFile::factory()->create([
+        'fileable_type' => MorphMap::alias(Institution::class),
+        'fileable_id' => 'nonexistent-id',
+    ]);
+    $user = makeUser($this->tenant);
+    $user->givePermissionTo(['institutions.read.padalinys', 'institutions.update.padalinys']);
+
+    expect($user->can('view', $orphan))->toBeFalse()
+        ->and($user->can('update', $orphan))->toBeFalse()
+        ->and($user->can('delete', $orphan))->toBeFalse();
 });

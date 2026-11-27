@@ -1,7 +1,6 @@
 <?php
 
 use App\Events\FileableNameUpdated;
-use App\Listeners\UpdateSharepointFolder;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
@@ -45,58 +44,6 @@ describe('UpdateSharepointFolder Listener', function (): void {
         $institution->save();
 
         Event::assertNotDispatched(FileableNameUpdated::class);
-    });
-
-    test('listener skips new models that do not exist yet', function (): void {
-        // Create a model but don't save it - simulates brand new creation
-        $institution = Institution::factory()->for($this->tenant)->make([
-            'name' => ['lt' => 'New Name', 'en' => 'New Name EN'],
-        ]);
-
-        // Model doesn't exist yet
-        expect($institution->exists)->toBeFalse();
-
-        $event = new FileableNameUpdated($institution);
-        $listener = new UpdateSharepointFolder;
-
-        // Should not throw - listener skips new models
-        $listener->handle($event);
-
-        expect(true)->toBeTrue();
-    });
-
-    test('listener skips processing in testing environment', function (): void {
-        $institution = Institution::factory()->for($this->tenant)->create([
-            'name' => ['lt' => 'Original Name', 'en' => 'Original Name EN'],
-        ]);
-
-        // Simulate the state during saving hook: original values exist, model isDirty
-        $institution->name = ['lt' => 'New Name', 'en' => 'New Name EN'];
-
-        $event = new FileableNameUpdated($institution);
-        $listener = new UpdateSharepointFolder;
-
-        // Should not throw - listener skips in testing environment
-        $listener->handle($event);
-
-        expect(true)->toBeTrue();
-    });
-
-    test('listener skips when old and new names are the same', function (): void {
-        $institution = Institution::factory()->for($this->tenant)->create([
-            'name' => ['lt' => 'Same Name', 'en' => 'Same Name EN'],
-        ]);
-
-        // Set the same Lithuanian name (which is used for folder names)
-        $institution->name = ['lt' => 'Same Name', 'en' => 'Different EN'];
-
-        $event = new FileableNameUpdated($institution);
-        $listener = new UpdateSharepointFolder;
-
-        // Should not throw - listener skips when names are the same
-        $listener->handle($event);
-
-        expect(true)->toBeTrue();
     });
 
     test('event is dispatched during saving hook before database commit', function (): void {
@@ -158,22 +105,4 @@ describe('Meeting SharePoint folder renaming', function (): void {
         Event::assertNotDispatched(FileableNameUpdated::class);
     });
 
-    test('listener correctly formats Meeting folder name from datetime', function (): void {
-        $meeting = Meeting::factory()->create([
-            'start_time' => '2025-10-27 15:00:00',
-        ]);
-        $meeting->institutions()->attach($this->institution);
-
-        // Simulate the state during saving hook
-        $meeting->start_time = '2025-10-27 13:00:00';
-
-        $event = new FileableNameUpdated($meeting);
-        $listener = new UpdateSharepointFolder;
-
-        // Should not throw - listener skips in testing environment
-        // but this verifies the datetime parsing logic works
-        $listener->handle($event);
-
-        expect(true)->toBeTrue();
-    });
 });

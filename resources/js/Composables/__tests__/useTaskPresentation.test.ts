@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   formatTaskDueDate,
@@ -16,7 +16,9 @@ import {
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
 import { TaskActionType } from '@/Types/TaskTypes';
-import { todayIso } from '@/Utils/dateTime';
+
+beforeEach(() => vi.useFakeTimers({ now: new Date('2026-04-15T12:00:00Z'), toFake: ['Date'] }));
+afterEach(() => vi.useRealTimers());
 
 const makeTask = (overrides: Partial<TaskDisplayData> = {}): TaskDisplayData => ({
   id: 'task-1',
@@ -95,15 +97,15 @@ describe('links', () => {
 
 describe('due dates', () => {
   it('falls back to an absolute date beyond a week out', () => {
-    const farOff = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const farOff = '2026-05-15T12:00:00Z';
 
-    expect(formatTaskDueDate(farOff, 'en')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(formatTaskDueDate(farOff, 'en')).toBe('2026-05-15');
   });
 
   it('names a near due date by calendar day', () => {
-    const inThreeDays = todayIso(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000));
+    const inThreeDays = '2026-04-18';
 
-    expect(formatTaskDueDate(todayIso(), 'lt')).toBe('šiandien');
+    expect(formatTaskDueDate('2026-04-15', 'lt')).toBe('šiandien');
     expect(formatTaskDueDate(inThreeDays, 'lt')).toBe('po 3 d.');
   });
 
@@ -112,8 +114,8 @@ describe('due dates', () => {
   });
 
   it('warns only for a due date landing within three days and not yet overdue', () => {
-    const inTwoDays = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
-    const inTenDays = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
+    const inTwoDays = '2026-04-17T12:00:00.000Z';
+    const inTenDays = '2026-04-25T12:00:00.000Z';
 
     expect(getDueDateUrgencyClasses({ due_date: inTwoDays, is_overdue: false })).toContain('status-attention');
     expect(getDueDateUrgencyClasses({ due_date: inTenDays, is_overdue: false })).toBe('');
@@ -127,7 +129,7 @@ describe('check-in date suggestion', () => {
     // "today + N days"), not the start of the reporting gap. Using it as the suggested end
     // date put the end before "today" (the start) as soon as the task went overdue — which is
     // the ordinary case, since these tasks are usually opened *because* they are overdue.
-    const longOverdueCreatedAt = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const longOverdueCreatedAt = '2026-01-15T12:00:00.000Z';
     const { start, end } = getSuggestedCheckInRange({
       created_at: longOverdueCreatedAt,
       metadata: { effective_days_since_activity: 120 },
@@ -143,7 +145,7 @@ describe('check-in date suggestion', () => {
       metadata: { effective_days_since_activity: 10 },
     });
 
-    expect(start.toISOString()).toBe(new Date('2026-01-05T00:00:00.000Z').toISOString());
+    expect(start.toISOString()).toBe('2026-01-05T00:00:00.000Z');
   });
 
   it('ends today regardless of how the start was derived', () => {
@@ -152,19 +154,19 @@ describe('check-in date suggestion', () => {
       metadata: { effective_days_since_activity: 5 },
     });
 
-    expect(Math.abs(end.getTime() - Date.now())).toBeLessThan(1000);
+    expect(end.toISOString()).toBe('2026-04-15T12:00:00.000Z');
   });
 
   it('falls back to a 14-day window when the task carries neither field', () => {
     const { start, end } = getSuggestedCheckInRange(null);
 
-    expect(end.getTime() - start.getTime()).toBeCloseTo(14 * 24 * 60 * 60 * 1000, -3);
+    expect([start.toISOString(), end.toISOString()]).toEqual(['2026-04-01T12:00:00.000Z', '2026-04-15T12:00:00.000Z']);
   });
 
   it('falls back to created_at alone when metadata has no usable count', () => {
-    const createdAt = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
+    const createdAt = '2026-04-10T12:00:00.000Z';
     const { start } = getSuggestedCheckInRange({ created_at: createdAt, metadata: {} });
 
-    expect(start.toISOString()).toBe(new Date(createdAt).toISOString());
+    expect(start.toISOString()).toBe('2026-04-10T12:00:00.000Z');
   });
 });

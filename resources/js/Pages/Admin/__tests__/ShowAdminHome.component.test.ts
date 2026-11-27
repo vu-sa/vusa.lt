@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ShowAdminHome from '@/Pages/Admin/ShowAdminHome.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -53,10 +53,12 @@ const mountPage = (props: Record<string, unknown> = {}) => mount(ShowAdminHome, 
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.useFakeTimers();
+  vi.useFakeTimers({ now: new Date('2026-11-27T12:00:00Z') });
   vi.mocked(usePage).mockReturnValue(createMockPage() as ReturnType<typeof usePage>);
   window.history.replaceState({}, '', '/mano');
 });
+
+afterEach(() => vi.useRealTimers());
 
 describe('ShowAdminHome', () => {
   it('keeps own pending requests in the primary section even without representation access', () => {

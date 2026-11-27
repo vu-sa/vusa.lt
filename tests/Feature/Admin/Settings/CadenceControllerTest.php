@@ -14,7 +14,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeUser($this->tenant);
-    $this->admin->assignRole(config('permission.super_admin_role_name'));
+    $this->admin->givePermissionTo('settings.update.*');
     $this->outsider = makeUser($this->tenant);
 });
 
@@ -99,8 +99,9 @@ describe('authorized access', function (): void {
     });
 
     test('an institution may reuse a start date the global ladder already uses', function (): void {
-        $institution = Institution::factory()->create();
+        $institution = Institution::factory()->for($this->tenant)->create();
         Cadence::factory()->forYear(2025)->create();
+        $this->admin->givePermissionTo('institutions.update.padalinys');
 
         asUser($this->admin)->post(route('settings.cadences.store'), [
             'institution_id' => $institution->id,
@@ -140,11 +141,15 @@ describe('authorized access', function (): void {
     });
 
     test('an unknown institution is rejected', function (): void {
-        asUser($this->admin)->post(route('settings.cadences.store'), [
+        $payload = [
             'institution_id' => '01jnotarealinstitution0000',
             'start_date' => '2025-07-01',
             'end_date' => '2026-06-30',
-        ])->assertSessionHasErrors('institution_id');
+        ];
+        asUser($this->admin)->post(route('settings.cadences.store'), $payload)->assertForbidden();
+        asUser(makeAdminUser($this->tenant))->post(route('settings.cadences.store'), $payload)
+            ->assertSessionHasErrors('institution_id');
+        expect(Cadence::count())->toBe(0);
     });
 });
 
@@ -229,6 +234,7 @@ describe('institution overrides', function (): void {
  */
 describe('meeting anchors', function (): void {
     beforeEach(function (): void {
+        $this->admin->givePermissionTo(['institutions.update.padalinys', 'meetings.read.padalinys']);
         $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $this->conference = Meeting::factory()->create(['start_time' => '2025-05-18 10:00:00']);

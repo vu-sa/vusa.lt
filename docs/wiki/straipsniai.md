@@ -18,20 +18,20 @@ tests:
   - tests/Feature/Admin/Learning/LearningWritesTest.php
   - tests/Feature/Admin/Learning/ResolveLearningPathTest.php
   - tests/Feature/System/AdminNavigationCatalogTest.php
-  - resources/js/Features/Admin/Knowledge/__tests__/ShowKnowledgeBase.component.test.ts
+  - resources/js/Pages/Admin/Knowledge/__tests__/ShowKnowledgeBase.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiProse.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiLinkPreview.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiLinkCard.component.test.ts
-  - resources/js/Features/Admin/Knowledge/__tests__/ShowKnowledgeSection.component.test.ts
+  - resources/js/Pages/Admin/Knowledge/__tests__/ShowKnowledgeSection.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiMaterialList.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiProgressToast.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/useStepProgress.test.ts
   - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Search/admin/__tests__/wikiSearch.test.ts
-  - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
+  - resources/js/Pages/Admin/Knowledge/__tests__/IndexKnowledgeItem.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/KnowledgeItemForm.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningSectionsSheet.component.test.ts
-  - resources/js/Features/Admin/Learning/__tests__/ShowKnowledgeItem.component.test.ts
+  - resources/js/Pages/Admin/Knowledge/__tests__/ShowKnowledgeItem.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/LearningCompletionControl.component.test.ts
   - resources/js/Features/Admin/Knowledge/__tests__/WikiSubjectsSheet.component.test.ts
   - resources/js/Components/TipTap/__tests__/TiptapLinkButton.component.test.ts

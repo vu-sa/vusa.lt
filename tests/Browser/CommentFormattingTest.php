@@ -42,7 +42,6 @@ test('formatted comments survive saving and editing across responsive layouts', 
         foreach ([false, true] as $dark) {
             $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
             expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width);
-            $page->screenshotElement('[data-slot=discussion-panel]', filename: 'comments-'.$width.($dark ? '-dark' : '-light'));
         }
     }
 
@@ -80,7 +79,6 @@ test('the phone composer opens on tap and adds links and mentions', function ():
     $page->click('[data-comment-mention-menu] button');
     $page->assertPresent($root.' .ProseMirror [data-type=mention]');
     expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual(390);
-    $page->screenshotElement('[data-slot=discussion-panel]', filename: 'comments-composer-phone');
     $page->assertNoJavaScriptErrors();
 });
 
@@ -111,5 +109,4 @@ test('a reply can be posted and reloaded on both discussion surfaces', function 
         ->and($commentable->comments()->count())->toBe(2);
     navigateTo($page, $path);
     $page->assertSee('Atsakymas į komentarą')->assertNoJavaScriptErrors();
-    $page->screenshotElement('[data-slot=discussion-panel]', filename: 'comment-reply-'.$type);
 })->with(['meeting', 'supportRequest']);

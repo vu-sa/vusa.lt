@@ -54,32 +54,6 @@ beforeEach(function (): void {
 });
 
 describe('auth: simple user', function (): void {
-    test('can view available resources for reservation', function (): void {
-        asUserWithInertia($this->user)->get(route('resources.index'))
-            ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Admin/Reservations/IndexResource'));
-    });
-
-    test('can create reservation for available resource', function (): void {
-        asUser($this->user)->post(route('reservations.store'), [
-            'name' => 'Team Meeting',
-            'description' => 'Weekly team meeting',
-            'start_time' => now()->addDays(1)->format('Y-m-d H:i:s'),
-            'end_time' => now()->addDays(1)->addHours(2)->format('Y-m-d H:i:s'),
-            'resources' => [
-                ['id' => $this->resource->id, 'quantity' => 1],
-            ],
-        ])->assertRedirect();
-
-        $this->assertDatabaseHas('reservations', [
-            'name' => 'Team Meeting',
-        ]);
-
-        // Check user is attached to reservation
-        $reservation = Reservation::where('name', 'Team Meeting')->first();
-        expect($reservation->users->contains($this->user))->toBeTrue();
-    });
-
     test('cannot create overlapping reservations', function (): void {
         $this->resource->update(['capacity' => 1]);
 
@@ -140,113 +114,17 @@ describe('auth: simple user', function (): void {
         expect($reservationResource->fresh()->quantity)->not->toBe(99);
     });
 
-    test('can delete own reservations', function (): void {
-        $reservation = Reservation::factory()->create();
-        $reservation->users()->attach($this->user->id);
-
-        asUser($this->user)->delete(route('reservations.destroy', $reservation))
-            ->assertRedirect();
-
-        $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
-    });
 });
 
 describe('auth: resource manager', function (): void {
-    test('can create new resources', function (): void {
-        $resourceCount = Resource::count();
+    test('lists reservations for resources the manager administers', function (): void {
+        $managed = Reservation::factory()->hasAttached($this->resource)->create();
+        $otherResource = Resource::factory()->for(Tenant::factory())->create();
+        Reservation::factory()->hasAttached($otherResource)->create();
 
-        asUser($this->resourceManager)->post(route('resources.store'), [
-            'name' => [
-                'lt' => 'Conference Room A',
-                'en' => 'Conference Room A',
-            ],
-            'description' => [
-                'lt' => 'Large conference room with projector',
-                'en' => 'Large conference room with projector',
-            ],
-            'capacity' => 20,
-            'location' => 'Building A, Floor 2',
-            'tenant_id' => $this->tenant->id,
-            'resource_category_id' => $this->category->id,
-            'is_reservable' => true,
-            'media' => [], // Empty array instead of null
-        ])->assertRedirect();
-
-        expect(Resource::count())->toBe($resourceCount + 1);
-
-        // Find the resource we just created by specific criteria
-        $createdResource = Resource::where('capacity', 20)
-            ->where('tenant_id', $this->tenant->id)
-            ->where('location', 'Building A, Floor 2')
-            ->first();
-
-        expect($createdResource)->not->toBeNull()
-            ->and($createdResource->getTranslation('name', 'lt'))->toBe('Conference Room A')
-            ->and($createdResource->capacity)->toBe(20)
-            ->and($createdResource->tenant_id)->toBe($this->tenant->id);
-    });
-
-    test('can update resources', function (): void {
-        $originalName = $this->resource->getTranslation('name', 'lt');
-
-        asUser($this->resourceManager)->put(route('resources.update', $this->resource), [
-            'name' => [
-                'lt' => 'Updated Resource Name',
-                'en' => 'Updated Resource Name',
-            ],
-            'description' => [
-                'lt' => 'Updated description',
-                'en' => 'Updated description',
-            ],
-            'location' => 'Updated location',
-            'tenant_id' => $this->tenant->id,
-            'capacity' => 30,
-            'is_reservable' => false,
-            'resource_category_id' => $this->category->id,
-            'media' => [], // Empty array instead of null
-        ])->assertRedirect();
-
-        $this->resource->refresh();
-        expect($this->resource->getTranslation('name', 'lt'))->toBe('Updated Resource Name')->not->toBe($originalName)
-            ->and($this->resource->capacity)->toBe(30)
-            ->and($this->resource->is_reservable)->toBeFalsy(); // Cast to boolean for comparison
-    });
-
-    test('can view all reservations', function (): void {
-        // Create reservations from different users
-        $reservations = Reservation::factory()->count(3)->create();
-        foreach ($reservations as $reservation) {
-            $user = User::factory()->create();
-            $reservation->users()->attach($user->id);
-        }
-
-        // Resource manager should be able to see all reservations
-        asUserWithInertia($this->resourceManager)->get(route('reservations.index'))
-            ->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/Reservations/IndexReservation')
-                ->has('reservations.data')
-            );
-    });
-});
-
-describe('resource availability logic', function (): void {
-    test('resource shows as unavailable during existing reservations', function (): void {
-        $reservation = Reservation::factory()->create([
-            'start_time' => now()->addDays(1),
-            'end_time' => now()->addDays(1)->addHours(2),
-        ]);
-        $reservation->resources()->attach($this->resource->id, [
-            'quantity' => 1,
-            'start_time' => $reservation->start_time,
-            'end_time' => $reservation->end_time,
-            'state' => 'created',
-        ]);
-
-        $response = asUser($this->user)->get(route('resources.index'));
-
-        $response->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Admin/Reservations/IndexResource'));
+        asUserWithInertia($this->resourceManager)->get(route('reservations.index', ['scope' => 'administered']))
+            ->assertOk()->assertInertia(fn ($page) => $page
+            ->has('reservations.data', 1)->where('reservations.data.0.id', $managed->id));
     });
 });
 

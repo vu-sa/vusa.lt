@@ -3,11 +3,17 @@ import { defineComponent } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+beforeEach(() => {
+  stubGlobal('fetch', mockFetch);
+});
 
 async function mountIndicator(locale: string) {
   vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale } }));

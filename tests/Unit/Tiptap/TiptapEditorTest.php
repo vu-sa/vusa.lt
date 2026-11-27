@@ -39,7 +39,7 @@ describe('TiptapEditor', function (): void {
             ->toContain('>Test H3</h3>');
     });
 
-    it('renders list items without doubled closing tags', function (): void {
+    it('renders bullet and ordered list items without doubled closing tags', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -50,17 +50,25 @@ describe('TiptapEditor', function (): void {
                         ['type' => 'listItem', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Item 2']]]]],
                     ],
                 ],
+                [
+                    'type' => 'orderedList',
+                    'content' => [
+                        ['type' => 'listItem', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'First']]]]],
+                    ],
+                ],
             ],
         ];
 
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        // Ensure no doubled closing tags
-        expect($html)->not->toContain('</li></li>');
-        expect($html)->not->toContain('</p></p>')
+        expect($html)->not->toContain('</li></li>')
+            ->not->toContain('</p></p>')
             ->toContain('<li><p>Item 1</p></li>')
-            ->toContain('<li><p>Item 2</p></li>');
+            ->toContain('<li><p>Item 2</p></li>')
+            ->toContain('<ol><li><p>First</p></li></ol>')
+            ->and(substr_count($html, '</li>'))->toBe(3)
+            ->and(substr_count($html, '</ol>'))->toBe(1);
     });
 
     it('renders images with correct attributes', function (): void {
@@ -432,30 +440,38 @@ describe('Image node', function (): void {
 });
 
 describe('CustomHeading', function (): void {
-    it('only renders configured heading levels', function (): void {
+    it('only renders configured heading levels and falls back to h2 for unconfigured levels', function (): void {
         $editor = new TiptapEditor;
 
-        // Level 2 should work
         $h2Content = [
             'type' => 'doc',
             'content' => [
                 ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'H2']]],
             ],
         ];
-        $html = $editor->setContent($h2Content)->getHTML();
-        expect($html)->toContain('<h2')
-            ->toContain('id="h2"');
+        expect($editor->setContent($h2Content)->getHTML())->toContain('<h2 id="h2">H2</h2>');
 
-        // Level 3 should work
         $h3Content = [
             'type' => 'doc',
             'content' => [
                 ['type' => 'heading', 'attrs' => ['level' => 3], 'content' => [['type' => 'text', 'text' => 'H3']]],
             ],
         ];
-        $html = $editor->setContent($h3Content)->getHTML();
-        expect($html)->toContain('<h3')
-            ->toContain('id="h3"');
+        expect($editor->setContent($h3Content)->getHTML())->toContain('<h3 id="h3">H3</h3>');
+
+        foreach ([1, 5] as $unconfiguredLevel) {
+            $fallbackContent = [
+                'type' => 'doc',
+                'content' => [
+                    ['type' => 'heading', 'attrs' => ['level' => $unconfiguredLevel], 'content' => [['type' => 'text', 'text' => "Level {$unconfiguredLevel}"]]],
+                ],
+            ];
+
+            $html = $editor->setContent($fallbackContent)->getHTML();
+
+            expect($html)->toContain("<h2 id=\"level-{$unconfiguredLevel}\">Level {$unconfiguredLevel}</h2>")
+                ->not->toContain("<h{$unconfiguredLevel}");
+        }
     });
 
     it('generates ID from heading text', function (): void {
@@ -587,22 +603,6 @@ describe('CustomHeading', function (): void {
         ]];
         expect($editor->setContent($default)->getHTML())->not->toContain('rc-h-spacing');
     });
-
-    it('generates different IDs for both h2 and h3', function (): void {
-        $editor = new TiptapEditor;
-        $content = [
-            'type' => 'doc',
-            'content' => [
-                ['type' => 'heading', 'attrs' => ['level' => 2], 'content' => [['type' => 'text', 'text' => 'Section One']]],
-                ['type' => 'heading', 'attrs' => ['level' => 3], 'content' => [['type' => 'text', 'text' => 'Subsection One']]],
-            ],
-        ];
-
-        $html = $editor->setContent($content)->getHTML();
-
-        expect($html)->toContain('id="section-one"')
-            ->toContain('id="subsection-one"');
-    });
 });
 
 describe('TextAlign', function (): void {
@@ -672,28 +672,5 @@ describe('RCTag', function (): void {
 
         expect($html)->toContain('rc-tag-filled')
             ->toContain('rc-tag-yellow');
-    });
-});
-
-describe('TipTapListItem', function (): void {
-    it('renders without wrapper duplication', function (): void {
-        $content = [
-            'type' => 'doc',
-            'content' => [
-                [
-                    'type' => 'orderedList',
-                    'content' => [
-                        ['type' => 'listItem', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'First']]]]],
-                    ],
-                ],
-            ],
-        ];
-
-        $editor = new TiptapEditor;
-        $html = $editor->setContent($content)->getHTML();
-
-        // Count occurrences - should only have one closing tag per element
-        expect(substr_count($html, '</li>'))->toBe(1);
-        expect(substr_count($html, '</ol>'))->toBe(1);
     });
 });

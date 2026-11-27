@@ -5,12 +5,12 @@ last_reviewed: 2026-11-21
 tests:
   - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
-  - tests/Feature/Admin/Core/AtstovavimasApiTest.php
+  - tests/Feature/Api/Admin/AtstovavimasApiControllerTest.php
   - tests/Feature/Api/Admin/RepStatisticsTest.php
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Admin/Core/InstitutionStatusSnapshotTest.php
-  - tests/Unit/InstitutionActivityStatusServiceTest.php
+  - tests/Unit/Services/InstitutionActivityStatusServiceTest.php
   - tests/Unit/Enums/InstitutionActivityStatusTest.php
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimasPadaliniai.component.test.ts
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantScopeSelector.component.test.ts

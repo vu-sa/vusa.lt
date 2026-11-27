@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import PublicAgendaItemRow from '../PublicAgendaItemRow.vue';
 
 describe('PublicAgendaItemRow', () => {
-  it('renders only the number and public title without a privacy label for a private item', () => {
+  it('renders only the number and public title without a privacy label for a private item', async () => {
     const wrapper = mount(PublicAgendaItemRow, {
       props: {
         item: {
@@ -19,9 +19,18 @@ describe('PublicAgendaItemRow', () => {
     expect(wrapper.text()).toContain('3');
     expect(wrapper.text()).toContain('Working item');
     expect(wrapper.text()).not.toContain('meetings.privacy.internal_only');
-    expect(wrapper.text()).not.toContain('Internal content', '14:00', 'Įtraukta studentų');
+    expect(wrapper.text()).not.toContain('Internal content');
+    expect(wrapper.text()).not.toContain('14:00');
+    expect(wrapper.text()).not.toContain('14:30');
+    expect(wrapper.text()).not.toContain('Įtraukta studentų');
     expect(wrapper.find('details').exists()).toBe(false);
     expect(wrapper.find('dl').exists()).toBe(false);
+
+    await wrapper.setProps({ item: { ...wrapper.props('item'), is_private: false } });
+    expect(wrapper.text()).toContain('14:00–14:30');
+    expect(wrapper.text()).toContain('Įtraukta studentų');
+    expect(wrapper.get('details').text()).toContain('Internal content');
+    expect(wrapper.find('dl').exists()).toBe(true);
   });
 
   it('shows the student position, but not for a private item or a VU SA body', () => {

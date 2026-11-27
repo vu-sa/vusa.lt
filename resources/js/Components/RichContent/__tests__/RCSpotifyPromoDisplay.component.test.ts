@@ -1,10 +1,13 @@
 import { mount } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const darkRef = ref(false);
+afterEach(() => {
+  darkRef.value = false;
+});
 vi.mock('@vueuse/core', async (importOriginal) => {
   const actual = await importOriginal() as Record<string, unknown>;
   return { ...actual, useDark: () => darkRef };

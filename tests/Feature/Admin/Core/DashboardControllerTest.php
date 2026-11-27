@@ -11,11 +11,9 @@ use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\QuickLink;
 use App\Models\ReservationDraft;
 use App\Models\ReservationDraftItem;
 use App\Models\Resource;
-use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -33,11 +31,6 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
-    // Create related test data
-    $this->page = Page::factory()->for($this->tenant)->create();
-    $this->news = News::factory()->for($this->tenant)->create();
-    $this->quickLink = QuickLink::factory()->for($this->tenant)->create();
-    $this->resource = Resource::factory()->for($this->tenant)->create();
 });
 describe('dashboard access', function (): void {
     test('any authenticated user can access dashboard', function (): void {
@@ -91,33 +84,6 @@ describe('dashboard access', function (): void {
     });
 });
 
-describe('dashboard data structure', function (): void {
-    test('task statistics are correctly structured', function (): void {
-        asUserWithInertia($this->admin)
-            ->get(route('dashboard'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowAdminHome')
-                ->has('taskStats')
-                ->where('taskStats', fn ($taskStats) => isset($taskStats['total'])
-                    && isset($taskStats['overdue'])
-                    && isset($taskStats['dueSoon']))
-            );
-    });
-
-    test('upcoming data is included', function (): void {
-        asUserWithInertia($this->admin)
-            ->get(route('dashboard'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowAdminHome')
-                ->has('upcomingTasks')
-                ->has('upcomingMeetings')
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('institutionsNeedingAttention'))
-            );
-    });
-});
-
 describe('followed institutions', function (): void {
     test('upcoming meetings include followed institutions, marked as followed', function (): void {
         $followed = Institution::factory()->for($this->tenant)->create();
@@ -154,13 +120,6 @@ describe('followed institutions', function (): void {
 });
 
 describe('dashboard performance', function (): void {
-    test('dashboard loads without database errors', function (): void {
-        // Test that the dashboard doesn't cause N+1 queries or database errors
-        asUser($this->admin)
-            ->get(route('dashboard'))
-            ->assertStatus(200);
-    });
-
     test('dashboard task statistics work with no tasks', function (): void {
         // Test when user has no tasks
         asUserWithInertia($this->admin)
@@ -380,7 +339,6 @@ describe('dashboard calendar and news', function (): void {
 
     test('draft news items are not included', function (): void {
         // Delete any existing news first
-        News::query()->delete();
 
         // Create draft news
         News::factory()->for($this->tenant)->create([
@@ -401,7 +359,6 @@ describe('dashboard calendar and news', function (): void {
 
     test('future news items are not included', function (): void {
         // Delete any existing news first
-        News::query()->delete();
 
         // Create future news (scheduled)
         News::factory()->for($this->tenant)->create([
@@ -422,7 +379,6 @@ describe('dashboard calendar and news', function (): void {
 
     test('news without image returns null image', function (): void {
         // Delete any existing news first
-        News::query()->delete();
 
         // Create news without an image
         $news = News::factory()->for($this->tenant)->create([
@@ -447,7 +403,6 @@ describe('dashboard calendar and news', function (): void {
 
     test('news with image returns its thumbnail URL', function (): void {
         // Delete any existing news first
-        News::query()->delete();
 
         // Create news with an image
         $news = News::factory()->for($this->tenant)->create([
@@ -665,39 +620,6 @@ describe('Pradžia secondary panels', function (): void {
             );
     });
 
-    test('the retired coordinator prop is absent for representatives and coordinators', function (): void {
-        $manager = makeUser($this->tenant);
-        $duty = $manager->duties()->first();
-        $duty->pivot->end_date = null;
-        $duty->pivot->save();
-        ResponsibilityGrant::factory()->forDuty($duty)->forTenant($this->tenant)->create();
-
-        $rep = makeUser($this->tenant);
-        $rep->duties()->first()->pivot->update(['end_date' => null]);
-
-        asUserWithInertia($rep)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->missing('coordinator')
-                )
-            );
-
-        asUserWithInertia($manager)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->missing('coordinator'))
-            );
-    });
-
-    test('the retired coordinator prop is absent when nobody coordinates the padalinys', function (): void {
-        asUserWithInertia($this->user)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->missing('coordinator'))
-            );
-    });
-
     test('site content is only assembled for users who can see it', function (): void {
         News::factory()->for($this->tenant)->create([
             'lang' => 'lt',
@@ -792,7 +714,7 @@ describe('unfinished reservation', function (): void {
             ->assertInertia(fn (Assert $page) => $page->where('reservationDraft', null));
 
         $draft = ReservationDraft::factory()->for($this->user)->withPeriod()->create();
-        ReservationDraftItem::factory()->for($draft, 'draft')->for($this->resource)->create();
+        ReservationDraftItem::factory()->for($draft, 'draft')->for(Resource::factory()->for($this->tenant))->create();
 
         asUserWithInertia($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page

@@ -203,16 +203,15 @@ describe('getTotalQuantity method', function (): void {
             'resource_id' => 1,
             'start_time' => $this->mockStartTime,
             'end_time' => $this->mockEndTime,
-            'quantity' => 0,
+            'quantity' => null,
             'state' => Created::class,
         ]);
 
         $nullQuantityReservation->setRelation('pivot', $nullQuantityPivot);
 
-        $collection = new ReservationCollection([$nullQuantityReservation]);
-        $totalQuantity = $collection->getTotalQuantity();
+        $collection = new ReservationCollection([$nullQuantityReservation, $this->reservation1]);
 
-        expect($totalQuantity)->toBe(0);
+        expect($collection->getTotalQuantity())->toBe(2);
     });
 });
 
@@ -254,33 +253,61 @@ describe('whereEndsAfter method', function (): void {
 
 describe('sortByStartTime method', function (): void {
     test('sorts reservations by start time ascending by default', function (): void {
-        $sortedReservations = $this->collection->sortByStartTime();
+        $unsorted = new ReservationCollection([$this->reservation3, $this->reservation1, $this->reservation2]);
+        $times = $unsorted->sortByStartTime()
+            ->map(fn ($r) => $r->pivot->start_time->format('Y-m-d H:i:s'))
+            ->values()
+            ->all();
 
-        $times = $sortedReservations->map(fn ($r) => $r->pivot->start_time);
-        expect($times->first()->format('Y-m-d H:i:s'))->toBe($this->mockStartTime->format('Y-m-d H:i:s'));
+        expect($times)->toBe([
+            '2024-01-15 10:00:00',
+            '2024-01-15 11:00:00',
+            '2024-01-16 14:00:00',
+        ]);
     });
 
     test('sorts reservations by start time descending when specified', function (): void {
-        $sortedReservations = $this->collection->sortByStartTime(true);
+        $unsorted = new ReservationCollection([$this->reservation2, $this->reservation1, $this->reservation3]);
+        $times = $unsorted->sortByStartTime(true)
+            ->map(fn ($r) => $r->pivot->start_time->format('Y-m-d H:i:s'))
+            ->values()
+            ->all();
 
-        $times = $sortedReservations->map(fn ($r) => $r->pivot->start_time);
-        expect($times->first()->format('Y-m-d H:i:s'))->toBe('2024-01-16 14:00:00');
+        expect($times)->toBe([
+            '2024-01-16 14:00:00',
+            '2024-01-15 11:00:00',
+            '2024-01-15 10:00:00',
+        ]);
     });
 });
 
 describe('sortByEndTime method', function (): void {
     test('sorts reservations by end time ascending by default', function (): void {
-        $sortedReservations = $this->collection->sortByEndTime();
+        $unsorted = new ReservationCollection([$this->reservation3, $this->reservation1, $this->reservation2]);
+        $times = $unsorted->sortByEndTime()
+            ->map(fn ($r) => $r->pivot->end_time->format('Y-m-d H:i:s'))
+            ->values()
+            ->all();
 
-        $times = $sortedReservations->map(fn ($r) => $r->pivot->end_time);
-        expect($times->first()->format('Y-m-d H:i:s'))->toBe($this->mockEndTime->format('Y-m-d H:i:s'));
+        expect($times)->toBe([
+            '2024-01-15 12:00:00',
+            '2024-01-15 13:00:00',
+            '2024-01-16 16:00:00',
+        ]);
     });
 
     test('sorts reservations by end time descending when specified', function (): void {
-        $sortedReservations = $this->collection->sortByEndTime(true);
+        $unsorted = new ReservationCollection([$this->reservation2, $this->reservation1, $this->reservation3]);
+        $times = $unsorted->sortByEndTime(true)
+            ->map(fn ($r) => $r->pivot->end_time->format('Y-m-d H:i:s'))
+            ->values()
+            ->all();
 
-        $times = $sortedReservations->map(fn ($r) => $r->pivot->end_time);
-        expect($times->first()->format('Y-m-d H:i:s'))->toBe('2024-01-16 16:00:00');
+        expect($times)->toBe([
+            '2024-01-16 16:00:00',
+            '2024-01-15 13:00:00',
+            '2024-01-15 12:00:00',
+        ]);
     });
 });
 

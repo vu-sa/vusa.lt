@@ -97,12 +97,12 @@ describe('Public/Meetings/ShowMeeting.vue', () => {
     expect(wrapper.text()).not.toContain('klausimai');
   });
 
-  it('does not underline the institution link in the eyebrow', () => {
+  it('links the institution eyebrow to its contact page', () => {
     const wrapper = mountPage({
       institution: { id: 'inst-1', name: 'VU SA Parlamentas' },
     });
 
     const institutionLink = wrapper.findAll('a').find(link => link.text() === 'VU SA Parlamentas');
-    expect(institutionLink?.classes()).toContain('no-underline');
+    expect(institutionLink?.attributes('href')).toContain('contacts.institution');
   });
 });

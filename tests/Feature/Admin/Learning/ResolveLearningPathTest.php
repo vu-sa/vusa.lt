@@ -232,14 +232,7 @@ test('responsibility ids and system purposes match the holders of the role', fun
         ->and($paths[$outsider->id]->contains($byPurpose))->toBeFalse();
 });
 
-test('retired system tasks are absent from the path', function (): void {
-    $user = User::factory()->create(['profile_photo_path' => '/avatar.jpg']);
-    $path = ResolveLearningPath::execute($user);
-
-    expect($path->steps->pluck('item.key'))->not->toContain('profile_photo', 'meet_institution_contacts', 'follow_institution', 'read_handover')
-        ->toContain('install_app');
-    $this->assertDatabaseMissing('learning_steps', ['key' => 'follow_institution']);
-    $this->assertDatabaseMissing('learning_steps', ['key' => 'read_handover']);
-    $this->assertDatabaseMissing('learning_steps', ['key' => 'profile_photo']);
-    $this->assertDatabaseMissing('learning_steps', ['key' => 'meet_institution_contacts']);
+test('the learning path includes the install app system step', function (): void {
+    $user = User::factory()->create();
+    expect(ResolveLearningPath::execute($user)->steps->pluck('item.key'))->toContain('install_app');
 });

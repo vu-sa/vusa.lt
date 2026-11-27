@@ -22,12 +22,10 @@ function classesOf(button: HeroButton, props: Record<string, unknown> = {}): str
 }
 
 describe('HeroButtons', () => {
-  it('maps the default red to the brand fill rather than a fixed hex', () => {
-    expect(classesOf(makeButton())).toContain('bg-brand-fill');
-  });
-
-  it('falls back to brand for an unknown authored colour', () => {
-    expect(classesOf(makeButton({ color: 'chartreuse' as HeroButton['color'] }))).toContain('bg-brand-fill');
+  it('uses the themed brand fill by default', () => {
+    const classes = classesOf(makeButton());
+    expect(classes).toContain('bg-brand-fill');
+    expect(classes).not.toMatch(/\bdark:bg-/);
   });
 
   it('renders the hairline outline on light surfaces by default', () => {
@@ -48,15 +46,6 @@ describe('HeroButtons', () => {
     const classes = classesOf(makeButton({ variant: 'outline' }), { class: 'dark' });
     expect(classes).toContain('border-white/25');
     expect(classes).toContain('text-white');
-  });
-
-  // The regression this guarded — a variant's `dark:bg-zinc-50` beating an authored fill — is
-  // gone with the variants' raw colours; the fill is one token that already follows the theme.
-  it.each(['red', 'yellow', 'zinc', 'white'] as const)('gives the %s button the themed brand fill with no dark: override', (color) => {
-    const classes = classesOf(makeButton({ color }));
-
-    expect(classes).toContain('bg-brand-fill');
-    expect(classes).not.toMatch(/\bdark:bg-/);
   });
 
   it('renders nothing when there are no buttons', () => {

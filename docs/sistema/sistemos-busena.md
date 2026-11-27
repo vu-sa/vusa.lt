@@ -30,7 +30,7 @@ Puslapyje pateikiama trijų rūšių informacija: paslaugų sveikatos patikros, 
 Atvėrus puslapį arba paspaudus **Atnaujinti**, pateikiamas pagrindinių komponentų būsenos pjūvis. Automatinio periodinio atnaujinimo nėra:
 
 - **Redis** – greitoji atmintis ir sesijų saugykla;
-- **Duomenų bazė** – ryšys su MySQL duomenų baze ir lentelių būklė;
+- **Duomenų bazė** – ryšys su MySQL duomenų baze ir lentelių būklė. Jei patikra nepavyksta, rodoma trumpa klaidos žinutė;
 - **Talpykla** – programos duomenų talpykla;
 - **Typesense** – greitosios paieškos variklis;
 - **Planuoklė** – periodinių fono užduočių planuoklė;

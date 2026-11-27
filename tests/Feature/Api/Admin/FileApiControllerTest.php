@@ -13,6 +13,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
@@ -480,14 +481,18 @@ describe('recursive search', function (): void {
     test('a sibling tenant folder is skipped when the walk does start', function (): void {
         Storage::put('public/files/padaliniai/vusaother/camp-secret.pdf', 'other tenant');
 
-        $superAdmin = User::factory()->create();
-        $superAdmin->assignRole(config('permission.super_admin_role_name'));
+        $root = 'public/files/padaliniai';
+        Gate::before(
+            fn (User $user, string $ability, array $arguments) => $user->is($this->fileManager)
+                && $ability === 'viewDirectory' && ($arguments[1] ?? null) === $root ? true : null
+        );
 
-        $mine = asUser($this->fileManager)
-            ->getJson(route('api.v1.admin.files.search', ['q' => 'camp', 'path' => $this->allowedPath]));
+        $results = asUser($this->fileManager)
+            ->getJson(route('api.v1.admin.files.search', ['q' => 'camp', 'path' => $root]))
+            ->assertOk()
+            ->json('data.files');
 
-        expect(collect($mine->json('data.files'))->pluck('name'))
-            ->not->toContain('camp-secret.pdf');
+        expect(array_column($results, 'name'))->toContain('summer-camp.pdf')->not->toContain('camp-secret.pdf');
     });
 
     test('a query shorter than two characters is rejected', function (): void {

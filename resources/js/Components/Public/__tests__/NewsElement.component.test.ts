@@ -103,8 +103,7 @@ describe('NewsElement', () => {
     expect(title.exists()).toBe(true);
 
     title.element.textContent = 'Kas naujo';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();
@@ -119,8 +118,7 @@ describe('NewsElement', () => {
 
     const eyebrow = wrapper.find('[data-slot="eyebrow-label"] [contenteditable]');
     eyebrow.element.textContent = 'Studentams';
-    await eyebrow.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await eyebrow.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect((emitted!.at(-1)![0] as News).json_content.eyebrow).toBe('Studentams');

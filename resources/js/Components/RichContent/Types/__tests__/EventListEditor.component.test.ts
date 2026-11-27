@@ -22,10 +22,11 @@ describe('EventListEditor', () => {
 
   it('shows the year field when mode=year', () => {
     const item = makeItem();
-    item.options.mode = 'year';
+    item.options = { ...item.options, mode: 'year', year: 2026 };
     const wrapper = mount(EventListEditor, { props: { modelValue: item.json_content, options: item.options } });
 
     expect(wrapper.findAll('input[type="date"]')).toHaveLength(0);
+    expect(wrapper.get<HTMLInputElement>('input[type="number"]').element.value).toBe('2026');
   });
 
   it('toggling groupBy to tenant reveals the tenant label prefix field', async () => {

@@ -59,9 +59,8 @@ describe('ConsentCard', () => {
   it('offers no analytics opt-in — Umami is cookieless, so there is nothing to consent to', () => {
     const wrapper = mountCard();
 
-    expect(wrapper.find('.switch-stub').exists()).toBe(false);
-    expect(findButtonByText(wrapper, 'Tik būtinieji')).toBeUndefined();
-    expect(findButtonByText(wrapper, 'Sutikti su visais')).toBeUndefined();
+    expect(wrapper.find('[role="switch"]').exists()).toBe(false);
+    expect(wrapper.findAll('button')).toHaveLength(1);
   });
 
   it('dismisses the notice on acknowledge', async () => {

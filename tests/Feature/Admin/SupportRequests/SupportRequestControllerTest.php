@@ -242,7 +242,7 @@ describe('role-based and public visibility', function (): void {
         ]);
         $roleRequest->roles()->attach($role);
 
-        $duty = Duty::factory()->has(Institution::factory()->state(['tenant_id' => $this->tenant->id]))
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))
             ->hasAttached($this->user, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])
             ->create();
         $duty->assignRole($role);

@@ -17,15 +17,10 @@ beforeEach(function (): void {
     $this->tenantA = Tenant::factory()->create(['type' => 'padalinys', 'alias' => 'tenant-a']);
     $this->tenantB = Tenant::factory()->create(['type' => 'padalinys', 'alias' => 'tenant-b']);
 
-    $this->userA = makeUser($this->tenantA);
-    $this->userB = makeUser($this->tenantB);
-
     // Create admin users with appropriate roles for news management
     $this->adminA = makeUser($this->tenantA);
     $this->adminA->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
-    $this->adminB = makeUser($this->tenantB);
-    $this->adminB->duties()->first()->assignRole('Komunikacijos koordinatorius');
 });
 
 describe('tenant data isolation', function (): void {

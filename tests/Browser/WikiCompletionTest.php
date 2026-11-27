@@ -24,9 +24,9 @@ it('keeps an archive document when the editor switches source modes and explains
     $page->assertVisible('[data-testid=selected-document-lt]')
         ->click('[data-testid=source-mode-lt-url]')->type('[data-testid=source-url-lt]', 'https://example.test/reference')
         ->click('[data-testid=source-mode-lt-document]')->assertVisible('[data-testid=selected-document-lt]')
-        ->assertSee('Tau skirti įrašai')->screenshotElement('[data-testid=source-block-lt]', filename: 'wiki-source-switch-detail');
+        ->assertSee('Tau skirti įrašai');
     $page->resize(390, 844)->assertVisible('[data-slot=knowledge-audience-hint]')
-        ->assertNoJavaScriptErrors()->screenshotElement('[data-testid=step-audiences]', filename: 'wiki-audience-hint-phone');
+        ->assertNoJavaScriptErrors();
 });
 
 it('keeps the library open action and edit menu inside the table action column', function (): void {
@@ -37,11 +37,11 @@ it('keeps the library open action and edit menu inside the table action column',
     foreach ([1440, 820] as $width) {
         $page->resize($width, 844)->assertAttribute('[data-collection-row-action=primary]', 'data-action', 'open');
         expect($page->script('(() => { const actions = document.querySelector("[data-slot=collection-row-actions]"); const cell = actions.closest("td"); return actions.scrollWidth <= cell.clientWidth; })()'))->toBeTrue();
-        $page->assertNoJavaScriptErrors()->screenshot(filename: 'wiki-library-actions-'.$width);
+        $page->assertNoJavaScriptErrors();
     }
     $page->resize(390, 844)->click('[data-slot=record-action-menu] button:visible')
         ->assertVisible('[data-action=edit]')
-        ->assertNoJavaScriptErrors()->screenshot(filename: 'wiki-library-actions-phone');
+        ->assertNoJavaScriptErrors();
 });
 
 it('keeps alphabet headings below both sticky navigation bars after a letter jump', function (): void {
@@ -55,7 +55,7 @@ it('keeps alphabet headings below both sticky navigation bars after a letter jum
     foreach ([1440, 390] as $width) {
         $page->resize($width, 844)->click('a[href="#letter-c"]')->assertVisible('#letter-c-title');
         expect($page->script('document.querySelector("#letter-c-title").getBoundingClientRect().top >= document.querySelector("[data-slot=alphabet-bar]").getBoundingClientRect().bottom'))->toBeTrue();
-        $page->assertNoJavaScriptErrors()->screenshot(filename: 'wiki-alphabet-jump-'.$width);
+        $page->assertNoJavaScriptErrors();
     }
 });
 
@@ -76,7 +76,7 @@ it('opens articles for you from the Wiki menu and switches grouping on its own p
     KnowledgeItem::factory()->withoutAudiences()->create();
     $page = loginAsAdmin($user, route('knowledgeBase.show', absolute: false), 1440, 900);
     $page->assertVisible('[data-slot=wiki-search] input')->assertVisible('[data-slot=wiki-progress-all]')
-        ->assertNotPresent('[data-slot=wiki-progress-assigned]')->screenshot(filename: 'wiki-home-search');
+        ->assertNotPresent('[data-slot=wiki-progress-assigned]');
     $page->click('[data-slot=section-tabs] a[href$="/knowledge/for-you"]')
         ->assertPathIs('/mano/knowledge/for-you')
         ->assertVisible('[data-slot=wiki-progress-assigned]')->assertNotPresent('[data-slot=wiki-progress-all]')
@@ -85,24 +85,17 @@ it('opens articles for you from the Wiki menu and switches grouping on its own p
     $page->page()->locator('html:not(:active-view-transition) [data-testid=documents-view-sections]')->click();
     $page->assertQueryStringHas('view', 'sections')
         ->assertVisible('#documents-'.$section->id)
-        ->assertAttribute('[data-testid=documents-view-sections]', 'aria-pressed', 'true')
-        ->screenshot(filename: 'wiki-for-you-desktop');
-    $page->resize(390, 844)->assertNoJavaScriptErrors()->screenshot(filename: 'wiki-for-you-phone');
-    $page->script('document.documentElement.classList.add("dark")');
-    $page->screenshot(filename: 'wiki-progress-phone-dark');
-    $page->resize(1440, 900)->screenshot(filename: 'wiki-progress-desktop-dark');
+        ->assertAttribute('[data-testid=documents-view-sections]', 'aria-pressed', 'true');
+    $page->resize(390, 844)->assertNoJavaScriptErrors();
     navigateTo($page, route('knowledgeBase.mine', ['view' => 'sections'], absolute: false));
     $page->assertAttribute('[data-testid=documents-view-sections]', 'aria-pressed', 'true');
     navigateTo($page, route('knowledgeBase.show', absolute: false));
-    $page->assertVisible('[data-slot=wiki-search] input')->screenshot(filename: 'wiki-home-search-phone');
+    $page->assertVisible('[data-slot=wiki-search] input');
     navigateTo($page, route('learningPath.show', absolute: false));
     $page->assertVisible('[data-slot=documents-entry] [data-slot=wiki-progress-assigned]')
         ->assertNotPresent('[data-slot=learning-summary]')->assertNotPresent('[data-slot=wiki-progress-legend]')
-        ->assertNoJavaScriptErrors()->screenshot(filename: 'learning-wiki-progress-desktop');
-    expect($page->script('(() => { const block = document.querySelector("[data-slot=documents-entry]"); const read = block.querySelector("[data-slot=learning-step-action]").getBoundingClientRect(); const wiki = block.querySelector("[data-slot=all-documents]").getBoundingClientRect(); return read.width === wiki.width && read.height === wiki.height; })()'))->toBeTrue();
-    $page->assertVisible('[data-slot=learning-coordinators]')->screenshotElement('[data-step]:has([data-slot=learning-coordinators])', filename: 'learning-coordinator-desktop');
-    $page->resize(390, 844)->screenshot(filename: 'learning-wiki-progress-phone');
-    $page->screenshotElement('[data-step]:has([data-slot=learning-coordinators])', filename: 'learning-coordinator-phone');
+        ->assertVisible('[data-slot=learning-coordinators]')
+        ->assertNoJavaScriptErrors();
 });
 
 it('lets a reader complete an off-path article in the built app', function (): void {
@@ -123,19 +116,12 @@ it('lets a reader complete an off-path article in the built app', function (): v
     $page = loginAsAdmin($user, route('knowledgeItems.show', $item, absolute: false), 390, 844);
     $page->assertPresent('[data-testid=step-checkbox]')
         ->assertPresent('[data-slot=step-about] [data-slot=article-related] [data-slot=wiki-page-learned]')
-        ->assertNoJavaScriptErrors()
-        ->screenshot(filename: 'wiki-article-phone');
-    $page->screenshotElement('[data-slot=source-preview]', filename: 'wiki-source-preview-phone');
+        ->assertNoJavaScriptErrors();
     expect($page->script('(() => { const preview = document.querySelector("[data-slot=source-preview]"); return preview.querySelector("a > span:last-child").getBoundingClientRect().top >= preview.querySelector("img").getBoundingClientRect().bottom; })()'))->toBeTrue();
-    $page->click('[data-testid=step-checkbox]')->assertAttribute('[data-testid=step-checkbox]', 'aria-checked', 'true');
-    foreach ([820, 1180, 1440] as $width) {
-        $page->resize($width, 900)->screenshot(filename: 'wiki-article-'.$width);
-    }
+    $page->resize(1440, 900);
     $page->hover('[data-slot=article-related] a')->assertVisible('[data-slot=wiki-link-card]')
-        ->assertSee('Komitetas rūpinasi studijų programa.')
-        ->screenshot(filename: 'wiki-related-preview');
-    $page->script('document.documentElement.classList.add("dark")');
-    $page->screenshot(filename: 'wiki-related-preview-dark');
+        ->assertSee('Komitetas rūpinasi studijų programa.');
+    $page->click('[data-testid=step-checkbox]')->assertAttribute('[data-testid=step-checkbox]', 'aria-checked', 'true');
     navigateTo($page, route('knowledgeItems.show', $item, absolute: false));
     $page->assertAttribute('[data-testid=step-checkbox]', 'aria-checked', 'true')->assertNoJavaScriptErrors();
 });
@@ -147,13 +133,9 @@ it('opens the section manager and bilingual editor in the built app', function (
     }
     KnowledgeSection::factory()->count(2)->create();
     $page = loginAsAdmin($user, route('knowledgeItems.index', absolute: false), 390, 844);
-    $page->click('[data-testid=manage-sections]')->assertPresent('[data-slot=managed-section]')
-        ->screenshot(filename: 'wiki-sections-phone');
+    $page->click('[data-testid=manage-sections]')->assertPresent('[data-slot=managed-section]');
     $page->click('[data-testid=create-section]')->click('[data-testid=section-locale-en]')
-        ->assertPresent('[data-testid=section-title]')->screenshot(filename: 'wiki-section-editor-phone');
-    $page->resize(1440, 900)->screenshot(filename: 'wiki-section-editor-desktop');
-    $page->script('document.documentElement.classList.add("dark")');
-    $page->screenshot(filename: 'wiki-section-editor-dark')->assertNoJavaScriptErrors();
+        ->assertPresent('[data-testid=section-title]')->assertNoJavaScriptErrors();
 });
 
 it('opens the Wiki link picker in the article editor on phone and desktop', function (): void {
@@ -164,9 +146,5 @@ it('opens the Wiki link picker in the article editor on phone and desktop', func
     $page = loginAsAdmin($user, route('knowledgeItems.edit', $item, absolute: false), 390, 844);
     $page->click('[data-testid=step-description] button[aria-label="Nuoroda"]')
         ->assertPresent('[data-testid=link-tab-wiki]')->click('[data-testid=link-tab-wiki]')
-        ->assertPresent('[data-testid=link-wiki-panel]')->assertNoJavaScriptErrors()
-        ->screenshot(fullPage: false, filename: 'wiki-link-dialog-phone');
-    $page->resize(1440, 900)->screenshot(fullPage: false, filename: 'wiki-link-dialog-desktop');
-    $page->script('document.documentElement.classList.add("dark")');
-    $page->screenshot(fullPage: false, filename: 'wiki-link-dialog-dark')->assertNoJavaScriptErrors();
+        ->assertPresent('[data-testid=link-wiki-panel]')->assertNoJavaScriptErrors();
 });

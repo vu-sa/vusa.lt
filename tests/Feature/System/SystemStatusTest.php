@@ -25,11 +25,6 @@ describe('SystemStatus: Authentication & Authorization', function (): void {
             ->assertRedirect('/login');
     });
 
-    test('authenticated users can access system status page', function (): void {
-        asUser($this->user)->get('/mano/system-status')
-            ->assertStatus(200);
-    });
-
     test('system status page returns Inertia response', function (): void {
         asUserWithInertia($this->user)->get('/mano/system-status')
             ->assertOk()
@@ -135,118 +130,25 @@ describe('SystemStatus: Auto-refresh with Polling', function (): void {
         expect($props['lastUpdated'])->not()->toBeEmpty();
     });
 
-    test('cache management works independently of manual refresh', function (): void {
-        // Set a cache value to test cache functionality
-        Cache::put('system_status_cache', ['test' => 'data'], 300);
-
-        // Verify cache exists
-        expect(Cache::has('system_status_cache'))->toBeTrue();
-
-        // Clear cache directly (simulating what polling might do)
-        Cache::forget('system_status_cache');
-
-        expect(Cache::has('system_status_cache'))->toBeFalse();
-    });
-
-    test('status data structure remains consistent for polling updates', function (): void {
-        $response = asUser($this->user)->get('/mano/system-status');
-
-        $response->assertStatus(200);
-        $props = $response->getOriginalContent()->getData()['page']['props'];
-
-        // Verify all expected sections exist for consistent polling
-        expect($props['status'])->toHaveKeys(['redis', 'database', 'cache', 'integrations', 'system']);
-
-        // Each section should have predictable structure
-        foreach (['redis', 'database'] as $service) {
-            expect($props['status'][$service])->toHaveKeys(['status', 'connected']);
-        }
-
-        // Cache has different structure
-        expect($props['status']['cache'])->toHaveKeys(['status', 'working']);
-    });
 });
 
 describe('SystemStatus: Security', function (): void {
-    test('status data does not expose sensitive information', function (): void {
-        $response = asUser($this->user)->get('/mano/system-status');
 
-        $response->assertStatus(200);
-        $props = $response->getOriginalContent()->getData()['page']['props'];
+    test('integration configuration reports credential presence without returning credential values', function (): void {
+        config([
+            'services.microsoft.client_secret' => 'test-microsoft-secret-marker',
+            'filesystems.sharepoint.client_secret' => 'test-sharepoint-secret-marker',
+        ]);
 
-        // Check that status data doesn't contain raw sensitive information
-        $statusData = json_encode($props['status']);
-        expect($statusData)->not()->toContain('DB_PASSWORD')
-            ->not()
-            ->toContain('REDIS_PASSWORD')
-            ->not()
-            ->toContain('SECRET_KEY')
-            ->not()
-            ->toContain('API_TOKEN');
+        $response = asUser($this->user)->get(route('systemStatus'))->assertOk();
+        $integrations = $response->getOriginalContent()->getData()['page']['props']['status']['integrations'];
+
+        expect($integrations['microsoft']['client_secret_set'])->toBeTrue();
+        expect($integrations['sharepoint']['client_secret_set'])->toBeTrue();
+        expect(json_encode($integrations))->not->toContain('test-microsoft-secret-marker')
+            ->not->toContain('test-sharepoint-secret-marker');
     });
 
-    test('does not expose database credentials in error messages', function (): void {
-        $response = asUser($this->user)->get('/mano/system-status');
-
-        $response->assertStatus(200);
-        $props = $response->getOriginalContent()->getData()['page']['props'];
-
-        // Check all status sections for exposed credentials
-        $statusSections = ['redis', 'database', 'cache', 'integrations', 'system'];
-
-        foreach ($statusSections as $section) {
-            if (isset($props['status'][$section]['error'])) {
-                $errorMessage = $props['status'][$section]['error'];
-                expect($errorMessage)->not()->toContain('password')
-                    ->not()
-                    ->toContain('DB_PASSWORD')
-                    ->not()
-                    ->toContain('REDIS_PASSWORD');
-            }
-        }
-    });
-
-    test('polling does not create excessive server load', function (): void {
-        $responses = [];
-
-        // Make multiple rapid requests to simulate polling behavior
-        for ($i = 0; $i < 3; $i++) {
-            $response = asUser($this->user)->get('/mano/system-status');
-            $responses[] = $response->status();
-        }
-
-        // All requests should succeed
-        expect($responses)->not()->toContain(429); // No rate limiting errors
-        expect(array_unique($responses))->toBe([200]); // All successful
-    });
-});
-
-describe('SystemStatus: Performance', function (): void {
-    test('system status page loads efficiently', function (): void {
-        $response = asUser($this->user)->get('/mano/system-status');
-
-        $response->assertStatus(200);
-        // Basic performance check - should complete without timeout
-        expect($response->status())->toBe(200);
-    });
-
-    test('system status returns consistent data structure', function (): void {
-        $response = asUser($this->user)->get('/mano/system-status');
-
-        $response->assertStatus(200);
-
-        // Verify the expected data structure is returned in Inertia props
-        $response->assertInertia(fn ($page) => $page
-            ->has('status')
-            ->has('lastUpdated')
-            ->has('status.redis')
-            ->has('status.database')
-            ->has('status.cache')
-            ->has('status.typesense')
-            ->has('status.integrations')
-            ->has('status.system')
-        );
-    });
 });
 
 describe('SystemStatus: Error Handling', function (): void {

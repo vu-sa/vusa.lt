@@ -7,7 +7,7 @@ import BlockPickerDialog from '../BlockPickerDialog.vue';
 
 const BlockPreviewRendererStub = {
   props: ['element'],
-  template: '<div data-testid="block-preview-renderer" :data-type="element?.type" />',
+  template: '<div data-testid="block-preview-renderer" :data-type="element?.type" :data-variant="element?.options?.variant" />',
 };
 
 const mountedWrappers: ReturnType<typeof mount>[] = [];
@@ -95,6 +95,9 @@ describe('BlockPickerDialog', () => {
     await heroItem.trigger('mouseenter');
     await flushPromises();
 
+    const preview = () => wrapper.get('[data-testid="block-preview-renderer"]');
+    expect(preview().attributes('data-variant')).toBe('split');
+
     // Four hero variants: split (default), centered, banner, panel.
     const panelVariantButton = wrapper.findAll('button').find(b => b.text() === 'Panelė');
     expect(panelVariantButton).toBeTruthy();
@@ -102,10 +105,7 @@ describe('BlockPickerDialog', () => {
     await panelVariantButton!.trigger('click');
     await flushPromises();
 
-    // Switching to the panel variant's sample shouldn't throw, and the switcher
-    // itself must not appear for a type with no declared variants (asserted
-    // implicitly by every other test in this file never seeing it).
-    expect(wrapper.text()).not.toContain('rich-content.no_preview_available');
+    expect(preview().attributes('data-variant')).toBe('panel');
   });
 
   it('does not show a variant switcher for a type without declared variants', async () => {

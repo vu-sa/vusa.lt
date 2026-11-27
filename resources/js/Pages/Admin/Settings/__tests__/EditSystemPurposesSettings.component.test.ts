@@ -1,9 +1,14 @@
 import { useForm } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { nextTick, ref } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import EditSystemPurposesSettings from '../EditSystemPurposesSettings.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const { dismiss } = vi.hoisted(() => ({ dismiss: vi.fn() }));
 
@@ -31,7 +36,7 @@ const mountSettings = (canEdit = true, typeCount = 0) => mount(EditSystemPurpose
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
+  stubGlobal('route', (name: string) => `/mocked/${name}`);
 });
 
 describe('field validation descriptions', () => {

@@ -1,9 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowSupportRequests from '@/Pages/Admin/Dashboard/ShowSupportRequests.vue';
 import { commonStubs } from '@/tests/stubs';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const rowAbilityState = vi.hoisted(() => ({ update: false, delete: false }));
 vi.mock('@/Composables/useRowAbilities', () => ({
@@ -12,7 +16,9 @@ vi.mock('@/Composables/useRowAbilities', () => ({
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
+beforeEach(() => {
+  stubGlobal('route', (name: string) => `/mocked/${name}`);
+});
 
 const request = {
   id: 'support-1',
@@ -99,7 +105,10 @@ describe('support request dashboard', () => {
   });
 });
 
-beforeEach(() => { rowAbilityState.update = false; rowAbilityState.delete = false; });
+beforeEach(() => {
+  rowAbilityState.update = false;
+  rowAbilityState.delete = false;
+});
 
 it.each([true, false])('offers support request edit and delete only when allowed (%s)', (allowed) => {
   rowAbilityState.update = allowed;

@@ -8,7 +8,6 @@ import { useCoarsePointer } from '@/Composables/useCoarsePointer';
 import DatePicker from '../DatePicker.vue';
 import DateTimePicker from '../DateTimePicker.vue';
 import DateRangePicker from '../DateRangePicker.vue';
-import TimePicker from '../../time-picker/TimePicker.vue';
 
 vi.mock('@/Composables/useCoarsePointer', () => ({
   useCoarsePointer: vi.fn(() => computed(() => false)),
@@ -142,14 +141,6 @@ describe('admin date and time pickers', () => {
 
     expect(wrapper.find('input').classes()).toContain(inputHeight);
     expect(wrapper.find('button').classes()).toContain(buttonSize);
-  });
-
-  it('accepts a typed time matching the configured interval', async () => {
-    const wrapper = mount(TimePicker, { props: { minuteStep: 15 } });
-
-    await wrapper.find('input').setValue('18:15');
-
-    expect(wrapper.emitted('update:modelValue')).toEqual([[{ hour: 18, minute: 15 }]]);
   });
 
   it('renders date and time as separate controls', () => {

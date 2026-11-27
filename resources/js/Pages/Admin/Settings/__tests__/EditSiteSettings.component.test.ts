@@ -1,7 +1,9 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { useForm } from '@inertiajs/vue3';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 
+import type { MockForm } from '@/tests/helpers/createMockForm';
 import EditSiteSettings from '@/Pages/Admin/Settings/EditSiteSettings.vue';
 import type { NormalizedSearchHit } from '@/Components/Search/adminSearchCollections';
 
@@ -51,11 +53,11 @@ function createWrapper(props: {
   selectedPages: { lt: ReturnType<typeof selectedPage> | null; en: ReturnType<typeof selectedPage> | null };
 }) {
   return mount(EditSiteSettings, {
-    props,
+    props: { canEdit: true, ...props },
     global: {
       stubs: {
         CollectionSelectDialog: CollectionSelectDialogStub,
-        FormPage: { props: ['title'], template: '<form @submit.prevent><slot /></form>' },
+        FormPage: { emits: ['submit'], props: ['title'], template: `<form @submit.prevent="$emit('submit')"><slot /></form>` },
         FormPanel: { template: '<section><slot /></section>' },
         FormFieldWrapper: { props: ['id', 'label', 'error'], template: '<div><label>{{ label }}</label><slot /></div>' },
         Button: { template: '<button type="button"><slot /></button>' },
@@ -67,12 +69,15 @@ function createWrapper(props: {
 const dialogsOf = (wrapper: ReturnType<typeof mount>) =>
   wrapper.findAllComponents(CollectionSelectDialogStub);
 
-interface PageFormState {
-  form: { privacy_page_id_lt: string | null; privacy_page_id_en: string | null };
-}
+async function submitPrivacyPages(wrapper: ReturnType<typeof mount>) {
+  const form = vi.mocked(useForm).mock.results.at(-1)!.value as unknown as MockForm;
+  const submitted = vi.fn(() => ({ lt: form.privacy_page_id_lt, en: form.privacy_page_id_en }));
+  form.post.mockImplementation(submitted);
+  await wrapper.get('form').trigger('submit');
 
-const formOf = (wrapper: ReturnType<typeof mount>): PageFormState['form'] =>
-  (wrapper.vm as unknown as PageFormState).form;
+  expect(form.post).toHaveBeenCalledExactlyOnceWith('/mocked-route/settings.site.update');
+  return submitted.mock.results[0]?.value;
+}
 
 describe('EditSiteSettings.vue — per-language privacy page pickers', () => {
   let wrapper: ReturnType<typeof mount>;
@@ -106,7 +111,7 @@ describe('EditSiteSettings.vue — per-language privacy page pickers', () => {
     expect(wrapper.find('img').exists()).toBe(false);
   });
 
-  it('seeds the form and initial hits from the server-provided summaries', () => {
+  it('seeds the form and initial hits from the server-provided summaries', async () => {
     wrapper = createWrapper({
       selectedPages: {
         lt: selectedPage('10', 'lt', 'Privatumo politika'),
@@ -114,9 +119,7 @@ describe('EditSiteSettings.vue — per-language privacy page pickers', () => {
       },
     });
 
-    const vm = formOf(wrapper);
-    expect(vm.privacy_page_id_lt).toBe('10');
-    expect(vm.privacy_page_id_en).toBeNull();
+    expect(await submitPrivacyPages(wrapper)).toEqual({ lt: '10', en: null });
 
     const dialogs = dialogsOf(wrapper);
     expect(dialogs[0]!.props('initialHits')).toHaveLength(1);
@@ -138,7 +141,7 @@ describe('EditSiteSettings.vue — per-language privacy page pickers', () => {
     expect(triggers[1]!.text()).toContain('settings.site_settings.privacy_page_placeholder');
   });
 
-  it('writes the confirmed hit recordId into the matching form field', () => {
+  it('writes the confirmed hit recordId into the matching form field', async () => {
     wrapper = createWrapper({
       selectedPages: { lt: null, en: null },
     });
@@ -146,12 +149,10 @@ describe('EditSiteSettings.vue — per-language privacy page pickers', () => {
     const dialogs = dialogsOf(wrapper);
     dialogs[1]!.vm.$emit('confirm', [hitFor('20', 'Privacy policy')]);
 
-    const form = formOf(wrapper);
-    expect(form.privacy_page_id_en).toBe('20');
-    expect(form.privacy_page_id_lt).toBeNull();
+    expect(await submitPrivacyPages(wrapper)).toEqual({ lt: null, en: '20' });
   });
 
-  it('clears the field when confirmed with no selection', () => {
+  it('clears the field when confirmed with no selection', async () => {
     wrapper = createWrapper({
       selectedPages: {
         lt: selectedPage('10', 'lt', 'Privatumo politika'),
@@ -159,13 +160,10 @@ describe('EditSiteSettings.vue — per-language privacy page pickers', () => {
       },
     });
 
-    const form = formOf(wrapper);
-    expect(form.privacy_page_id_lt).toBe('10');
-
     const dialogs = dialogsOf(wrapper);
     dialogs[0]!.vm.$emit('confirm', []);
 
-    expect(form.privacy_page_id_lt).toBeNull();
+    expect(await submitPrivacyPages(wrapper)).toEqual({ lt: null, en: null });
   });
 
   it('updates the trigger label after a new pick', async () => {

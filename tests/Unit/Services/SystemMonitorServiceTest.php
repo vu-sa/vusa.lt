@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\ServiceProbes;
 use App\Services\SystemMonitorService;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Cache;
@@ -13,9 +14,46 @@ describe('SystemMonitorService', function (): void {
 
     describe('getAllStatus', function (): void {
         test('returns all required status sections', function (): void {
-            $status = $this->service->getAllStatus();
+            $probes = Mockery::mock(ServiceProbes::class);
+            $probes->shouldReceive('reverbStatus')->once()->andReturn(['status' => 'healthy']);
 
-            expect($status)->toHaveKeys(['redis', 'database', 'cache', 'typesense', 'integrations', 'system']);
+            $service = Mockery::mock(SystemMonitorService::class, [$probes])->makePartial();
+            foreach ([
+                'getRedisStatus',
+                'getDatabaseStatus',
+                'getCacheStatus',
+                'getTypesenseStatus',
+                'getSchedulerStatus',
+                'getQueueStatus',
+                'getDigestStatus',
+                'getExOfficioIntegrityStatus',
+                'getMailStatus',
+                'getDocumentDiscoveryStatus',
+                'getMailmanStatus',
+                'getIntegrationsStatus',
+                'getSystemStatus',
+            ] as $method) {
+                $service->shouldReceive($method)->once()->andReturn(['status' => 'healthy']);
+            }
+
+            $status = $service->getAllStatus();
+
+            expect(array_keys($status))->toBe([
+                'redis',
+                'database',
+                'cache',
+                'typesense',
+                'scheduler',
+                'queue',
+                'reverb',
+                'digest',
+                'ex_officio',
+                'mail',
+                'sharepoint_documents',
+                'mailman',
+                'integrations',
+                'system',
+            ]);
         });
     });
 
@@ -83,8 +121,9 @@ describe('SystemMonitorService', function (): void {
                 ->and($status)->toHaveKey('connection_time');
         });
 
-        test('returns error status when database connection fails', function (): void {
-            DB::shouldReceive('connection')->once()->andThrow(new Exception('SQLSTATE[HY000]'));
+        test('reports a failed database check without exposing connection details', function (): void {
+            app()->setLocale('en');
+            DB::shouldReceive('connection')->once()->andThrow(new Exception('SQLSTATE[HY000] test-connection-secret'));
             DB::shouldReceive('getConnections')->andReturn([]);
 
             $status = $this->service->getDatabaseStatus();
@@ -92,7 +131,8 @@ describe('SystemMonitorService', function (): void {
             expect($status)
                 ->status->toBe('error')
                 ->connected->toBeFalse()
-                ->error->toContain('SQLSTATE');
+                ->error->toBe('The database health check failed.');
+            expect(json_encode($status))->not->toContain('test-connection-secret');
         });
     });
 

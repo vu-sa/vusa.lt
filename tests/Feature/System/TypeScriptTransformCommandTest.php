@@ -2,19 +2,24 @@
 
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
+use Spatie\TypeScriptTransformer\TypeScriptTransformerConfig;
 
 describe('typescript:transform command', function (): void {
-    test('runs successfully and is configured', function (): void {
-        $exitCode = Artisan::call('typescript:transform');
 
-        expect($exitCode)->toBe(0)
-            ->and(Artisan::output())->not->toContain('TypeScript Transformer is not configured');
-    });
+    test('exports native and Spatie enum classes', function (): void {
+        $directory = (new TemporaryDirectory)->create();
+        $config = app(TypeScriptTransformerConfig::class);
+        app()->instance(TypeScriptTransformerConfig::class, new TypeScriptTransformerConfig(
+            ...array_replace(get_object_vars($config), ['outputDirectory' => $directory->path()])
+        ));
 
-    test('exports every declared enum class, including spatie/laravel-enum ones', function (): void {
-        Artisan::call('typescript:transform');
-
-        $output = File::get(resource_path('js/Types/enums.ts'));
+        try {
+            expect(Artisan::call('typescript:transform'))->toBe(0);
+            $output = File::get($directory->path('enums.ts'));
+        } finally {
+            $directory->delete();
+        }
 
         // A native PHP enum...
         expect($output)->toContain('export enum ApprovalDecision {')

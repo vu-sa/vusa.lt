@@ -14,7 +14,7 @@ tests:
   - tests/Feature/Admin/Calendar/AgendaItemNoteTest.php
   - tests/Feature/Admin/Discussions/AgendaItemPageAccessTest.php
   - tests/Feature/Admin/Calendar/MeetingControllerTest.php
-  - tests/Feature/VoteControllerTest.php
+  - tests/Feature/Admin/Calendar/VoteControllerTest.php
   - tests/Feature/Meetings/AgendaItemVotesTest.php
   - tests/Feature/Meetings/AgendaItemBreakTest.php
   - tests/Feature/Meetings/AgendaItemWithdrawnTest.php
