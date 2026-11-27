@@ -58,31 +58,6 @@
               </span>
               <TaskCountBadge v-if="workspace.key === 'pradzia'" class="ml-auto mt-0.5" />
             </Link>
-
-            <ul
-              v-if="workspace.key === activeWorkspace?.key"
-              class="flex flex-wrap gap-x-4 gap-y-1 border-l-2 border-brand-fill pb-3 pl-11 pr-4"
-            >
-              <li
-                v-for="(section, index) in workspace.sections"
-                :key="section.key"
-                :class="index > 0 && section.startsGroup && 'border-l border-border pl-4'"
-              >
-                <Link
-                  :href="sectionHref(section)"
-                  prefetch
-                  :cache-for="SHELL_PREFETCH_CACHE_FOR"
-                  v-bind="ariaCurrent(section.key === activeSection?.key)"
-                  :class="[
-                    'text-sm underline-offset-4 hover:underline',
-                    section.key === activeSection?.key ? 'font-semibold text-brand' : 'text-muted-foreground hover:text-foreground',
-                  ]"
-                  @click="close"
-                >
-                  {{ $t(section.label) }}
-                </Link>
-              </li>
-            </ul>
           </li>
         </ul>
 
@@ -114,10 +89,8 @@ import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import {
-  sectionHref,
   SHELL_PREFETCH_CACHE_FOR,
   workspaceHref,
-  type AdminSection,
   type AdminWorkspace,
 } from '@/Composables/useAdminNavigation';
 import { useHoverPopover } from '@/Composables/useHoverPopover';
@@ -128,7 +101,6 @@ import TaskCountBadge from './TaskCountBadge.vue';
 const props = defineProps<{
   workspaces: AdminWorkspace[];
   activeWorkspace?: AdminWorkspace;
-  activeSection?: AdminSection;
   /** Whether the user may open `/mano/administration` (Visi skyriai). */
   showAllSections?: boolean;
 }>();

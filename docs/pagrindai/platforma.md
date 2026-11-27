@@ -113,7 +113,7 @@ Viešuose naujienų, renginių, posėdžių ir dokumentų sąrašuose atverk **R
 arba tarpo klavišu. **Esc** užveria meniu ir grąžina žymeklį į mygtuką. Kalendoriaus mėnesio
 ir metų laukų bei dialogų uždarymo mygtukų pavadinimai ekrano skaitytuvui pateikiami sąsajos kalba.
 
-Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
+Darbo sritį gali pakeisti viršutinės juostos meniu. Pasirinktos srities skiltys pasiekiamos skirtukuose. Darbo srities pasirinkimas yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
 
 Skilčių piktogramos nusako jų paskirtį: Wiki žymi knyga, tau skirtus straipsnius – knyga su varnele,
 Mano kelią – maršrutas, atstovus – žmonės. Tos pačios piktogramos naudojamos telefono meniu ir skilčių nuorodose.

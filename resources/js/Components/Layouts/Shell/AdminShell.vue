@@ -32,7 +32,6 @@
       <ShellTopBar
         :workspaces
         :active-workspace
-        :active-section
         :show-all-sections
         :can-create
         :focused

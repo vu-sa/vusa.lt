@@ -34,10 +34,10 @@ export const SectionTabsRow: Story = {
 export const WorkspacePickerOpen: Story = {
   render: () => ({
     components: { WorkspacePicker },
-    setup: () => ({ workspaces, activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] }),
+    setup: () => ({ workspaces, activeWorkspace: atstovavimas }),
     template: `
       <div class="h-[28rem] bg-background p-6 text-foreground">
-        <WorkspacePicker :workspaces :active-workspace :active-section show-all-sections />
+        <WorkspacePicker :workspaces :active-workspace show-all-sections />
       </div>
     `,
   }),

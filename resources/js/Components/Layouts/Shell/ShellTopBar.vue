@@ -28,7 +28,6 @@
           class="hidden md:block"
           :workspaces
           :active-workspace
-          :active-section
           :show-all-sections
         />
 
@@ -71,7 +70,7 @@ import { computed } from 'vue';
 import type { PageProps } from '@/Types/index';
 import NotificationsIndicator from '@/Components/Layouts/Shell/NotificationsIndicator.vue';
 import { Button } from '@/Components/ui/button';
-import { SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import { SHELL_PREFETCH_CACHE_FOR, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import { SHELL_FORM_BAR_ID } from '@/Composables/useShellFocus';
 import { getAppLogoSrc } from '@/Utils/AppLogo';
 
@@ -82,7 +81,6 @@ import PaletteField from './PaletteField.vue';
 defineProps<{
   workspaces: AdminWorkspace[];
   activeWorkspace?: AdminWorkspace;
-  activeSection?: AdminSection;
   showAllSections?: boolean;
   /** Hidden, never disabled, when the catalog holds no create action for this user. */
   canCreate?: boolean;
