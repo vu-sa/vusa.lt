@@ -30,14 +30,6 @@ it('merges through the dialog with a selected duty email and automatic photo pre
     $page->click('[data-merge-target="'.$kept->id.'"]');
     $page->assertVisible('[data-slot=merge-duty-emails]');
 
-    foreach ([390, 820, 1180, 1440] as $width) {
-        $page->resize($width, 1000);
-        foreach (['light', 'dark'] as $theme) {
-            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-            $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: "member-merge-{$width}-{$theme}");
-        }
-    }
-
     $page->click('[data-slot=merge-duty-emails] [role=checkbox]');
     $page->click('[data-slot=merge-submit]');
     $page->assertNotPresent('[data-slot=merge-duty-emails]')->assertNoJavaScriptErrors();

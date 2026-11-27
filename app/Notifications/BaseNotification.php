@@ -292,6 +292,11 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             $body .= ' — '.__('notifications.quote', ['text' => $excerpt]);
         }
 
+        // Channels queue separately, so clamp to 1 if WebPush runs before the database write commits.
+        $unreadCount = method_exists($notifiable, 'unreadNotifications')
+            ? max(1, $notifiable->unreadNotifications()->count())
+            : 1;
+
         return (new WebPushMessage)
             ->title($this->title($notifiable))
             ->icon('/images/icons/favicons/favicon-196x196.png')
@@ -301,7 +306,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             ->options($this->urgency() === NotificationUrgency::Act
                 ? ['TTL' => 86400, 'urgency' => 'high']
                 : ['TTL' => 3600, 'urgency' => 'normal'])
-            ->data(['url' => $action['url']]);
+            ->data(['url' => $action['url'], 'unreadCount' => $unreadCount]);
     }
 
     public function digestLine(object $notifiable): string

@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
+import { Plus } from '@lucide/vue';
+import { router } from '@inertiajs/vue3';
 
+import { apiRequest } from '@/Composables/apiRequest';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import { useCommandPalette } from '@/Composables/useCommandPalette';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
@@ -11,6 +14,8 @@ import { KnowledgeItemKind } from '@/Types/enums';
 import { useCommandActions } from '../useCommandActions';
 import AdminCommandPalette from '../AdminCommandPalette.vue';
 
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('@/Composables/apiRequest', () => ({ apiRequest: vi.fn() }));
 vi.mock('@/Composables/useAdminSearch', () => ({ useAdminSearch: vi.fn() }));
 vi.mock('@/Composables/useCommandPalette', () => ({ useCommandPalette: vi.fn() }));
 vi.mock('@/Composables/useUIPreferences', () => ({ useUIPreferences: vi.fn() }));
@@ -19,6 +24,7 @@ vi.mock('@/Search/admin/useWikiLinkTargets', () => ({ loadWikiLinkTargets: vi.fn
 
 beforeEach(() => {
   vi.useFakeTimers();
+  vi.mocked(apiRequest).mockResolvedValue({ data: [] } as Awaited<ReturnType<typeof apiRequest>>);
   vi.mocked(useCommandPalette).mockReturnValue({ isOpen: ref(true), query: ref(''), recentItems: ref([]), close: vi.fn() } as ReturnType<typeof useCommandPalette>);
   vi.mocked(useUIPreferences).mockReturnValue({ isPinned: vi.fn(), togglePin: vi.fn(), pinnedPages: ref([]) } as unknown as ReturnType<typeof useUIPreferences>);
   vi.mocked(loadWikiLinkTargets).mockResolvedValue([]);
@@ -58,13 +64,37 @@ describe('admin palette relevance', () => {
       users: [], duties: [], news: [],
       agendaItems: [{ id: 'a1', title: 'Punktas' }],
     },
-  ])('ranks $name', async ({ workspace, query, first, users, duties, news, agendaItems = [] }) => {
+    {
+      name: 'an exact institution match above duties that mention it',
+      workspace: 'visak', query: 'VU Senatas', first: 'VU Senatas',
+      users: [], news: [],
+      institutions: [{ id: 'i1', name_lt: 'VU Senatas', short_name_lt: 'Senatas', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'VU Senatas', matched: true }] }], _text_match: '1763176949298560780', _tokens_matched: 3 }],
+      duties: [
+        { id: 'd1', name_lt: 'Studentų atstovas VU Senate', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senate', matched: true }] }], _text_match: '1763168118846291468', _tokens_matched: 3 },
+        { id: 'd2', name_lt: 'Studentų atstovas VU Senato Studijų komitete', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senato Studijų komitete', matched: true }] }], _text_match: '1763168118846291468', _tokens_matched: 3 },
+      ],
+    },
+    {
+      name: 'an institution prefix match above duties that mention it',
+      workspace: 'visak', query: 'VU Senat', first: 'VU Senatas',
+      users: [], news: [],
+      institutions: [{ id: 'i1', name_lt: 'VU Senatas', short_name_lt: 'Senatas', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'VU Senatas', matched: true }] }], _text_match: '100', _tokens_matched: 2 }],
+      duties: [{ id: 'd1', name_lt: 'Studentų atstovas VU Senate', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senate', matched: true }] }], _text_match: '100', _tokens_matched: 2 }],
+    },
+    {
+      name: 'an institution matched by exact short name above duties mentioning it',
+      workspace: 'visak', query: 'Senatas', first: 'VU Senatas',
+      users: [], news: [],
+      institutions: [{ id: 'i1', name_lt: 'VU Senatas', short_name_lt: 'Senatas', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'VU Senatas', matched: true }] }], _text_match: '80', _tokens_matched: 1 }],
+      duties: [{ id: 'd1', name_lt: 'Studentų atstovas VU Senate', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Studentų atstovas VU Senate', matched: true }] }], _text_match: '90', _tokens_matched: 1 }],
+    },
+  ])('ranks $name', async ({ workspace, query, first, users, duties, news, institutions = [], agendaItems = [] }) => {
     vi.mocked(useCommandActions).mockReturnValue({
       filterActions: () => [], activeWorkspace: ref({ key: workspace }),
-      workspaceKeyForEntity: (entity: string) => entity === 'user' ? 'organizacija' : 'visak',
     } as unknown as ReturnType<typeof useCommandActions>);
     const results = {
       users: { hits: users, found: users.length },
+      institutions: { hits: institutions, found: institutions.length },
       duties: { hits: duties, found: duties.length },
       news: { hits: news, found: news.length },
       agenda_items: { hits: agendaItems, found: agendaItems.length },
@@ -96,7 +126,7 @@ describe('admin palette Wiki results', () => {
       { id: 'senatas', kind: KnowledgeItemKind.Term, title: 'Senatas', abbreviation: '', summary: '', summaryHtml: '', url: '/mano/knowledge/items/senatas', thumbnailUrl: null, sectionId: null, countsInProgress: true, updatedAt: null },
     ]);
     vi.mocked(useCommandActions).mockReturnValue({
-      filterActions: () => [], activeWorkspace: ref({ key: 'wiki' }), workspaceKeyForEntity: () => 'wiki',
+      filterActions: () => [], activeWorkspace: ref({ key: 'wiki' }),
     } as unknown as ReturnType<typeof useCommandActions>);
     vi.mocked(useAdminSearch).mockReturnValue({
       multiSearch: vi.fn().mockResolvedValue({}), initialize: vi.fn(), isRateLimited: ref(false), getDirectInstitutionIds: () => [],
@@ -117,4 +147,52 @@ describe('admin palette Wiki results', () => {
     expect(wrapper.findAll('[data-testid="palette-row"]').filter(row => row.attributes('data-value')?.startsWith('wiki-')).map(row => row.text())).toEqual(['Kvorumas']);
     wrapper.unmount();
   });
+});
+
+it('shows personal records on open and every matching create command while search loads', async () => {
+  const href = '/mano/institutions/1';
+  vi.mocked(apiRequest).mockResolvedValue({
+    data: [{ id: '1', kind: 'followed', title: 'Universiteto senatas', context: null, href }],
+  } as Awaited<ReturnType<typeof apiRequest>>);
+  vi.mocked(useAdminSearch).mockReturnValue({
+    multiSearch: vi.fn().mockResolvedValue({}), initialize: vi.fn(), isRateLimited: ref(false), getDirectInstitutionIds: () => [],
+  } as unknown as ReturnType<typeof useAdminSearch>);
+  const commands = Array.from({ length: 8 }, (_, index) => ({
+    id: `create-${index}`, label: `New record ${index}`, category: 'create' as const, keywords: [], icon: Plus, action: vi.fn(),
+  }));
+  const radio = { id: 'radio', label: 'START FM', category: 'action' as const, keywords: [], icon: Plus, action: vi.fn() };
+  vi.mocked(useCommandActions).mockReturnValue({
+    filterActions: (term: string) => term === 'radio' ? [radio] : [...commands, ...(!term ? [radio] : [])],
+    activeWorkspace: ref(undefined),
+  } as unknown as ReturnType<typeof useCommandActions>);
+  const wrapper = mount(AdminCommandPalette, {
+    global: { stubs: {
+      PaletteDialog: { template: '<div><slot /></div>' },
+      CommandList: { template: '<div><slot /></div>' },
+      PaletteGroup: { props: ['heading'], template: '<section :data-group="heading"><slot /></section>' },
+      CommandItem: { emits: ['select'], template: `<button @click="$emit('select')"><slot /></button>` },
+    } },
+  });
+
+  await flushPromises();
+  expect(wrapper.find('[data-group="shell.palette.actions"]').exists()).toBe(false);
+  expect(wrapper.find('[data-group="shell.palette.create"]').exists()).toBe(false);
+  const personal = wrapper.get('[data-group="shell.palette.personal"] button');
+  expect(personal.text()).toContain('Universiteto senatas');
+  await personal.trigger('click');
+  expect(router.visit).toHaveBeenCalledWith(href);
+
+  await wrapper.get('input').setValue('new');
+  expect(wrapper.find('[data-group="shell.palette.personal"]').exists()).toBe(false);
+  expect(wrapper.findAll('[data-slot="create-command-icon"]')).toHaveLength(8);
+  await wrapper.get('[data-group="shell.palette.create"] button').trigger('click');
+  expect(commands[0]?.action).toHaveBeenCalledOnce();
+
+  await wrapper.get('input').setValue('radio');
+  await wrapper.get('[data-group="shell.palette.actions"] button').trigger('click');
+  expect(radio.action).toHaveBeenCalledOnce();
+
+  await wrapper.get('input').setValue('   ');
+  expect(wrapper.find('[data-group="shell.palette.create"]').exists()).toBe(false);
+  wrapper.unmount();
 });

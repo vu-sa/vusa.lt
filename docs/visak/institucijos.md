@@ -6,7 +6,7 @@ tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Meetings/MeetingKindTest.php
   - tests/Feature/Search/ListFreshnessTest.php
-  - tests/Feature/Admin/Search/InstitutionMemberTermsApiTest.php
+  - tests/Feature/Api/Admin/InstitutionApiControllerTest.php
   - tests/Feature/Search/AdminSearchTranslationsTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
@@ -45,7 +45,7 @@ tests:
   - tests/Browser/InstitutionActivityReplyTest.php
   - tests/Browser/VisakRecordPagesTest.php
   - resources/js/Components/ActionWindow/__tests__/InstitutionPickerScreen.component.test.ts
-  - tests/Unit/InstitutionActivityStatusServiceTest.php
+  - tests/Unit/Services/InstitutionActivityStatusServiceTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
   - resources/js/Components/AdminForms/__tests__/InstitutionForm.component.test.ts
@@ -679,6 +679,6 @@ Santraukoje rodoma iki trijų posėdžių kortelių: artimiausias būsimas ir du
 
 Telefone iš pradžių rodoma Santrauka. Prisegtas skyrių pasirinkimas atveria vieną skyrių; jo nuorodą galima nukopijuoti, o naršyklės „Atgal“ grąžina ankstesnį skyrių. Ištrynus paskutinį failą ar ryšį, atvertas skyrius lieka iki išėjimo iš įrašo.
 
-Narių valdiklyje rodoma, kas eina pareigas. Turint teisę tvarkyti sudėtį, galima priskirti asmenį arba keisti jo laikotarpį. Visa laikotarpių istorija pateikiama pareigybės įraše.
+Mygtuke **Užima** rodomos dabartinių narių nuotraukos. Jei pareigas eina daugiau nei du žmonės, šalia rodomas ir bendras jų skaičius, pvz., **Užima 9**. Jei visiems dabartiniams nariams tinka ta pati pavadinimo galūnė, rodoma ji. Kai pareigybė laisva arba nariams tinka skirtingos galūnės, pavadinimo galūnės kaitaliojamos. Turint teisę tvarkyti sudėtį, galima priskirti asmenį arba keisti jo laikotarpį. Visa laikotarpių istorija pateikiama pareigybės įraše.
 
 Keičiant pareigybių tvarką, išlieka tos pačios eilutės. Tvarką galima keisti tempimo rankenėle arba rodyklėmis, tada išsaugoti arba atšaukti. Išskleidžiama narių grupė atveriama paspaudus bet kurią jos vietą; ilgas sąrašas slenkamas išskleidimo viduje.

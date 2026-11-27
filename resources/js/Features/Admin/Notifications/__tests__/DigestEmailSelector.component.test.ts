@@ -1,7 +1,9 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import DigestEmailSelector from '../DigestEmailSelector.vue';
+
+vi.mock('laravel-vue-i18n', () => import('@/mocks/i18n'));
 
 const availableEmails = [
   { email: 'user@example.com', label: 'User Email', type: 'user' as const },
@@ -48,10 +50,10 @@ describe('DigestEmailSelector', () => {
       props: {
         availableEmails,
         modelValue: [],
-        defaultEmail: 'duty@vusa.lt',
+        defaultEmail: 'fallback@example.test',
       },
     });
 
-    expect(wrapper.text()).toContain('duty@vusa.lt');
+    expect(wrapper.get('#notification-emails-hint').text()).toContain('fallback@example.test');
   });
 });

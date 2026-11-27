@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
+import { Plus } from '@lucide/vue';
 import { usePage } from '@inertiajs/vue3';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -31,6 +32,10 @@ const workspace = (key: string, sections: ReturnType<typeof section>[], createAc
   createActions,
 });
 
+const commandActions = (...workspaces: ReturnType<typeof workspace>[]) => workspaces.flatMap(workspace =>
+  workspace.createActions.map(action => ({ ...(action as object), workspaceKey: workspace.key, workspaceLabel: workspace.label, createsRecord: true })),
+);
+
 const resolve = () => {
   let resolved!: ReturnType<typeof useCommandActions>;
   mount(defineComponent({
@@ -56,14 +61,16 @@ beforeEach(() => {
 
 describe('useCommandActions', () => {
   it('uses navigation and create entries supplied by the catalog', () => {
+    const organization = workspace('organizacija', [section('nariai', 'users.index', 'user')], [
+      { key: 'new_duty', label: 'shell.actions.new_duty.title', description: null, entityType: 'duty', target: { kind: 'route', routeName: 'duties.create' } },
+    ]);
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: {
-      workspaces: [workspace('organizacija', [section('nariai', 'users.index', 'user')], [
-        { key: 'duty_update', label: 'shell.actions.duty_update.title', description: null, entityType: 'duty', target: { kind: 'route', routeName: 'duties.updateUsersWizard' } },
-      ])],
+      workspaces: [organization], commandActions: commandActions(organization),
     } }));
 
     expect(resolve().actions.value.map(action => action.id))
-      .toEqual(expect.arrayContaining(['nav-organizacija-nariai', 'create-duty_update', 'nav-profile']));
+      .toEqual(expect.arrayContaining(['nav-organizacija-nariai', 'create-new_duty', 'nav-profile']));
+    expect(resolve().filterActions('naujas')).toEqual([expect.objectContaining({ id: 'create-new_duty', icon: Plus })]);
   });
 
   it('keeps only global exclusions when the catalog is empty', () => {
@@ -101,10 +108,11 @@ describe('useCommandActions', () => {
     ['meeting.pick', 'meeting.complete'],
     ['activity.campaign', 'activity.request'],
   ])('opens the ActionWindow flow that starts at the %s screen', (screen, flow) => {
+    const representation = workspace('atstovavimas', [section('posedziai', 'meetings.index', 'meeting')], [
+      { key: 'screen_action', label: 'shell.actions.new_meeting.title', description: null, entityType: 'meeting', target: { kind: 'screen', screen } },
+    ]);
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: {
-      workspaces: [workspace('atstovavimas', [section('posedziai', 'meetings.index', 'meeting')], [
-        { key: 'screen_action', label: 'shell.actions.new_meeting.title', description: null, entityType: 'meeting', target: { kind: 'screen', screen } },
-      ])],
+      workspaces: [representation], commandActions: commandActions(representation),
     } }));
 
     resolve().actions.value.find(action => action.id === 'create-screen_action')?.action();
@@ -137,17 +145,6 @@ describe('useCommandActions', () => {
 
     expect(activeWorkspace.value?.key).toBe('pradzia');
     expect(rankByWorkspace(items).map(item => item.workspaceKey)).toEqual(['pradzia', 'svetaine', undefined]);
-  });
-
-  it('resolves the workspace that owns an entity type', () => {
-    vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: {
-      workspaces: [workspace('atstovavimas', [section('posedziai', 'meetings.index', 'meeting')])],
-    } }));
-
-    const { workspaceKeyForEntity } = resolve();
-
-    expect(workspaceKeyForEntity('meeting')).toBe('atstovavimas');
-    expect(workspaceKeyForEntity('news')).toBeUndefined();
   });
 
   it('filters by label, keyword and workspace title', () => {

@@ -19,7 +19,9 @@ vi.mock('@/Composables/useCollectionSource', () => ({
       hideItems: (ids: string[]) => {
         const before = items.value;
         items.value = items.value.filter(item => !ids.includes(String(item.id)));
-        return () => { items.value = before; };
+        return () => {
+          items.value = before;
+        };
       },
       refresh: sourceSpies.refresh,
     };
@@ -103,6 +105,6 @@ it('keeps the preview row free of actions and tags while the detail card carries
   });
   expect(wrapper.findComponent({ name: 'CollectionRow' }).props('actions')).toEqual([]);
   expect(wrapper.get('[data-testid="preview-row"]').text()).not.toContain('Teminė');
-  expect(wrapper.findComponent({ name: 'CollectionRowActions' }).props()).toMatchObject({ emphasis: true, fullLabels: true });
+  expect(wrapper.findComponent({ name: 'CollectionRowActions' }).props()).toMatchObject({ layout: 'preview', fullLabels: true });
   wrapper.unmount();
 });

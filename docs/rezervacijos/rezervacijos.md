@@ -69,6 +69,8 @@ spausk „Pridėti“, ir jis patenka į tavo krepšelį. Krepšelis:
 - ištrinamas automatiškai, jei jo nekeitei **14 dienų**;
 - **nerezervuoja daiktų**. Kol renkiesi, tuos pačius daiktus gali užsirezervuoti kiti.
 
+Išteklių sąraše ir išteklio puslapyje pradėtos rezervacijos krepšelio juosta iš karto matoma apačioje, net jei daiktų dar nėra. Joje galima peržiūrėti krepšelį, o pridėjus daiktą – tęsti rezervaciją.
+
 <ChangelogNote date="2026-10-02" title="Rezervacija išsaugoma kaip juodraštis">
 
 Nebaigtas pasirinkimas išlieka ir kitame įrenginyje, o pakeitus laiką ištekliai neišvalomi.

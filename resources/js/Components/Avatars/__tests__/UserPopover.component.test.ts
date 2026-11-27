@@ -6,6 +6,7 @@ import type { AvatarSize } from '@/Components/ui/avatar';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
+import UserAvatar from '../UserAvatar.vue';
 import UserPopover, { type PopoverUser } from '../UserPopover.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -57,6 +58,7 @@ interface MountPopoverProps {
   showName?: boolean;
   size?: number | AvatarSize;
   clickable?: boolean;
+  photoOverride?: { path: string; focalPoint?: string };
 }
 
 const mountPopover = (props: MountPopoverProps = {}, extraStubs: Record<string, unknown> = { UserAvatar: avatarStub }) => mount(UserPopover, {
@@ -85,6 +87,22 @@ describe('UserPopover', () => {
     if (showName) {
       expect(wrapper.find('[data-stub="hover-card-trigger"]').text()).toContain('Jonas Jonaitis');
     }
+  });
+
+  it('uses the same override for the avatar and hover image, then falls back to the profile photo', async () => {
+    const user = makeUser({ profile_photo_path: '/profile.jpg', profile_photo_focal_point: '10% 20%' });
+    const wrapper = mountPopover({ user, photoOverride: { path: '/term.jpg', focalPoint: '40% 60%' } }, {});
+
+    const avatar = wrapper.getComponent(UserAvatar);
+    const image = wrapper.get('[data-slot="media-image"]');
+    expect(avatar.props('user')).toMatchObject({ profile_photo_path: '/term.jpg', profile_photo_focal_point: '40% 60%' });
+    expect(image.attributes('src')).toBe('/term.jpg');
+    expect(image.attributes('style')).toContain('object-position: 40% 60%');
+
+    await wrapper.setProps({ photoOverride: undefined });
+    expect(avatar.props('user')).toEqual(user);
+    expect(image.attributes('src')).toBe('/profile.jpg');
+    expect(image.attributes('style')).toContain('object-position: 10% 20%');
   });
 
   it('renders the avatar trigger as a link in admin context with permission and id', () => {

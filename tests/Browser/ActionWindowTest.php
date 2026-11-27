@@ -58,6 +58,7 @@ it('opens from the create button and offers only the actions the user may take',
         'Užbaigti posėdį',
         'Nauja problema',
     ]);
+    $page->assertNoJavaScriptErrors();
 });
 
 it('walks from the institution to the meeting type', function (): void {
@@ -86,4 +87,5 @@ it('walks from the institution to the meeting type', function (): void {
         'Sprendimas el. paštu',
         'Kita',
     ]);
+    $page->assertNoJavaScriptErrors();
 });

@@ -5,21 +5,24 @@ import { defineComponent, h } from 'vue';
 
 import { createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import AdminShell from '../AdminShell.vue';
 
 import { atstovavimas, pradzia } from './fixtures';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // `virtual:pwa-register` only exists inside a Vite build.
 vi.mock('@/Composables/usePWA', () => ({ usePWA: () => ({ isPWA: false, setAppBadge: vi.fn() }) }));
 
 beforeEach(() => {
-  vi.stubGlobal('route', () => ({ current: () => 'pages.edit', params: {} }));
+  stubGlobal('route', () => ({ current: () => 'pages.edit', params: {} }));
 });
 
 afterEach(() => {
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 const stubs = {
@@ -59,7 +62,7 @@ describe('AdminShell focus mode', () => {
 
     expect(scrollArea.classes()).toContain('overflow-auto');
     expect(scrollArea.attributes('scroll-region')).toBeDefined();
-    expect(scrollArea.find('.sticky').find('[data-testid="top-bar"]').exists()).toBe(true);
+    expect(scrollArea.find('[data-testid="top-bar"]').exists()).toBe(false);
     expect(scrollArea.find('[data-slot="admin-page-measure"]').text()).toBe('Puslapis');
     expect(scrollArea.find('[data-testid="bottom-bar"]').exists()).toBe(false);
     const bottomStack = wrapper.get('[data-slot="shell-bottom-stack"]');
@@ -72,9 +75,8 @@ describe('AdminShell focus mode', () => {
     const { wrapper } = mountShell();
     const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
 
-    expect(wrapper.find('.sticky').classes()).toContain('[view-transition-name:admin-chrome]');
-    expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('backdrop-blur-sm');
-    expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('[.a11y-contrast_&]:backdrop-blur-none');
+    expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('[view-transition-name:admin-chrome]');
+    expect(wrapper.get('[data-slot="shell-chrome"]').classes()).not.toContain('backdrop-blur-sm');
 
     Object.defineProperty(window, 'scrollY', { value: 34, configurable: true });
     document.dispatchEvent(new FocusEvent('focusout'));
@@ -128,7 +130,7 @@ describe('AdminShell focus mode', () => {
 
 describe('AdminShell on phones', () => {
   const onRoute = (routeName: string) => {
-    vi.stubGlobal('route', () => ({ current: () => routeName, params: {} }));
+    stubGlobal('route', () => ({ current: () => routeName, params: {} }));
     vi.mocked(usePage).mockReturnValue(createMockPage({
       adminNavigation: { workspaces: [pradzia, atstovavimas] },
     }) as ReturnType<typeof usePage>);
@@ -139,18 +141,21 @@ describe('AdminShell on phones', () => {
     const { wrapper } = mountShell();
 
     expect(wrapper.find('[data-testid="section-tabs"]').classes()).toContain('max-md:hidden');
-    expect(wrapper.find('.sticky').find('[data-testid="context-bar"]').exists()).toBe(true);
+    expect(wrapper.get('[data-slot="shell-chrome"]').find('[data-testid="context-bar"]').exists()).toBe(true);
   });
 });
 
 describe('AdminShell staging warning', () => {
+  const storageKey = () => `admin-staging-warning:${usePage().props.auth?.user.id}`;
+
+  afterEach(() => localStorage.removeItem(storageKey()));
+
   it('keeps the collapsed state across shell mounts and lets the topbar reopen it', async () => {
-    localStorage.clear();
-    const storageKey = `admin-staging-warning:${usePage().props.auth?.user.id}`;
+    const key = storageKey();
     const first = mountShell();
     await first.wrapper.findAll('[data-testid="staging"]')[0].trigger('click');
 
-    expect(localStorage.getItem(storageKey)).toBe('true');
+    expect(localStorage.getItem(key)).toBe('true');
     first.wrapper.unmount();
 
     const second = mountShell();
@@ -158,9 +163,8 @@ describe('AdminShell staging warning', () => {
     expect(topbarWarning.attributes('data-dismissed')).toBe('true');
     await topbarWarning.trigger('click');
 
-    expect(localStorage.getItem(storageKey)).toBe('false');
+    expect(localStorage.getItem(key)).toBe('false');
     second.wrapper.unmount();
-    localStorage.clear();
   });
 });
 

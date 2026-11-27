@@ -37,9 +37,9 @@ it('renders compact email actions for each institution without overflow on narro
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 900);
             expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
-            $page->screenshot(filename: "activity-email-{$campaign}-{$width}");
         }
     }
+    $page->assertNoJavaScriptErrors();
 });
 
 it('submits several meetings through the signed form and renders without overflow in either theme', function (): void {
@@ -53,7 +53,6 @@ it('submits several meetings through the signed form and renders without overflo
         foreach (['light', 'dark'] as $theme) {
             $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
             expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
-            $page->screenshot(filename: "activity-reply-{$width}-{$theme}");
         }
     }
     $page->fill('#date-0', today()->subWeek()->toDateString());
@@ -75,9 +74,15 @@ it('submits several meetings through the signed form and renders without overflo
 });
 
 it('opens request history from an institution record against the built bundle', function (): void {
-    $user = makeAdminUser(Tenant::query()->first());
-    $request = InstitutionActivityRequest::factory()->create(['requested_by_id' => $user->id, 'period_end' => today()]);
-    $page = loginAsAdmin($user, route('institutions.show', $request->institution, absolute: false));
+    $tenant = Tenant::query()->first();
+    $user = makeTenantUserWithRole('Studentų atstovų koordinatorius', $tenant);
+    $institution = Institution::factory()->for($tenant)->create();
+    $request = InstitutionActivityRequest::factory()->create([
+        'institution_id' => $institution->id,
+        'requested_by_id' => $user->id,
+        'period_end' => today(),
+    ]);
+    $page = loginAsAdmin($user, route('institutions.show', $institution, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
     $page->click('[role=tab]:has-text("Užklausos atstovams")');
     $page->assertSee($request->recipient->name)->assertNoJavaScriptErrors();
@@ -86,15 +91,14 @@ it('opens request history from an institution record against the built bundle', 
         foreach (['light', 'dark'] as $theme) {
             $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
             expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
-            $page->page()->locator('[data-slot=activity-request-history]')->scrollIntoViewIfNeeded();
-            $page->screenshot(filename: "activity-history-{$width}-{$theme}");
         }
     }
 });
 
 it('reviews incomplete records for the sending representative without overflow in the action window', function (): void {
-    $user = makeAdminUser(Tenant::query()->first());
-    $institution = Institution::factory()->for(Tenant::query()->first())->create();
+    $tenant = Tenant::query()->first();
+    $user = makeTenantUserWithRole('Studentų atstovų koordinatorius', $tenant);
+    $institution = Institution::factory()->for($tenant)->create();
     $duty = Duty::factory()->for($institution)->create();
     $type = DutyType::query()->findOrFail(TypeSeeder::STUDENT_REPRESENTATIVE_DUTY_TYPE_ID);
     $duty->types()->attach($type);
@@ -114,7 +118,6 @@ it('reviews incomplete records for the sending representative without overflow i
         foreach (['light', 'dark'] as $theme) {
             $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
             expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
-            $page->screenshot(filename: "activity-review-{$width}-{$theme}");
         }
     }
 });
@@ -129,22 +132,13 @@ it('captures documentation reference frames for activity requests', function ():
     $request->delete();
 
     // 1. Action window review screen
-    $page = loginAsAdmin($coordinator, route('institutions.show', $committee, absolute: false));
+    $page = loginAsAdmin($coordinator, route('institutions.show', $committee, absolute: false), 1440, 900);
     waitForInertiaRender($page, '[data-slot=admin-shell]');
     $page->click('header:has([data-slot=record-title]) [data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Ar vyko posėdis?")');
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);
     $page->fill('#activity-request-note', 'Ar per pastarąjį mėnesį vyko Chemijos SPK posėdis? Laukiame informacijos apie priimtus sprendimus.');
-    foreach ([390, 1440] as $width) {
-        $page->resize($width, 900);
-        foreach (['light', 'dark'] as $theme) {
-            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-            expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
-            $page->screenshot(fullPage: false, filename: "activity-bulk-review-{$width}-{$theme}");
-        }
-    }
-    $page->script('document.documentElement.classList.remove("dark")');
     docsScreenshot($page, 'activity-request-review', selector: '[role="dialog"]');
     $page->assertNoJavaScriptErrors();
 

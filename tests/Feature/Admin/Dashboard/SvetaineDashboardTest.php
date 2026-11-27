@@ -3,8 +3,6 @@
 use App\Models\Calendar;
 use App\Models\News;
 use App\Models\Page;
-use App\Models\QuickLink;
-use App\Models\Resource;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -19,8 +17,6 @@ beforeEach(function (): void {
     // Create related test data
     $this->page = Page::factory()->for($this->tenant)->create();
     $this->news = News::factory()->for($this->tenant)->create();
-    $this->quickLink = QuickLink::factory()->for($this->tenant)->create();
-    $this->resource = Resource::factory()->for($this->tenant)->create();
 });
 
 describe('svetaine dashboard', function (): void {
@@ -93,7 +89,8 @@ describe('svetaine counts', function (): void {
 
 describe('svetaine tenant isolation', function (): void {
     beforeEach(function (): void {
-        $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
+        $this->otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+        News::factory()->for($this->otherTenant)->count(2)->create();
     });
 
     test('user cannot access other tenant svetaine data directly', function (): void {
@@ -102,6 +99,8 @@ describe('svetaine tenant isolation', function (): void {
             ->assertStatus(200) // They can access but should see filtered data
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowSvetaine')
+                ->where('providedTenant.id', $this->tenant->id)
+                ->where('counts.news', 1)
                 ->where('tenants',
                     // Should not contain unauthorized tenants
                     fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['id'] === $this->tenant->id || $tenant['type'] === 'pagrindinis'))

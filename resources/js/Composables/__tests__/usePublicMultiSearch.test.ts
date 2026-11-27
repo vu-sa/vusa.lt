@@ -7,8 +7,12 @@ import { flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { trackEvent } from '@/Plugins/umami';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('@/Plugins/umami', () => ({ trackEvent: vi.fn() }));
 
@@ -18,7 +22,7 @@ vi.mock('@vueuse/core', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@vueuse/core')>();
   return {
     ...actual,
-    useLocalStorage: vi.fn((_key: string, defaultValue: any) => ref(Array.isArray(defaultValue) ? [...defaultValue] : defaultValue)),
+    useLocalStorage: vi.fn((_key: string, defaultValue: unknown) => ref(Array.isArray(defaultValue) ? [...defaultValue] : defaultValue)),
   };
 });
 
@@ -51,7 +55,7 @@ const mockFetch = vi.fn();
 describe('usePublicMultiSearch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubGlobal('fetch', mockFetch);
+    stubGlobal('fetch', mockFetch);
     mockFetch.mockImplementation(async (_url: string, init: { body: string }) => {
       const { searches } = JSON.parse(init.body);
       return {
@@ -75,12 +79,11 @@ describe('usePublicMultiSearch', () => {
             public_institutions: 'public_institutions',
           },
         },
-      }) as any,
+      }),
     );
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 

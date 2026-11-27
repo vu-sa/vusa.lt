@@ -102,6 +102,7 @@ describe('delete single notification', function (): void {
 
         $notification = $this->user->notifications()->first();
         $notificationId = $notification->id;
+        $survivor = $this->user->notifications()->whereKeyNot($notificationId)->sole();
 
         expect($this->user->notifications()->count())->toBe(2);
 
@@ -111,7 +112,7 @@ describe('delete single notification', function (): void {
 
         $this->user->refresh();
         expect($this->user->notifications()->count())->toBe(1)
-            ->and($this->user->notifications()->where('id', $notificationId)->exists())->toBeFalse();
+            ->and($this->user->notifications()->sole()->id)->toBe($survivor->id);
     });
 
     test('deleting one notification does not delete others', function (): void {
@@ -146,6 +147,7 @@ describe('delete read notifications', function (): void {
         // Mark only one as read
         $notifications = $this->user->notifications()->get();
         $notifications->first()->update(['read_at' => now()]);
+        $unreadIds = $notifications->skip(1)->modelKeys();
 
         $this->user->refresh();
         expect($this->user->readNotifications()->count())->toBe(1)

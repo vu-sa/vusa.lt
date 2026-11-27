@@ -31,6 +31,9 @@ return [
             'future_duty_holders' => 'Nariai su būsimomis pareigomis',
         ],
     ],
+    'status' => [
+        'database_check_failed' => 'Nepavyko patikrinti duomenų bazės būsenos.',
+    ],
     'maintenance' => [
         'title' => 'Priežiūra',
         'lead' => 'Veiksmai, kuriuos kitaip tektų paleisti serveryje. Kiekvienas įrašomas į veiklos žurnalą.',

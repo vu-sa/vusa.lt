@@ -121,7 +121,6 @@ describe.each(cases)('$prefix row actions', (testCase) => {
       expect(actions[0].primary).toBe(true);
     }
   });
-
 });
 
 describe.each(cases.filter(testCase => testCase.domainType))('$prefix delete gates', (testCase) => {
@@ -180,7 +179,7 @@ describe.each(publishingCases)('$prefix publishing placement', (testCase) => {
     expect(preview.findComponent({ name: 'CollectionStatusMenu' }).exists()).toBe(!testCase.banner);
     if (!testCase.banner) {
       expect(preview.findComponent({ name: 'CollectionStatusMenu' }).props('editable')).toBe(true);
-      expect(preview.findComponent({ name: 'CollectionRowActions' }).props()).toMatchObject({ emphasis: true, fullLabels: true });
+      expect(preview.findComponent({ name: 'CollectionRowActions' }).props()).toMatchObject({ layout: 'preview', fullLabels: true });
     }
     wrapper.unmount();
   });

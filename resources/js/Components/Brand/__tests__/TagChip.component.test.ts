@@ -4,6 +4,19 @@ import { describe, expect, it } from 'vitest';
 import TagChip from '../TagChip.vue';
 
 describe('TagChip', () => {
+  it('renders a span by default and an anchor when linked', () => {
+    expect(mount(TagChip, { props: { label: 'Gidai' } }).element.tagName).toBe('SPAN');
+
+    const linked = mount(TagChip, { props: { label: 'Gidai', href: '/naujienos' } });
+    expect(linked.element.tagName).toBe('A');
+    expect(linked.attributes('href')).toBe('/naujienos');
+  });
+
+  it('uses the brand fill for the solid variant only', () => {
+    expect(mount(TagChip, { props: { label: 'A' } }).classes()).toContain('bg-brand-fill');
+    expect(mount(TagChip, { props: { label: 'A', variant: 'muted' } }).classes())
+      .not.toContain('bg-brand-fill');
+  });
   it('renders label or slot text', () => {
     const fromProp = mount(TagChip, { props: { label: 'Atstovavimas' } });
     expect(fromProp.text()).toContain('Atstovavimas');

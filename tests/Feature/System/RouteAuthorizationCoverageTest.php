@@ -10,14 +10,11 @@
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Attributes\Controllers\Authorize;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
-
-pest()->use(RefreshDatabase::class);
 
 /**
  * Routes that are genuinely self-scoped: they only ever read or write rows belonging to the
@@ -70,6 +67,7 @@ const READ_ROUTE_EXEMPTIONS = [
     'api.v1.admin.supportRequests.index' => 'BuildSupportRequestCollection applies the actor’s visibility scope to results and facets.',
     'api.v1.admin.pushSubscriptions.index' => 'Reads subscriptions through the acting user’s relation.',
     'api.v1.admin.academicCalendar.vacations' => 'Serves shared academic break dates to signed-in users.',
+    'api.v1.admin.commandPalette.personalRecords' => 'Reads the actor’s own affiliations and applies each destination’s read policy.',
     'api.v1.admin.actionWindow.context' => 'Loads institutions from the actor’s duties and secretary assignments and scopes institution search to their permissions.',
     'api.v1.admin.meetings.recent' => 'Loads meetings from institutions where the actor holds a duty or is a secretary.',
     'api.v1.admin.files.allowedTypes' => 'Serves shared upload extensions and size limits to signed-in users.',

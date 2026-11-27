@@ -23,18 +23,16 @@ const render = (data: LearningStepData | KnowledgeItemData = step(), readonly = 
 });
 
 describe('LearningStepRow', () => {
-  it('gives displayed coordinator contacts more bottom space', async () => {
+  it('shows coordinator contacts only when provided', async () => {
     const wrapper = render(step({ key: 'meet_coordinator' }));
-    expect(wrapper.classes()).toContain('pb-3');
+    expect(wrapper.find('[data-slot="learning-coordinators"]').exists()).toBe(false);
     await wrapper.setProps({ coordinators: [{
       id: 'coordinator', name: 'Vardas Pavardė', email: 'coordinator@example.test',
       profile_photo_path: null, duty: 'Koordinatorius', pronouns: {}, use_original_duty_name: false, institutions: [],
     }] });
     expect(wrapper.get('[data-slot="learning-coordinators"]').text()).toContain('Vardas Pavardė');
-    expect(wrapper.classes()).toContain('pb-6');
     await wrapper.setProps({ coordinators: [] });
     expect(wrapper.find('[data-slot="learning-coordinators"]').exists()).toBe(false);
-    expect(wrapper.classes()).toContain('pb-3');
     wrapper.unmount();
   });
 

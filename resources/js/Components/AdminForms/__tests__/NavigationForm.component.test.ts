@@ -1,34 +1,16 @@
+import { usePage, useForm } from '@inertiajs/vue3';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { ref } from 'vue';
-import type * as Inertia from '@inertiajs/vue3';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+import { createMockForm, type MockForm } from '@/tests/helpers/createMockForm';
 import LinkTargetField from '@/Components/AdminForms/LinkTargetField.vue';
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 
-// Use the real Inertia useForm so nested `extra_attributes.*` mutations are properly
-// reactive (the global mock in resources/js/mocks/inertia.mock.ts returns a plain,
-// non-reactive object — see NewsForm.component.test.ts for the same workaround).
-// useForm is wrapped to capture the created instance, so a test can simulate a
-// server validation error via `capturedForm.errors = {...}` the way a failed
-// Inertia submission normally would.
-let capturedForm: { errors: Record<string, string> } | null = null;
+let capturedForm: MockForm | undefined;
 
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
-  return {
-    ...actual,
-    usePage: () => ({
-      props: { app: { locale: 'lt', url: 'https://vusa.test' } },
-    }),
-    useForm: (...args: unknown[]) => {
-      // @ts-expect-error — passthrough to the real implementation with variadic args
-      const form = actual.useForm(...args);
-      capturedForm = form as unknown as { errors: Record<string, string> };
-      return form;
-    },
-  };
-});
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const resolveUrlData = ref<{ url: string } | null>(null);
 const executeResolveUrl = vi.fn(async () => {});
@@ -109,12 +91,19 @@ describe('NavigationForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
   beforeEach(() => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ app: { url: 'https://vusa.test' } }));
     vi.clearAllMocks();
+    capturedForm = undefined;
+    vi.mocked(useForm).mockImplementation((keyOrData?: string | Record<string, unknown>, data?: Record<string, unknown>) => {
+      capturedForm = createMockForm(typeof keyOrData === 'string' ? data : keyOrData);
+      return capturedForm as unknown as ReturnType<typeof useForm>;
+    });
     resolveUrlData.value = null;
   });
 
   afterEach(() => {
     wrapper?.unmount();
+    vi.mocked(useForm).mockReset();
   });
 
   it('hides the image section when there is no image and shows the "show" label', () => {

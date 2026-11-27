@@ -44,7 +44,6 @@ const EXCLUDED_FROM_CATALOG = [
     'profile' => 'reached from the account menu, not a workspace section (PR 4.4)',
     'notifications.index' => 'reached from the notification bell and the phone bottom bar, not a Pradžia tab',
     'profile.notifications' => 'Pranešimų nustatymai, reached from the account menu and Paskyra (PR 9.9)',
-    'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
     'search.index' => 'legacy redirect; cross-entity search lives in the command palette',
 ];
@@ -54,7 +53,7 @@ const EXCLUDED_FROM_CATALOG = [
  * menu or Pagalba, or are legacy redirects that never render (`SearchController`'s own docblocks).
  */
 const WORKSPACELESS_ROUTES = [
-    'administration', 'profile', 'profile.notifications', 'mySupportRequests.index', 'mySupportRequests.create',
+    'administration', 'profile', 'profile.notifications',
     'search.index', 'search.agendaItems', 'search.institutions',
     'search.meetings', 'search.resources',
     // The notification bell and the phone bottom bar open it; Pradžia has no tab for it.
@@ -152,6 +151,19 @@ beforeEach(function (): void {
     $this->catalog = app(AdminNavigationCatalog::class);
 });
 
+test('palette commands follow create permissions and reuse the collection sheet target', function (): void {
+    $adminCommands = collect($this->catalog->for(makeAdminUser($this->tenant))['commandActions']);
+    $memberCommands = collect($this->catalog->for(makeUser($this->tenant))['commandActions']);
+
+    expect($adminCommands->firstWhere('key', 'new_news')['target']['routeName'])->toBe('news.create')
+        ->and($adminCommands->firstWhere('key', 'new_tag')['target'])->toBe([
+            'kind' => 'route', 'routeName' => 'tags.index', 'routeParams' => ['create' => '1'],
+        ])
+        ->and($adminCommands->pluck('key')->all())->toContain('new_learning_step', 'new_knowledge_item')
+        ->and($memberCommands->pluck('key')->all())->toContain('new_support_request', 'new_reservation')
+        ->and($memberCommands->pluck('key')->all())->not->toContain('new_news', 'new_tag');
+});
+
 describe('per-persona visibility', function (): void {
     test('a plain member sees Pradžia, the public ViSAK collections and the always-visible reservation entries', function (): void {
         $user = makeUser($this->tenant);
@@ -162,7 +174,7 @@ describe('per-persona visibility', function (): void {
         // still gets a foothold in Rezervacijos. Active institutions, public meetings, their agenda items
         // documents and problems are open to every admin too (the viewAny() of each policy).
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos', 'mano_uzklausos'],
             'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
@@ -180,8 +192,11 @@ describe('per-persona visibility', function (): void {
                     ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'atsakomybes', 'label' => 'shell.sections.atsakomybes', 'routeName' => 'profile.roles', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.atsakomybes', 'collectionActions' => [], 'matches' => ['profile.roles'], 'startsGroup' => false, 'children' => []],
                     ['key' => 'veiklos_uzklausos', 'label' => 'shell.sections.veiklos_uzklausos', 'routeName' => 'profile.activityRequests', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.veiklos_uzklausos', 'collectionActions' => [], 'matches' => ['profile.activityRequests'], 'startsGroup' => false, 'children' => []],
+                    ['key' => 'mano_uzklausos', 'label' => 'shell.sections.mano_uzklausos', 'routeName' => 'mySupportRequests.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.mano_uzklausos', 'collectionActions' => [], 'matches' => ['mySupportRequests.*'], 'startsGroup' => false, 'children' => []],
                 ],
-                'createActions' => [],
+                'createActions' => [
+                    ['key' => 'new_support_request', 'label' => 'shell.actions.new_support_request.title', 'description' => 'shell.actions.new_support_request.description', 'entityType' => null, 'target' => ['kind' => 'route', 'routeName' => 'mySupportRequests.create']],
+                ],
                 'experimental' => false,
             ])
             ->and($payload['workspaces'][3])->toEqual([
@@ -208,7 +223,7 @@ describe('per-persona visibility', function (): void {
         // Which meetings and institutions the rep gets is the scoped search key's job, not the catalog's.
         // The institution graph is a padalinys view; a rep reads only their own institutions.
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos', 'mano_uzklausos'],
             'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
@@ -224,7 +239,7 @@ describe('per-persona visibility', function (): void {
         $duty->assignRole('Komunikacijos koordinatorius');
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos', 'mano_uzklausos'],
             'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
@@ -237,25 +252,12 @@ describe('per-persona visibility', function (): void {
         $user = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos', 'mano_uzklausos'],
             'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'sistema' => ['apzvalga', 'tipai'],
         ]);
-    });
-
-    test('a plain member sees institutions but not the organisation-wide graph', function (): void {
-        $user = makeUser($this->tenant);
-        $duty = $user->duties()->first();
-        $duty->pivot->end_date = null;
-        $duty->pivot->save();
-
-        $sections = collect($this->catalog->for($user)['workspaces'])->firstWhere('key', 'atstovavimas')['sections'];
-
-        expect(collect($sections)->pluck('key')->all())
-            ->toContain('institucijos')
-            ->not->toContain('institucijos_grafas');
     });
 
     test('problem categories are managed only by those who edit problems in every padalinys', function (): void {
@@ -269,7 +271,7 @@ describe('per-persona visibility', function (): void {
         $user = makeAdminUser($this->tenant);
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
-            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos'],
+            'pradzia' => ['apzvalga', 'kelias', 'uzduotys', 'atsakomybes', 'veiklos_uzklausos', 'mano_uzklausos'],
             'wiki' => ['wiki', 'wiki_mine', 'rodykle', 'wiki_graph', 'wiki_biblioteka'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'atstovai', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
@@ -321,8 +323,8 @@ describe('per-persona visibility', function (): void {
         expect($plainWorkspace['sections'][1]['key'])->toBe('kelias')
             ->and($plainWorkspace['sections'][1]['children'])->toBe([])
             ->and($adminWorkspace['sections'][1]['children'])->toBe([])
-            ->and($plainWorkspace['createActions'])->toBe([])
-            ->and($adminWorkspace['createActions'])->toBe([])
+            ->and(array_column($plainWorkspace['createActions'], 'key'))->toBe(['new_support_request'])
+            ->and(array_column($adminWorkspace['createActions'], 'key'))->toBe(['new_support_request'])
             ->and(catalogSummary($this->catalog, $plain))->not->toHaveKey('organizacija')
             ->and(array_column($adminOrganizacija['sections'], 'key'))->toContain('kelio_zingsniai')
             ->and(array_column($adminOrganizacija['createActions'], 'key'))->toContain('new_learning_step')
@@ -346,7 +348,7 @@ describe('per-persona visibility', function (): void {
             ->and(collect($organizacija['createActions'])->firstWhere('key', 'new_learning_step'))->toEqual([
                 'key' => 'new_learning_step', 'label' => 'shell.actions.new_learning_step.title', 'description' => 'shell.actions.new_learning_step.description', 'entityType' => 'learning_step', 'target' => ['kind' => 'route', 'routeName' => 'learningSteps.create'],
             ])
-            ->and($workspaces->firstWhere('key', 'pradzia')['createActions'])->toBe([]);
+            ->and(array_column($workspaces->firstWhere('key', 'pradzia')['createActions'], 'key'))->toBe(['new_support_request']);
     });
 
     test('ViSAK separates its own views from the collections, starting at Institucijos', function (): void {
@@ -378,15 +380,6 @@ describe('per-persona visibility', function (): void {
             ->and($this->catalog->opensWorkspace(makeAdminUser($this->tenant), 'sistema'))->toBeTrue();
     });
 
-    test('an empty workspace does not render at all', function (): void {
-        // A plain member has zero visible sections in ViSAK, Svetainė, Organizacija and Sistema —
-        // none of those keys should appear in the payload, rather than an empty `sections: []`.
-        $user = makeUser($this->tenant);
-
-        $keys = collect($this->catalog->for($user)['workspaces'])->pluck('key');
-
-        expect($keys)->not->toContain('atstovavimas', 'svetaine', 'organizacija', 'sistema');
-    });
 });
 
 describe('route-coverage guard', function (): void {
@@ -497,6 +490,8 @@ describe('route resolution', function (): void {
         'occupancy edit' => ['dutiables.edit', 'organizacija', 'pareigybes'],
         'the duty wizard beats the duties wildcard' => ['duties.updateUsersWizard', 'organizacija', 'pareigybiu_atnaujinimas'],
         'a settings page' => ['settings.site.edit', 'sistema', 'nustatymai'],
+        'my support requests list' => ['mySupportRequests.index', 'pradzia', 'mano_uzklausos'],
+        'new support request form' => ['mySupportRequests.create', 'pradzia', 'mano_uzklausos'],
         'support request record' => ['supportRequests.show', 'sistema', 'pagalbos_uzklausos'],
     ]);
 });

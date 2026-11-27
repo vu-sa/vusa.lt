@@ -17,15 +17,7 @@ pest()->use(RefreshDatabase::class);
  * side of that same regression).
  */
 it('swaps title and canonical URL on client-side navigation between public pages', function (): void {
-    $mainTenant = Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
+    $mainTenant = Tenant::main();
 
     $news = News::factory()->create([
         'tenant_id' => $mainTenant->id,

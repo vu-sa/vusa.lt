@@ -4,9 +4,6 @@ use App\Models\User;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseManager;
 use App\Services\Typesense\TypesenseScopedKeyService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     config([

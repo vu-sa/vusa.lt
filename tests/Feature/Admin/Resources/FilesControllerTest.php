@@ -314,25 +314,15 @@ describe('Files Controller - Directory Creation', function (): void {
     });
 
     test('cannot create directory with existing name', function (): void {
-        // Create directory first
-        Storage::disk('public')->makeDirectory('files/padaliniai/vusa'.$this->tenant->alias.'/existing');
+        $path = $this->allowedPath.'/existing';
+        Storage::put($path.'/keep.txt', 'existing contents');
 
-        $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
+        asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => $this->allowedPath,
             'name' => 'existing',
-        ]);
+        ])->assertRedirect()->assertSessionHasErrors('name');
 
-        expect($response->status())->toBe(302);
-
-        // Since the controller uses Storage::exists() to check directories,
-        // and that might not work properly for directories, we'll just verify
-        // the request doesn't crash
-        expect(
-            $response->getSession()->has('errors') ||
-            $response->getSession()->has('error') ||
-            $response->getSession()->has('success') ||
-            $response->getSession()->get('errors')?->has('name')
-        )->toBeTrue();
+        expect(Storage::get($path.'/keep.txt'))->toBe('existing contents');
     });
 
     test('directory name length is validated', function (): void {
@@ -402,21 +392,13 @@ describe('Files Controller - Directory Deletion', function (): void {
 
 describe('Files Controller - File Deletion', function (): void {
     test('file manager can delete files in allowed directory', function (): void {
-        // Use one of the existing test files
-        $filePath = $this->allowedPath.'/test.txt';
+        $path = $this->allowedPath.'/test.txt';
+        Storage::put($path, 'contents');
 
-        $response = asUser($this->fileManager)->delete(route('files.delete'), [
-            'path' => $filePath,
-        ]);
+        asUser($this->fileManager)->delete(route('files.delete'), ['path' => $path])
+            ->assertRedirect()->assertSessionHas('success');
 
-        expect($response->status())->toBe(302);
-
-        // The file should either be successfully deleted or an error should be returned
-        expect(
-            $response->getSession()->has('success') ||
-            $response->getSession()->has('error') ||
-            $response->getSession()->has('errors')
-        )->toBeTrue();
+        Storage::assertMissing($path);
     });
 
     test('file manager cannot delete files in forbidden directory', function (): void {
@@ -463,25 +445,15 @@ describe('Files Controller - Bulk Delete', function (): void {
     });
 
     test('file manager can bulk delete files in allowed directory', function (): void {
-        $paths = [
-            $this->allowedPath.'/bulk1.txt',
-            $this->allowedPath.'/bulk2.txt',
-            $this->allowedPath.'/bulk3.txt',
-        ];
+        $paths = [$this->allowedPath.'/first.txt', $this->allowedPath.'/second.txt'];
+        foreach ($paths as $path) {
+            Storage::put($path, 'contents');
+        }
 
-        $response = asUser($this->fileManager)->delete(route('files.bulkDelete'), [
-            'paths' => $paths,
-        ]);
+        asUser($this->fileManager)->delete(route('files.bulkDelete'), ['paths' => $paths])
+            ->assertRedirect()->assertSessionHas('success');
 
-        expect($response->status())->toBe(302);
-
-        // Should either succeed partially or completely, or return error
-        expect(
-            $response->getSession()->has('success') ||
-            $response->getSession()->has('warning') ||
-            $response->getSession()->has('error') ||
-            $response->getSession()->has('errors')
-        )->toBeTrue();
+        Storage::assertMissing($paths);
     });
 
     test('bulk delete rejects the whole selection when the last file is forbidden', function (): void {
@@ -583,14 +555,16 @@ describe('Files Controller - Security Tests', function (): void {
 
 describe('Files Controller - Error Handling', function (): void {
     test('handles storage errors gracefully', function (): void {
-        // Mock storage failure by trying to create directory in non-existent path
-        $response = asUser($this->superAdmin)->post(route('files.createDirectory'), [
-            'path' => 'public/nonexistent/deep/path',
-            'name' => 'test',
-        ]);
+        $publicPath = str($this->allowedPath)->after('public/').'/new-folder';
+        $public = Storage::disk('public');
+        $public->put($publicPath, 'a file occupies the destination');
 
-        expect($response->status())->toBe(302);
-        // Should handle gracefully without throwing exceptions
+        asUser($this->fileManager)->post(route('files.createDirectory'), [
+            'path' => $this->allowedPath,
+            'name' => 'new-folder',
+        ])->assertRedirect()->assertSessionHasErrors('error');
+
+        expect($public->get($publicPath))->toBe('a file occupies the destination');
     });
 
     test('validates all required parameters', function (): void {
@@ -616,17 +590,7 @@ describe('Files Controller - File Usage Scanning', function (): void {
             'path' => $filePath,
         ]);
 
-        // Debug the response if it's not what we expect
-        if ($response->status() !== 302) {
-            dd([
-                'status' => $response->status(),
-                'content' => $response->getContent(),
-                'headers' => $response->headers->all(),
-            ]);
-        }
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHas('data');
+        $response->assertRedirect()->assertSessionHas('data');
 
         $flashData = session('data');
         expect($flashData)->toHaveKeys(['total_usages', 'is_safe_to_delete', 'scanned_models', 'usage_details', 'scanned_at']);
@@ -971,15 +935,6 @@ describe('Files Controller - Creation requires the create permission', function 
             ->toBeFalse();
     });
 
-    test('an actor holding files.create.padalinys can create a directory', function (): void {
-        $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
-            'path' => $this->allowedPath,
-            'name' => 'new-folder',
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionDoesntHaveErrors(['permission']);
-    });
 });
 
 describe('Files Controller - Listing details', function (): void {

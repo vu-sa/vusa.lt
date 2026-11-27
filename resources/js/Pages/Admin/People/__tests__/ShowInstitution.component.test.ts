@@ -3,17 +3,23 @@ import { enableAutoUnmount, mount } from '@vue/test-utils';
 import { router, usePage, WhenVisible } from '@inertiajs/vue3';
 import { defineComponent, h } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { router as mockRouter } from '@/mocks/inertia.mock';
 import ShowInstitution from '@/Pages/Admin/People/ShowInstitution.vue';
 import { InstitutionActivityStatus, InstitutionScope } from '@/Types/enums';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { createActionWindowProvider, type ActionWindowContext } from '@/Composables/useActionWindow';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 enableAutoUnmount(afterEach);
 
-vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+beforeEach(() => {
+  stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+});
 
 /** RecordPage is stubbed so the test can read what the page hands it and fire its emits. */
 const stubs = {
@@ -433,7 +439,7 @@ describe('ShowInstitution.vue', () => {
 
   it('searches the meetings only once their section comes into view', async () => {
     let reveal: ((entries: Array<{ isIntersecting: boolean }>) => void) | undefined;
-    vi.stubGlobal('IntersectionObserver', class {
+    stubGlobal('IntersectionObserver', class {
       constructor(callback: typeof reveal) {
         reveal = callback;
       }
@@ -455,8 +461,7 @@ describe('ShowInstitution.vue', () => {
 
     const collection = wrapper.findComponent({ name: 'InstitutionMeetingsCollection' });
     expect(collection.props()).toMatchObject({ institutionId: 'inst1', canRecordMeeting: true });
-    vi.unstubAllGlobals();
-    vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+    stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
   });
 
   it('does not mount an activity-history visibility loader without permission', () => {

@@ -14,6 +14,7 @@ use App\Services\ContentResolution\ResolutionContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
@@ -53,17 +54,28 @@ describe('ContentPartResolver::resolveAll', function (): void {
         expect($this->resolver->resolveAll($parts, $this->context))->toBe([]);
     });
 
-    test('batches one resolver call per type regardless of how many blocks of that type exist', function (): void {
-        $parts = collect([
-            makeResolvablePart('link-list', ['links' => []], ['source' => 'manual'], 1),
-            makeResolvablePart('link-list', ['links' => []], ['source' => 'manual'], 2),
-        ]);
+    test('fetches pinned pages once for multiple link lists', function (): void {
+        [$first, $second] = Page::factory()->count(2)->for($this->tenant)->create([
+            'lang' => 'lt',
+            'is_active' => true,
+        ])->all();
+        $parts = [
+            makeResolvablePart('link-list', [], ['source' => 'pages', 'mode' => 'specific', 'pageIds' => [$first->id]], 1),
+            makeResolvablePart('link-list', [], ['source' => 'pages', 'mode' => 'specific', 'pageIds' => [$second->id]], 2),
+        ];
 
-        $resolved = $this->resolver->resolveAll($parts, $this->context);
+        DB::enableQueryLog();
+        try {
+            $resolved = $this->resolver->resolveAll($parts, $this->context);
+            $pageQueries = collect(DB::getQueryLog())
+                ->filter(fn (array $query) => str_contains($query['query'], 'from "pages"'));
+        } finally {
+            DB::disableQueryLog();
+        }
 
-        expect($resolved)->toHaveKeys([1, 2])
-            ->and($resolved[1]['type'])->toBe('link-list')
-            ->and($resolved[2]['type'])->toBe('link-list');
+        expect($pageQueries)->toHaveCount(1);
+        expect(array_column($resolved[1]['items'], 'id'))->toBe([$first->id]);
+        expect(array_column($resolved[2]['items'], 'id'))->toBe([$second->id]);
     });
 });
 
@@ -345,7 +357,15 @@ describe('EventListResolver', function (): void {
     });
 
     test('clamps the date range mode to MAX_RANGE_DAYS', function (): void {
-        // 10 years apart — should be clamped, not silently accepted.
+        $start = Carbon::parse('2015-01-01');
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => 'Inside range', 'is_draft' => false,
+            'date' => $start->copy()->addDays(Calendar::MAX_RANGE_DAYS - 1),
+        ]);
+        Calendar::factory()->for($this->tenant)->create([
+            'title' => 'Beyond range', 'is_draft' => false,
+            'date' => $start->copy()->addDays(Calendar::MAX_RANGE_DAYS + 1),
+        ]);
         $part = makeResolvablePart('event-list', [], [
             'mode' => 'range',
             'dateFrom' => '2015-01-01',
@@ -353,11 +373,9 @@ describe('EventListResolver', function (): void {
             'tenantScope' => 'current',
         ]);
 
-        // Deliberately don't seed any events — this just proves the resolver doesn't
-        // throw or hang building a decade-wide query.
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
-        expect($resolved[$part->id]['type'])->toBe('event-list');
+        expect(array_column($resolved[$part->id]['items'], 'title'))->toBe(['Inside range']);
     });
 });
 

@@ -27,20 +27,23 @@ it('mounts duty headings and personalized contact names without overflow or Java
         'start_date' => now()->subMonth(), 'end_date' => null, 'use_original_duty_name' => false,
     ]);
 
-    $page = loginAsAdmin(makeAdminUser($tenant));
+    $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
     $screens = [
         'record' => '/mano/duties/'.$duty->id,
         'form' => '/mano/duties/'.$duty->id.'/edit',
         'user' => '/mano/users/'.$holder->id,
         'contacts' => '/lt/kontaktai/id/'.$institution->id,
     ];
+    $page = loginAsAdmin($actor, $screens['record']);
     foreach ($screens as $screen => $path) {
         if ($screen === 'contacts') {
             $page = visitPublicSubdomain('www', $path);
             $page->click('[data-slot="cookie-consent"] button');
             $page->script('document.querySelector("[data-slot=public-contact-card]").scrollIntoView({block: "center"})');
         } else {
-            navigateTo($page, $path);
+            if ($screen !== 'record') {
+                navigateTo($page, $path);
+            }
             waitForInertiaRender($page, $screen === 'form' ? '[data-slot="form-page"] h1' : '[data-slot="record-title"]');
         }
 
@@ -53,9 +56,6 @@ it('mounts duty headings and personalized contact names without overflow or Java
             foreach ([390, 820, 1180, 1440] as $width) {
                 $page->resize($width, 844);
                 expect($page->script('document.documentElement.scrollWidth > innerWidth + 1'))->toBeFalse();
-                if (getenv('DUTY_SCREENSHOTS') && (($width === 1440 && ! $dark) || ($width === 390 && $dark))) {
-                    $page->screenshot(fullPage: false, filename: 'duty-'.$screen.'-'.$width.'-'.($dark ? 'dark' : 'light'));
-                }
             }
         }
         if ($screen === 'form') {

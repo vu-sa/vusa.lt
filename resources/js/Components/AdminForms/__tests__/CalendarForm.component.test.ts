@@ -73,23 +73,33 @@ describe('CalendarForm.vue — create tenant default', () => {
     expect(vm.form.tenant_id).toBe(2);
   });
 
-  it('treats the event type as optional and allows clearing it', async () => {
-    wrapper = createWrapper([
-      { id: 16, shortname: 'VU SA', type: 'pagrindinis' },
-    ] as App.Entities.Tenant[], 'CreateCalendarOptionalEventType');
+  it('submits the selected event type and allows clearing it', async () => {
+    wrapper = mount(CalendarForm, {
+      shallow: true,
+      props: {
+        calendar,
+        eventTypes: [{ id: 5, name: 'Seminaras' }] as unknown as App.Entities.EventType[],
+        assignableTenants: [],
+        submitUrl: '/mano/calendar',
+        submitMethod: 'post',
+      },
+      global: { stubs: {
+        FormPage: { emits: ['submit'], template: `<form @submit.prevent="$emit('submit')"><slot name="aside" /></form>` },
+        FormPanel: { template: '<section><slot /></section>' },
+        FormFieldWrapper: { template: '<div><slot /></div>' },
+        NativeSelect: false,
+      } },
+    });
 
-    const vm = wrapper.vm as unknown as {
-      form: { event_type_id: number | null; title: { lt: string } };
-    };
+    const select = wrapper.get('select#event_type');
+    const submit = () => wrapper.get('form').trigger('submit');
+    await select.setValue('5');
+    await submit();
+    expect(wrapper.emitted('submit:form')?.at(-1)).toEqual([expect.objectContaining({ event_type_id: 5 })]);
 
-    vm.form.title.lt = 'Renginys';
-    vm.form.event_type_id = 5;
-    await wrapper.vm.$nextTick();
-    expect(vm.form.event_type_id).toBe(5);
-
-    vm.form.event_type_id = null;
-    await wrapper.vm.$nextTick();
-    expect(vm.form.event_type_id).toBeNull();
+    await select.setValue('');
+    await submit();
+    expect(wrapper.emitted('submit:form')?.at(-1)).toEqual([expect.objectContaining({ event_type_id: null })]);
   });
 });
 

@@ -72,6 +72,7 @@
       :item-key
       :columns
       :row-actions
+      :can-show-table-action
       :is-loading="source.isLoading.value"
       :is-loading-more="source.isLoadingMore.value"
       :has-searched="source.hasSearched.value"
@@ -104,6 +105,9 @@
       </template>
       <template v-if="$slots.cell" #cell="slotProps">
         <slot name="cell" v-bind="slotProps" />
+      </template>
+      <template v-if="$slots['table-action']" #table-action="slotProps">
+        <slot name="table-action" v-bind="slotProps" />
       </template>
       <template v-if="$slots.preview" #preview="slotProps">
         <slot name="preview" v-bind="slotProps" />
@@ -158,6 +162,8 @@ const props = withDefaults(defineProps<{
   quickFilters?: CollectionQuickFilter[];
   columns?: CollectionColumn[];
   rowActions?: (item: T) => AdminRecordAction[];
+  /** Which rows show the supplementary `table-action` slot beside their record actions. */
+  canShowTableAction?: (item: T) => boolean;
   /** Records the user just changed, shown until the search index reflects them (O1's Typesense trap). */
   pinnedItems?: readonly T[];
   searchPlaceholder?: string;
@@ -181,6 +187,7 @@ const props = withDefaults(defineProps<{
   lead: undefined,
   quickFilters: undefined,
   columns: undefined,
+  canShowTableAction: undefined,
   pinnedItems: undefined,
   searchPlaceholder: undefined,
   availableViews: undefined,
@@ -204,6 +211,7 @@ const slots = defineSlots<{
   /** Needed when `availableViews` offers `cards`. */
   'card'?: (props: { item: T; actions: AdminRecordAction[]; pinned: boolean }) => unknown;
   'cell': (props: { item: T; actions: AdminRecordAction[]; column: CollectionColumn; pinned: boolean }) => unknown;
+  'table-action'?: (props: { item: T }) => unknown;
   'preview': (props: { item: T; actions: AdminRecordAction[] }) => unknown;
   'empty': () => unknown;
   'bulk-actions': (props: { selected: T[]; clear: () => void }) => unknown;
@@ -257,7 +265,9 @@ function toggleTrash(): void {
 }
 
 /** Below md the Filtrai button opens the sheet instead of the inline row. */
-const { sheetOpen, toggleFilters } = useCollectionControls(isAtLeastMd, filtersOpen, () => { props.source.loadFacets?.(); });
+const { sheetOpen, toggleFilters } = useCollectionControls(isAtLeastMd, filtersOpen, () => {
+  props.source.loadFacets?.();
+});
 
 const isFiltered = computed(() => props.source.query.value.trim() !== '' || props.source.activeFilterCount.value > 0);
 

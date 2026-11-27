@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import SectionBand from '@/Components/Public/Base/SectionBand.vue';
 
 import DisplayHeading from '../DisplayHeading.vue';
-import TagChip from '../TagChip.vue';
 
 /**
  * These assert wiring only — which classes and elements are produced. Whether the brand rule
@@ -82,21 +81,5 @@ describe('SectionBand', () => {
     expect(mount(SectionBand, { props: { divider: 'top' } }).classes()).toContain('border-t');
     expect(mount(SectionBand, { props: { divider: 'bottom' } }).classes()).toContain('border-b');
     expect(mount(SectionBand).classes()).not.toContain('border-t');
-  });
-});
-
-describe('TagChip', () => {
-  it('renders a span by default and an anchor when linked', () => {
-    expect(mount(TagChip, { props: { label: 'Gidai' } }).element.tagName).toBe('SPAN');
-
-    const linked = mount(TagChip, { props: { label: 'Gidai', href: '/naujienos' } });
-    expect(linked.element.tagName).toBe('A');
-    expect(linked.attributes('href')).toBe('/naujienos');
-  });
-
-  it('uses the brand fill for the solid variant only', () => {
-    expect(mount(TagChip, { props: { label: 'A' } }).classes()).toContain('bg-brand-fill');
-    expect(mount(TagChip, { props: { label: 'A', variant: 'muted' } }).classes())
-      .not.toContain('bg-brand-fill');
   });
 });

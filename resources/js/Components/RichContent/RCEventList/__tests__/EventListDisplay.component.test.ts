@@ -107,8 +107,7 @@ describe('EventListDisplay', () => {
     const title = wrapper.find('h2[contenteditable]');
     expect(title.exists()).toBe(true);
     title.element.textContent = 'Artimiausi renginiai';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();

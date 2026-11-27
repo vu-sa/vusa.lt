@@ -6,6 +6,7 @@ use App\Models\Banner;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -228,19 +229,16 @@ describe('authorized access', function (): void {
     });
 
     test('removing the logo clears it — the logo is optional', function (): void {
-        $updateData = getControllerTestData('Banner')['valid'];
-        $updateData['title'] = 'Valid title';
-        $updateData['image_media'] = null;
+        $media = app(AddImageMedia::class)->execute($this->banner, UploadedFile::fake()->image('logo.png'), 'image');
+        $this->assertModelExists($media);
 
-        asUser($this->admin)
-            ->patch(route('banners.update', $this->banner), $updateData)
-            ->assertStatus(302)
-            ->assertSessionHas('success');
+        asUser($this->admin)->patch(route('banners.update', $this->banner), [
+            ...getControllerTestData('Banner')['valid'],
+            'image_media' => null,
+        ])->assertRedirect()->assertSessionHas('success');
 
-        $this->assertDatabaseHas('banners', [
-            'id' => $this->banner->id,
-            'title' => 'Valid title',
-        ]);
+        expect($this->banner->fresh()->getMedia('image'))->toBeEmpty();
+        $this->assertModelMissing($media);
     });
 
     test('can delete banner', function (): void {
@@ -332,13 +330,10 @@ describe('filtering and search', function (): void {
     });
 
     test('can filter banners by search term', function (): void {
-        asUserWithInertia($this->admin)
-            ->get(route('banners.index', ['search' => 'Test']))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexBanner')
-                ->has('banners')
-            );
+        Banner::factory()->for($this->tenant)->create(['title' => 'Different banner']);
+        asUserWithInertia($this->admin)->get(route('banners.index', ['search' => 'Test baneris']))
+            ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->has('banners.data', 1)->where('banners.data.0.id', $this->banner->id));
     });
 
     test('can filter banners by active status', function (): void {
@@ -351,15 +346,22 @@ describe('filtering and search', function (): void {
     });
 
     test('renders banner data with an explicit page size', function (): void {
-        Banner::factory()->for($this->tenant)->create();
+        $this->banner->update(['title' => 'Pagination fixture one']);
+        $banners = Banner::factory()->count(2)->for($this->tenant)->create(['title' => 'Pagination fixture']);
+        $expected = $banners->modelKeys();
+        $expected[] = $this->banner->id;
+        $url = fn (int $page) => route('banners.index', ['search' => 'Pagination fixture', 'per_page' => 2, 'page' => $page]);
 
-        asUserWithInertia($this->admin)
-            ->get(route('banners.index', ['per_page' => 10]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexBanner')
-                ->has('banners')
-            );
+        $first = asUserWithInertia($this->admin)->get($url(1))->assertOk()
+            ->assertJsonPath('props.banners.meta.per_page', 2)
+            ->assertJsonPath('props.banners.meta.last_page', 2)
+            ->assertJsonCount(2, 'props.banners.data');
+        $second = asUserWithInertia($this->admin)->get($url(2))->assertOk()
+            ->assertJsonPath('props.banners.meta.current_page', 2)
+            ->assertJsonCount(1, 'props.banners.data');
+
+        expect(collect([...$first->json('props.banners.data'), ...$second->json('props.banners.data')])->pluck('id')->all())
+            ->toEqualCanonicalizing($expected);
     });
 });
 
@@ -394,13 +396,9 @@ describe('tenant isolation', function (): void {
     });
 
     test('user only sees banners from their tenant', function (): void {
-        asUserWithInertia($this->admin)
-            ->get(route('banners.index'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexBanner')
-                ->has('banners')
-            );
+        asUserWithInertia($this->admin)->get(route('banners.index'))
+            ->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->has('banners.data', 1)->where('banners.data.0.id', $this->banner->id));
     });
 
     test('cannot access other tenant banner', function (): void {
@@ -420,8 +418,10 @@ describe('tenant isolation', function (): void {
 
 describe('cache functionality', function (): void {
     test('banner cache is cleared when banner is saved', function (): void {
-        // This test verifies that the cache clearing mechanism works
-        // The Banner model has event listeners that should clear cache
+        $cache = Cache::tags(['banners']);
+        $key = 'banner_groups_'.$this->tenant->id;
+        $cache->put($key, 'cached payload', 60);
+        expect($cache->has($key))->toBeTrue();
 
         $updateData = getControllerTestData('Banner')['valid'];
         $updateData['title'] = 'Updated for cache test';
@@ -430,7 +430,7 @@ describe('cache functionality', function (): void {
             ->patch(route('banners.update', $this->banner), $updateData)
             ->assertStatus(302);
 
-        // Verify the banner was updated (cache should be cleared)
+        expect($cache->has($key))->toBeFalse();
         $this->assertDatabaseHas('banners', [
             'id' => $this->banner->id,
             'title' => 'Updated for cache test',
@@ -438,11 +438,16 @@ describe('cache functionality', function (): void {
     });
 
     test('banner cache is cleared when banner is deleted', function (): void {
+        $cache = Cache::tags(['banners']);
+        $key = 'banner_groups_'.$this->tenant->id;
+        $cache->put($key, 'cached payload', 60);
+        expect($cache->has($key))->toBeTrue();
+
         asUser($this->admin)
             ->delete(route('banners.destroy', $this->banner))
             ->assertStatus(302);
 
-        // Verify the banner was deleted (cache should be cleared)
+        expect($cache->has($key))->toBeFalse();
         $this->assertSoftDeleted('banners', [
             'id' => $this->banner->id,
         ]);

@@ -27,7 +27,6 @@ it('opens personal requests from home and fits the supported widths in both them
         $page->resize($width, 900);
         foreach ([false, true] as $dark) {
             $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
-            $page->screenshot(fullPage: false, filename: 'user-activity-requests-'.$width.($dark ? '-dark' : '-light'));
             expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width);
         }
     }

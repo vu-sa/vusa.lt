@@ -1,12 +1,14 @@
 import { mount } from '@vue/test-utils';
 import { CircleCheck } from '@lucide/vue';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { router, usePage } from '@inertiajs/vue3';
 import { reactive } from 'vue';
 
 import RecordPage from '@/Components/Layouts/RecordPage.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
+
+afterEach(() => vi.useRealTimers());
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -390,7 +392,6 @@ describe('RecordPage', () => {
     expect(wrapper.find('h1').classes()).toContain('line-clamp-3');
     await wrapper.find('[data-testid="record-title-toggle"]').trigger('click');
     expect(wrapper.find('h1').classes()).not.toContain('line-clamp-3');
-    vi.useRealTimers();
   });
 });
 

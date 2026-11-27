@@ -173,14 +173,13 @@ describe('MainNavigationMenuContent.vue', () => {
     expect(ul.classes()).toContain('lg:grid-cols-2');
   });
 
-  it('keys each column independently instead of sharing the root id', () => {
+  it('renders each column with its own links', () => {
     const wrapper = mountItem(makeItem([
       [{ name: 'A', url: '/a', type: 'link' }],
       [{ name: 'B', url: '/b', type: 'link' }],
     ], 2));
 
-    const listItems = wrapper.findAll('li');
-    expect(listItems).toHaveLength(2);
+    expect(wrapper.findAll('li').map(column => column.findAll('a').map(link => link.attributes('href')))).toEqual([['/a'], ['/b']]);
   });
 
   /**

@@ -1,15 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowAgendaItem from '@/Pages/Admin/Representation/ShowAgendaItem.vue';
 import { commonStubs } from '@/tests/stubs';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name?: string, params?: Record<string, string>) => (name === undefined
-  ? { current: () => false }
-  : `/mocked/${name}${params ? `?${new URLSearchParams(params).toString()}` : ''}`));
+beforeEach(() => {
+  stubGlobal('route', (name?: string, params?: Record<string, string>) => (name === undefined
+    ? { current: () => false }
+    : `/mocked/${name}${params ? `?${new URLSearchParams(params).toString()}` : ''}`));
+});
 
 const stubs = {
   ...commonStubs,

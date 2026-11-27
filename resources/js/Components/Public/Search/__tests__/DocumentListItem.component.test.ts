@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest';
+import { afterEach, describe, test, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
@@ -15,7 +15,12 @@ import { commonStubs, stubIcon } from '@/tests/stubs';
 import { documentWithMatch, type SearchMatchDocument } from '@/Search/core/matches';
 import type { DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import DocumentListItem from '../DocumentListItem.vue';
+
+const { stubProperty, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 // Icons are stubbed per the project's "real components by default" policy —
 // @iconify/vue's <Icon> fetches icon data at runtime, which is unnecessary
@@ -211,7 +216,7 @@ describe('DocumentListItem', () => {
 
   test('copying the link writes link_url to the clipboard when resolved', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, { clipboard: { writeText } });
+    stubProperty(navigator, 'clipboard', { writeText });
 
     const wrapper = mount(DocumentListItem, {
       props: {

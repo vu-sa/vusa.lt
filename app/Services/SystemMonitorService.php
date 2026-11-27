@@ -573,11 +573,11 @@ class SystemMonitorService
                 'version' => DB::select('SELECT VERSION() as version')[0]->version ?? 'Unknown',
                 'last_check' => now()->toISOString(),
             ];
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return [
                 'status' => 'error',
                 'connected' => false,
-                'error' => $e->getMessage(),
+                'error' => __('sistema.status.database_check_failed'),
                 'last_check' => now()->toISOString(),
             ];
         }

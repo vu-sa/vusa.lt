@@ -5,6 +5,9 @@
     @select="emit('select')"
   >
     <EntityTypeMark v-if="entityType" :type="entityType" size="lg" icon-only />
+    <span v-else-if="create" data-slot="create-command-icon" class="flex size-10 shrink-0 items-center justify-center rounded-md bg-brand/10 text-brand">
+      <component :is="icon" class="size-5 text-brand" aria-hidden="true" />
+    </span>
     <span v-else class="flex size-10 shrink-0 items-center justify-center border border-border bg-background text-foreground">
       <component :is="icon" class="size-5" :stroke-width="1.75" />
     </span>
@@ -29,6 +32,7 @@ defineProps<{
   icon: Component;
   title: string;
   subtitle?: string;
+  create?: boolean;
   /** Shows the type's category mark instead of the plain icon tile. */
   entityType?: string;
 }>();

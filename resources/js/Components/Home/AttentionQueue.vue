@@ -83,7 +83,7 @@ const rows = computed(() => props.tasks.map((task) => {
     name: task.name,
     context: task.taskable?.name ?? null,
     // A meeting task lands on the agenda tab, ready to fill: one tap to the exact screen (R-a).
-    href: getMeetingAgendaUrl(task) ?? getTaskableUrl(task),
+    href: task.taskable ? (getMeetingAgendaUrl(task) ?? getTaskableUrl(task)) : null,
     isOverdue: task.is_overdue,
     dueAt: task.due_date,
     due: dueLabel(task),

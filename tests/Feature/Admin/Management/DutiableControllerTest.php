@@ -74,18 +74,6 @@ test('duty manager can update dutiable additional_email', function (): void {
     expect($this->dutiable->additional_email)->toBe('kontaktas@example.com');
 });
 
-test('can update additional_email', function (): void {
-    $response = asUser($this->dutyManager)
-        ->patch(route('dutiables.update', $this->dutiable), [
-            'additional_email' => 'api@example.com',
-        ]);
-
-    $response->assertRedirect();
-
-    $this->dutiable->refresh();
-    expect($this->dutiable->additional_email)->toBe('api@example.com');
-});
-
 test('can clear additional_email by sending null', function (): void {
     $this->dutiable->update(['additional_email' => 'existing@example.com']);
 
@@ -133,17 +121,6 @@ test('updating term dates does not require an additional email', function (): vo
     $this->dutiable->refresh();
     expect($this->dutiable->additional_email)->toBeNull()
         ->and($this->dutiable->start_date->toDateString())->toBe(today()->toDateString());
-});
-
-test('update request authorizes using dutiable duty relation', function (): void {
-    $response = asUser($this->dutyManager)
-        ->patch(route('dutiables.update', $this->dutiable), [
-            'additional_email' => 'authorized@example.com',
-        ]);
-
-    $response->assertRedirect();
-    $this->dutiable->refresh();
-    expect($this->dutiable->additional_email)->toBe('authorized@example.com');
 });
 
 describe('study program', function (): void {

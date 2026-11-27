@@ -21,7 +21,7 @@ function createMockEditor(attrs: Record<string, unknown> = {}) {
   const run = vi.fn();
   const chain = {
     focus: () => chain,
-    deleteSelection: () => chain,
+    deleteSelection: vi.fn(() => chain),
     updateAttributes: vi.fn(() => chain),
     run,
   };
@@ -90,10 +90,11 @@ describe('TiptapImageMenu', () => {
   });
 
   it('removes the image through the editor', async () => {
-    const { wrapper, run } = mountMenu();
+    const { wrapper, chain, run } = mountMenu();
 
     await buttonByTitle(wrapper, 'rich-content.image_remove')!.trigger('click');
 
-    expect(run).toHaveBeenCalled();
+    expect(chain.deleteSelection).toHaveBeenCalledOnce();
+    expect(run).toHaveBeenCalledOnce();
   });
 });

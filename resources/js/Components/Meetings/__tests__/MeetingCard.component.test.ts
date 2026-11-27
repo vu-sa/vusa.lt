@@ -1,10 +1,13 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MeetingCard from '../MeetingCard.vue';
 import { titleWithoutGeneratedDate } from '../meetingTitle';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+beforeEach(() => vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 10, 26, 12) }));
+afterEach(() => vi.useRealTimers());
 
 describe('titleWithoutGeneratedDate', () => {
   it.each([

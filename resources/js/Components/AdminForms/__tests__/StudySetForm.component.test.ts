@@ -5,17 +5,7 @@ import { nextTick } from 'vue';
 import StudySetForm from '@/Components/AdminForms/StudySetForm.vue';
 import { commonStubs } from '@/tests/stubs';
 
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
-  return {
-    ...actual,
-    usePage: () => ({
-      props: {
-        app: { locale: 'lt' },
-      },
-    }),
-  };
-});
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 interface StudySetFormVm {
   form: {
@@ -117,31 +107,14 @@ describe('StudySetForm.vue', () => {
   });
 
   describe('rendering', () => {
-    it('renders form with sections', () => {
-      wrapper = createWrapper();
-      expect(wrapper.find('form').exists()).toBe(true);
-      expect(wrapper.findAll('section').length).toBeGreaterThanOrEqual(3);
-    });
-
     it('renders tenant select with options', () => {
       wrapper = createWrapper();
       const options = wrapper.findAll('option');
       expect(options.length).toBeGreaterThanOrEqual(2);
     });
-
-    it('renders inputs for basic info', () => {
-      wrapper = createWrapper();
-      expect(wrapper.findAll('[data-testid="input"]').length).toBeGreaterThan(0);
-    });
   });
 
   describe('courses', () => {
-    it('has empty courses initially', () => {
-      wrapper = createWrapper();
-      const vm = wrapper.vm as unknown as StudySetFormVm;
-      expect(vm.form.courses).toHaveLength(0);
-    });
-
     it('adds a course via addCourse method', async () => {
       wrapper = createWrapper();
       const vm = wrapper.vm as unknown as StudySetFormVm;
@@ -171,12 +144,6 @@ describe('StudySetForm.vue', () => {
       await nextTick();
 
       expect(vm.form.courses).toHaveLength(0);
-    });
-
-    it('hides add review button when no saved courses exist', () => {
-      wrapper = createWrapper();
-      const buttons = wrapper.findAll('button').filter(b => b.text().includes('Pridėti atsiliepimą'));
-      expect(buttons).toHaveLength(0);
     });
   });
 

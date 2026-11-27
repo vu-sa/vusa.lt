@@ -3,8 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Editor } from '@tiptap/vue-3';
 import { ref } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import RCSmartTiptapToolbar from '../RCSmartTiptapToolbar.vue';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '../smartToolbarPortal';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 function makeMockEditor(overrides = {}): Editor {
   return {
@@ -138,7 +142,7 @@ describe('RCSmartTiptapToolbar', () => {
       return element;
     });
     const editor = makeMockEditor({ view: { nodeDOM } });
-    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       callback(0);
       return 1;
     });
@@ -165,7 +169,7 @@ describe('RCSmartTiptapToolbar', () => {
 
     wrapper.unmount();
     scrollContainer.remove();
-    vi.unstubAllGlobals();
+    restoreGlobals();
   });
 
   it('applies the submitted link via setLink when the link dialog submits url and text', async () => {

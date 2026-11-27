@@ -91,9 +91,6 @@ describe('HasUIPreferences trait', function (): void {
 });
 
 describe('pinned pages', function (): void {
-    test('defaults to an empty list', function (): void {
-        expect($this->user->getPinnedPages())->toBe([]);
-    });
 
     test('setPinnedPages sanitizes, dedupes by path, and caps the list', function (): void {
         $pages = [];

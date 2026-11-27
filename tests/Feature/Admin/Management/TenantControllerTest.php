@@ -17,7 +17,6 @@ beforeEach(function (): void {
 describe('unauthorized access', function (): void {
     beforeEach(function (): void {
         $this->user = makeUser($this->tenant);
-        asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
     test('cannot index tenants', function (): void {
@@ -379,15 +378,6 @@ describe('relationships', function (): void {
             // `type` is cast to TenantType, so this asserts the enum rather than the raw column.
             ->and($tenant->type)->toBe(TenantType::Pagrindinis)
             ->and($tenant->isMain())->toBeTrue();
-    });
-
-    test('can retrieve tenant by alias', function (): void {
-        $tenant = Tenant::factory()->create(['alias' => 'unique-test-alias']);
-
-        $foundTenant = Tenant::where('alias', 'unique-test-alias')->first();
-
-        expect($foundTenant)->not->toBeNull()
-            ->and($foundTenant->id)->toBe($tenant->id);
     });
 
     test('tenant types are properly validated', function (): void {

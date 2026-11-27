@@ -202,10 +202,10 @@ class SyncStaleDocumentsJob implements ShouldQueue
     private function eligibleForRefresh(): Builder
     {
         return $this->refreshable()
-            ->where('sync_status', '!=', 'syncing')
+            ->where('sync_status', '!=', Document::SYNC_STATUS_SYNCING)
             ->where('sync_attempts', '<=', 5)
             ->where(function (Builder $query): void {
-                $query->where('sync_status', '!=', 'failed')
+                $query->where('sync_status', '!=', Document::SYNC_STATUS_FAILED)
                     ->orWhere('sync_attempts', '<', 3)
                     ->orWhereNull('last_sync_attempt_at')
                     ->orWhere('last_sync_attempt_at', '<=', now()->subHours(6));

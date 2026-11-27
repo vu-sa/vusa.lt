@@ -3,9 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesTenantScope;
+use App\Models\Problem;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProblemRequest extends FormRequest
 {
@@ -40,7 +42,7 @@ class ProblemRequest extends FormRequest
             'responsible_user_id' => ['nullable', 'string', SoftDeleteRules::existsLive('users')],
             'occurred_at' => 'required|date',
             'resolved_at' => 'nullable|date|after_or_equal:occurred_at',
-            'status' => 'required|string|in:open,in_progress,resolved',
+            'status' => ['required', 'string', Rule::in(Problem::STATUSES)],
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:problem_categories,id',
             'institutions' => 'nullable|array',

@@ -1,7 +1,11 @@
 <template>
   <SingleSelect
     v-if="nodes.length > NATIVE_LIMIT"
+    :id
     v-model="selectedNode"
+    :error
+    :aria-describedby
+    :aria-invalid
     :options="nodes"
     label-field="path"
     value-field="key"
@@ -17,6 +21,8 @@
     v-else
     :id
     v-model="nativeValue"
+    :aria-describedby
+    :aria-invalid
     :options="nativeOptions"
     :placeholder
     :placeholder-value="null"
@@ -57,6 +63,8 @@ const props = withDefaults(defineProps<{
   placeholderSelectable?: boolean;
   disabled?: boolean;
   error?: boolean | string;
+  ariaDescribedby?: string;
+  ariaInvalid?: HTMLAttributes['aria-invalid'];
   class?: HTMLAttributes['class'];
 }>(), {
   id: undefined,
@@ -65,6 +73,8 @@ const props = withDefaults(defineProps<{
   omit: undefined,
   placeholder: undefined,
   error: undefined,
+  ariaDescribedby: undefined,
+  ariaInvalid: undefined,
   class: undefined,
 });
 

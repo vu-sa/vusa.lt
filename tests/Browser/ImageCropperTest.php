@@ -19,15 +19,10 @@ it('changes crop proportions and fits phone and tablet screens', function (): vo
 
     foreach ([390, 820, 1440] as $width) {
         $page->resize($width, 900);
-        $page->screenshot(fullPage: false, filename: 'cropper-'.$width.'-light');
 
         expect($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue()
             ->and($page->script('document.querySelector("[data-slot=dialog-content]").getBoundingClientRect().bottom <= window.innerHeight'))->toBeTrue();
     }
-
-    $page->resize(390, 900);
-    $page->script('document.documentElement.classList.add("dark")');
-    $page->screenshot(fullPage: false, filename: 'cropper-390-dark');
 
     $page->click('button:has-text("16:9")');
     expect($page->script('document.querySelector("cropper-selection").aspectRatio'))->toBe(16 / 9);

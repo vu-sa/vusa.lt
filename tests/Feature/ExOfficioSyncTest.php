@@ -176,10 +176,12 @@ test('model save skips derived rows to prevent chains', function (): void {
         'via_dutiable_id' => $parentDutiable->id,
     ]);
 
-    $before = Dutiable::count();
-    $derivedRow->save();
+    $thirdDuty = Duty::factory()->for($this->targetDuty->institution)->create();
+    $this->targetDuty->exOfficioTargetDuties()->attach($thirdDuty);
 
-    expect(Dutiable::count())->toBe($before);
+    $derivedRow->update(['end_date' => today()->addWeek()]);
+
+    expect($thirdDuty->dutiables()->where('dutiable_id', $this->user->id)->exists())->toBeFalse();
 });
 
 test('cross-tenant ex-officio sets tenant_id when target supports source tenant', function (): void {

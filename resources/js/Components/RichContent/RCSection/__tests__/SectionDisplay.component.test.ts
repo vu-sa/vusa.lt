@@ -61,8 +61,7 @@ describe('SectionDisplay — editable (full-screen editor)', () => {
     await waitForInlineFields(wrapper);
     const title = wrapper.find('h2[contenteditable]');
     title.element.textContent = 'New title';
-    await title.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+    await title.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();
@@ -76,8 +75,7 @@ describe('SectionDisplay — editable (full-screen editor)', () => {
     await waitForInlineFields(wrapper);
     const [eyebrow] = wrapper.findAll('[contenteditable]');
     eyebrow!.element.textContent = 'Naujiena';
-    await eyebrow!.trigger('input');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await eyebrow!.trigger('blur');
 
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();

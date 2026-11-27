@@ -90,7 +90,7 @@ Verify frontend changes with Vitest. Leave unrelated ESLint fixes to a separate 
 
 - Commit **short, single-commit fixes** directly to `dev` with a concise message.
 - Use a branch and worktree based on `dev` for **larger work, refactors and important fixes**. Open a PR into `dev` and leave the shared checkout on its branch.
-- For **several pieces**, use `gh stack link --base dev <bottom> … <top>`. Each PR targets the branch below it. Keep `dev` outside the stack. Rebase feature branches and push with `--force-with-lease`. Never force-push `dev`.
+- For **several pieces**, link PRs with `gh stack link --base dev <bottom> … <top>` (or adopt a remote stack with `gh stack checkout <stack|pr>`), then run `gh stack sync` from a stack branch to cascade-rebase and push all layers (including across worktrees; use `gh stack rebase` when resolving conflicts) instead of manual per-branch rebasing. Each PR targets the branch below it. Keep `dev` outside the stack and never force-push `dev`.
 - Send only **urgent hotfixes** to `main` and merge `main` back into `dev` immediately.
 
 Create and remove worktrees with `./dev/worktree.sh add <name> [base]` / `rm <name>` from the main checkout. It puts them under `.worktrees/` so Sail can mount them, copies `.env`, links `node_modules` and installs Composer dependencies and `public/build`. Inside a worktree, run commands as `./vendor/bin/sail exec -u sail -w /var/www/html/.worktrees/<name> laravel.test <command>` so generated files belong to the Sail user.

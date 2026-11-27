@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -7,6 +7,9 @@ import { useEventStatus } from '@/Composables/useEventStatus';
 const hoursFromNow = (hours: number) => new Date(Date.now() + hours * 3600_000).toISOString();
 
 describe('useEventStatus', () => {
+  beforeEach(() => vi.useFakeTimers({ now: new Date('2026-03-10T09:00:00Z'), toFake: ['Date'] }));
+  afterEach(() => vi.useRealTimers());
+
   it('marks an event that already ended as past', () => {
     const { isPast, isLive, isUpcoming, tone, statusLabel } = useEventStatus({
       date: hoursFromNow(-48),
@@ -46,15 +49,8 @@ describe('useEventStatus', () => {
   });
 
   it('states the relative time precisely rather than vaguely', () => {
-    // A moving clock lands "24 hours from now" a few ms short of a day, which reads "po 24 val.".
-    vi.useFakeTimers({ now: new Date('2026-03-10T09:00:00Z') });
-    try {
-      expect(useEventStatus({ date: hoursFromNow(24) }).relativeLabel.value).toBe('rytoj');
-      expect(useEventStatus({ date: hoursFromNow(24 * 3) }).relativeLabel.value).toContain('3');
-    }
-    finally {
-      vi.useRealTimers();
-    }
+    expect(useEventStatus({ date: '2026-03-11T09:00:00Z' }).relativeLabel.value).toBe('rytoj');
+    expect(useEventStatus({ date: '2026-03-13T09:00:00Z' }).relativeLabel.value).toBe('po 3 d.');
   });
 
   it('offers no relative time once the event has started', () => {

@@ -2,10 +2,10 @@
 
 namespace App\Mail;
 
-use App\Helpers\GenitivizeHelper;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
+use App\Support\GenitivizeHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;

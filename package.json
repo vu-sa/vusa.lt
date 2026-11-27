@@ -86,7 +86,7 @@
     "fuse.js": "^7.0.0",
     "laravel-vue-i18n": "^2.8.0",
     "leaflet": "^1.9.4",
-    "leaflet.markercluster": "^1.5.3",
+    "leaflet.markercluster": "^2.0.0",
     "reka-ui": "^2.8.0",
     "sortablejs": "^1.15.0",
     "tailwind-merge": "^3.2.0",

@@ -1,26 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import GanttFilterDropdown from '../GanttFilterDropdown.vue';
+import { commonStubs } from '@/tests/stubs';
 
-const dropdownStubs = {
-  DropdownMenu: { template: '<div><slot /></div>' },
-  DropdownMenuTrigger: { template: '<div><slot /></div>' },
-  DropdownMenuContent: { template: '<div><slot /></div>' },
-  DropdownMenuLabel: { template: '<div><slot /></div>' },
-  DropdownMenuSeparator: { template: '<hr />' },
-  DropdownMenuCheckboxItem: {
-    props: ['modelValue', 'disabled'],
-    emits: ['update:modelValue'],
-    template: `<button
-      type="button"
-      role="menuitemcheckbox"
-      :disabled="disabled"
-      :data-checked="String(modelValue)"
-      @click="$emit('update:modelValue', !modelValue)"
-    ><slot /></button>`,
-  },
-};
+import GanttFilterDropdown from '../GanttFilterDropdown.vue';
 
 describe('GanttFilterDropdown', () => {
   let wrapper: ReturnType<typeof mount>;
@@ -38,7 +21,7 @@ describe('GanttFilterDropdown', () => {
         ...props,
       },
       global: {
-        stubs: dropdownStubs,
+        stubs: commonStubs,
       },
     });
   }
@@ -57,7 +40,7 @@ describe('GanttFilterDropdown', () => {
     const hideItem = items.find(item => item.text() === 'Slėpti VU SA darinius');
 
     expect(hideItem).toBeDefined();
-    expect(hideItem!.attributes('aria-checked')).not.toBe('true');
+    expect(hideItem!.attributes('aria-checked')).toBe('false');
 
     await hideItem!.trigger('click');
     expect(wrapper.emitted('update:hideInternalInstitutions')?.[0]).toEqual([true]);
@@ -70,7 +53,7 @@ describe('GanttFilterDropdown', () => {
 
     wrapper = createWrapper({ showActivityRequestsOption: true, showActivityRequests: true });
     const toggle = wrapper.get('[data-slot="gantt-activity-requests-toggle"]');
-    expect(toggle.attributes('data-checked')).toBe('true');
+    expect(toggle.attributes('aria-checked')).toBe('true');
 
     await toggle.trigger('click');
     expect(wrapper.emitted('update:showActivityRequests')?.[0]).toEqual([false]);

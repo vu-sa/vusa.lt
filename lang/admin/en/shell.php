@@ -73,8 +73,8 @@ return [
 
     'account' => [
         'appearance' => 'Appearance', 'light' => 'Light theme', 'dark' => 'Dark theme', 'language' => 'Language: :language',
-        'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a problem',
-        'roles' => 'My responsibilities and duties', 'notifications' => 'Notification settings', 'my_requests' => 'My requests', 'whats_new' => 'Updates', 'start_fm' => 'Listen to START FM', 'about' => 'About',
+        'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a vusa.lt problem',
+        'roles' => 'My responsibilities and duties', 'notifications' => 'Notification settings', 'whats_new' => 'Updates', 'start_fm' => 'Listen to START FM', 'about' => 'About',
         'listen' => 'Listen', 'pause' => 'Pause', 'close' => 'Close',
     ],
 
@@ -85,6 +85,11 @@ return [
     ],
 
     'palette' => [
+        'create' => 'Create',
+        'personal' => 'Your records',
+        'personal_assigned' => 'Your institution',
+        'personal_followed' => 'Followed institution',
+        'personal_duty' => 'Your duty',
         'go_to' => 'Go to',
         'actions' => 'Actions',
         'pinned' => 'Pinned',
@@ -115,6 +120,7 @@ return [
         'pranesimai' => 'Notifications',
         'atsakomybes' => 'Responsibilities',
         'veiklos_uzklausos' => 'Activity requests',
+        'mano_uzklausos' => 'Support requests',
         'institucijos' => 'Institutions',
         'posedziai' => 'Meetings',
         'darbotvarkes_klausimai' => 'Agenda items',
@@ -171,6 +177,7 @@ return [
         'uzduotys' => 'Work assigned to you and its deadlines',
         'atsakomybes' => 'Your duties and what they let you do',
         'veiklos_uzklausos' => 'Requests you received about institution activity',
+        'mano_uzklausos' => 'Your reports on vusa.lt issues and improvements',
         'institucijos' => 'Institutions where we represent students',
         'posedziai' => 'Recorded and upcoming meetings',
         'darbotvarkes_klausimai' => 'Agenda items and votes across meetings',
@@ -220,6 +227,26 @@ return [
     ],
 
     'actions' => [
+        'new_institution' => ['title' => 'New institution'],
+        'new_problem_category' => ['title' => 'New problem category'],
+        'new_resource' => ['title' => 'New resource'],
+        'new_resource_category' => ['title' => 'New resource category'],
+        'new_page' => ['title' => 'New page'],
+        'new_news' => ['title' => 'New news article'],
+        'new_calendar' => ['title' => 'New event'],
+        'new_banner' => ['title' => 'New banner'],
+        'new_navigation' => ['title' => 'New navigation item'],
+        'new_quick_link' => ['title' => 'New quick link'],
+        'new_study_set' => ['title' => 'New study set'],
+        'new_tag' => ['title' => 'New tag'],
+        'new_event_type' => ['title' => 'New event type'],
+        'new_user' => ['title' => 'New member'],
+        'new_duty' => ['title' => 'New duty'],
+        'new_study_program' => ['title' => 'New study programme'],
+        'new_form' => ['title' => 'New form'],
+        'new_mailing_list' => ['title' => 'New mailing list'],
+        'new_tenant' => ['title' => 'New unit'],
+        'new_role' => ['title' => 'New responsibility'],
         'new_learning_step' => ['title' => 'New path step', 'description' => 'An action or meeting preparation'],
         'new_knowledge_item' => ['title' => 'New Wiki entry', 'description' => 'A term, document or explanation for reps'],
         'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
@@ -254,6 +281,10 @@ return [
         'new_reservation' => [
             'title' => 'New reservation',
             'description' => 'Reserve equipment or other items',
+        ],
+        'new_support_request' => [
+            'title' => 'New support request',
+            'description' => 'Report a vusa.lt issue or suggest an improvement',
         ],
         'duty_update' => [
             'title' => 'Duty update',

@@ -9,6 +9,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ContactSearchIndexSynchronizer;
 use App\Support\MorphMap;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,7 +52,8 @@ test('deleting a source dutiable cascades to derived rows through the real queue
     expect(Dutiable::where('via_dutiable_id', $sourceId)->count())->toBe(0);
 });
 
-test('deleting a dutiable does not fail any queued jobs', function (): void {
+test('the queued contact index listener can run after its assignment is deleted', function (): void {
+    $this->sourceDuty->exOfficioTargetDuties()->detach();
     $source = Dutiable::factory()->create([
         'duty_id' => $this->sourceDuty->id,
         'dutiable_id' => $this->user->id,
@@ -61,10 +63,20 @@ test('deleting a dutiable does not fail any queued jobs', function (): void {
         'via_dutiable_id' => null,
     ]);
 
+    config(['queue.default' => 'database']);
+    $synchronizer = $this->mock(ContactSearchIndexSynchronizer::class);
+    $synchronizer->shouldReceive('assignmentChanged')->once()->withArgs(
+        fn (Duty $duty, ?User $holder): bool => $duty->is($this->sourceDuty) && $holder?->is($this->user)
+    );
+
     $source->delete();
 
-    // A model payload could not be restored here and would blow up both listeners.
-    expect(DB::table('failed_jobs')->count())->toBe(0);
+    $this->assertModelMissing($source);
+    expect(Queue::connection('database')->size())->toBe(1);
+    $this->artisan('queue:work', ['connection' => 'database', '--once' => true, '--tries' => 1])
+        ->assertSuccessful();
+    expect(Queue::connection('database')->size())->toBe(0);
+    $this->assertDatabaseEmpty('failed_jobs');
 });
 
 test('deleting a dutiable invalidates the holder permission caches', function (): void {

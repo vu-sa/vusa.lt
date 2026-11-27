@@ -5,6 +5,7 @@
     :aria-label="$t('shell.chrome.main_nav')"
     :class="[
       'flex h-(--shell-bottom-bar) shrink-0 items-stretch border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)] md:hidden',
+      'pl-[max(12px,env(safe-area-inset-left))] pr-[max(12px,env(safe-area-inset-right))]',
       'touch-manipulation select-none [-webkit-tap-highlight-color:transparent]',
       // Out of the root cross-fade, so a tapped tab's marker animates once (view-transitions.css).
       '[view-transition-name:admin-bottom-bar]',
@@ -16,7 +17,8 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'pradzia'"
       :class="tabClass(activeTab === 'pradzia')"
-      @click="press('pradzia', route('dashboard'))"
+      @start="press('pradzia')"
+      @finish="clearPending('pradzia')"
     >
       <span :class="markerClass(activeTab === 'pradzia')" aria-hidden="true" />
       <span :class="iconClass">
@@ -31,7 +33,8 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'uzduotys'"
       :class="tabClass(activeTab === 'uzduotys')"
-      @click="press('uzduotys', route('tasks.index'))"
+      @start="press('uzduotys')"
+      @finish="clearPending('uzduotys')"
     >
       <span :class="markerClass(activeTab === 'uzduotys')" aria-hidden="true" />
       <span :class="['relative', iconClass]">
@@ -61,7 +64,8 @@
       :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :data-active="activeTab === 'pranesimai'"
       :class="tabClass(activeTab === 'pranesimai')"
-      @click="press('pranesimai', route('notifications.index'))"
+      @start="press('pranesimai')"
+      @finish="clearPending('pranesimai')"
     >
       <span :class="markerClass(activeTab === 'pranesimai')" aria-hidden="true" />
       <span :class="['relative', iconClass]">
@@ -100,10 +104,10 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Bell, ClipboardCheck, Menu, MousePointerClick } from '@lucide/vue';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
@@ -151,14 +155,18 @@ const routeTab = computed<Tab | null>(() => {
 });
 
 // Light the tapped tab straight away rather than after the server answers; a slow phone otherwise feels ignored.
-const pending = ref<{ tab: Tab; path: string } | null>(null);
-const activeTab = computed(() => pending.value?.tab ?? routeTab.value);
+const pending = ref<Tab | null>(null);
+const activeTab = computed(() => pending.value ?? routeTab.value);
 const menuActive = computed(() => props.menuOpen || activeTab.value === 'menu');
 
-const press = (tab: Tab, href: string) => {
-  if (tab !== routeTab.value) {
-    pending.value = { tab, path: new URL(href, window.location.origin).pathname };
+const clearPending = (tab: Tab) => {
+  if (pending.value === tab) {
+    pending.value = null;
   }
+};
+
+const press = (tab: Tab) => {
+  pending.value = tab === routeTab.value ? null : tab;
 };
 
 const page = usePage();
@@ -166,17 +174,6 @@ const page = usePage();
 watch(() => page.url, () => {
   pending.value = null;
 });
-
-// Prefetches and cancelled deferred-prop reloads finish too; only the tapped visit failing may un-light the tab.
-const stopFinish = router.on('finish', (event) => {
-  const { visit } = event.detail;
-
-  if (!visit.prefetch && visit.url.pathname === pending.value?.path) {
-    pending.value = null;
-  }
-});
-
-onUnmounted(stopFinish);
 
 // Re-keyed only on a rise, so the badge pops for new notifications but not on every page it reappears on.
 const unreadPops = ref(0);
@@ -193,7 +190,7 @@ const tabClass = (active: boolean) => [
 ];
 
 const markerClass = (active: boolean) => [
-  'absolute inset-x-0 top-0 h-0.5 origin-center bg-brand-fill transition-transform duration-200 ease-out',
+  'absolute inset-x-0 mx-auto w-8 top-0 h-0.5 origin-center bg-brand-fill transition-transform duration-200 ease-out',
   active ? 'scale-x-100' : 'scale-x-0',
 ];
 

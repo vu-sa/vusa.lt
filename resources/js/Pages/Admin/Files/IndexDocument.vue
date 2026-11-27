@@ -129,7 +129,7 @@
     <template #preview="{ item, actions: recordActions }">
       <DocumentPreview :key="item.id" :document="item">
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels @select="key => selectRowAction(key, item)" />
+          <CollectionRowActions :actions="recordActions" layout="preview" full-labels @select="key => selectRowAction(key, item)" />
         </template>
       </DocumentPreview>
     </template>

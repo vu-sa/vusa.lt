@@ -28,11 +28,11 @@ export function buildAdminSearchParams(collection: string, config: AdminSearchCo
   if (profile) return buildProfileParams(profile, input, config?.searchLocale);
 
   const fallback = ADMIN_SEARCH_FALLBACKS[collection];
-  if (!fallback) return { ...input };
+  if (!fallback) return buildProfileParams(undefined, input);
   const queryBy = String(input.query_by || fallback.queryBy);
   const query = String(input.q ?? '*').trim();
   const infix = buildInfix(queryBy, collection);
-  return {
+  return buildProfileParams(undefined, {
     query_by: queryBy,
     ...(queryBy === fallback.queryBy ? { query_by_weights: fallback.weights, num_typos: fallback.numTypos ?? 2 } : {}),
     ...(infix ? { infix } : {}),
@@ -41,5 +41,5 @@ export function buildAdminSearchParams(collection: string, config: AdminSearchCo
     prioritize_token_position: true,
     typo_tokens_threshold: 1,
     ...input,
-  };
+  });
 }

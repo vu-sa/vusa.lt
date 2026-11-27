@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Problem;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProblemStatusRequest extends FormRequest
 {
@@ -13,7 +15,7 @@ class UpdateProblemStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|string|in:open,in_progress,resolved',
+            'status' => ['required', 'string', Rule::in(Problem::STATUSES)],
         ];
     }
 }

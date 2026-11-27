@@ -33,6 +33,14 @@ describe('TimePicker typing', () => {
     expect((await type(wrapper, '1a4:3b0:')).value).toBe('14:30');
   });
 
+  it('accepts a typed time matching the configured interval', async () => {
+    const wrapper = mount(TimePicker, { props: { minuteStep: 15 } });
+
+    await wrapper.find('input').setValue('18:15');
+
+    expect(wrapper.emitted('update:modelValue')).toEqual([[{ hour: 18, minute: 15 }]]);
+  });
+
   it('saves a full time as soon as it is typed, off the minute step', async () => {
     const wrapper = mount(TimePicker, { props: { minuteStep: 5 } });
 

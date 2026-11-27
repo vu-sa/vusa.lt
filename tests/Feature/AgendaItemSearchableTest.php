@@ -44,7 +44,7 @@ test('a trashed meeting takes its agenda items out of search until it is restore
     $item = AgendaItem::factory()->for($meeting)->create();
     $isIndexed = function () use ($item): bool {
         try {
-            (new Client(config('scout.typesense.client-settings')))->collections[$item->searchableAs()]->documents[$item->id]->retrieve();
+            new Client(config('scout.typesense.client-settings'))->collections[$item->searchableAs()]->documents[$item->id]->retrieve();
 
             return true;
         } catch (ObjectNotFound) {

@@ -253,8 +253,10 @@ describe('channel policy', function (): void {
 
     test('a new task waits for the digest whatever its deadline; reminders carry the urgency', function (): void {
         $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
+        $assigned = new TaskAssignedNotification($task);
 
-        expect($this->user->emailDeliveryFor(new TaskAssignedNotification($task)->type()))->toBe(EmailDelivery::Digest)
+        expect($this->user->emailDeliveryFor($assigned->type()))->toBe(EmailDelivery::Digest)
+            ->and($assigned->via($this->user))->toBe(['database', 'broadcast'])
             ->and($this->user->emailDeliveryFor(new TaskReminderNotification($task, 3)->type()))->toBe(EmailDelivery::Immediate);
     });
 
@@ -293,8 +295,16 @@ describe('channel policy', function (): void {
         $push = $notification->toWebPush($this->user, null)->toArray();
 
         expect($push['title'])->toBe($notification->title($this->user))
+            ->and($push['data']['unreadCount'])->toBe(1)
             ->and($push['data']['url'])->toBe($notification->primaryAction()['url'])
             ->and($push['actions'][0]['title'])->toBe($notification->primaryAction()['label']);
+
+        $this->user->notifications()->createMany([
+            ['id' => (string) str()->uuid(), 'type' => TaskAssignedNotification::class, 'data' => []],
+            ['id' => (string) str()->uuid(), 'type' => TaskAssignedNotification::class, 'data' => []],
+        ]);
+
+        expect($notification->toWebPush($this->user, null)->toArray()['data']['unreadCount'])->toBe(2);
     });
 
     test('an ask is pushed with high urgency so Android does not hold it back', function (): void {

@@ -7,7 +7,6 @@ use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\KnowledgeItem;
 use App\Models\LearningStep;
-use App\Models\Permission;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\User;
@@ -39,15 +38,6 @@ test('a member can open a library step and its presenter contract', function ():
 test('members without step rights receive a direct 403 for the step editor', function (): void {
     $user = makeUser(Tenant::query()->firstOrFail());
     asUser($user)->get(route('learningSteps.create'))->assertForbidden();
-});
-
-test('global curators can open create and edit stubs', function (): void {
-    $user = makeUser(Tenant::query()->firstOrFail());
-    $user->givePermissionTo(Permission::findOrCreate('learningSteps.create.*', 'web'));
-    $user->givePermissionTo(Permission::findOrCreate('learningSteps.update.*', 'web'));
-    $step = LearningStep::factory()->create();
-    asUser($user)->get(route('learningSteps.create'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('Admin/Learning/CreateLearningStep'));
-    asUser($user)->get(route('learningSteps.edit', $step))->assertOk()->assertInertia(fn (Assert $page) => $page->component('Admin/Learning/EditLearningStep')->has('step.title.lt'));
 });
 
 test('an article record exposes its abbreviation, summary and the members own progress eligibility', function (): void {

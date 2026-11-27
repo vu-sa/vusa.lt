@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import { useInstitutionMeetings, useTenantMeetings } from '../useTenantMeetings';
 import type { AtstovavimasTenantMeeting } from '../../types';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 function makeMeeting(id: string, startTime: string): AtstovavimasTenantMeeting {
   return {
@@ -23,7 +28,7 @@ const fetchedUrls: string[] = [];
 let responseQueue: AtstovavimasTenantMeeting[][] = [];
 
 function mockFetch() {
-  vi.stubGlobal('fetch', vi.fn(async (url: string | URL | Request) => {
+  stubGlobal('fetch', vi.fn(async (url: string | URL | Request) => {
     fetchedUrls.push(String(url));
     const data = responseQueue.shift() ?? [];
 
@@ -110,7 +115,7 @@ describe('useTenantMeetings', () => {
   });
 
   it('retries failed half-years explicitly without refetching on redraw', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) } as Response)));
+    stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) } as Response)));
     const store = useTenantMeetings(() => ['1']);
 
     store.ensureRange(new Date(2026, 5, 15), new Date(2026, 6, 15));
@@ -171,7 +176,7 @@ describe('useTenantMeetings in flight', () => {
     vi.useFakeTimers();
     fetchedUrls.splice(0);
     resolvers.splice(0);
-    vi.stubGlobal('fetch', vi.fn((url: string) => {
+    stubGlobal('fetch', vi.fn((url: string) => {
       fetchedUrls.push(String(url));
       return new Promise<Response>((resolve) => {
         resolvers.push(() => resolve({ ok: true, json: async () => ({ success: true, data: [] }) } as Response));
@@ -289,7 +294,7 @@ describe('tooltip agendas', () => {
   it('fetches a meeting agenda once, with the window access, and retries after a failure', async () => {
     const urls: string[] = [];
     let fail = true;
-    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+    stubGlobal('fetch', vi.fn(async (url: string) => {
       urls.push(String(url));
       if (fail) {
         fail = false;
@@ -342,7 +347,9 @@ describe('selection-wide loading', () => {
   it('ignores a late response from an obsolete tenant selection', async () => {
     let tenants = ['1'];
     let resolveOld!: (response: Response) => void;
-    vi.mocked(fetch).mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }));
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveOld = resolve;
+    }));
     const store = useTenantMeetings(() => tenants);
     store.ensureRange(new Date(2026, 2, 1), new Date(2026, 2, 10));
     await vi.advanceTimersByTimeAsync(200);

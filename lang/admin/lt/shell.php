@@ -73,8 +73,8 @@ return [
 
     'account' => [
         'appearance' => 'Išvaizda', 'light' => 'Šviesi tema', 'dark' => 'Tamsi tema', 'language' => 'Kalba: :language',
-        'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie problemą',
-        'my_requests' => 'Mano užklausos', 'roles' => 'Mano atsakomybės ir pareigybės', 'notifications' => 'Pranešimų nustatymai', 'whats_new' => 'Atnaujinimai', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
+        'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie vusa.lt problemą',
+        'roles' => 'Mano atsakomybės ir pareigybės', 'notifications' => 'Pranešimų nustatymai', 'whats_new' => 'Atnaujinimai', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
         'listen' => 'Klausyti', 'pause' => 'Pristabdyti', 'close' => 'Uždaryti',
     ],
 
@@ -85,6 +85,11 @@ return [
     ],
 
     'palette' => [
+        'create' => 'Kurti',
+        'personal' => 'Tavo įrašai',
+        'personal_assigned' => 'Tavo institucija',
+        'personal_followed' => 'Sekama institucija',
+        'personal_duty' => 'Tavo pareigybė',
         'go_to' => 'Pereiti į',
         'actions' => 'Veiksmai',
         'pinned' => 'Prisegta',
@@ -115,6 +120,7 @@ return [
         'pranesimai' => 'Pranešimai',
         'atsakomybes' => 'Atsakomybės',
         'veiklos_uzklausos' => 'Veiklos užklausos',
+        'mano_uzklausos' => 'Pagalbos užklausos',
         'institucijos' => 'Institucijos',
         'posedziai' => 'Posėdžiai',
         'darbotvarkes_klausimai' => 'Darbotvarkės klausimai',
@@ -171,6 +177,7 @@ return [
         'uzduotys' => 'Tau priskirti darbai ir terminai',
         'atsakomybes' => 'Tavo pareigybės ir ką jos leidžia',
         'veiklos_uzklausos' => 'Tau gautos užklausos apie institucijų veiklą',
+        'mano_uzklausos' => 'Tavo pranešimai apie vusa.lt problemas ir patobulinimus',
         'institucijos' => 'Institucijos, kuriose atstovaujame',
         'posedziai' => 'Užfiksuoti ir būsimi posėdžiai',
         'darbotvarkes_klausimai' => 'Klausimai ir balsavimai iš visų posėdžių',
@@ -220,6 +227,26 @@ return [
     ],
 
     'actions' => [
+        'new_institution' => ['title' => 'Nauja institucija'],
+        'new_problem_category' => ['title' => 'Nauja problemų kategorija'],
+        'new_resource' => ['title' => 'Naujas išteklius'],
+        'new_resource_category' => ['title' => 'Nauja išteklių kategorija'],
+        'new_page' => ['title' => 'Naujas puslapis'],
+        'new_news' => ['title' => 'Nauja naujiena'],
+        'new_calendar' => ['title' => 'Naujas renginys'],
+        'new_banner' => ['title' => 'Naujas baneris'],
+        'new_navigation' => ['title' => 'Naujas navigacijos elementas'],
+        'new_quick_link' => ['title' => 'Nauja nuoroda'],
+        'new_study_set' => ['title' => 'Naujas komplektas'],
+        'new_tag' => ['title' => 'Nauja žyma'],
+        'new_event_type' => ['title' => 'Naujas renginio tipas'],
+        'new_user' => ['title' => 'Naujas narys (-ė)'],
+        'new_duty' => ['title' => 'Nauja pareigybė'],
+        'new_study_program' => ['title' => 'Nauja studijų programa'],
+        'new_form' => ['title' => 'Nauja forma'],
+        'new_mailing_list' => ['title' => 'Nauja konferencija'],
+        'new_tenant' => ['title' => 'Naujas padalinys'],
+        'new_role' => ['title' => 'Nauja atsakomybė'],
         'new_learning_step' => ['title' => 'Naujas kelio žingsnis', 'description' => 'Veiksmas ar pasiruošimas posėdžiui'],
         'new_knowledge_item' => ['title' => 'Naujas Wiki įrašas', 'description' => 'Sąvoka, dokumentas ar paaiškinimas atstovams'],
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
@@ -254,6 +281,10 @@ return [
         'new_reservation' => [
             'title' => 'Nauja rezervacija',
             'description' => 'Rezervuok įrangą ar kitus daiktus',
+        ],
+        'new_support_request' => [
+            'title' => 'Nauja pagalbos užklausa',
+            'description' => 'Pranešk apie vusa.lt problemą arba pasiūlyk patobulinimą',
         ],
         'duty_update' => [
             'title' => 'Pareigybių atnaujinimas',

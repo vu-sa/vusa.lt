@@ -86,7 +86,7 @@
         <template #actions>
           <CollectionRowActions
             :actions="recordActions.map(action => ({ ...action, loading: publishing.isPending([String(item.id)]) }))"
-            emphasis full-labels
+            layout="preview" full-labels
             @select="key => !publishing.isPending([String(item.id)]) && actions.select(key, item.force_delete_blocked_reason)"
           />
         </template>

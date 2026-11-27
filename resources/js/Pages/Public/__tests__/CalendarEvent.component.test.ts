@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
@@ -14,7 +14,7 @@ const stubs = {
       isPast: { type: Boolean },
       isLive: { type: Boolean },
     },
-    template: '<a class="event-actions-stub" :data-registration-url="registrationUrl"><slot /></a>',
+    template: '<a class="event-actions-stub" :data-registration-url="registrationUrl" :data-is-past="String(isPast)" :data-is-live="String(isLive)"><slot /></a>',
   },
   EventDetailsCard: {
     template: '<div class="event-details-card-stub" />',
@@ -41,7 +41,10 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
 }
 
 describe('Public/CalendarEvent.vue', () => {
+  afterEach(() => vi.useRealTimers());
+
   beforeEach(() => {
+    vi.useFakeTimers({ now: new Date('2026-11-27T12:00:00Z'), toFake: ['Date'] });
     vi.mocked(usePage).mockReturnValue(createMockPage());
   });
 
@@ -220,29 +223,17 @@ describe('Public/CalendarEvent.vue', () => {
     expect(wrapper.find('.fixed.bottom-0').exists()).toBe(false);
   });
 
-  it('renders hero actions via the EventHero slot', () => {
-    const wrapper = mountPage();
+  it.each([
+    ['upcoming', '2026-11-27T13:00:00Z', '2026-11-27T14:00:00Z', 'false', 'false'],
+    ['live', '2026-11-27T11:00:00Z', '2026-11-27T13:00:00Z', 'false', 'true'],
+    ['past', '2026-11-27T10:00:00Z', '2026-11-27T11:00:00Z', 'true', 'false'],
+  ])('passes %s event state to the hero actions', (_status, date, end_date, isPast, isLive) => {
+    const wrapper = mountPage({ event: makeEvent({ date, end_date }) });
 
-    const hero = wrapper.find('[data-slot="event-hero"]');
-    const heroActions = hero.find('.event-actions-stub');
-    expect(heroActions.exists()).toBe(true);
-    expect(heroActions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
-  });
-
-  it('passes upcoming state to hero actions for events with a registration URL', () => {
-    const wrapper = mountPage();
-
-    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
-    expect(heroActions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
-  });
-
-  it('passes past state to hero actions for past events', () => {
-    const wrapper = mountPage({
-      event: makeEvent({ date: '2020-01-01T18:00:00+00:00' }),
-    });
-
-    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
-    expect(heroActions.exists()).toBe(true);
+    const actions = wrapper.get('[data-slot="event-hero"]').get('.event-actions-stub');
+    expect(actions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
+    expect(actions.attributes('data-is-past')).toBe(isPast);
+    expect(actions.attributes('data-is-live')).toBe(isLive);
   });
 
   it('renders hero actions even when there is no registration URL', () => {

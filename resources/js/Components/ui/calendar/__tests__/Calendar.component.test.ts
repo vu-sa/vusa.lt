@@ -1,14 +1,36 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { CalendarDate } from '@internationalized/date';
+import { i18nVue, loadLanguageAsync, reset } from 'laravel-vue-i18n';
+import { nextTick } from 'vue';
 
 import { Calendar } from '@/Components/ui/calendar';
 import { RangeCalendar } from '@/Components/ui/range-calendar';
+
+import en from '../../../../../../lang/en.json';
+import lt from '../../../../../../lang/lt.json';
+
+vi.unmock('laravel-vue-i18n');
+afterEach(reset);
 
 // 2026-09-01 is a Tuesday, so a Sunday-first grid would open on 30 August.
 const september = new CalendarDate(2026, 9, 1);
 
 describe('calendars', () => {
+  it('updates the month and year accessible names when the app language changes', async () => {
+    const wrapper = mount(Calendar, {
+      props: { placeholder: september, locale: 'lt' },
+      global: { plugins: [[i18nVue, { lang: 'lt', resolve: (lang: string) => lang === 'en' ? en : lt }]] },
+    });
+    const selectorNames = () => wrapper.findAll('select').map(select => select.attributes('aria-label'));
+    expect(selectorNames()).toEqual(['Mėnuo', 'Metai']);
+
+    await loadLanguageAsync('en');
+    await nextTick();
+
+    expect(selectorNames()).toEqual(['Month', 'Year']);
+  });
+
   it('start the week on Monday', () => {
     const wrapper = mount(Calendar, { props: { placeholder: september, locale: 'lt' } });
 

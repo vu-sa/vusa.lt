@@ -22,6 +22,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Problem;
+use App\Models\ProblemCategory;
 use App\Models\QuickLink;
 use App\Models\Reservation;
 use App\Models\Resource;
@@ -49,7 +50,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v16-';
+    public const string CACHE_PREFIX = 'admin-navigation-v18-';
 
     /** Canonical workspace order shared by the shell and the permission matrix editor. */
     public const array WORKSPACE_KEYS = ['pradzia', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema', 'wiki'];
@@ -60,7 +61,7 @@ class AdminNavigationCatalog
      * The resolved, cached payload for the Inertia prop: only the workspaces, sections and
      * create actions this user may actually see, in the order they should render.
      *
-     * @return array{workspaces: list<array<string, mixed>>}
+     * @return array{workspaces: list<array<string, mixed>>, commandActions: list<array<string, mixed>>}
      */
     public function for(User $user): array
     {
@@ -88,28 +89,59 @@ class AdminNavigationCatalog
     }
 
     /**
-     * @return array{workspaces: list<array<string, mixed>>}
+     * @return array{workspaces: list<array<string, mixed>>, commandActions: list<array<string, mixed>>}
      */
     private function resolve(User $user): array
     {
-        $workspaces = array_filter([
-            $this->resolveWorkspace($this->pradziaWorkspace(), $user),
-            $this->resolveWorkspace($this->atstovavimasWorkspace(), $user),
-            $this->resolveWorkspace($this->rezervacijosWorkspace(), $user),
-            $this->resolveWorkspace($this->svetaineWorkspace(), $user),
-            $this->resolveOrganizacijaWorkspace($user),
-            $this->resolveWorkspace($this->sistemaWorkspace(), $user),
-            $this->resolveWorkspace($this->wikiWorkspace(), $user),
-        ]);
+        $workspaces = [];
+        $commandActions = [];
 
-        return ['workspaces' => array_values($workspaces)];
+        foreach ([
+            $this->pradziaWorkspace(),
+            $this->atstovavimasWorkspace(),
+            $this->rezervacijosWorkspace(),
+            $this->svetaineWorkspace(),
+            $this->organizacijaWorkspace(),
+            $this->sistemaWorkspace(),
+            $this->wikiWorkspace(),
+        ] as $workspace) {
+            $shortcuts = [];
+
+            foreach ($workspace->createActions as $action) {
+                if (! $action->visibility->allows($user)) {
+                    continue;
+                }
+
+                $entry = $action->toArray();
+                $commandActions[] = [
+                    ...$entry,
+                    'workspaceKey' => $workspace->key,
+                    'workspaceLabel' => $workspace->labelKey,
+                    'createsRecord' => $action->createsRecord,
+                ];
+
+                if (! $action->paletteOnly) {
+                    $shortcuts[] = $entry;
+                }
+            }
+
+            $resolved = $workspace->key === 'organizacija'
+                ? $this->resolveOrganizacijaWorkspace($workspace, $user, $shortcuts)
+                : $this->resolveWorkspace($workspace, $user, $shortcuts);
+
+            if ($resolved !== null) {
+                $workspaces[] = $resolved;
+            }
+        }
+
+        return ['workspaces' => $workspaces, 'commandActions' => $commandActions];
     }
 
     /**
      * @return array<string, mixed>|null null when the user may see none of its sections — a
      *                                   workspace with zero visible sections does not render.
      */
-    private function resolveWorkspace(Workspace $workspace, User $user): ?array
+    private function resolveWorkspace(Workspace $workspace, User $user, array $shortcuts): ?array
     {
         $sections = $this->visibleSections($workspace->sections, $user);
 
@@ -123,7 +155,7 @@ class AdminNavigationCatalog
             'description' => $workspace->descriptionKey,
             'experimental' => $workspace->experimental,
             'sections' => $this->withOverview($workspace, $sections),
-            'createActions' => $this->visibleCreateActions($workspace->createActions, $user),
+            'createActions' => $shortcuts,
         ];
     }
 
@@ -165,19 +197,6 @@ class AdminNavigationCatalog
             ->all();
     }
 
-    /**
-     * @param  list<CreateAction>  $actions
-     * @return list<array<string, mixed>>
-     */
-    private function visibleCreateActions(array $actions, User $user): array
-    {
-        return collect($actions)
-            ->filter(fn (CreateAction $action) => $action->visibility->allows($user))
-            ->map(fn (CreateAction $action) => $action->toArray())
-            ->values()
-            ->all();
-    }
-
     private function pradziaWorkspace(): Workspace
     {
         return new Workspace(
@@ -190,6 +209,10 @@ class AdminNavigationCatalog
                 new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
                 new Section('atsakomybes', 'shell.sections.atsakomybes', 'profile.roles', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.atsakomybes'),
                 new Section('veiklos_uzklausos', 'shell.sections.veiklos_uzklausos', 'profile.activityRequests', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.veiklos_uzklausos'),
+                new Section('mano_uzklausos', 'shell.sections.mano_uzklausos', 'mySupportRequests.index', [], null, Visibility::always(), matches: ['mySupportRequests.*'], descriptionKey: 'shell.section_descriptions.mano_uzklausos'),
+            ],
+            createActions: [
+                CreateAction::route('new_support_request', 'shell.actions.new_support_request.title', 'shell.actions.new_support_request.description', null, 'mySupportRequests.create', Visibility::can('create', SupportRequest::class)),
             ],
         );
     }
@@ -239,10 +262,12 @@ class AdminNavigationCatalog
                 new Section('problemu_kategorijos', 'shell.sections.problemu_kategorijos', 'problemCategories.index', [], null, Visibility::permission('problems.update.*'), descriptionKey: 'shell.section_descriptions.problemu_kategorijos', taxonomy: true),
             ],
             createActions: [
+                CreateAction::route('new_institution', 'shell.actions.new_institution.title', null, 'institution', 'institutions.create', Visibility::can('create', Institution::class), paletteOnly: true),
+                CreateAction::route('new_problem_category', 'shell.actions.new_problem_category.title', null, null, 'problemCategories.index', Visibility::callback(fn (User $user): bool => $user->can('viewAny', ProblemCategory::class) && $user->can('create', ProblemCategory::class)), paletteOnly: true, routeParams: ['create' => '1']),
                 CreateAction::screen('new_meeting', 'shell.actions.new_meeting.title', 'shell.actions.new_meeting.description', 'meeting', 'meeting.institution', Visibility::can('create', Meeting::class)),
-                CreateAction::screen('no_meeting', 'shell.actions.no_meeting.title', 'shell.actions.no_meeting.description', 'meeting', 'checkin.institution', Visibility::can('create', Meeting::class)),
-                CreateAction::screen('complete_meeting', 'shell.actions.complete_meeting.title', 'shell.actions.complete_meeting.description', 'meeting', 'meeting.pick', Visibility::can('create', Meeting::class)),
-                CreateAction::screen('ask_activity', 'shell.actions.ask_activity.title', 'shell.actions.ask_activity.description', 'institution', 'activity.campaign', Visibility::can('viewAny', InstitutionCheckIn::class)),
+                CreateAction::screen('no_meeting', 'shell.actions.no_meeting.title', 'shell.actions.no_meeting.description', 'meeting', 'checkin.institution', Visibility::can('create', Meeting::class), createsRecord: false),
+                CreateAction::screen('complete_meeting', 'shell.actions.complete_meeting.title', 'shell.actions.complete_meeting.description', 'meeting', 'meeting.pick', Visibility::can('create', Meeting::class), createsRecord: false),
+                CreateAction::screen('ask_activity', 'shell.actions.ask_activity.title', 'shell.actions.ask_activity.description', 'institution', 'activity.campaign', Visibility::can('viewAny', InstitutionCheckIn::class), createsRecord: false),
                 CreateAction::route('new_problem', 'shell.actions.new_problem.title', 'shell.actions.new_problem.description', 'problem', 'problems.create', Visibility::can('create', Problem::class)),
                 CreateAction::route('new_goal', 'shell.actions.new_goal.title', 'shell.actions.new_goal.description', 'goal', 'goals.create', Visibility::can('create', Goal::class)),
             ],
@@ -265,6 +290,8 @@ class AdminNavigationCatalog
                 new Section('kategorijos', 'shell.sections.kategorijos', 'resourceCategories.index', [], null, Visibility::can('viewAny', ResourceCategory::class), descriptionKey: 'shell.section_descriptions.kategorijos', taxonomy: true),
             ],
             createActions: [
+                CreateAction::route('new_resource', 'shell.actions.new_resource.title', null, 'resource', 'resources.create', Visibility::can('create', Resource::class), paletteOnly: true),
+                CreateAction::route('new_resource_category', 'shell.actions.new_resource_category.title', null, null, 'resourceCategories.index', Visibility::callback(fn (User $user): bool => $user->can('viewAny', ResourceCategory::class) && $user->can('create', ResourceCategory::class)), paletteOnly: true, routeParams: ['create' => '1']),
                 CreateAction::route('new_reservation', 'shell.actions.new_reservation.title', 'shell.actions.new_reservation.description', 'reservation', 'reservations.create', Visibility::can('create', Reservation::class)),
             ],
         );
@@ -294,6 +321,17 @@ class AdminNavigationCatalog
                 new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::permission('documents.read.padalinys'), descriptionKey: 'shell.section_descriptions.dokumentai'),
                 new Section('studiju_rinkiniai', 'shell.sections.studiju_rinkiniai', 'studySets.index', [], 'study_set', Visibility::can('viewAny', StudySet::class), descriptionKey: 'shell.section_descriptions.studiju_rinkiniai'),
             ],
+            createActions: [
+                CreateAction::route('new_page', 'shell.actions.new_page.title', null, 'page', 'pages.create', Visibility::can('create', Page::class), paletteOnly: true),
+                CreateAction::route('new_news', 'shell.actions.new_news.title', null, 'news', 'news.create', Visibility::can('create', News::class), paletteOnly: true),
+                CreateAction::route('new_calendar', 'shell.actions.new_calendar.title', null, 'calendar', 'calendar.create', Visibility::can('create', Calendar::class), paletteOnly: true),
+                CreateAction::route('new_banner', 'shell.actions.new_banner.title', null, 'banner', 'banners.create', Visibility::can('create', Banner::class), paletteOnly: true),
+                CreateAction::route('new_navigation', 'shell.actions.new_navigation.title', null, 'navigation', 'navigation.create', Visibility::can('create', Navigation::class), paletteOnly: true),
+                CreateAction::route('new_quick_link', 'shell.actions.new_quick_link.title', null, 'quick_link', 'quickLinks.create', Visibility::can('create', QuickLink::class), paletteOnly: true),
+                CreateAction::route('new_study_set', 'shell.actions.new_study_set.title', null, 'study_set', 'studySets.create', Visibility::can('create', StudySet::class), paletteOnly: true),
+                CreateAction::route('new_tag', 'shell.actions.new_tag.title', null, 'tag', 'tags.index', Visibility::callback(fn (User $user): bool => $user->can('viewAny', Tag::class) && $user->can('create', Tag::class)), paletteOnly: true, routeParams: ['create' => '1']),
+                CreateAction::route('new_event_type', 'shell.actions.new_event_type.title', null, 'event_type', 'eventTypes.index', Visibility::callback(fn (User $user): bool => $user->can('viewAny', EventType::class) && $user->can('create', EventType::class)), paletteOnly: true, routeParams: ['create' => '1']),
+            ],
         );
     }
 
@@ -314,8 +352,14 @@ class AdminNavigationCatalog
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.organizacija', [], null, Visibility::always()),
             createActions: [
-                CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class)),
-                CreateAction::route('duty_periods', 'shell.actions.duty_periods.title', 'shell.actions.duty_periods.description', 'dutiable', 'dutiables.timeline', Visibility::can('viewAny', Duty::class)),
+                CreateAction::route('new_user', 'shell.actions.new_user.title', null, 'user', 'users.create', Visibility::can('create', User::class), paletteOnly: true),
+                CreateAction::route('new_duty', 'shell.actions.new_duty.title', null, 'duty', 'duties.create', Visibility::can('create', Duty::class), paletteOnly: true),
+                CreateAction::route('new_study_program', 'shell.actions.new_study_program.title', null, 'study_program', 'studyPrograms.create', Visibility::can('create', StudyProgram::class), paletteOnly: true),
+                CreateAction::route('new_form', 'shell.actions.new_form.title', null, 'form', 'forms.create', Visibility::can('create', Form::class), paletteOnly: true),
+                CreateAction::route('new_mailing_list', 'shell.actions.new_mailing_list.title', null, 'mailing_list', 'mailingLists.create', Visibility::can('create', MailingList::class), paletteOnly: true),
+                CreateAction::route('new_tenant', 'shell.actions.new_tenant.title', null, 'tenant', 'tenants.index', Visibility::callback(fn (User $user): bool => $user->can('viewAny', Tenant::class) && $user->can('create', Tenant::class)), paletteOnly: true, routeParams: ['create' => '1']),
+                CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class), createsRecord: false),
+                CreateAction::route('duty_periods', 'shell.actions.duty_periods.title', 'shell.actions.duty_periods.description', 'dutiable', 'dutiables.timeline', Visibility::can('viewAny', Duty::class), createsRecord: false),
                 CreateAction::route('new_learning_step', 'shell.actions.new_learning_step.title', 'shell.actions.new_learning_step.description', 'learning_step', 'learningSteps.create', Visibility::can('create', LearningStep::class)),
             ],
         );
@@ -365,9 +409,8 @@ class AdminNavigationCatalog
      *
      * @return array<string, mixed>|null
      */
-    private function resolveOrganizacijaWorkspace(User $user): ?array
+    private function resolveOrganizacijaWorkspace(Workspace $workspace, User $user, array $shortcuts): ?array
     {
-        $workspace = $this->organizacijaWorkspace();
 
         $sections = $this->visibleSections($workspace->sections, $user);
 
@@ -391,7 +434,7 @@ class AdminNavigationCatalog
             'description' => $workspace->descriptionKey,
             'experimental' => $workspace->experimental,
             'sections' => $this->withOverview($workspace, $sections),
-            'createActions' => $this->visibleCreateActions($workspace->createActions, $user),
+            'createActions' => $shortcuts,
         ];
     }
 
@@ -433,6 +476,7 @@ class AdminNavigationCatalog
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),
             createActions: [
+                CreateAction::route('new_role', 'shell.actions.new_role.title', null, 'role', 'responsibilities.create', Visibility::can('create', Role::class), paletteOnly: true),
                 CreateAction::route('new_institution_type', 'shell.actions.new_institution_type.title', 'shell.actions.new_institution_type.description', 'institution_type', 'institutionTypes.create', Visibility::can('create', InstitutionType::class)),
                 CreateAction::route('new_duty_type', 'shell.actions.new_duty_type.title', 'shell.actions.new_duty_type.description', 'duty_type', 'dutyTypes.create', Visibility::can('create', DutyType::class)),
             ],

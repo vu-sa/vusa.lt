@@ -1,6 +1,9 @@
+import { useForm } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createMockForm } from '@/tests/helpers/createMockForm';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { commonStubs } from '@/tests/stubs';
 import { ModelEnum } from '@/Types/enums';
 import { Dialog } from '@/Components/ui/dialog';
@@ -8,24 +11,10 @@ import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPrefe
 
 import ShowProfile from '../ShowProfile.vue';
 
-const patchCalls: Array<{ url: string; options?: Record<string, unknown> }> = [];
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
-vi.mock('@inertiajs/vue3', async () => {
-  const actual = await import('@/mocks/inertia.mock');
-  return {
-    ...actual,
-    useForm: (initialData: Record<string, unknown>) => {
-      const form = actual.useForm(initialData);
-      form.patch = vi.fn((url: string, options?: Record<string, unknown>) => {
-        patchCalls.push({ url, options });
-        if (options?.onSuccess) {
-          (options.onSuccess as () => void)();
-        }
-      });
-      return form;
-    },
-  };
-});
+const patchCalls: Array<{ url: string; options?: Record<string, unknown> }> = [];
 
 const executeMutationMock = vi.fn();
 vi.mock('@/Composables/useApi', () => ({
@@ -45,7 +34,9 @@ vi.mock('@/Composables/useFeatureSpotlight', () => ({
   useFeatureSpotlight: () => ({ isDismissed: { value: false }, dismiss: dismissSpotlightMock }),
 }));
 
-vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+beforeEach(() => {
+  stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+});
 
 const stubs = {
   ...commonStubs,
@@ -107,6 +98,15 @@ describe('ShowProfile.vue', () => {
   beforeEach(() => {
     patchCalls.length = 0;
     vi.clearAllMocks();
+    vi.mocked(useForm).mockImplementation(((initialData: Record<string, unknown>) => {
+      const form = createMockForm(initialData);
+      form.patch.mockImplementation((url: string, options?: { onSuccess?: () => void }) => {
+        patchCalls.push({ url, options });
+        options?.onSuccess?.();
+      });
+      return form;
+    }) as typeof useForm);
+
     useAccessibilityPreferences().reset();
   });
 

@@ -8,15 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('renders partner banners in a ruled grid across viewports and themes without overflow', function (): void {
-    $tenant = Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
+    $tenant = Tenant::main();
 
     Banner::factory()->for($tenant)->count(7)->create([
         'is_active' => 1,
@@ -41,7 +33,7 @@ it('renders partner banners in a ruled grid across viewports and themes without 
 });
 
 it('renders quick-access navigation tiles without horizontal overflow', function (): void {
-    $user = makeAdminUser(Tenant::query()->first());
+    $user = makeUser(Tenant::query()->first());
     $page = loginAsAdmin($user, '/mano');
     waitForInertiaRender($page, '[data-slot="navigation-tiles"]');
 

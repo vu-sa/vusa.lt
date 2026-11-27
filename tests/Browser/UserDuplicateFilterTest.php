@@ -39,22 +39,6 @@ it('filters duplicate members and keeps trash reachable across desktop and phone
     $page->assertPathIs('/mano/users')->assertVisible('[data-filter-id=duplicates][aria-pressed=true]');
     $page->assertSee('Jonas Jonaitis')->assertSee('Jonaitis Jonas')->assertDontSee('Petras Petraitis');
 
-    foreach ([390, 820, 1180, 1440] as $width) {
-        $page->resize($width, 1000);
-        if ($width < 768) {
-            $page->click('[data-slot=collection-filters-toggle]');
-        }
-
-        foreach (['light', 'dark'] as $theme) {
-            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-            $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: "member-duplicates-{$width}-{$theme}");
-        }
-
-        if ($width < 768) {
-            $page->page()->locator('[data-filter-id=duplicates]')->press('Escape');
-        }
-    }
-
     navigateTo($page, '/mano/users?duplicates=possible');
     waitForInertiaRender($page, '[data-slot=collection-page]');
     $page->click('[data-slot=collection-filters-toggle]');

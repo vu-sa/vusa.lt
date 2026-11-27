@@ -18,17 +18,9 @@ pest()->use(RefreshDatabase::class);
  * actually persists through a save.
  */
 beforeEach(function (): void {
-    $tenant = Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
+    $tenant = Tenant::main();
 
-    $this->admin = makeAdminUser($tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
 
     $this->page = Page::factory()->for($tenant)->create(['title' => 'Bandomasis puslapis']);
     // Drop the factory's default tiptap part so the hero block is the only one — keeps
@@ -68,7 +60,6 @@ it('edits ordinary text in the rich-content canvas and fits both themes at suppo
         foreach (['light', 'dark'] as $theme) {
             $page->script("document.documentElement.classList.toggle('dark', '$theme' === 'dark')");
             expect($page->script('document.querySelector("[data-rc-fullscreen-scroll]").scrollWidth <= document.querySelector("[data-rc-fullscreen-scroll]").clientWidth + 1'))->toBeTrue();
-            $page->screenshot(fullPage: false, filename: "content-editor-$width-$theme");
         }
     }
     $page->assertNoJavaScriptErrors();
@@ -87,9 +78,9 @@ it('edits a hero button through its hotspot popover and the change survives a sa
 
     // Click the button hotspot — opens a popover with the button's fields.
     $page->click('button:has-text("Registruotis")');
-    $page->page()->waitForSelector('input[placeholder="Įvesk mygtuko tekstą..."]', ['timeout' => 10_000]);
+    $page->page()->waitForSelector('[data-testid="hero-button-text"]', ['timeout' => 10_000]);
 
-    $textInput = $page->page()->locator('input[placeholder="Įvesk mygtuko tekstą..."]');
+    $textInput = $page->page()->locator('[data-testid="hero-button-text"]');
     $textInput->fill('Prisijungti dabar');
 
     // Close the full-screen editor — the same live array, so nothing is lost.
@@ -127,25 +118,24 @@ it('opening a second hotspot visually closes the first', function (): void {
     waitForInertiaRender($page, 'button:has-text("Registruotis")');
 
     $page->click('button:has-text("Registruotis")');
-    $page->page()->waitForSelector('input[placeholder="Įvesk mygtuko tekstą..."]', ['timeout' => 10_000]);
+    $page->page()->waitForSelector('[data-testid="hero-button-text"]', ['timeout' => 10_000]);
 
     $page->click('button:has-text("Sužinoti daugiau")');
-    $page->page()->waitForSelector('input[placeholder="Įvesk mygtuko tekstą..."]', ['timeout' => 10_000]);
+    $page->page()->waitForSelector('[data-testid="hero-button-text"]', ['timeout' => 10_000]);
 
-    $buttonTextInputs = 'document.querySelectorAll(\'input[placeholder="Įvesk mygtuko tekstą..."]\')';
+    $buttonTextInputs = 'document.querySelectorAll(\'[data-testid="hero-button-text"]\')';
     expect($page->script("{$buttonTextInputs}.length"))->toBe(1)
         ->and($page->script("{$buttonTextInputs}[0].value"))->toBe('Sužinoti daugiau');
 
     $page->assertNoJavaScriptErrors();
 });
 
-it('keeps a centered hero title uppercase and centered before, during, and after editing', function (): void {
+it('enters and leaves inline editing on a centered hero title', function (): void {
     $this->page->content->parts()->first()->update([
         'options' => ['variant' => 'centered', 'textLeft' => true],
     ]);
 
     $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
-    expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
@@ -161,17 +151,16 @@ it('keeps a centered hero title uppercase and centered before, during, and after
     $page->assertNoJavaScriptErrors();
 });
 
-it('keeps the first split hero left-aligned and its settings trigger below the editor navbar', function (): void {
+it('keeps the first split hero settings trigger below the editor toolbar', function (): void {
     $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
-    expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
 
     $toolbarTop = $page->script('document.querySelector(\'button[title="Bloko nustatymai"]\').getBoundingClientRect().top');
-    $navbarBottom = $page->script('document.querySelector(".sticky.top-0").getBoundingClientRect().bottom');
+    $toolbarBottom = $page->script('document.querySelector("[data-testid=fullscreen-toolbar]").getBoundingClientRect().bottom');
 
-    expect($toolbarTop)->toBeGreaterThanOrEqual($navbarBottom);
+    expect($toolbarTop)->toBeGreaterThanOrEqual($toolbarBottom);
 
     $page->assertNoJavaScriptErrors();
 });
@@ -228,13 +217,6 @@ it('restores a private server copy and saves it only after an explicit save', fu
     ]);
     $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, '[data-testid=content-recovery] button:has-text("Atkurti kopiją")');
-    foreach ([390, 1440] as $width) {
-        $page->resize($width, 900);
-        foreach (['light', 'dark'] as $theme) {
-            $page->script("document.documentElement.classList.toggle('dark', '$theme' === 'dark')");
-            $page->screenshot(fullPage: false, filename: "content-recovery-$width-$theme");
-        }
-    }
     $page->click('[data-testid=content-recovery] button:has-text("Atkurti kopiją")');
     waitForInertiaRender($page, '[data-slot=content-recovery-status] [role=status]:has-text("Atkūrimo kopija išsaugota")');
     expect($this->page->fresh()->title)->toBe('Bandomasis puslapis');
@@ -272,11 +254,9 @@ it('edits paired languages independently in the comparison workspace', function 
     waitForInertiaRender($page, '[data-testid=translation-pane-lt][data-save-state=saved]');
     expect($this->page->fresh()->content->parts->first()->json_content['content'][0]['content'][0]['text'])->toBe('LT updated')
         ->and($other->fresh()->is_active)->toBeFalse();
-    $page->screenshot(fullPage: false, filename: 'content-translation-desktop');
     $page->resize(390, 900);
     $page->click('[data-testid=translation-locale-en]');
     expect($page->script('document.querySelector("[data-testid=translation-pane-en]").getBoundingClientRect().width <= 390'))->toBeTrue();
-    $page->screenshot(fullPage: false, filename: 'content-translation-phone');
     $page->assertNoJavaScriptErrors();
 });
 

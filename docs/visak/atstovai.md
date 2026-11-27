@@ -4,7 +4,7 @@ title: Atstovai
 last_reviewed: 2026-11-13
 tests:
   - tests/Feature/Admin/Dashboard/AtstovaiDashboardTest.php
-  - tests/Feature/Admin/Core/AtstovavimasApiTest.php
+  - tests/Feature/Api/Admin/AtstovavimasApiControllerTest.php
   - tests/Feature/Api/Admin/RepStatisticsTest.php
   - tests/Feature/Api/Admin/RepMetricCadenceTest.php
   - tests/Feature/Admin/Core/RepMetricsTest.php

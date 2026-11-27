@@ -1,11 +1,15 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { ref } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { commonStubs } from '@/tests/stubs';
 import type { AnalyticsOverviewData } from '@/Types/api.d';
 
 import ShowSvetaine from '../ShowSvetaine.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const mockController = {
   data: ref<AnalyticsOverviewData | null>(null),
@@ -22,14 +26,15 @@ vi.mock('@/Composables/useApi', () => ({
   useApiMutation: vi.fn(),
 }));
 
-vi.stubGlobal('route', (name?: string, params: Record<string, unknown> = {}) => {
-  if (name === undefined) {
-    return { current: () => false };
-  }
+beforeEach(() => {
+  stubGlobal('route', (name?: string, params: Record<string, unknown> = {}) => {
+    if (name === undefined) {
+      return { current: () => false };
+    }
 
-  const query = Object.entries(params).map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join('&');
-
-  return `/mocked/${name}${query ? `?${query}` : ''}`;
+    const query = Object.entries(params).map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join('&');
+    return `/mocked/${name}${query ? `?${query}` : ''}`;
+  });
 });
 
 const providedTenant = {

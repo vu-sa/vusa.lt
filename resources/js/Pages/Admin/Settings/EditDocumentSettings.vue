@@ -10,9 +10,10 @@
     :available-locales="[]"
     @submit="handleFormSubmit"
   >
-    <FormSection
+    <FormPanel
       :title="$t('settings.document_settings.important_types_title')"
       :description="$t('settings.document_settings.important_types_description')"
+      :icon="FileText"
     >
       <FormFieldWrapper
         id="important_content_types"
@@ -28,10 +29,11 @@
           :empty-text="$t('settings.document_settings.no_types_found')"
         />
       </FormFieldWrapper>
-    </FormSection>
-    <FormSection
+    </FormPanel>
+    <FormPanel
       :title="$t('settings.document_settings.recommendations_title')"
       :description="$t('settings.document_settings.recommendations_description')"
+      :icon="Pin"
     >
       <ol v-if="form.recommendations.length" class="divide-y divide-border border-y border-border">
         <li
@@ -108,7 +110,7 @@
       <p v-if="form.errors.recommendations" class="text-sm text-destructive">
         {{ form.errors.recommendations }}
       </p>
-    </FormSection>
+    </FormPanel>
     <CollectionSelectDialog
       :open="pickerIndex !== null" collection="documents" :title="$t('settings.document_settings.choose_document')"
       base-filter-by="is_active:=true" :disabled-ids="selectedDocumentIds"
@@ -121,11 +123,11 @@
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch, computed, reactive } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowUp, FileText, Pin, Plus, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';

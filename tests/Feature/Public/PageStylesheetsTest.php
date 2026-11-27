@@ -1,9 +1,6 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Vite;
-
-pest()->use(RefreshDatabase::class);
 
 // The helper only acts on the built manifest; a running dev server would skip it entirely.
 beforeEach(fn () => app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled')));

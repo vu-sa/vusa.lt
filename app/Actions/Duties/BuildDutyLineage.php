@@ -20,7 +20,7 @@ class BuildDutyLineage
     private const int MAX_DEPTH = 6;
 
     /**
-     * @return array{events: list<array{kind: 'rename', date: string, name: string|null}|array{kind: 'took_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null, can_fold: bool}>}|array{kind: 'handed_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null}>}>, predecessorTerms: list<array{id: string, name: string, profile_photo_path: string|null, pivot: array{id: string, start_date: string, end_date: string|null}, duty_name: string|null, via_duty_id: string}>, suggestedLinkDate: string}
+     * @return array{events: list<array{kind: 'rename', date: string, name: string|null}|array{kind: 'took_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null, can_fold: bool}>}|array{kind: 'handed_over', date: string, duties: list<array{id: string, link_id: int, name: string|null, is_active: bool, institution_name: string|null}>}>, predecessorTerms: list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null}, duty_name: string|null, via_duty_id: string}>, suggestedLinkDate: string}
      */
     public static function execute(Duty $duty, ?User $viewer = null): array
     {
@@ -75,7 +75,7 @@ class BuildDutyLineage
      * handed over; a predecessor that itself came from this duty (merged, then split back) stops the
      * walk there, so the partners it was merged with do not enter this duty's history.
      *
-     * @return list<array{id: string, name: string, profile_photo_path: string|null, pivot: array{id: string, start_date: string, end_date: string|null}, duty_name: string|null, via_duty_id: string}>
+     * @return list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null}, duty_name: string|null, via_duty_id: string}>
      */
     private static function predecessorTerms(Duty $origin): array
     {
@@ -118,7 +118,7 @@ class BuildDutyLineage
         return $terms->sortByDesc(fn (array $term) => $term['pivot']['start_date'] ?? '')->values()->all();
     }
 
-    /** @return list<array{id: string, name: string, profile_photo_path: string|null, pivot: array{id: string, start_date: string, end_date: string|null}, duty_name: string|null, via_duty_id: string}> */
+    /** @return list<array{id: string, name: string, profile_photo_path: string|null, profile_photo_focal_point: string|null, pivot: array{id: string, start_date: string, end_date: string|null, additional_photo: string|null, additional_photo_focal_point: string|null}, duty_name: string|null, via_duty_id: string}> */
     private static function termsBefore(Duty $predecessor, Carbon $handedOverOn): array
     {
         return $predecessor->users
@@ -130,8 +130,11 @@ class BuildDutyLineage
                     'id' => $avatar['id'],
                     'name' => $avatar['name'],
                     'profile_photo_path' => $avatar['profile_photo_path'],
+                    'profile_photo_focal_point' => $holder->profile_photo_focal_point,
                     'pivot' => [
                         'id' => $holder->pivot->id,
+                        'additional_photo' => $holder->pivot->additional_photo,
+                        'additional_photo_focal_point' => $holder->pivot->additional_photo_focal_point,
                         'start_date' => Carbon::parse($holder->pivot->start_date)->toDateString(),
                         'end_date' => $holder->pivot->end_date ? Carbon::parse($holder->pivot->end_date)->toDateString() : null,
                     ],

@@ -2,9 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowAtstovavimasPadaliniai from '@/Pages/Admin/Dashboard/ShowAtstovavimasPadaliniai.vue';
 import { commonStubs } from '@/tests/stubs';
 import { InstitutionScope } from '@/Types/enums';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 // Data composables are stable refs and the heavy children are stubbed: this test is about the
 // padalinys overview's contract — numbers from the tenant summary, never a wrong zero while it
@@ -195,12 +199,11 @@ beforeEach(() => {
   ganttRowsLoad.mockClear();
   tenantLoaded.value = true;
   selectedTenants.value = ['1'];
-  vi.stubGlobal('route', (name: string) => `/mano/${name}`);
+  stubGlobal('route', (name: string) => `/mano/${name}`);
 });
 
 afterEach(() => {
   wrapper?.unmount();
-  vi.unstubAllGlobals();
 });
 
 describe('numbers', () => {
@@ -227,13 +230,6 @@ describe('numbers', () => {
     expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
     expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(4);
     expect(wrapper.find('[data-testid="attention"]').exists()).toBe(false);
-  });
-
-  it('sizes the loading metric strip to the viewer’s available counts', () => {
-    tenantLoaded.value = false;
-    wrapper = createWrapper(false);
-
-    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(4);
   });
 });
 

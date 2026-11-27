@@ -71,6 +71,9 @@ describe('SpotifyEmbedEditor', () => {
 
     const patchedOptions = wrapper.emitted('update:options')!.at(-1)![0] as SpotifyEmbed['options'];
     expect(patchedOptions?.variant).toBe('promo');
+    await wrapper.setProps({ options: patchedOptions });
+    expect(wrapper.find('.tiptap-stub').exists()).toBe(true);
+    expect(wrapper.text()).toContain('rich-content.buttons');
   });
 
   it('patches title/eyebrow without dropping the url', async () => {

@@ -137,30 +137,6 @@ describe('FormForm.vue', () => {
     });
   });
 
-  describe('form state', () => {
-    it('uses useForm internally (form has inertia methods)', () => {
-      wrapper = createWrapper();
-
-      const vm = wrapper.vm as unknown as FormFormVm;
-      expect(vm.form).toBeDefined();
-      expect(typeof vm.form.patch).toBe('function');
-      expect(typeof vm.form.post).toBe('function');
-      expect(typeof vm.form.data).toBe('function');
-    });
-
-    it('form data is reactive and mutable', async () => {
-      wrapper = createWrapper();
-      const vm = wrapper.vm as unknown as FormFormVm;
-
-      expect(vm.form.name.lt).toBe('Test forma');
-
-      vm.form.name.lt = 'Changed name';
-      await nextTick();
-
-      expect(vm.form.name.lt).toBe('Changed name');
-    });
-  });
-
   describe('form fields', () => {
     it('opens modal when add button is clicked', async () => {
       wrapper = createWrapper();

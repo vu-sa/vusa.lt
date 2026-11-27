@@ -4,11 +4,16 @@ import { describe, expect, it } from 'vitest';
 import EmptyContactsState from '../EmptyContactsState.vue';
 
 describe('EmptyContactsState', () => {
-  it('uses generic wording for institutions without public contacts', () => {
+  it('shows the registration link only when a form is available', async () => {
     const wrapper = mount(EmptyContactsState);
+    expect(wrapper.find('a').exists()).toBe(false);
 
-    expect(wrapper.text()).toContain('Šiuo metu kontaktų nėra');
-    expect(wrapper.text()).toContain('Ši institucija šiuo metu neturi viešai skelbiamų kontaktų.');
-    expect(wrapper.text()).not.toContain('studentų atstovų');
+    await wrapper.setProps({ studentRepFormInfo: {
+      formPath: '/lt/registracija',
+      institutionId: 'institution-1',
+      institutionName: 'Studijų komitetas',
+    } });
+
+    expect(wrapper.get('a').attributes('href')).toBe('/lt/registracija?institution=institution-1');
   });
 });

@@ -12,7 +12,7 @@
           <Lock class="h-3 w-3" />
           {{ $t('PRIVATU') }}
         </span>
-        <Button v-if="!notes.loadFailed.value" variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expanded = true">
+        <Button v-if="!notes.loadFailed.value && !notes.recoveredDraft.value" variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expanded = true">
           <Maximize2 class="h-4 w-4" />
         </Button>
       </div>
@@ -60,6 +60,23 @@
         </Button>
       </div>
 
+      <div v-else-if="notes.recoveredDraft.value" class="space-y-2 px-2 py-2">
+        <p class="text-sm text-foreground">
+          {{ $t('meetings.note_draft.saved', { time: notes.recoveredAt.value ? formatDateTime(notes.recoveredAt.value) : '—' }) }}
+        </p>
+        <p v-if="notes.recoveredText.value" class="max-h-40 overflow-auto whitespace-pre-wrap border border-border bg-muted/40 p-2 text-sm text-foreground">
+          {{ notes.recoveredText.value }}
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <Button size="sm" @click="notes.resolveDraft(true)">
+            {{ $t('meetings.note_draft.restore') }}
+          </Button>
+          <Button size="sm" variant="ghost" @click="notes.resolveDraft(false)">
+            {{ $t('meetings.note_draft.discard') }}
+          </Button>
+        </div>
+      </div>
+
       <!-- While the dialog holds the live editor, the sidebar shows a snapshot. -->
       <div v-else-if="expanded" class="px-2">
         <!-- v-html: server copy sanitized on write (AgendaItemNote::notesHtml); live copy is editor schema output -->
@@ -87,7 +104,7 @@
         />
       </div>
 
-      <p v-if="!notes.isHydrating.value && !notes.loadFailed.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
+      <p v-if="!notes.isHydrating.value && !notes.loadFailed.value && !notes.recoveredDraft.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
         <span class="font-semibold">{{ $t('Eksperimentinė funkcija') }}.</span>
         {{ $t('Pažymėk tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
       </p>
@@ -150,6 +167,7 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Lock, Maximize2, Users } from '@lucide/vue';
 
+import { formatDateTime } from '@/Utils/dateTime';
 import SaveStatusChip from '@/Components/AgendaItems/NotesSaveStatusChip.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Button } from '@/Components/ui/button';

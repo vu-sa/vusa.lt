@@ -2,10 +2,9 @@
   <header
     data-slot="shell-top-bar"
     :class="[
-      'shrink-0 border-b border-(--border-opaque) bg-background/90',
+      'shrink-0 border-b border-(--border-opaque) bg-background',
       // Phones get the context bar instead; a form still needs this bar for its editor controls.
       !focused && 'max-md:hidden',
-      '[.a11y-contrast_&]:bg-background',
     ]"
   >
     <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 md:gap-3 lg:px-8">
@@ -29,7 +28,6 @@
           class="hidden md:block"
           :workspaces
           :active-workspace
-          :active-section
           :show-all-sections
         />
 
@@ -72,7 +70,7 @@ import { computed } from 'vue';
 import type { PageProps } from '@/Types/index';
 import NotificationsIndicator from '@/Components/Layouts/Shell/NotificationsIndicator.vue';
 import { Button } from '@/Components/ui/button';
-import { SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import { SHELL_PREFETCH_CACHE_FOR, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import { SHELL_FORM_BAR_ID } from '@/Composables/useShellFocus';
 import { getAppLogoSrc } from '@/Utils/AppLogo';
 
@@ -83,7 +81,6 @@ import PaletteField from './PaletteField.vue';
 defineProps<{
   workspaces: AdminWorkspace[];
   activeWorkspace?: AdminWorkspace;
-  activeSection?: AdminSection;
   showAllSections?: boolean;
   /** Hidden, never disabled, when the catalog holds no create action for this user. */
   canCreate?: boolean;

@@ -7,7 +7,7 @@ tests:
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
   - tests/Feature/Reservations/ResourceCapacityCalculatorTest.php
   - tests/Feature/Api/Admin/ResourceApiControllerTest.php
-  - tests/Feature/Admin/Search/ResourcePreviewApiTest.php
+  - tests/Feature/Api/Admin/ResourceApiControllerTest.php
   - tests/Unit/Models/ResourceTest.php
   - tests/Unit/Policies/ResourcePolicyTest.php
   - resources/js/Pages/Admin/Reservations/__tests__/ShowResource.component.test.ts
@@ -74,6 +74,8 @@ esančios rezervacijos – ne. Tai galioja ir greitajai peržiūrai, ir užimtum
 Pilną rezervaciją mato tik tie, kas turi teisę ją peržiūrėti (žr.
 [Rezervacijos → Teisės](/rezervacijos/rezervacijos#teises)).
 :::
+
+Išteklio puslapį atversi paspaudęs jo pavadinimą. Kortelės apačioje šalia užimtumo arba būsenos rodomi galimi veiksmai. Pradėjus rezervaciją, krepšelio mygtukas rodomas kortelėse, eilutėse ir lentelėje. Lentelėje jis rodomas stulpelyje „Veiksmai“.
 
 ### Greitoji peržiūra sąraše {#greitoji-perziura}
 

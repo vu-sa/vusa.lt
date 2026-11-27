@@ -8,7 +8,7 @@ tests:
   - tests/Feature/Admin/Management/DelegatedDutyTermsTest.php
   - tests/Feature/Admin/Management/DutyControllerTest.php
   - tests/Feature/Permissions/DutyBatchUsersSelfLockoutTest.php
-  - resources/js/Pages/Admin/People/__tests__/DutyUserUpdateWizard.test.ts
+  - resources/js/Pages/Admin/People/__tests__/DutyUserUpdateWizard.component.test.ts
   - resources/js/Components/DutyUserWizard/__tests__/Step3UserAssignment.component.test.ts
   - resources/js/Composables/__tests__/useDutyUserWizard.test.ts
 ---

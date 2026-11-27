@@ -6,6 +6,9 @@ import ImageUpload from '@/Components/FileUpload/ImageUpload.vue';
 import type { ImageData } from '@/Types/media';
 import { commonStubs } from '@/tests/stubs';
 import { route } from '@/mocks/route';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+const { stubGlobal, stubProperty, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('vue-sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -38,16 +41,17 @@ async function chooseFile(wrapper: ReturnType<typeof mount>) {
 }
 
 beforeEach(() => {
-  vi.stubGlobal('route', route);
+  stubGlobal('route', route);
 });
 
 afterEach(() => {
-  vi.unstubAllGlobals();
+  restoreGlobals();
 });
 
 describe('upload feedback', () => {
   beforeEach(() => {
-    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:photo'), revokeObjectURL: vi.fn() });
+    stubProperty(URL, 'createObjectURL', vi.fn(() => 'blob:photo'));
+    stubProperty(URL, 'revokeObjectURL', vi.fn());
   });
 
   it('distinguishes compression from uploading until the request starts', async () => {
@@ -55,7 +59,7 @@ describe('upload feedback', () => {
     const uploading = Promise.withResolvers<Response>();
     compression.compressImage.mockImplementationOnce(() => optimizing.promise);
     const fetchMock = vi.fn(() => uploading.promise);
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const wrapper = mount(ImageUpload, { props: { mode: 'media', compress: true }, global: { stubs: commonStubs } });
     await chooseFile(wrapper);
 
@@ -74,7 +78,7 @@ describe('upload feedback', () => {
     const mode = 'media';
     const pending = Promise.withResolvers<Response>();
     const fetchMock = vi.fn(() => pending.promise);
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const wrapper = mount(ImageUpload, { props: { mode, compress: false, cropper: true, focalPoint: true }, global: { stubs: commonStubs } });
 
     await chooseFile(wrapper);
@@ -100,7 +104,7 @@ describe('upload feedback', () => {
     const pending = Promise.withResolvers<Response>();
     const fetchMock = vi.fn().mockImplementationOnce(() => pending.promise)
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: staged }), { status: 201 }));
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const previous = { ...staged, id: 7, url: '/previous.webp' };
     const wrapper = mount(ImageUpload, { props: { mode: 'media', image: previous }, global: { stubs: commonStubs } });
 
@@ -123,7 +127,7 @@ describe('upload feedback', () => {
   it('aborts on unmount and ignores a late response', async () => {
     const pending = Promise.withResolvers<Response>();
     const fetchMock = vi.fn(() => pending.promise);
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const wrapper = mount(ImageUpload, { props: { mode: 'media' }, global: { stubs: commonStubs } });
     await chooseFile(wrapper);
     const options = (fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1];
@@ -138,7 +142,7 @@ describe('upload feedback', () => {
   it('shows the busy state again while a cropped image is uploaded', async () => {
     const Cropper = defineComponent({ emits: ['crop'], template: '<div />' });
     const pending = Promise.withResolvers<Response>();
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: staged }), { status: 201 }))
+    stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: staged }), { status: 201 }))
       .mockImplementationOnce(() => pending.promise));
     const wrapper = mount(ImageUpload, { props: { mode: 'media', cropper: true }, global: { stubs: { ...commonStubs, ImageCropper: Cropper } } });
     await chooseFile(wrapper);
@@ -158,7 +162,7 @@ describe('upload feedback', () => {
 
   it('keeps deferred files local without an upload request', async () => {
     const fetchMock = vi.fn();
-    vi.stubGlobal('fetch', fetchMock);
+    stubGlobal('fetch', fetchMock);
     const wrapper = mount(ImageUpload, { props: { mode: 'deferred', compress: false }, global: { stubs: commonStubs } });
     await chooseFile(wrapper);
     await flushPromises();
@@ -173,8 +177,9 @@ describe('upload feedback', () => {
 describe('ImageUpload media mode', () => {
   it('stages the chosen file on the server and emits what it returned', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ success: true, data: staged }), { status: 201 }));
-    vi.stubGlobal('fetch', fetchMock);
-    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:photo'), revokeObjectURL: vi.fn() });
+    stubGlobal('fetch', fetchMock);
+    stubProperty(URL, 'createObjectURL', vi.fn(() => 'blob:photo'));
+    stubProperty(URL, 'revokeObjectURL', vi.fn());
 
     const wrapper = mount(ImageUpload, { props: { mode: 'media', image: null }, global: { stubs: commonStubs } });
     await chooseFile(wrapper);

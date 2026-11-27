@@ -1,15 +1,21 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import type { ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
 import ShowResource from '@/Pages/Admin/Reservations/ShowResource.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name?: string, param?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}${param ? `/${param}` : ''}`));
+beforeEach(() => {
+  stubGlobal('route', (name?: string, param?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}${param ? `/${param}` : ''}`));
+});
 
 const stubs = {
   ...commonStubs,
@@ -101,8 +107,11 @@ describe('ShowResource.vue', () => {
     expect(wrapper.find('[data-testid="primary"]').text()).toBe('reservations.cart.add_to_reservation');
     await wrapper.find('[data-testid="primary"]').trigger('click');
 
-    const [, , options] = vi.mocked(router.post).mock.calls.at(-1)! as [string, unknown, { onSuccess: () => void }];
-    expect(options.onSuccess).toBeDefined();
+    const [url, data, options] = vi.mocked(router.post).mock.calls.at(-1)! as [string, unknown, { onSuccess: () => void }];
+    expect(url).toBe('/mocked/reservationCart.items.store');
+    expect(data).toEqual({ resource_id: 'r1', quantity: 1 });
+
+    options.onSuccess();
     expect(router.visit).not.toHaveBeenCalled();
   });
 

@@ -1,7 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import RCInlineText from '../RCInlineText.vue';
+
+afterEach(() => vi.useRealTimers());
 
 describe('RCInlineText', () => {
   it('is zero-cost when not editable: a plain element, no contenteditable, no listeners', () => {
@@ -39,8 +41,6 @@ describe('RCInlineText', () => {
     await wrapper.trigger('blur');
     // blur flushes synchronously — no need to advance timers for this one.
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual(['Newer']);
-
-    vi.useRealTimers();
   });
 
   it('does not overwrite the DOM text while focused — a mid-focus reset would jump the caret to position 0', async () => {
@@ -87,6 +87,5 @@ describe('RCInlineText', () => {
     wrapper.unmount();
 
     expect(onUpdate).toHaveBeenLastCalledWith('Kept before preview');
-    vi.useRealTimers();
   });
 });

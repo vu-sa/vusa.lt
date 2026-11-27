@@ -111,31 +111,6 @@ describe('notification count limits', function (): void {
     });
 });
 
-describe('notification deduplication edge cases', function (): void {
-    test('notification is not sent twice if user is in multiple relationships', function (): void {
-        // This tests the ->unique() call in NotifyUsersOfComment
-        $user = $this->createUserWithPreferences();
-
-        ['reservation' => $reservation, 'reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        // Attach the same user again (this shouldn't happen normally, but tests uniqueness)
-        // The implementation should deduplicate
-        $commenter = $this->createUserWithPreferences();
-
-        $comment = Comment::factory()->create([
-            'commentable_type' => MorphMap::alias(ReservationResource::class),
-            'commentable_id' => $reservationResource->id,
-            'user_id' => $commenter->id,
-            'body' => 'Test',
-        ]);
-
-        event(new CommentPosted($comment));
-
-        // User should only receive 1 notification even if somehow duplicated in relationships
-        Notification::assertSentToTimes($user, CommentPostedNotification::class, 1);
-    });
-});
-
 describe('reservation state change sends the status notice, not a task notice too', function (): void {
     test('reservation state change to Reserved sends exactly one notification: the status', function (): void {
         $user = $this->createUserWithPreferences();

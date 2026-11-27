@@ -6,22 +6,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('starts the public site in light mode even when the system prefers dark', function (): void {
-    Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
-
     pest()->browser()->inDarkMode();
 
     $publicPage = visitPublicSubdomain('www', '/lt/naujienos');
 
     expect($publicPage->script('localStorage.getItem("vueuse-color-scheme")'))->toBe('light')
         ->and($publicPage->script('document.documentElement.classList.contains("dark")'))->toBeFalse();
+    $publicPage->assertNoJavaScriptErrors();
 });
 
 it('starts the admin app in light mode even when the system prefers dark', function (): void {
@@ -35,19 +26,10 @@ it('starts the admin app in light mode even when the system prefers dark', funct
 
     expect($page->script('localStorage.getItem("vueuse-color-scheme")'))->toBe('light')
         ->and($page->script('document.documentElement.classList.contains("dark")'))->toBeFalse();
+    $page->assertNoJavaScriptErrors();
 });
 
 it('keeps a saved dark choice', function (): void {
-    Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
-
     $page = visitPublicSubdomain('www', '/lt/naujienos');
     $page->script('localStorage.setItem("vueuse-color-scheme", "dark")');
     // The full URL: a relative navigate() resolves against the plugin's 127.0.0.1 origin, whose assets are CORS-blocked.
@@ -56,4 +38,5 @@ it('keeps a saved dark choice', function (): void {
 
     expect($page->script('localStorage.getItem("vueuse-color-scheme")'))->toBe('dark')
         ->and($page->script('document.documentElement.classList.contains("dark")'))->toBeTrue();
+    $page->assertNoJavaScriptErrors();
 });

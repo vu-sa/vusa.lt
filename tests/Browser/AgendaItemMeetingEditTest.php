@@ -10,7 +10,7 @@ pest()->use(RefreshDatabase::class);
 
 it('edits an agenda item in a sheet from the meeting list', function (): void {
     $tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
-    $user = makeAdminUser($tenant);
+    $user = makeTenantUserWithRole('Studentų atstovas', $tenant);
     $meeting = Meeting::factory()->create();
     $meeting->institutions()->attach($user->duties()->first()->institution);
     $item = AgendaItem::factory()->for($meeting)->create(['title' => ['lt' => 'Senas klausimas'], 'type' => AgendaItemType::Informational]);

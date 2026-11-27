@@ -2,10 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { SHELL_FORM_BAR_ID } from '@/Composables/useShellFocus';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 
 import ShellTopBar from '../ShellTopBar.vue';
 
 import { pradzia } from './fixtures';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // `virtual:pwa-register` only exists inside a Vite build.
@@ -31,11 +34,11 @@ const mountTopBar = (props: Record<string, unknown> = {}) => mount(ShellTopBar, 
 
 describe('ShellTopBar', () => {
   beforeEach(() => {
-    vi.stubGlobal('route', () => 'http://localhost/mano');
+    stubGlobal('route', () => 'http://localhost/mano');
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    restoreGlobals();
   });
 
   it('renders logo, navigation chrome, notifications, and user account menu when not focused', () => {

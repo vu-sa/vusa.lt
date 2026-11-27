@@ -3,6 +3,9 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 describe('Onboarding/SpotlightPopover.vue', () => {
   let wrapper: ReturnType<typeof mount> | null = null;
@@ -111,13 +114,13 @@ describe('Onboarding/SpotlightPopover.vue', () => {
     let observerCallback: ((entries: Partial<IntersectionObserverEntry>[]) => void) | null = null;
 
     function stubTouchDevice() {
-      vi.stubGlobal('matchMedia', (query: string) => ({
+      stubGlobal('matchMedia', (query: string) => ({
         matches: false,
         media: query,
         addEventListener: () => {},
         removeEventListener: () => {},
       }));
-      vi.stubGlobal('IntersectionObserver', class {
+      stubGlobal('IntersectionObserver', class {
         constructor(callback: typeof observerCallback) {
           observerCallback = callback;
         }
@@ -133,7 +136,7 @@ describe('Onboarding/SpotlightPopover.vue', () => {
     }
 
     afterEach(() => {
-      vi.unstubAllGlobals();
+      restoreGlobals();
       observerCallback = null;
     });
 

@@ -4,7 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Support\LocalizedRouteSlugs;
 use Closure;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Uri;
 use Inertia\Inertia;
 
 class SetLocale
@@ -136,9 +138,10 @@ class SetLocale
         $segments = $request->segments();
         array_unshift($segments, app()->getLocale());
 
-        $url = $request->getSchemeAndHttpHost().'/'.implode('/', $segments);
+        $url = Uri::of($request->getSchemeAndHttpHost().'/'.implode('/', $segments))
+            ->withQuery(Arr::except($request->query(), ['lang']));
 
-        return $this->redirectTo($request, $url);
+        return $this->redirectTo($request, (string) $url);
     }
 
     /**

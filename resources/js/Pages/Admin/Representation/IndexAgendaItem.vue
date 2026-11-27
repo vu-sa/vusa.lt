@@ -35,7 +35,7 @@
     <template #preview="{ item, actions: recordActions }">
       <AgendaItemPreview :key="item.id" :item>
         <template #actions>
-          <CollectionRowActions :actions="recordActions" emphasis full-labels class="flex-wrap" @select="key => collectionActions.select(key)" />
+          <CollectionRowActions :actions="recordActions" layout="preview" full-labels class="flex-wrap" @select="key => collectionActions.select(key)" />
         </template>
       </AgendaItemPreview>
     </template>

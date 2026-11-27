@@ -19,7 +19,6 @@ const mountPicker = (props: Record<string, unknown> = {}) => mount(WorkspacePick
   props: {
     workspaces: [pradzia, atstovavimas, rezervacijos],
     activeWorkspace: atstovavimas,
-    activeSection: atstovavimas.sections[1],
     ...props,
   },
   global: { stubs },
@@ -63,7 +62,7 @@ describe('WorkspacePicker', () => {
     expect(tag.element.closest('a')?.textContent).toContain('shell.workspaces.wiki.title');
   });
 
-  it('marks the current workspace with a brand rule and lists its sections beneath it', () => {
+  it('marks the current workspace and only lists workspace links', () => {
     const wrapper = mountPicker();
     const links = wrapper.findAll('a');
 
@@ -73,9 +72,8 @@ describe('WorkspacePicker', () => {
     expect(current?.attributes('aria-current')).toBe('true');
     expect(current?.classes()).toContain('border-brand-fill');
     expect(other?.attributes('aria-current')).toBeUndefined();
-    expect(links.filter(link => link.text().includes('shell.sections.')).map(link => link.text()))
-      .toEqual(['shell.sections.apzvalga', 'shell.sections.posedziai']);
-    expect(links.find(link => link.text() === 'shell.sections.posedziai')?.attributes('aria-current')).toBe('page');
+    expect(links).toHaveLength(3);
+    expect(links.some(link => link.text().includes('shell.sections.'))).toBe(false);
   });
 
   it('links each workspace to its first section', () => {

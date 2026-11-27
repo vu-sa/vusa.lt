@@ -2,6 +2,7 @@
   <PaletteRow
     :value="action.id"
     :icon="action.icon"
+    :create="action.category === 'create'"
     :title="action.label"
     :subtitle="action.workspaceLabel"
     @select="handleSelect"

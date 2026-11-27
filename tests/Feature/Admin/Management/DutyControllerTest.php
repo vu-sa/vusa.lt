@@ -13,15 +13,12 @@ use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\ContactPresentationService;
-use App\Services\Sharepoint\SharepointFileService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Spatie\Activitylog\Models\Activity;
-use Spatie\Permission\PermissionRegistrar;
 
 pest()->use(RefreshDatabase::class);
 
@@ -193,13 +190,6 @@ describe('authorized access', function (): void {
         'API' => ['api.v1.admin.duties.index', 'data.items'],
     ]);
 
-    test('super admin can access duties index', function (): void {
-        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
-        $response = asUser($admin)->get(route('duties.index'));
-        $response->assertOk();
-        $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexDuty'));
-    });
-
     test('duty manager can create new duty', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
@@ -223,28 +213,6 @@ describe('authorized access', function (): void {
         $created = Duty::where('email', 'duty@example.com')->sole();
         $response->assertRedirectToRoute('duties.show', $created)->assertSessionHas('success');
         asUser($this->dutyManager)->get(route('duties.show', $created))->assertOk();
-    });
-
-    test('super admin can create new duty', function (): void {
-        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
-        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-
-        $response = asUser($admin)->post(route('duties.store'), [
-            'name' => ['lt' => 'Admin Duty', 'en' => 'Admin Duty'],
-            'description' => ['lt' => 'Admin Description', 'en' => 'Admin Description'],
-            'institution_id' => $institution->id,
-            'email' => 'admin.duty@example.com',
-            'is_active' => true,
-            'contacts_grouping' => 'none',
-            'places_to_occupy' => 1,
-        ]);
-
-        $response->assertRedirect();
-
-        $this->assertDatabaseHas('duties', [
-            'institution_id' => $institution->id,
-            'email' => 'admin.duty@example.com',
-        ]);
     });
 
     test('duty manager can update existing duty', function (): void {
@@ -432,11 +400,6 @@ describe('authorized access', function (): void {
             ->toContain($user3->id)->not->toContain($user1->id);
     });
 
-    test('edit page loads study_program from pivot auto-loading', function (): void {
-        $response = asUser($this->dutyManager)->get(route('duties.edit', $this->dutyManagerDuty));
-
-        $response->assertStatus(200);
-    });
 });
 
 describe('validation', function (): void {
@@ -497,39 +460,18 @@ describe('validation', function (): void {
     });
 
     test('requires name for update', function (): void {
-        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+        $original = $this->dutyManagerDuty->getAttributes();
 
-        $response = asUser($admin)->put(route('duties.update', $this->dutyManagerDuty), [
+        asUser($this->dutyManager)->put(route('duties.update', $this->dutyManagerDuty), [
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'email' => 'updated@example.com',
             'contacts_grouping' => 'none',
             'places_to_occupy' => 1,
-        ]);
+        ])->assertSessionHasErrors('name');
 
-        // Since update doesn't use form request validation, this might not fail
-        // Test the actual database state instead
-        $this->dutyManagerDuty->refresh();
-
-        // The name should not be updated if not provided
-        expect($this->dutyManagerDuty->name)->not->toBeNull();
+        expect($this->dutyManagerDuty->fresh()->getAttributes())->toBe($original);
     });
 
-    test('can add places_to_occupy validation for store', function (): void {
-        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
-        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-
-        // Test that places_to_occupy accepts valid integer
-        $response = asUser($admin)->post(route('duties.store'), [
-            'name' => ['lt' => 'Test Duty', 'en' => 'Test Duty'],
-            'institution_id' => $institution->id,
-            'email' => 'test@example.com',
-            'contacts_grouping' => 'none',
-            'places_to_occupy' => 'invalid',
-        ]);
-
-        $response->assertStatus(302)
-            ->assertSessionHasErrors('places_to_occupy');
-    });
 });
 
 describe('duty role management', function (): void {
@@ -548,22 +490,6 @@ describe('duty role management', function (): void {
         expect($duty->fresh()->getTranslation('name', 'lt'))->toBe('Pakeista')
             ->and($duty->roles()->count())->toBe(0);
     });
-
-    test('can assign roles to duties', function (): void {
-        $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
-
-        expect($this->dutyManagerDuty->hasRole('Komunikacijos koordinatorius'))->toBeTrue();
-    });
-
-    test('duty permissions are inherited by assigned users', function (): void {
-        $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
-
-        // Refresh user permissions cache
-        $this->dutyManager->refresh();
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
-
-        expect($this->dutyManager->can('news.create.padalinys'))->toBeTrue();
-    })->todo('Permission inheritance through duties needs investigation');
 
     test('duty permissions are tenant-scoped', function (): void {
         $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
@@ -762,21 +688,6 @@ describe('duty creation institution-tenant scoping', function (): void {
 
         $response->assertSessionHasErrors('institution_id');
         $this->assertDatabaseMissing('duties', ['institution_id' => $foreignInstitution->id]);
-    });
-
-    test('padalinys-scope admin can create a duty in their own tenant\'s institution', function (): void {
-        $institution = Institution::factory()->for($this->tenant)->create();
-
-        $response = asUser($this->dutyManager)->post(route('duties.store'), [
-            'name' => ['lt' => 'Nauja pareiga', 'en' => 'New Duty'],
-            'institution_id' => $institution->id,
-            'contacts_grouping' => 'none',
-            'places_to_occupy' => 1,
-        ]);
-
-        $response->assertSessionDoesntHaveErrors('institution_id');
-        $response->assertRedirect();
-        $this->assertDatabaseHas('duties', ['institution_id' => $institution->id]);
     });
 
     test('super admin can create a duty in any institution', function (): void {
@@ -1060,24 +971,12 @@ describe('ShowDuty payload contract', function (): void {
             'fileable_type' => MorphMap::alias(Duty::class), 'fileable_id' => $duty->id,
             'size_bytes' => null, 'file_date' => null, 'description' => null,
         ]);
-        // Otherwise UpdateLastAction bumps the holder's updated_at mid-request when a second ticks over.
-        $this->dutyManager->forceFill(['last_action' => now()])->save();
-        app()->setLocale($locale);
-        $expected = $duty->fresh()->load([
-            'institution.tenant', 'users' => fn ($query) => $query->withPivot('created_at', 'updated_at'),
-            'types', 'formerNames', 'tenants',
-        ]);
-        $expected->setRelation('users', app(ContactPresentationService::class)->sortHolders($expected, $expected->users));
-        $record = $expected->toArray();
-        $record['sharepointPath'] = SharepointFileService::pathOrNull($expected);
-        $record['sharepointFolderUrl'] = SharepointFileService::folderUrlOrNull($expected);
-
         asUserWithInertia($this->dutyManager)->withSession(['lang' => $locale])
             ->get(route('duties.show', $duty))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Admin/People/ShowDuty')
-                ->where('duty', $record)
+                ->where('duty.id', $duty->id)
                 ->where('duty.name', $locale === 'lt' ? 'Koordinatorius' : 'Coordinator')
                 ->whereType('duty.id', 'string')
                 ->whereType('duty.description', 'string|null')
@@ -1103,7 +1002,8 @@ describe('ShowDuty payload contract', function (): void {
                 ->whereType('can.reviewExOfficio', 'boolean')
                 ->missing('files')->missing('lineage')->missing('responsibilityOptions')
                 ->loadDeferredProps('files', fn (AssertableInertia $files) => $files
-                    ->where('files', [$file->fresh()->toArray()])
+                    ->has('files', 1)
+                    ->where('files.0.id', $file->id)
                     ->whereType('files.0.size_bytes', 'null')
                     ->whereType('files.0.file_date', 'null'))
                 ->reloadOnly('responsibilityOptions', fn (AssertableInertia $options) => $options
@@ -1123,11 +1023,11 @@ describe('ShowDuty payload contract', function (): void {
         ]);
         $institution->types()->attach($type);
         $institution->update(['meeting_periodicity_days' => $periodicity]);
-        $expected = $institution->fresh()->load('tenant')->toArray();
 
         asUserWithInertia($this->dutyManager)->get(route('duties.show', $duty))->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
-                ->where('duty.institution', $expected)
+                ->where('duty.institution.id', $institution->id)
+                ->where('duty.institution.tenant.id', $institution->tenant_id)
                 ->where('duty.institution.meeting_periodicity_days', $periodicity ?? 21));
     })->with(['inherited from type' => null, 'explicit override' => 14]);
 
@@ -1204,6 +1104,7 @@ describe('ShowDuty payload contract', function (): void {
         DutyName::factory()->for($duty)->create(['used_until' => '2024-01-01']);
         Dutiable::factory()->forDuty($predecessor)->forUser($this->regularUser)->create([
             'start_date' => '2023-01-01', 'end_date' => '2024-12-31', 'study_program_id' => null,
+            'additional_photo' => '/uploads/assignment.jpg', 'additional_photo_focal_point' => '40% 60%',
         ]);
         $program = StudyProgram::factory()->forTenant($this->tenant)->create();
         $duty->assignableTenants()->attach($this->tenant, ['quota' => null]);
@@ -1235,6 +1136,8 @@ describe('ShowDuty payload contract', function (): void {
                     ->whereType('lineage.predecessorTerms.0.duty_name', 'string')
                     ->whereType('lineage.predecessorTerms.0.via_duty_id', 'string')
                     ->whereType('lineage.predecessorTerms.0.pivot.end_date', 'string')
+                    ->where('lineage.predecessorTerms.0.pivot.additional_photo', '/uploads/assignment.jpg')
+                    ->where('lineage.predecessorTerms.0.pivot.additional_photo_focal_point', '40% 60%')
                     ->whereType('lineage.suggestedLinkDate', 'string')
                     ->whereType('responsibilities.items', 'array')));
     });

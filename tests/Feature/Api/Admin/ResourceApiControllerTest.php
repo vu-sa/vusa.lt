@@ -126,4 +126,38 @@ describe('resource preview endpoint', function (): void {
             ->assertJsonPath('data.upcoming_reservations.0.name', 'Stale active event')
             ->assertJsonPath('data.upcoming_reservations.0.state', 'reserved');
     });
+
+    test('preview lists upcoming active reservations', function (): void {
+        $reservation = Reservation::factory()->create(['name' => 'Upcoming event']);
+        $reservation->users()->attach($this->simpleUser);
+        $this->resource->reservations()->attach($reservation->id, [
+            'quantity' => 2,
+            'state' => 'reserved',
+            'start_time' => now()->addDay(),
+            'end_time' => now()->addDays(2),
+        ]);
+
+        asUser($this->simpleUser)
+            ->getJson(route('api.v1.admin.resources.preview', $this->resource))
+            ->assertStatus(200)
+            ->assertJsonPath('data.upcoming_reservations.0.name', 'Upcoming event')
+            ->assertJsonPath('data.upcoming_reservations.0.quantity', 2);
+    });
+
+    test('preview hides the name of a reservation the viewer cannot open', function (): void {
+        $reservation = Reservation::factory()->create(['name' => 'Someone else\'s event']);
+        $this->resource->reservations()->attach($reservation->id, [
+            'quantity' => 1,
+            'state' => 'reserved',
+            'start_time' => now()->addDay(),
+            'end_time' => now()->addDays(2),
+        ]);
+
+        asUser($this->simpleUser)
+            ->getJson(route('api.v1.admin.resources.preview', $this->resource))
+            ->assertStatus(200)
+            ->assertJsonPath('data.upcoming_reservations.0.name', null)
+            ->assertJsonPath('data.upcoming_reservations.0.id', null)
+            ->assertJsonPath('data.upcoming_reservations.0.quantity', 1);
+    });
 });

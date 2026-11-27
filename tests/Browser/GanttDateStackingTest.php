@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('keeps the floating Gantt date below the shell topbar', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 500);
+    $page = loginAsAdmin(makeUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 500);
     waitForInertiaRender($page, '[data-tour=visak-timeline]');
     // The timeline renders only once in view, and deferred panels landing above it can push it back out on a slow runner.
     // An IIFE, not `scrollIntoView() ?? …`: Chromium's scrollIntoView() returns a value, which ended the loop at once.
@@ -16,7 +16,7 @@ it('keeps the floating Gantt date below the shell topbar', function (): void {
 
     $page->assertScript('(async () => {
         const scroll = document.querySelector("[data-slot=admin-scroll-area]");
-        const shell = scroll.querySelector(":scope > .sticky");
+        const shell = document.querySelector("[data-slot=shell-chrome]");
         const badge = document.querySelector(".gantt-center-date");
         scroll.scrollTop += badge.getBoundingClientRect().top - shell.getBoundingClientRect().bottom + 5;
         // Scrolling repaints sticky chrome and can rebuild the date badge.
@@ -44,7 +44,7 @@ it('keeps the floating Gantt date below the shell topbar', function (): void {
  * section itself pinned over the shell, so a dialog opened from it must end up on top.
  */
 it('keeps dialogs opened from the full-screen timeline above it', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 800);
+    $page = loginAsAdmin(makeUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 800);
     waitForInertiaRender($page, '[data-tour=visak-timeline]');
 
     // The chart renders only once scrolled into view, as in the test above.

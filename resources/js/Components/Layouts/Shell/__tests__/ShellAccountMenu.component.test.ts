@@ -27,6 +27,8 @@ describe('ShellAccountMenu', () => {
     const wrapper = mountMenu();
     const trigger = wrapper.find('button');
 
+    expect(trigger.attributes('aria-label')).toBe('shell.chrome.account');
+    expect(trigger.classes()).not.toContain('border-l');
     expect(trigger.text()).toContain('TU'); // Test User initials
     expect(trigger.text()).toContain('Test User');
     // The name keeps its own casing: the trigger does not take the uppercase button voice.
@@ -51,12 +53,15 @@ describe('ShellAccountMenu', () => {
     expect(wrapper.findComponent(SpotlightPopover).exists()).toBe(false);
   });
 
-  it('renders submenu triggers for appearance, help, and about', () => {
+  it('renders submenu triggers for appearance, help, and about without duplicating my support requests', () => {
     const wrapper = mountMenu();
     const content = wrapper.find('[data-testid="dropdown-menu-content"]');
 
     expect(content.text()).toContain('shell.account.appearance');
     expect(content.text()).toContain('shell.account.help');
+    expect(content.text()).toContain('shell.account.report_problem');
+    expect(content.text()).not.toContain('shell.account.my_requests');
+    expect(wrapper.findAll('a').some(link => link.attributes('href') === '/mocked-route/mySupportRequests.index')).toBe(false);
     expect(content.text()).toContain('shell.account.about');
   });
 

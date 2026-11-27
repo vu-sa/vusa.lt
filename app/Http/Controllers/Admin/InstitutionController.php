@@ -25,8 +25,8 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\PublicUrl;
 use App\Services\InstitutionActivityStatusService;
-use App\Services\InstitutionPresenter;
 use App\Services\Institutions\InstitutionDeactivationService;
+use App\Services\Institutions\InstitutionPresenter;
 use App\Services\KnowledgeBasePresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
@@ -117,7 +117,7 @@ class InstitutionController extends AdminController
             $institution->setRawAttributes([...$institution->getAttributes(), ...$summary->getAttributes()], true);
             $institution->setRelation('types', $summary->types);
             $institution->setRelation('checkIns', $summary->checkIns);
-            $institution->loadMissing('tenant:id,shortname', 'duties.current_users:id,name,profile_photo_path,profile_photo_focal_point')
+            $institution->loadMissing('tenant:id,shortname', 'duties.'.InstitutionPresenter::DUTY_HOLDERS)
                 ->append(['has_public_meetings', 'governance_scope']);
 
             return $institution;

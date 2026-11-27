@@ -91,18 +91,7 @@ describe('DuplicateDutyWarning.vue', () => {
     expect(exactOnEdit.text()).not.toContain('forms.duty_duplicate.merge_instead');
   });
 
-  it('does not render the other-institution note while it is intentionally disabled', () => {
-    const wrapper = mountWarning({
-      ...EMPTY,
-      other_institution: [makeMatch({ id: 'duty-2', reason: 'other_institution' })],
-      other_institution_count: 57,
-    });
-
-    expect(wrapper.text()).not.toContain('forms.duty_duplicate.other_institutions');
-    expect(wrapper.find('[role="alert"]').exists()).toBe(false);
-  });
-
-  it('renders same-institution tier without the disabled other-institution note', () => {
+  it('renders a same-institution match when other institutions also match', () => {
     const wrapper = mountWarning({
       same_institution: [makeMatch()],
       other_institution: [makeMatch({ id: 'duty-2' })],
@@ -110,7 +99,6 @@ describe('DuplicateDutyWarning.vue', () => {
     });
 
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
-    expect(wrapper.text()).not.toContain('forms.duty_duplicate.other_institutions');
   });
 
   it('names a match elsewhere in the tenant with a link to its record', () => {

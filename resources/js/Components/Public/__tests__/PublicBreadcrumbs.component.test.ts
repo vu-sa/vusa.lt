@@ -1,0 +1,92 @@
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { defineComponent, h } from 'vue';
+import { mount } from '@vue/test-utils';
+
+import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
+
+import PublicBreadcrumbs from '../PublicBreadcrumbs.vue';
+
+describe('PublicBreadcrumbs Fallback Mode', () => {
+  afterEach(() => vi.restoreAllMocks());
+  it('displays warning in development when no breadcrumb state is provided', () => {
+    // Spy on console.warn to check if the warning is logged
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // Mount component without providing breadcrumb state
+    const wrapper = mount(PublicBreadcrumbs);
+
+    // Should show the development warning banner
+    expect(wrapper.find('[data-testid="fallback-warning"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Breadcrumbs in fallback mode');
+
+    // Should have logged the warning
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('🍞 [Breadcrumbs] State not provided'),
+    );
+  });
+});
+
+/**
+ * A host that provides real breadcrumb state, so the breadcrumbs can be rendered as pages
+ * render them. `createBreadcrumbState` uses provide/inject, hence the wrapper component.
+ */
+function renderWithTrail(variant?: 'inline', trail = [
+  { label: 'Pradinis', href: '/lt' },
+  { label: 'Naujienos', href: '/lt/naujienos' },
+  { label: 'Straipsnis' },
+]) {
+  const Host = defineComponent({
+    setup() {
+      const state = createBreadcrumbState('public');
+      state.set(trail);
+
+      return () => h(PublicBreadcrumbs, variant ? { variant } : {});
+    },
+  });
+
+  return mount(Host);
+}
+
+describe('PublicBreadcrumbs rendering', () => {
+  it('renders unboxed, slash-separated and iconless', () => {
+    const nav = renderWithTrail().find('nav');
+
+    expect(nav.classes()).not.toContain('border-y');
+    expect(nav.find('ol').classes()).toContain('text-xs');
+    expect(nav.text()).toContain('/');
+    expect(nav.findAll('svg')).toHaveLength(0);
+  });
+
+  it('hovers to the brand colour, not to a hardcoded red', () => {
+    const link = renderWithTrail().find('nav a');
+
+    expect(link.classes()).toContain('hover:text-brand');
+    expect(link.classes().join(' ')).not.toContain('vusa-red');
+  });
+});
+
+describe('PublicBreadcrumbs semantics', () => {
+  it('is an ordered list kept out of search snippets', () => {
+    const nav = renderWithTrail().find('nav');
+
+    expect(nav.attributes('aria-label')).toBeTruthy();
+    expect(nav.find('[data-nosnippet] > ol').findAll('li')).toHaveLength(3);
+  });
+});
+
+describe('PublicBreadcrumbs shortening', () => {
+  /** Breakpoint classes, not a JS breakpoint, so the server renders what the phone hydrates. */
+  it('keeps home and the parent on phones and the last four on desktop', () => {
+    const labels = ['Pradinis', 'A', 'B', 'C', 'D', 'Tėvinis', 'Puslapis'];
+    const nav = renderWithTrail(undefined, labels.map(label => ({ label, href: '/lt' }))).find('nav');
+
+    const itemClass = (label: string) => nav.findAll('ol > li').find(el => el.text().endsWith(label))?.classes();
+
+    expect(nav.text()).not.toMatch(/\bA\b|\bB\b/);
+    expect(itemClass('Pradinis')).not.toContain('max-sm:hidden');
+    expect(itemClass('C')).toContain('max-sm:hidden');
+    expect(itemClass('Tėvinis')).not.toContain('max-sm:hidden');
+    expect(itemClass('Puslapis')).toContain('max-sm:hidden');
+    expect(nav.find('[data-testid="breadcrumb-ellipsis"]').classes()).not.toContain('sm:hidden');
+  });
+});

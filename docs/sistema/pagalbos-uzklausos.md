@@ -5,7 +5,7 @@ last_reviewed: 2026-11-20
 tests:
   - tests/Feature/Admin/SupportRequests/SupportRequestControllerTest.php
   - tests/Feature/Admin/SupportRequests/MySupportRequestControllerTest.php
-  - tests/Feature/Admin/Discussions/CommentApiTest.php
+  - tests/Feature/Api/Admin/CommentApiControllerTest.php
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowSupportRequests.component.test.ts
   - resources/js/Pages/Admin/SupportRequests/__tests__/ShowSupportRequest.component.test.ts
 ---

@@ -174,12 +174,6 @@
                 </Link>
               </li>
               <li>
-                <Link :href="route('mySupportRequests.index')" prefetch class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground" @click="close">
-                  <MessagesSquare class="size-5 text-muted-foreground" />
-                  {{ $t('shell.account.my_requests') }}
-                </Link>
-              </li>
-              <li>
                 <a
                   :href="changelogHref"
                   target="_blank"
@@ -233,7 +227,6 @@ import {
   Languages,
   LogOut,
   Map,
-  MessagesSquare,
   Moon,
   Plus,
   Radio,

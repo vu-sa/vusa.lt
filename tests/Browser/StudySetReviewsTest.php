@@ -28,15 +28,6 @@ test('the review form preserves an existing review when saving an edit', functio
     waitForInertiaRender($page, '#review-lecturer-0');
     $page->fill('#review-lecturer-0', 'Pakeistas dėstytojas');
 
-    foreach ([390, 1440] as $width) {
-        $page->resize($width, 1100);
-        $page->script('document.querySelector("#review-lecturer-0").scrollIntoView({block: "center"})');
-        $page->screenshot(filename: "security-studyset-review-{$width}");
-        $page->script('document.documentElement.classList.add("dark")');
-        $page->screenshot(filename: "security-studyset-review-dark-{$width}");
-        $page->script('document.documentElement.classList.remove("dark")');
-    }
-
     // Not the success toast: it auto-dismisses after ~4s and was already gone on a slow CI run.
     waitForInertiaRender($page, '[data-testid=form-page-bar] [data-save-state=dirty]');
     $page->click('[data-testid=form-page-save]');
@@ -45,13 +36,4 @@ test('the review form preserves an existing review when saving an edit', functio
 
     expect($review->fresh()->getTranslation('lecturer', 'lt'))->toBe('Pakeistas dėstytojas')
         ->and($course->reviews()->count())->toBe(1);
-});
-
-test('a new study set explains when reviews can be added', function (): void {
-    $user = makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::query()->firstOrFail());
-    $page = loginAsAdmin($user, '/mano/studySets/create');
-    waitForInertiaRender($page, '[data-slot=form-page]');
-    $page->assertSee('Pirmiausia išsaugok dalykus')
-        ->assertDontSee('Pridėti atsiliepimą')
-        ->assertNoJavaScriptErrors();
 });

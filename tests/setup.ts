@@ -45,16 +45,25 @@ if (typeof Range !== 'undefined' && typeof Range.prototype.getClientRects !== 'f
   Range.prototype.getBoundingClientRect = () => new DOMRect();
 }
 
+// jsdom cannot observe layout changes.
+if (typeof ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
 // Async components start loading on mount; under `vmThreads` any import still pending when the
 // file ends rejects with "Vite module runner has been closed" and fails the run.
 afterAll(() => vi.dynamicImportSettled());
 
 // Mock route function from Ziggy
 vi.mock('ziggy-js', () => ({
-  default: (name: string, params: any) => {
+  default: (name: string, params: unknown) => {
     return `/mocked-route/${name}`;
   },
-  route: (name: string, params: any) => {
+  route: (name: string, params: unknown) => {
     return `/mocked-route/${name}`;
   },
 }));
@@ -63,7 +72,7 @@ vi.mock('ziggy-js', () => ({
 // Ziggy's no-argument route() returns the router; the shell asks it which page is current.
 const routeRouter = { current: () => false };
 
-vi.stubGlobal('route', (name?: string, params?: any) => {
+vi.stubGlobal('route', (name?: string, params?: unknown) => {
   if (name === undefined) return routeRouter;
   const paramEntries = params ? Object.entries(params).filter(([, v]) => v !== undefined) : [];
   const queryString = paramEntries.length > 0
@@ -89,12 +98,12 @@ vi.mock('@inertiajs/vue3', async () => {
 });
 
 // Helper function for translations - used by both imports and template globals
-const translateFn = (key: string, params?: any) => key;
+const translateFn = (key: string, params?: unknown) => key;
 
 // Mock i18n functions
 vi.mock('laravel-vue-i18n', () => ({
   trans: translateFn,
-  transChoice: vi.fn((key: string, count: number, params?: any) => key),
+  transChoice: vi.fn((key: string, count: number, params?: unknown) => key),
   createI18nInstance: vi.fn(),
   loadLanguageAsync: vi.fn(),
   // Components that pick between lt/en label maps read this at render time.
@@ -107,9 +116,9 @@ config.global.mocks = {
   // Mock $t template global property
   $t: translateFn,
   // Mock $tChoice template global property
-  $tChoice: (key: string, count: number, params?: any) => key,
+  $tChoice: (key: string, count: number, params?: unknown) => key,
   // Add route helper as a global property if used in templates
-  route: (name: string, params: any) => `/mocked-route/${name}`,
+  route: (name: string, params: unknown) => `/mocked-route/${name}`,
   // Add $page using centralized mock data
   $page: defaultMockPage(),
 };

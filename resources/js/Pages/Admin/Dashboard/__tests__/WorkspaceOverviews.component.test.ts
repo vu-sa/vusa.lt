@@ -1,17 +1,22 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowOrganizacija from '@/Pages/Admin/Dashboard/ShowOrganizacija.vue';
 import ShowSistema from '@/Pages/Admin/Dashboard/ShowSistema.vue';
 import { commonStubs } from '@/tests/stubs';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name: string, params: Record<string, unknown> = {}) => {
-  const query = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&');
-
-  return `/mocked/${name}${query ? `?${query}` : ''}`;
+beforeEach(() => {
+  stubGlobal('route', (name: string, params: Record<string, unknown> = {}) => {
+    const query = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&');
+    return `/mocked/${name}${query ? `?${query}` : ''}`;
+  });
 });
 
 const mountPage = (component: object, props: Record<string, unknown>) =>

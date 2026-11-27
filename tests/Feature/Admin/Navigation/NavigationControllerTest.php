@@ -3,6 +3,7 @@
 use App\Models\Navigation;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -23,6 +24,11 @@ beforeEach(function (): void {
 
 describe('cache functionality', function (): void {
     test('navigation cache is cleared when navigation is saved', function (): void {
+        $cache = Cache::store();
+        $key = 'navigation:public:lt';
+        $cache->put($key, 'cached payload', 60);
+        expect($cache->has($key))->toBeTrue();
+
         $updateData = getControllerTestData('Navigation')['valid'];
         $updateData['name'] = 'Updated for cache test';
 
@@ -30,7 +36,7 @@ describe('cache functionality', function (): void {
             ->patch(route('navigation.update', $this->navigation), $updateData)
             ->assertStatus(302);
 
-        // Verify the navigation was updated (cache should be cleared)
+        expect($cache->has($key))->toBeFalse();
         $this->assertDatabaseHas('navigation', [
             'id' => $this->navigation->id,
             'name' => 'Updated for cache test',
@@ -38,6 +44,11 @@ describe('cache functionality', function (): void {
     });
 
     test('navigation cache is cleared when navigation is created', function (): void {
+        $cache = Cache::store();
+        $key = 'navigation:public:lt';
+        $cache->put($key, 'cached payload', 60);
+        expect($cache->has($key))->toBeTrue();
+
         $validData = getControllerTestData('Navigation')['valid'];
         $validData['name'] = 'Cache test navigation';
 
@@ -45,7 +56,7 @@ describe('cache functionality', function (): void {
             ->post(route('navigation.store'), $validData)
             ->assertStatus(302);
 
-        // Verify the navigation was created (cache should be cleared)
+        expect($cache->has($key))->toBeFalse();
         $this->assertDatabaseHas('navigation', [
             'name' => 'Cache test navigation',
         ]);

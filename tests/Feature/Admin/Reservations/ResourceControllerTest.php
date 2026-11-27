@@ -138,7 +138,7 @@ describe('image search synchronization', function (): void {
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $resource = Resource::where('identifier', 'PHOTO-CREATE')->sole();
-        $document = (new Client(config('scout.typesense.client-settings')))->collections[$resource->searchableAs()]->documents[$resource->id]->retrieve();
+        $document = new Client(config('scout.typesense.client-settings'))->collections[$resource->searchableAs()]->documents[$resource->id]->retrieve();
         expect($document['image_url'])->toBe($resource->getFirstMedia('images')->getUrl());
     });
 
@@ -153,7 +153,7 @@ describe('image search synchronization', function (): void {
         }
         event(new ConversionHasBeenCompletedEvent($media, Conversion::create('wide')));
 
-        $document = (new Client(config('scout.typesense.client-settings')))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
+        $document = new Client(config('scout.typesense.client-settings'))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
         expect($document['image_url'])->toBe($media->getUrl('thumb'))
             ->and($this->resource->fresh()->updated_at->equalTo($updatedAt))->toBeTrue();
     });
@@ -173,7 +173,7 @@ describe('image search synchronization', function (): void {
             'media' => $removeAll ? [] : [['id' => $second->id, 'status' => 'finished']],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
-        $document = (new Client(config('scout.typesense.client-settings')))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
+        $document = new Client(config('scout.typesense.client-settings'))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
         expect($document['image_url'])->toBe($removeAll ? '' : $second->getUrl());
     })->with([false, true]);
 });
@@ -457,14 +457,12 @@ describe('restore and forceDelete', function (): void {
     });
 
     test('user with resources.forceDelete permission can permanently delete a resource', function (): void {
-        $superAdmin = User::factory()->create();
-        $superAdmin->assignRole(config('permission.super_admin_role_name'));
-
+        $this->resourceManager->givePermissionTo('resources.forceDelete.padalinys');
         $this->resource->delete();
 
-        asUser($superAdmin)->delete(route('resources.forceDelete', $this->resource))
+        asUser($this->resourceManager)->delete(route('resources.forceDelete', $this->resource))
             ->assertRedirect();
 
-        expect(Resource::withTrashed()->where('id', $this->resource->id)->exists())->toBeFalse();
+        $this->assertModelMissing($this->resource);
     });
 });

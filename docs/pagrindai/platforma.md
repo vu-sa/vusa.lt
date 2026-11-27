@@ -37,6 +37,7 @@ tests:
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Browser/SearchExperienceTest.php
   - resources/js/Search/core/__tests__/SearchExperience.test.ts
+  - resources/js/Search/core/__tests__/SearchExperience.component.test.ts
   - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
   - resources/js/Search/core/__tests__/FacetOptions.component.test.ts
   - resources/js/__tests__/designTokens.test.ts
@@ -65,8 +66,11 @@ tests:
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - resources/js/Components/Layouts/Shell/__tests__/PaletteField.component.test.ts
   - resources/js/Components/Layouts/Shell/__tests__/ShellTopBar.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/AdminShell.component.test.ts
   - resources/js/Components/Layouts/Shell/__tests__/MobileBottomBar.component.test.ts
-  - tests/Unit/Models/TranslatableExpectationsTest.php
+  - resources/js/Composables/__tests__/swPush.test.ts
+  - resources/js/Composables/__tests__/useAgendaItemNotes.test.ts
+  - resources/js/Composables/__tests__/usePWA.test.ts
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
 
@@ -104,13 +108,17 @@ Mygtukas **Veiksmai** pažymėtas žymeklio simboliu ir rašomas didžiosiomis r
 rašomi įprastai, kad būtų lengviau juos perskaityti. Naršant klaviatūra, aktyvi nuoroda turi
 matomą apvadą.
 
-Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
+Viešuose naujienų, renginių, posėdžių ir dokumentų sąrašuose atverk **Rikiuoti** klavišu
+**Enter** arba tarpo klavišu. Parinktį rask rodyklėmis aukštyn ir žemyn, patvirtink **Enter**
+arba tarpo klavišu. **Esc** užveria meniu ir grąžina žymeklį į mygtuką. Kalendoriaus mėnesio
+ir metų laukų bei dialogų uždarymo mygtukų pavadinimai ekrano skaitytuvui pateikiami sąsajos kalba.
+
+Darbo sritį gali pakeisti viršutinės juostos meniu. Pasirinktos srities skiltys pasiekiamos skirtukuose. Darbo srities pasirinkimas yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
 
 Skilčių piktogramos nusako jų paskirtį: Wiki žymi knyga, tau skirtus straipsnius – knyga su varnele,
 Mano kelią – maršrutas, atstovus – žmonės. Tos pačios piktogramos naudojamos telefono meniu ir skilčių nuorodose.
 
-Slenkant puslapį, turinys po viršutine juosta suliejamas, kad navigacija ir formos veiksmai liktų aiškiai matomi.
-Didelio kontrasto režimu juostos fonas yra nepermatomas.
+Slenkant puslapį, viršutinė juosta lieka matoma viršuje, kad navigacija ir formos veiksmai visada būtų pasiekiami.
 
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
@@ -124,6 +132,12 @@ Viršutinėje juostoje paspaudus paiešką arba klavišus **⌘/Ctrl + K**, atid
 Joje pateikiamos prieinamos skiltys, veiksmai ir įrašų paieška. Žvaigždute galima prisegti dažnai
 naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone paieška pasiekiama iš navigacijos.
 Puslapio prisegimas ir neseniai lankytų puslapių atnaujinimas išsaugomi nepriklausomai vienas nuo kito.
+
+<ChangelogNote date="2026-11-26" title="Tavo įrašai ir kūrimas komandų paletėje">
+
+Atvėrus paletę, **Tavo įrašai** veda į institucijas, kuriose eini pareigas arba esi sekretorius, sekamas institucijas ir šiuo metu einamas pareigybes. Įvesk „nauj“ arba „sukurti“, kad rastum tau prieinamas kūrimo komandas. Jas žymi pliusas. Kiti veiksmai pasirodo įvedus paiešką. Klaviatūra paspausk **↓**, kad pereitum į pirmą rezultatą, tada **Enter**, kad atvertum pasirinktą rezultatą. „Naujas kelio žingsnis“ ir „Naujas Wiki įrašas“ pasiekiami per paiešką ir atitinkamus sąrašus.
+
+</ChangelogNote>
 
 Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., narys, pareigybė, naujiena ar darbotvarkės punktas). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
@@ -160,7 +174,7 @@ Sąrašai ir paieška naudoja tą pačią įrašo peržiūrą. Peržiūra atsira
 
 </ChangelogNote>
 
-Plačiame ekrane sąrašą galima rodyti kaip **Peržiūrą**: kairėje lieka įrašai, dešinėje – pasirinkto įrašo pagrindiniai duomenys, būsena ir veiksmai. Ši parinktis siūloma tik tuose sąrašuose, kurie turi peržiūrą. Pasirinktas įrašas įrašomas į puslapio adresą, todėl nuoroda atveria tą patį įrašą.
+Plačiame ekrane sąrašą galima rodyti kaip **Peržiūrą**: kairėje lieka įrašai, dešinėje – pasirinkto įrašo pagrindiniai duomenys, būsena ir veiksmai. Ši parinktis siūloma tik tuose sąrašuose, kurie turi peržiūrą. Peržiūros veiksmai rodomi tokio pat stiliaus mygtukais kaip sąrašo veiksmai. Pasirinktas įrašas įrašomas į puslapio adresą, todėl nuoroda atveria tą patį įrašą.
 
 Peržiūroje klavišais **↑** ir **↓** pereinama prie kito įrašo, o **Enter** atveria jo puslapį. Kol rašoma lauke, klavišai lieka laukui. Tokia pati peržiūra rodoma ir susijusių įrašų pasirinkimo languose; ten rodyklėmis galima judėti ir iš paieškos laukelio. Joje matoma tik santrauka: ilgi sąrašai, pvz., institucijos ryšiai, sutrumpinami, o visi duomenys ir jų tvarkymas lieka įrašo puslapyje.
 
@@ -217,6 +231,8 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 - **Operaciniai įrašai** (pvz., **rezervacijos**) į šiukšlinę nekeliami: juos ištrynus, įrašas iš karto negrįžtamai pašalinamas kartu su susijusiais tarpiniais duomenimis.
 
 ### Daugiakalbiškumas ir vertimai {#vertimai}
+
+Atvėrus svetainės nuorodą be kalbos kodo, ji nukreipia į pasirinktos kalbos puslapį. Nuorodoje nurodyti filtrai, paieškos tekstas ir puslapio numeris išsaugomi.
 
 VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
 - **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaujamasi forma bei jos gidu.
@@ -292,6 +308,16 @@ Lentelėje vienas eilutės veiksmas rodomas su tekstu: darbo žingsnis (pvz., �
 Stulpelį, kurio antraštėje yra rodyklės, galima rikiuoti: paspaudus antraštę tvarka apsiverčia. Tą pačią tvarką galima pasirinkti ir per „Rikiuoti“. Veiksmų stulpelis lieka dešinėje slenkant plačią lentelę. Kai nė viena rodoma eilutė neturi veiksmų, veiksmų stulpelis nerodomas. Meniu telefone atsidaro ekrano apačioje. Ištrintų įrašų atkūrimas ir galutinis ištrynimas taip pat yra ⋯ meniu; kai leidžiama tik atkurti, rodomas mygtukas „Atkurti“.
 
 Peržiūros srityje taip pat lieka nuorodos į susijusius įrašus, o rankiniu būdu atliekamą užduotį galima pažymėti atlikta arba grąžinti į neatliktas. Kol veiksmas vykdomas, tos užduoties veiksmai laikinai neprieinami.
+
+## Programėlė telefone {#programele-telefone}
+
+<ChangelogNote date="2026-11-26" title="Programėlė telefone">
+
+Be ryšio atvėręs programėlę, prisijunk prie interneto ir spausk **Bandyti dar kartą**, kad grįžtum į pasirinktą puslapį. Palaikomuose įrenginiuose palaikyk nuspaudęs programėlės piktogramą, kad atvertum užduotis ar pranešimus.
+
+</ChangelogNote>
+
+Jei nepavyko išsaugoti darbotvarkės klausimo pastabų, tuo pačiu įrenginiu ir ta pačia paskyra grįžk į klausimą. Peržiūrėk juodraštį ir pasirink, ar sujungti jį su pastabomis, ar atmesti.
 
 ## Techninė informacija {#technine-informacija}
 

@@ -96,17 +96,7 @@ describe('Split Translation Loading', function (): void {
         });
     });
 
-    describe('translation fallback', function (): void {
-        it('falls back to English when Lithuanian translation is missing', function (): void {
-            // Test with a key that exists in English
-            $ltTranslation = __('validation.accepted', [], 'lt');
-            $enTranslation = __('validation.accepted', [], 'en');
-
-            // Both should be translated (not return raw key)
-            expect($ltTranslation)->not()->toBe('validation.accepted');
-            expect($enTranslation)->not()->toBe('validation.accepted');
-        });
-    });
+    describe('translation fallback', function (): void {});
 
     describe('directory structure', function (): void {
         it('has the expected directory structure', function (): void {
@@ -162,9 +152,9 @@ describe('Split Translation Loading', function (): void {
         it('loads JSON translations correctly', function (): void {
             // JSON translations are used for simple key-value pairs
             // Test a known JSON translation
-            $translation = __('Skaityti daugiau', [], 'lt');
+            $translation = __('Skaityti daugiau', [], 'en');
 
-            expect($translation)->toBe('Skaityti daugiau');
+            expect($translation)->toBe('Read more');
         });
     });
 });

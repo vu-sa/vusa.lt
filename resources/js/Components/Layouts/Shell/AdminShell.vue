@@ -26,44 +26,41 @@
     <ImpersonateBanner />
 
     <div
+      data-slot="shell-chrome"
+      class="relative z-40 shrink-0 [view-transition-name:admin-chrome]"
+    >
+      <ShellTopBar
+        :workspaces
+        :active-workspace
+        :show-all-sections
+        :can-create
+        :focused
+        @create="actionWindow.open()"
+      >
+        <template #staging-warning>
+          <StagingBanner v-model:dismissed="stagingDismissed" compact />
+        </template>
+      </ShellTopBar>
+      <template v-if="!focused">
+        <MobileContextBar :active-workspace :active-section @menu="menuOpen = true">
+          <template #staging-warning>
+            <StagingBanner v-model:dismissed="stagingDismissed" compact />
+          </template>
+        </MobileContextBar>
+        <SectionTabs :workspace="activeWorkspace" :active-section class="max-md:hidden" />
+      </template>
+    </div>
+
+    <div
       ref="scrollArea"
       scroll-region
       data-slot="admin-scroll-area"
       class="@container/shell min-h-0 flex flex-1 flex-col overflow-auto overscroll-y-contain"
       :style="scrollAreaHeight ? {
-        '--shell-chrome-height': `${shellChromeHeight}px`,
+        '--shell-chrome-height': '0px',
         '--shell-scroll-height': `${scrollAreaHeight}px`,
       } : undefined"
     >
-      <!-- A view-transition name creates a backdrop root, so the chrome itself owns the blur. -->
-      <div
-        ref="shellChrome"
-        data-slot="shell-chrome"
-        class="sticky top-0 z-40 shrink-0 backdrop-blur-sm [view-transition-name:admin-chrome] [.a11y-contrast_&]:backdrop-blur-none"
-      >
-        <ShellTopBar
-          :workspaces
-          :active-workspace
-          :active-section
-          :show-all-sections
-          :can-create
-          :focused
-          @create="actionWindow.open()"
-        >
-          <template #staging-warning>
-            <StagingBanner v-model:dismissed="stagingDismissed" compact />
-          </template>
-        </ShellTopBar>
-        <template v-if="!focused">
-          <MobileContextBar :active-workspace :active-section @menu="menuOpen = true">
-            <template #staging-warning>
-              <StagingBanner v-model:dismissed="stagingDismissed" compact />
-            </template>
-          </MobileContextBar>
-          <SectionTabs :workspace="activeWorkspace" :active-section class="max-md:hidden" />
-        </template>
-      </div>
-
       <main id="main-content" tabindex="-1" class="min-w-0 flex-1 outline-none">
         <div class="mx-auto min-h-full min-w-0 w-full max-w-7xl px-4 pt-4 pb-24 sm:px-6 lg:px-8 md:pt-6 md:pb-32" data-slot="admin-page-measure">
           <slot />
@@ -73,6 +70,7 @@
 
     <div ref="bottomStack" class="shrink-0 md:contents" data-slot="shell-bottom-stack">
       <StartFmPlayer surface="admin" />
+      <div :id="SHELL_BOTTOM_ACTIONS_ID" class="shrink-0" />
       <div :id="SHELL_MOBILE_ACTIONS_ID" class="md:hidden" />
       <MobileBottomBar
         v-if="!focused"
@@ -98,22 +96,24 @@ import { usePage } from '@inertiajs/vue3';
 import { useElementSize, useEventListener, useLocalStorage } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 
-import type { PageProps } from '@/Types/index';
 import ImpersonateBanner from '@/Components/Layouts/Shell/ImpersonateBanner.vue';
 import StagingBanner from '@/Components/StagingBanner.vue';
 import StagingWatermark from '@/Components/Shared/StagingWatermark.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import { useActionWindowCatalog } from '@/Composables/useActionWindowCatalog';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import StartFmPlayer from '@/Components/Shared/StartFmPlayer.vue';
 import { useStartFm } from '@/Composables/useStartFm';
 import { SeasonSnowGust, useSeasonSnow } from '@/Features/Admin/Seasons';
-import { SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
+import { SHELL_BOTTOM_ACTIONS_ID, SHELL_MOBILE_ACTIONS_ID, useShellFocus } from '@/Composables/useShellFocus';
 
 import ShellTopBar from './ShellTopBar.vue';
 import SectionTabs from './SectionTabs.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
 import MobileContextBar from './MobileContextBar.vue';
 import MobileBottomBar from './MobileBottomBar.vue';
+
+import type { PageProps } from '@/Types/index';
 
 const radio = useStartFm();
 const { started: snowStarted } = useSeasonSnow();
@@ -126,9 +126,7 @@ watch(bottomHeight, (height) => {
 const page = usePage<PageProps>();
 const stagingDismissed = useLocalStorage(`admin-staging-warning:${page.props.auth?.user?.id ?? 'guest'}`, false, { writeDefaults: false });
 const scrollArea = ref<HTMLElement | null>(null);
-const shellChrome = ref<HTMLElement | null>(null);
 const { height: scrollAreaHeight } = useElementSize(scrollArea);
-const { height: shellChromeHeight } = useElementSize(shellChrome);
 const { workspaces, activeWorkspace, activeSection } = useAdminNavigation();
 const actionWindow = useActionWindow();
 
@@ -136,7 +134,7 @@ const shellFocus = useShellFocus();
 const focused = computed(() => shellFocus?.isFocused.value ?? false);
 
 const menuOpen = ref(false);
-const canCreate = computed(() => workspaces.value.some(workspace => workspace.createActions.length > 0));
+const { hasAnyAction: canCreate } = useActionWindowCatalog();
 // Visi skyriai lists only what the user may open, so it is never a dead end and is offered to everyone.
 const showAllSections = true;
 

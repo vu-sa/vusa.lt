@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Laiškų eilė
 last_reviewed: 2026-10-31
 tests:
-  - tests/Feature/Notifications/MailQueueControllerTest.php
+  - tests/Feature/Admin/System/MailQueueControllerTest.php
   - tests/Browser/MailQueueLayoutTest.php
   - resources/js/Pages/Admin/__tests__/MailQueue.component.test.ts
 ---

@@ -147,11 +147,6 @@ test('assigned soft-deleted owners block permanent deletion', function (): void 
     expect($type->forceDeleteBlockedReason())->not->toBeNull();
 });
 
-test('legacy CRUD and public API routes are retired', function (): void {
-    expect(app('router')->has('types.store'))->toBeFalse()
-        ->and(app('router')->has('api.v1.types.index'))->toBeFalse();
-});
-
 test('cycle validation traverses soft-deleted intermediate types', function (): void {
     $root = InstitutionType::factory()->create();
     $middle = InstitutionType::factory()->create(['parent_id' => $root->id]);

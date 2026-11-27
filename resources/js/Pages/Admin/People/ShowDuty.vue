@@ -562,7 +562,8 @@ interface PredecessorTerm {
   id: string;
   name: string;
   profile_photo_path: string | null;
-  pivot: { id: string; start_date: string; end_date: string | null };
+  profile_photo_focal_point: string | null;
+  pivot: Pick<DutyTerm, 'id' | 'start_date' | 'end_date' | 'additional_photo' | 'additional_photo_focal_point'>;
   duty_name: string | null;
   via_duty_id: string;
 }

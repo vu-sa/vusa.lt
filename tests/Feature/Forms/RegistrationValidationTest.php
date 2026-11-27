@@ -145,3 +145,67 @@ test('omitted optional responses do not create field responses', function (): vo
     $this->postJson(route('registrations.store', $this->form), ['data' => [$this->field->id => ['value' => 'valid']]])->assertRedirect();
     expect(FieldResponse::query()->where('form_field_id', $optional->id)->exists())->toBeFalse();
 });
+
+test('cannot submit registration to unpublished form', function (): void {
+    $form = Form::factory()->create([
+        'tenant_id' => $this->form->tenant_id,
+        'publish_time' => now()->addHour(), // Future publish time
+    ]);
+
+    $textField = FormField::factory()->create([
+        'form_id' => $form->id,
+        'type' => 'text',
+        'is_required' => true,
+    ]);
+
+    $this->post(route('registrations.store', $form), [
+        'data' => [
+            $textField->id => ['value' => 'Test Value'],
+        ],
+    ])->assertForbidden();
+
+    expect(Registration::query()->whereBelongsTo($form)->exists())->toBeFalse();
+});
+
+test('accepts valid data for all field types', function (): void {
+    $textField = $this->field;
+
+    $emailField = FormField::factory()->create([
+        'form_id' => $this->form->id,
+        'type' => 'email',
+    ]);
+
+    $numberField = FormField::factory()->create([
+        'form_id' => $this->form->id,
+        'type' => 'number',
+    ]);
+
+    $selectField = FormField::factory()->create([
+        'form_id' => $this->form->id,
+        'type' => 'select',
+        'options' => [['value' => 'option1', 'label' => ['lt' => 'Pirmas', 'en' => 'First']]],
+    ]);
+
+    $user = makeUser($this->form->tenant);
+    $response = asUser($user)->post(route('registrations.store', $this->form), [
+        'data' => [
+            $textField->id => ['value' => 'Valid text'],
+            $emailField->id => ['value' => 'valid@example.com'],
+            $numberField->id => ['value' => '123'],
+            $selectField->id => ['value' => 'option1'],
+        ],
+    ]);
+
+    $response->assertRedirect()->assertSessionHasNoErrors();
+
+    $registration = Registration::query()->whereBelongsTo($this->form)->sole();
+    expect($registration->user_id)->toBe($user->id);
+    expect(FieldResponse::query()->whereBelongsTo($registration)->get()->mapWithKeys(
+        fn (FieldResponse $field) => [$field->form_field_id => $field->response['value']]
+    )->all())->toMatchArray([
+        $textField->id => 'Valid text',
+        $emailField->id => 'valid@example.com',
+        $numberField->id => '123',
+        $selectField->id => 'option1',
+    ]);
+});

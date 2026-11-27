@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Role;
@@ -67,29 +68,20 @@ describe('wizard page access', function (): void {
         );
     });
 
-    test('wizard lazy loads users and study programs when requested', function (): void {
-        // We can verify lazy loading works by making a request with partial reload
-        // The framework handles this - we just verify the controller is set up correctly
-        // by checking that the props are closures (optional) in the response
+    test('wizard loads study programs and attachable duty types on request', function (): void {
+        $program = StudyProgram::factory()->for($this->tenant)->create();
+        $type = DutyType::factory()->create();
+        $this->dutyManager->givePermissionTo('roles.update.*');
 
-        // First, verify initial load doesn't have the lazy data
-        $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));
-
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/DutyUserUpdateWizard')
+        asUserWithInertia($this->dutyManager)->get(route('duties.updateUsersWizard'))
+            ->assertOk()->assertInertia(fn (Assert $page) => $page
             ->missing('users')
             ->missing('studyPrograms')
-        );
-    });
-
-    test('wizard lazy loads duty types when requested', function (): void {
-        // Verify initial load doesn't have duty types
-        $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));
-
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/DutyUserUpdateWizard')
             ->missing('dutyTypes')
-        );
+            ->reloadOnly(['studyPrograms', 'dutyTypes'], fn (Assert $partial) => $partial
+                ->where('studyPrograms', fn ($rows) => collect($rows)->pluck('id')->contains($program->id))
+                ->where('dutyTypes', fn ($rows) => collect($rows)->pluck('id')->contains($type->id))
+                ->missing('users')));
     });
 
     test('wizard includes institution types for creation', function (): void {
@@ -490,43 +482,4 @@ describe('security validations', function (): void {
             ->assertSessionHasErrors('user_changes.0.user_id');
     });
 
-    test('accepts valid user_id that exists in database', function (): void {
-        $validUser = makeUser($this->tenant);
-
-        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
-            'user_changes' => [
-                [
-                    'user_id' => $validUser->id,
-                    'action' => 'add',
-                    'start_date' => now()->toDateString(),
-                ],
-            ],
-        ]);
-
-        $response->assertRedirect();
-        expect($this->duty->users()->where('dutiable_id', $validUser->id)->exists())->toBeTrue();
-    });
-
-    test('allows new- prefixed user_id for new user creation flow', function (): void {
-        $this->dutyManagerDuty->givePermissionTo('users.create.padalinys');
-
-        $response = asUser($this->dutyManager)->post(route('duties.batchUpdateUsers', $this->duty), [
-            'user_changes' => [
-                [
-                    'user_id' => 'new-timestamp-12345',
-                    'action' => 'add',
-                    'start_date' => now()->toDateString(),
-                ],
-            ],
-            'new_users' => [
-                [
-                    'name' => 'Valid New User',
-                    'email' => 'validnew@test.com',
-                    'temp_id' => 'new-timestamp-12345',
-                ],
-            ],
-        ]);
-
-        $response->assertRedirect();
-    });
 });

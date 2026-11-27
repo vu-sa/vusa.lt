@@ -10,7 +10,7 @@ pest()->use(RefreshDatabase::class);
  * opened nothing. A real pointer is the only way to prove what lies on top.
  */
 it('opens the grouping menu from the timeline toolbar and switches the grouping', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 800);
+    $page = loginAsAdmin(makeUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 800);
     waitForInertiaRender($page, '[data-tour=visak-timeline]');
 
     // The chart renders only once scrolled into view (see GanttDateStackingTest).

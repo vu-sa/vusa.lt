@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('applies reader preferences from the admin appearance menu', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/institutions');
+    $page = loginAsAdmin(makeUser(Tenant::query()->first()), '/mano/institutions');
     waitForInertiaRender($page);
 
     $initialSize = (float) $page->script('getComputedStyle(document.documentElement).fontSize');
@@ -44,16 +44,6 @@ it('returns keyboard focus to the profile settings button when the dialog closes
 
     docsScreenshot($page, 'accessibility-settings', selector: '[data-slot="admin-accessibility-dialog"]');
     docsScreenshot($page, 'v3-accessibility-settings', selector: '[data-slot="admin-accessibility-dialog"]', highlights: ['[data-preference="reduce-motion"]']);
-
-    if (env('DOCS_SCREENSHOTS')) {
-        foreach ([390, 820, 1180, 1440] as $width) {
-            foreach (['light', 'dark'] as $theme) {
-                $page->resize($width, 900);
-                $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
-                $page->screenshot(fullPage: false, filename: "a11y-profile-{$width}-{$theme}");
-            }
-        }
-    }
 
     $page->page()->locator('[data-preference="reduce-motion"]')->press('Escape');
     $page->page()->waitForSelector('[data-slot="admin-accessibility-dialog"]', ['state' => 'detached']);

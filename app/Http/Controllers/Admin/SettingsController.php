@@ -101,9 +101,9 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
-        $formSettings->member_registration_form_id = $request->member_registration_form_id;
-        $formSettings->student_rep_registration_form_id = $request->student_rep_registration_form_id;
-        $formSettings->setStudentRepInstitutionTypeIds($request->input('student_rep_institution_type_ids', []));
+        $formSettings->member_registration_form_id = $request->validated('member_registration_form_id');
+        $formSettings->student_rep_registration_form_id = $request->validated('student_rep_registration_form_id');
+        $formSettings->setStudentRepInstitutionTypeIds($request->validated('student_rep_institution_type_ids') ?? []);
 
         $formSettings->save();
 
@@ -264,6 +264,12 @@ class SettingsController extends AdminController
 
         if ($oldRootTypeId !== $newRootTypeId) {
             AtstovavimasSettings::clearStudentRepTypeCache();
+
+            // Reindex public institutions so stale is_student_representation flags are cleared.
+            dispatch(function (): void {
+                PublicInstitution::removeAllFromSearch();
+                PublicInstitution::makeAllSearchable();
+            })->afterResponse();
         }
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));

@@ -18,7 +18,7 @@
     </template>
 
     <template v-if="actions?.length" #actions>
-      <CollectionRowActions :actions emphasis full-labels @select="key => emit('select', key as TaskActionKey)" />
+      <CollectionRowActions :actions layout="preview" full-labels @select="key => emit('select', key as TaskActionKey)" />
     </template>
 
     <TaskDetails :task />

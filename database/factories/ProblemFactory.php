@@ -31,7 +31,7 @@ class ProblemFactory extends Factory
             'tenant_id' => Tenant::factory(),
             'created_by' => User::factory(),
             'occurred_at' => $this->faker->date(),
-            'status' => 'open',
+            'status' => Problem::STATUS_OPEN,
         ];
     }
 

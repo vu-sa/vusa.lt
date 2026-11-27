@@ -1,7 +1,14 @@
-import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
+
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+beforeEach(() => {
+  stubGlobal('fetch', mockFetch);
+});
 
 function respondWith(periods: Array<{ start: string; end: string; type: string }>) {
   mockFetch.mockResolvedValueOnce({

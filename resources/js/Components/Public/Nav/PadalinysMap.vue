@@ -12,11 +12,14 @@ import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { usePage } from '@inertiajs/vue3';
 import { useDark } from '@vueuse/core';
 import type * as Leaflet from 'leaflet';
-import type { Layer, Map as LeafletMap, MarkerClusterGroup, TileLayer } from 'leaflet';
+import type { CircleMarker, FeatureGroup, Map as LeafletMap, Marker, TileLayer } from 'leaflet';
+import type { MarkerClusterGroup } from 'leaflet.markercluster';
 
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 type LeafletApi = typeof Leaflet;
+type FacultyMarker = Marker | CircleMarker;
+type FacultyClusterGroup = MarkerClusterGroup<FacultyMarker> & FeatureGroup;
 type ZoomTransitionMap = LeafletMap & {
   _animatingZoom?: boolean;
   _onZoomTransitionEnd?: () => void;
@@ -54,8 +57,8 @@ const emit = defineEmits<{
 // Importing leaflet dynamically to avoid SSR issues
 let L: LeafletApi | null = null;
 let leafletMap: ZoomTransitionMap | null = null;
-let markers: Layer[] = [];
-let markerClusterGroup: MarkerClusterGroup | null = null;
+let markers: FacultyMarker[] = [];
+let markerClusterGroup: FacultyClusterGroup | null = null;
 let suppressMarkerClicksUntil = 0;
 
 const hoveredLocation = ref<DropdownOption | null>(null);
@@ -211,12 +214,8 @@ const initializeOrUpdateMap = async () => {
     const leaflet = await import('leaflet') as LeafletApi & { default: LeafletApi };
     L = leaflet.default;
 
-    // Import Leaflet and MarkerCluster CSS
+    const { MarkerClusterGroup } = await import('leaflet.markercluster');
     await import('leaflet/dist/leaflet.css');
-
-    await import('leaflet.markercluster');
-    await import('leaflet.markercluster/dist/MarkerCluster.css');
-    await import('leaflet.markercluster/dist/MarkerCluster.Default.css');
 
     if (disposed) return;
 
@@ -259,8 +258,8 @@ const initializeOrUpdateMap = async () => {
         position: 'bottomright',
       }).addTo(leafletMap);
 
-      // Create marker cluster group with custom options
-      markerClusterGroup = L.markerClusterGroup({
+      // The bundled declarations inherit from Leaflet 2's FeatureGroup.
+      markerClusterGroup = new MarkerClusterGroup<FacultyMarker>({
         animate: !isReducedMotion.value,
         animateAddingMarkers: !isReducedMotion.value,
         showCoverageOnHover: false,
@@ -273,7 +272,7 @@ const initializeOrUpdateMap = async () => {
             iconSize: L.point(36, 36),
           });
         },
-      });
+      }) as FacultyClusterGroup;
 
       // Prevent a rapid second cluster click from landing on a newly revealed tenant marker.
       markerClusterGroup.on('clusterclick', () => {
@@ -309,10 +308,11 @@ const forceUpdateMap = () => {
 
 // Update map markers based on filtered Vilnius options
 const updateMapMarkers = (fitView = true) => {
-  if (!L || !leafletMap || !markerClusterGroup) return;
+  const clusterGroup = markerClusterGroup;
+  if (!L || !leafletMap || !clusterGroup) return;
 
   // Clear existing markers from cluster group
-  markerClusterGroup.clearLayers();
+  clusterGroup.clearLayers();
   markers = [];
 
   // Only show Vilnius faculties on the map
@@ -322,7 +322,7 @@ const updateMapMarkers = (fitView = true) => {
     if (!location) return;
 
     // Create marker based on whether we have an avatar image
-    let marker: Layer;
+    let marker: FacultyMarker;
     const isActive = isActivePadalinys(option.key);
     const avatarUrl = option.primary_institution?.image_url;
 
@@ -368,7 +368,7 @@ const updateMapMarkers = (fitView = true) => {
     marker.bindTooltip(`${option.label} (${shortName})`);
 
     // Add marker to cluster group
-    markerClusterGroup.addLayer(marker);
+    clusterGroup.addLayer(marker);
     markers.push(marker);
   });
 

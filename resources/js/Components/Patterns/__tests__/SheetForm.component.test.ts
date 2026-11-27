@@ -146,11 +146,15 @@ describe('SheetForm.vue', () => {
   it('puts destructive actions in the body, not the footer', () => {
     const wrapper = mount(SheetForm, {
       props: { open: true, title: 'Forma' },
-      slots: { 'default': '<p>Laukai</p>', 'danger-zone': '<button type="button">Ištrinti</button>' },
+      slots: { 'default': '<p data-testid="body-field">Laukai</p>', 'danger-zone': '<button type="button" data-testid="delete">Ištrinti</button>' },
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('Ištrinti');
-    expect(wrapper.text()).toContain('Atšaukti');
+    const body = wrapper.get('[data-testid="body-field"]').element.parentElement!;
+    const remove = wrapper.get('[data-testid="delete"]').element;
+    const footer = wrapper.get('button[type="submit"]').element.parentElement!;
+    expect(body.contains(remove)).toBe(true);
+    expect(footer.contains(remove)).toBe(false);
+    expect(footer.textContent).toContain('Atšaukti');
   });
 });

@@ -4,7 +4,7 @@ doc_status: reviewed
 last_reviewed: 2026-11-11
 tests:
   - tests/Feature/Admin/Learning/ResolveLearningPathTest.php
-  - resources/js/Features/Admin/Learning/__tests__/ShowLearningStep.component.test.ts
+  - resources/js/Pages/Admin/Learning/__tests__/ShowLearningStep.component.test.ts
   - tests/Feature/Admin/Learning/LearningRoutesTest.php
   - tests/Feature/Admin/Learning/LearningPoliciesTest.php
   - tests/Feature/Admin/Learning/LearningWritesTest.php
@@ -13,7 +13,7 @@ tests:
   - tests/Feature/Admin/Learning/LearningPathPresenterTest.php
   - tests/Feature/Admin/Learning/SystemStepDetectorsTest.php
   - tests/Feature/Seeders/LearningPathPilotSeederTest.php
-  - resources/js/Features/Admin/Learning/__tests__/LearningLibrary.component.test.ts
+  - resources/js/Pages/Admin/Learning/__tests__/IndexLearningStep.component.test.ts
   - resources/js/Features/Admin/Learning/__tests__/BrowserNotificationSetup.component.test.ts
   - tests/Feature/System/AdminNavigationCatalogTest.php
   - resources/js/Components/Layouts/Shell/__tests__/SectionTabs.component.test.ts

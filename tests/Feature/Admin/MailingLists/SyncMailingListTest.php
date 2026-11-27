@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Sleep;
 use Illuminate\Validation\ValidationException;
 
 pest()->use(RefreshDatabase::class);
@@ -270,6 +271,7 @@ test('a failed activation preserves manual mode and the actual roster', function
 });
 
 test('an occupied list lock prevents a concurrent sync from issuing remote requests', function (): void {
+    Sleep::fake(syncWithCarbon: true);
     $lock = cache()->lock('mailing-list:'.$this->list->id, 900);
     $lock->get();
     try {

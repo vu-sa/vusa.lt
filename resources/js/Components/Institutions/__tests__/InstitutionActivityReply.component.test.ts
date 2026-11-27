@@ -22,7 +22,8 @@ describe('signed activity reply', () => {
     expect(wrapper.find('form').attributes()).toMatchObject({ method: 'POST', action: props.action });
     expect(wrapper.find('input[name="_token"]').attributes('value')).toBe('csrf-token');
     expect(wrapper.findAllComponents(DatePicker)).toHaveLength(2);
-    expect(wrapper.text()).toContain('Time required', '2026-09-15');
+    expect(wrapper.text()).toContain('Time required');
+    expect(wrapper.text()).toContain('2026-09-15');
     expect(wrapper.find('input[name="meetings[1][date]"]').attributes('value')).toBe('2026-09-25');
   });
 

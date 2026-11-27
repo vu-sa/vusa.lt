@@ -174,12 +174,12 @@
         v-if="hasTabs"
         ref="tabsNav"
         :class="[
-          'sticky top-[var(--shell-chrome-height,0px)] z-30 mt-8 hidden border-b border-border md:block',
+          'sticky top-[var(--shell-chrome-height,0px)] z-30 mt-8 hidden shadow-[inset_0_-1px_var(--border)] md:block',
           'bg-background/95 backdrop-blur-sm [.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
         ]"
         :aria-label="$t('Įrašo skyriai')"
       >
-        <div ref="tabList" role="tablist" class="flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div ref="tabList" role="tablist" class="flex overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             v-for="section in sections"
             :id="`record-tab-${recordId}-${section.value}`"
@@ -191,7 +191,7 @@
             :tabindex="section.value === currentSection ? 0 : -1"
             :data-section="section.value"
             :class="[
-              '-mb-px inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 pointer-coarse:h-11',
+              'inline-flex h-10 shrink-0 items-center gap-2 border-b-2 px-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:h-11',
               'text-xs font-semibold uppercase tracking-wide whitespace-nowrap',
               section.value === currentSection
                 ? 'border-brand text-foreground'

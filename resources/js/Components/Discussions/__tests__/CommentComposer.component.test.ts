@@ -36,7 +36,7 @@ describe('CommentComposer', () => {
   });
 
   afterEach(() => {
-    wrapper.unmount();
+    wrapper?.unmount();
     document.body.innerHTML = '';
   });
 
@@ -46,8 +46,8 @@ describe('CommentComposer', () => {
     expect(wrapper.find('.ProseMirror').exists()).toBe(true);
     expect(wrapper.find('[data-slot="composer-footer"]').exists()).toBe(false);
 
-    await wrapper.find('.ProseMirror').trigger('focus');
-    (wrapper.vm as unknown as { $: { setupState: { focused: boolean } } }).$.setupState.focused = true;
+    wrapper.get<HTMLElement>('.ProseMirror').element.focus();
+    expect(document.activeElement).toBe(wrapper.get('.ProseMirror').element);
     await flushPromises();
 
     expect(wrapper.find('[data-slot="composer-footer"]').exists()).toBe(true);

@@ -19,6 +19,13 @@ return [
     'overdue_due_date' => 'Terminas praėjo :date',
     'tasks_title' => 'Tavo užduotys',
     'create_title' => 'Greiti veiksmai',
+    'shortcuts' => [
+        'new_meeting' => 'Pranešk apie posėdį',
+        'no_meeting' => 'Posėdžio nebuvo',
+        'new_problem' => 'Pranešk apie studentų problemą',
+        'new_reservation' => 'Rezervuok VU SA įrangą',
+        'new_support_request' => 'Kreipkis dėl vusa.lt pagalbos',
+    ],
     'site_content_title' => 'Renginiai ir naujienos',
     'overdue_by' => 'vėluoja :days d.',
     'overdue' => 'vėluoja',

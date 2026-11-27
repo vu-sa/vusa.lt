@@ -4,19 +4,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
-test('handles malicious lang parameter in real request', function (): void {
-    $maliciousInput = "'nvOpzp; AND 1=1 OR (<'\">iKO)),";
-
-    $response = $this->get('/news/test?lang='.urlencode($maliciousInput));
-
-    // Should redirect to localized URL with default locale
-    $response->assertRedirect('/lt/news/test');
-
-    // Locale should not be set to malicious input
-    expect(app()->getLocale())->toBe(config('app.locale'));
-    expect(session()->get('lang'))->toBeNull();
-});
-
 test('sets valid locale from parameter', function (): void {
     $response = $this->get('/news/test?lang=en');
 
@@ -25,23 +12,21 @@ test('sets valid locale from parameter', function (): void {
         ->and(session()->get('lang'))->toBe('en');
 });
 
+test('keeps filters when redirecting to a localized path', function (): void {
+    $this->get('/news/test?lang=en&page=2&search=student%20housing')
+        ->assertMovedPermanently()
+        ->assertRedirect('/en/news/test?page=2&search=student%20housing');
+});
+
 test('returns 409 with x inertia location header for inertia requests', function (): void {
     // Inertia (fetch-based) visits must not follow a 301 at the network layer,
     // which trips WebKit sandbox checks in in-app browsers. The middleware
     // should instead return 409 + X-Inertia-Location so the client does a
     // clean window.location self-navigation.
-    $response = $this->get('/news/test', ['X-Inertia' => 'true']);
+    $response = $this->get('/news/test?page=2', ['X-Inertia' => 'true']);
 
     expect($response->getStatusCode())->toBe(409)
-        ->and($response->headers->get('X-Inertia-Location'))->toEndWith('/lt/news/test');
-});
-
-test('preserves query parameters during redirect', function (): void {
-    $response = $this->get('/news/test?lang=en&page=2&search=query');
-
-    // Should redirect and preserve other parameters
-    $response->assertRedirect();
-    expect($response->headers->get('Location'))->toContain('/en/news/test');
+        ->and($response->headers->get('X-Inertia-Location'))->toEndWith('/lt/news/test?page=2');
 });
 
 test('handles multiple injection attempts', function (): void {

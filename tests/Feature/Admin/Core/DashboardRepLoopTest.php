@@ -1,9 +1,7 @@
 <?php
 
-use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -11,40 +9,6 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-});
-
-function userWithFirstTermStarting(Tenant $tenant, string $start): User
-{
-    $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
-    $user = User::factory()->create();
-    $user->duties()->attach($duty, ['start_date' => $start]);
-
-    return $user;
-}
-
-describe('access-change band (U14)', function (): void {
-    test('a term that began today does not load the retired band', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->toDateString());
-
-        asUserWithInertia($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->missing('accessChanges')
-        );
-    });
-
-    test('an ended term does not load the retired band', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->subYear()->toDateString());
-        $user->dutiables()->update(['end_date' => now()->subDay()->toDateString()]);
-
-        asUserWithInertia($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->missing('accessChanges')
-        );
-    });
-
-    test('an old change does not load the retired band', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->subMonths(3)->toDateString());
-
-        asUserWithInertia($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->missing('accessChanges'));
-    });
 });
 
 describe('launching the action window from the URL (U21)', function (): void {

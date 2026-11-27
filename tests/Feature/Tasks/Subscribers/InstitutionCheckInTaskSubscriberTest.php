@@ -15,6 +15,7 @@ use App\Models\InstitutionCheckIn;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,7 +104,8 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
             ->for($user)
             ->create(['start_date' => today(), 'end_date' => today()->addWeek()]);
 
-        expect($checkIn)->not->toBeNull();
+        $this->assertModelExists($checkIn);
+        expect(Task::query()->where('action_type', ActionType::PeriodicityGap)->exists())->toBeFalse();
     });
 
     test('only completes tasks for the specific institution', function (): void {

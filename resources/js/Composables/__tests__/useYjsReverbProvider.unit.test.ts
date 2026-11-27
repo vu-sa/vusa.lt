@@ -8,8 +8,8 @@ import { ReverbYjsProvider, type WhisperTransport } from '../useYjsReverbProvide
  * only (never echo back to the sender), mimicking Reverb client-events.
  */
 function createWhisperPair(): { a: WhisperTransport; b: WhisperTransport } {
-  const listenersA: Record<string, Array<(data: unknown) => void>> = {};
-  const listenersB: Record<string, Array<(data: unknown) => void>> = {};
+  const listenersA: Record<string, Array<(data: Record<string, string>) => void>> = {};
+  const listenersB: Record<string, Array<(data: Record<string, string>) => void>> = {};
 
   const make = (own: typeof listenersA, peer: typeof listenersB): WhisperTransport => ({
     whisper: (event, data) => {

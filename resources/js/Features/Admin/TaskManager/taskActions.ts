@@ -9,6 +9,7 @@ import {
   isAgendaTask,
   isInstitutionTask,
   isMeetingTask,
+  isOrphanedTask,
   isPeriodicityGapTask,
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
@@ -38,7 +39,7 @@ export function getTaskActions(task: TaskDisplayData): TaskAction[] {
     });
   }
 
-  const agendaUrl = !task.completed_at && isAgendaTask(task) && isMeetingTask(task) ? getMeetingAgendaUrl(task) : null;
+  const agendaUrl = !task.completed_at && isAgendaTask(task) && isMeetingTask(task) && !isOrphanedTask(task) ? getMeetingAgendaUrl(task) : null;
   if (agendaUrl) {
     const isCreation = isAgendaCreationTask(task);
     actions.push({

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -45,10 +46,15 @@ test('writes again once the throttle window has passed', function (): void {
 });
 
 test('does nothing for a guest', function (): void {
-    // Auth::check() is false — the middleware must not touch the users table at all.
-    $this->middleware->handle(Request::create('/test'), fn ($req) => new Response('ok'));
+    $queries = 0;
+    DB::listen(function () use (&$queries): void {
+        $queries++;
+    });
 
-    expect(true)->toBeTrue(); // No exception, no query error — that's the whole assertion.
+    $response = $this->middleware->handle(Request::create('/test'), fn ($req) => new Response('ok'));
+
+    expect($queries)->toBe(0)
+        ->and($response->getContent())->toBe('ok');
 });
 
 test('does not invalidate the requesting user\'s permission cache', function (): void {
@@ -56,7 +62,7 @@ test('does not invalidate the requesting user\'s permission cache', function ():
     // UserPermissionObserver::updated() and dropped auth:duties:{id} (plus, before the
     // ModelAuthorizer fix, the entire shared spatie.permission.cache) on every single
     // authenticated request. The query-builder update fires no model events at all.
-    $tenant = Tenant::factory()->create();
+    $tenant = Tenant::query()->first();
     $user = makeUser($tenant);
 
     app(ModelAuthorizer::class)->allows($user, 'news.read.padalinys');

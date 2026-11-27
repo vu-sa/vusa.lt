@@ -1,13 +1,19 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import { activateWaitingWorker, migrateLegacyRegistration, usePWA } from '@/Composables/usePWA';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('vue-sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+beforeEach(() => {
+  stubGlobal('fetch', mockFetch);
+});
 
 const VAPID_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
 
@@ -52,8 +58,8 @@ describe('migrateLegacyRegistration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(usePage).mockReturnValue(createMockPage({ csrf_token: 'csrf', pwa: { vapidPublicKey: VAPID_KEY } }));
-    vi.stubGlobal('Notification', { permission: 'granted' });
-    vi.stubGlobal('PushManager', { supportedContentEncodings: ['aes128gcm'] });
+    stubGlobal('Notification', { permission: 'granted' });
+    stubGlobal('PushManager', { supportedContentEncodings: ['aes128gcm'] });
     mockFetch.mockResolvedValue({ ok: true, status: 200 });
   });
 
@@ -79,6 +85,36 @@ describe('migrateLegacyRegistration', () => {
     expect(legacySubscription.unsubscribe).toHaveBeenCalledOnce();
     expect(legacy.unregister).toHaveBeenCalledOnce();
     expect(usePWA().currentBrowserEndpoint.value).toBe('https://push.example/new');
+    expect(usePWA().hasPushSubscription.value).toBe(true);
+  });
+
+  test('requires both a browser subscription and a matching account endpoint', () => {
+    const pwa = usePWA();
+    pwa.currentBrowserEndpoint.value = 'https://push.example/browser';
+    expect(pwa.hasPushSubscription.value).toBe(false);
+    vi.mocked(usePage).mockReturnValue(createMockPage({ pwa: { subscriptionEndpoints: [pwa.currentBrowserEndpoint.value] } }));
+    expect(usePWA().hasPushSubscription.value).toBe(true);
+  });
+
+  test('does not carry a confirmed session subscription over to a different signed-in user', async () => {
+    const legacy = fakeRegistration('https://www.vusa.test/build/', fakeSubscription('https://push.example/old'));
+    const current = fakeRegistration('https://www.vusa.test/mano');
+    current.pushManager.subscribe.mockResolvedValue(fakeSubscription('https://push.example/migrated'));
+    stubRegistrations([legacy, current]);
+
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { id: 1 } },
+      csrf_token: 'csrf',
+      pwa: { vapidPublicKey: VAPID_KEY, subscriptionEndpoints: [] },
+    }));
+    await migrateLegacyRegistration(current as unknown as ServiceWorkerRegistration);
+    expect(usePWA().hasPushSubscription.value).toBe(true);
+
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { id: 2 } },
+      pwa: { subscriptionEndpoints: [] },
+    }));
+    expect(usePWA().hasPushSubscription.value).toBe(false);
   });
 
   test('only unregisters a /build/ worker that has no subscription', async () => {
@@ -94,7 +130,7 @@ describe('migrateLegacyRegistration', () => {
   });
 
   test('drops the old subscription without re-subscribing when notifications are no longer allowed', async () => {
-    vi.stubGlobal('Notification', { permission: 'denied' });
+    stubGlobal('Notification', { permission: 'denied' });
     const legacySubscription = fakeSubscription('https://push.example/old');
     const legacy = fakeRegistration('https://www.vusa.test/build/', legacySubscription);
     const current = fakeRegistration('https://www.vusa.test/mano');

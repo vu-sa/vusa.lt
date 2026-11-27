@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'note_draft' => [
+        'saved' => 'Įrenginyje išsaugotas juodraštis (:time)',
+        'restore' => 'Sujungti su pastabomis',
+        'discard' => 'Atmesti juodraštį',
+    ],
     'outcome' => [
         'matched_of' => ':matched iš :total balsavimo sutapo|:matched iš :total balsavimų sutapo|:matched iš :total balsavimų sutapo',
         'votes' => 'balsavimas:|balsavimai:|balsavimų:',

@@ -11,11 +11,16 @@
     :available-locales="[]"
     @submit="form.post(route('settings.purposes.update'), { preserveScroll: true })"
   >
-    <FormSection :title="$t('settings.purposes.responsibilities_title')" :description="$t('settings.purposes.responsibilities_description')">
+    <FormPanel
+      :title="$t('settings.purposes.responsibilities_title')"
+      :description="$t('settings.purposes.responsibilities_description')"
+      :icon="Compass"
+    >
       <FormFieldWrapper
         v-for="purpose in purposes"
         :id="`purpose_${purpose.key}`"
         :key="purpose.key"
+        v-slot="{ controlAttrs }"
         :label="purpose.label"
         :hint="purpose.drives"
         :error="form.errors[`purposes.${purpose.key}`]"
@@ -29,6 +34,7 @@
           @dismiss="reservationSpotlight.dismiss()"
         >
           <NativeSelect
+            v-bind="controlAttrs"
             :id="`purpose_${purpose.key}`"
             v-model="form.purposes[purpose.key]"
             :options="responsibilityOptions"
@@ -40,6 +46,7 @@
         </SpotlightPopover>
         <NativeSelect
           v-else
+          v-bind="controlAttrs"
           :id="`purpose_${purpose.key}`"
           v-model="form.purposes[purpose.key]"
           :options="responsibilityOptions"
@@ -47,18 +54,24 @@
           placeholder-selectable
         />
       </FormFieldWrapper>
-    </FormSection>
+    </FormPanel>
 
-    <FormSection :title="$t('settings.purposes.duty_types_title')" :description="$t('settings.purposes.duty_types_description')">
+    <FormPanel
+      :title="$t('settings.purposes.duty_types_title')"
+      :description="$t('settings.purposes.duty_types_description')"
+      :icon="Users"
+    >
       <FormFieldWrapper
         v-for="part in dutyTypes"
         :id="`duty_type_${part.key}`"
         :key="part.key"
+        v-slot="{ controlAttrs }"
         :label="part.label"
         :hint="fallbackHint(part) ?? part.drives"
         :error="form.errors[`duty_types.${part.key}`]"
       >
         <TypeTreeSelect
+          v-bind="controlAttrs"
           :id="`duty_type_${part.key}`"
           v-model="form.duty_types[part.key]"
           :types="dutyTypeOptions"
@@ -66,7 +79,7 @@
           placeholder-selectable
         />
       </FormFieldWrapper>
-    </FormSection>
+    </FormPanel>
   </FormPage>
 </template>
 
@@ -74,11 +87,12 @@
 import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Compass, Users } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import SpotlightPopover from '@/Components/Patterns/SpotlightPopover.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

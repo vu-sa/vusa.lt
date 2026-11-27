@@ -1,16 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 
-import { newsTemplate } from '../formTemplates';
+afterEach(() => {
+  vi.useRealTimers();
+  vi.resetModules();
+});
 
-describe('newsTemplate', () => {
-  it('defaults publish_time to an ISO instant round-tripping to "now"', () => {
-    // A naive "YYYY-MM-DD HH:mm:ss" string here used to be read back as UTC by
-    // `new Date(...)` (NewsForm.vue) while the backend interpreted it in
-    // Europe/Vilnius (StoreNewsRequest::prepareForValidation), backdating every
-    // untouched publish_time by the timezone offset.
-    const parsed = new Date(newsTemplate.publish_time);
+it('defaults the publish time to a timezone-qualified ISO instant', async () => {
+  vi.useFakeTimers({ now: new Date('2026-09-19T22:30:00Z'), toFake: ['Date'] });
+  vi.resetModules();
 
-    expect(Number.isNaN(parsed.getTime())).toBe(false);
-    expect(Math.abs(parsed.getTime() - Date.now())).toBeLessThan(1000);
-  });
+  const { newsTemplate } = await import('../formTemplates');
+
+  expect(newsTemplate.publish_time).toBe('2026-09-19T22:30:00.000Z');
 });

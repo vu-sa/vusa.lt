@@ -47,13 +47,6 @@ function mountToolbar(content: ContentPart) {
 }
 
 describe('ContentGridBlockToolbar', () => {
-  it('carries no row/column management — that lives on the canvas now', () => {
-    const wrapper = mountToolbar(makeContent());
-    expect(wrapper.find('[data-rc-toolbar-add-row]').exists()).toBe(false);
-    expect(wrapper.find('[data-rc-toolbar-add-column]').exists()).toBe(false);
-    expect(wrapper.text()).not.toContain('rich-content.grid_row');
-  });
-
   it('changes the gap option', async () => {
     const wrapper = mountToolbar(makeContent());
     const gapSelect = wrapper.findAllComponents(Select)[0]!;

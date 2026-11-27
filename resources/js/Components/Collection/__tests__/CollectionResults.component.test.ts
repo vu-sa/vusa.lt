@@ -23,8 +23,9 @@ const mountResults = (view: 'cards' | 'rows') => mount(CollectionResults, {
     total: items.length,
   } as never,
   slots: {
-    card: '<template #card="{ item }"><div class="card">{{ item.name }}</div></template>',
-    row: '<template #row="{ item, index }"><div class="row" :data-index="index">{{ item.name }}</div></template>',
+    'card': '<template #card="{ item }"><div class="card">{{ item.name }}</div></template>',
+    'row': '<template #row="{ item, index }"><div class="row" :data-index="index">{{ item.name }}</div></template>',
+    'table-action': '<template #table-action="{ item }"><button data-testid="table-action">{{ item.name }}</button></template>',
   },
 });
 
@@ -42,6 +43,23 @@ describe('CollectionResults', () => {
     await wrapper.setProps({ view: 'table', columns: [{ key: 'name', label: 'Vardas' }], rowActions: () => [{ key: 'open', role: 'open', label: 'Atidaryti', href: '/mano/items/1' }] } as never);
     await wrapper.get('[data-action="open"]').trigger('click');
     expect(wrapper.emitted('rowNavigate')?.[0]).toEqual([items[0], 'open']);
+  });
+
+  it('shows supplementary controls in the sticky actions column without record actions', async () => {
+    const wrapper = mountResults('rows');
+    await wrapper.setProps({
+      view: 'table',
+      columns: [{ key: 'name', label: 'Vardas' }],
+      canShowTableAction: (item: { id: string }) => item.id === 'a',
+    } as never);
+
+    expect(wrapper.findAll('th').at(-1)?.text()).toBe('Veiksmai');
+    const controls = wrapper.findAll('[data-testid="table-action"]');
+    expect(controls.map(control => control.text())).toEqual(['Projektorius']);
+    expect(controls[0]?.element.closest('td')?.classList.contains('sticky')).toBe(true);
+
+    await wrapper.setProps({ canShowTableAction: () => false } as never);
+    expect(wrapper.findAll('th').map(header => header.text())).not.toContain('Veiksmai');
   });
 
   it('renders the built-in sticky actions last and leaves pinned data columns in flow', () => {

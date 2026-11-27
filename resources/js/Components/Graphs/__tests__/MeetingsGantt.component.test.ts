@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
-
 import { router } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import MeetingsGantt from '../MeetingsGantt.vue';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -18,14 +21,16 @@ describe('MeetingsGantt', () => {
   let wrapper: ReturnType<typeof mount>;
 
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 10, 26, 12) });
     localStorage.clear();
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ success: true, data: [] }) })));
-    vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+    stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ success: true, data: [] }) })));
+    stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   });
 
   afterEach(() => {
     wrapper?.unmount();
-    vi.unstubAllGlobals();
+    restoreGlobals();
+    vi.useRealTimers();
   });
 
   async function mountGantt(props: Record<string, unknown> = {}) {
@@ -124,7 +129,7 @@ describe('MeetingsGantt', () => {
     icon.dispatchEvent(new FocusEvent('focus'));
     expect(document.querySelector('.gantt-unified-tooltip')?.textContent).toContain('Kolegijos posėdis');
 
-    vi.stubGlobal('route', (name: string, id?: string) => `/${name}/${id ?? ''}`);
+    stubGlobal('route', (name: string, id?: string) => `/${name}/${id ?? ''}`);
     const space = new KeyboardEvent('keydown', { key: ' ', cancelable: true, bubbles: true });
     icon.dispatchEvent(space);
     expect(space.defaultPrevented).toBe(true);

@@ -2,13 +2,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
 import ShowUser from '@/Pages/Admin/People/ShowUser.vue';
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+beforeEach(() => {
+  stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+});
 
 /** RecordPage is stubbed so the test can read what the page hands it and fire its emits. */
 const stubs = {

@@ -48,15 +48,6 @@ describe('compact period', () => {
   });
 });
 
-describe('unresolved', () => {
-  it('does not add a lateness sub-line', () => {
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
-    const wrapper = createWrapper('2020-01-01T10:00:00Z', twoDaysAgo);
-
-    expect(wrapper.text()).not.toContain('reservations.unresolved_days');
-  });
-});
-
 describe('exact times', () => {
   it('keeps the full date-times available in the tooltip', () => {
     const wrapper = createWrapper('2026-07-20T10:00:00Z', '2026-07-24T18:00:00Z');

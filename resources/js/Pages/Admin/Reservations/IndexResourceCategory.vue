@@ -81,6 +81,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import { useCreateSheetLink } from '@/Composables/useCreateSheetLink';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionRow from '@/Components/Collection/CollectionRow.vue';
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
@@ -113,7 +114,7 @@ function selectRowAction(key: string, item: Category): void {
   if (key === 'delete') toDelete.value = item;
 }
 
-const sheetOpen = ref(false);
+const sheetOpen = useCreateSheetLink(canCreate.value);
 const editing = ref<Category | null>(null);
 const toDelete = ref<Category | null>(null);
 

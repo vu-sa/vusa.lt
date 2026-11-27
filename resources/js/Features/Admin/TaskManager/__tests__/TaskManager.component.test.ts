@@ -93,7 +93,6 @@ describe('deleting a task', () => {
 
     const options = vi.mocked(router.delete).mock.calls[0][1] as { onSuccess?: () => void };
     expect(options.onSuccess).toBeUndefined();
-    options.onSuccess?.();
 
     expect(toast.success).not.toHaveBeenCalled();
   });
@@ -108,10 +107,10 @@ describe('the list', () => {
     expect(rows[0].props('task')).toEqual(task);
   });
 
-  it('opens the task details from the row', () => {
+  it('opens the task details from the row', async () => {
     const wrapper = mountManager();
 
-    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('open');
+    await wrapper.get('[data-slot="collection-primary-cell"] button').trigger('click');
 
     expect(wrapper.emitted('openTaskDetail')?.[0]).toEqual([task]);
   });

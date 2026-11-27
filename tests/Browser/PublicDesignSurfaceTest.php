@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -11,16 +10,6 @@ pest()->use(RefreshDatabase::class);
  * `@theme inline` Tailwind bakes a literal into the utility and the override stops applying.
  */
 it('resolves the public token scope in the browser', function (): void {
-    Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
-
     $page = visitPublicSubdomain('www', '/lt/naujienos');
 
     expect($page->script('document.documentElement.getAttribute("data-surface")'))
@@ -65,16 +54,6 @@ it('resolves the public token scope in the browser', function (): void {
  * with a real scrollbar can tell you either happened.
  */
 it('lets a band escape the content column without making the page scroll sideways', function (): void {
-    Tenant::firstOrCreate(
-        ['alias' => 'vusa'],
-        [
-            'shortname' => 'VU SA',
-            'shortname_vu' => 'VU',
-            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
-            'type' => 'pagrindinis',
-        ]
-    );
-
     $page = visitPublicSubdomain('www', '/lt/naujienos');
 
     $measured = $page->script(<<<'JS'

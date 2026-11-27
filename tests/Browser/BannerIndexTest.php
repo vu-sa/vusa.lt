@@ -17,7 +17,7 @@ it('previews the banner image and changes its status in the collection', functio
     Storage::fake('spatieMediaLibrary', ['url' => '/__banner-image']);
     Queue::fake([PerformConversionsJob::class]);
     $tenant = Tenant::query()->first();
-    $user = makeAdminUser($tenant);
+    $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
     $banner = Banner::factory()->for($tenant)->create([
         'title' => 'Banerio vizualas',
         'is_active' => 1,
@@ -33,7 +33,6 @@ it('previews the banner image and changes its status in the collection', functio
     $page->assertVisible('[data-slot=hover-card-content]');
     expect($page->script('document.querySelector("[data-slot=hover-card-content] img").getBoundingClientRect().width'))
         ->toBeGreaterThan(100);
-    $page->screenshot(fullPage: false, filename: 'banner-index-hover');
 
     $page->click('[data-slot=collection-quick-filters] button:has-text("Aktyvus")');
     $page->assertSee('Rasta 1');
@@ -43,7 +42,5 @@ it('previews the banner image and changes its status in the collection', functio
     $page->assertPresent('[data-slot=collection-status-menu][aria-label="Keisti būseną: Neaktyvus"]');
     $this->assertDatabaseHas('banners', ['id' => $banner->id, 'is_active' => 0]);
 
-    // Chromium emits this ResizeObserver warning during table layout without an application exception.
-    $page->script('window.__pestBrowser.jsErrors = window.__pestBrowser.jsErrors.filter(error => !error.message.startsWith("ResizeObserver loop completed"))');
     $page->assertNoJavaScriptErrors();
 });

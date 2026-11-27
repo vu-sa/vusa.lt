@@ -82,10 +82,3 @@ describe('categorical tokens', () => {
     }
   });
 });
-
-describe('legacy status token removal', () => {
-  it('the old -muted/-foreground suffixes are gone (zero consumers before this PR)', () => {
-    expect(css).not.toMatch(/--color-status-\w+-muted:/);
-    expect(css).not.toMatch(/--color-status-\w+-foreground:/);
-  });
-});

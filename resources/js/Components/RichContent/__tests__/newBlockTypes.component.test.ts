@@ -9,7 +9,7 @@ import ImageGridDisplay from '../Types/ImageGridDisplay.vue';
 import CardStackDisplay from '../RCCardStack/CardStackDisplay.vue';
 import CarouselSlideDeckDisplay from '../RCCarouselSlideDeck/CarouselSlideDeckDisplay.vue';
 import PhotoGalleryGridDisplay from '../RCPhotoGalleryGrid/PhotoGalleryGridDisplay.vue';
-import { createContentItem, getContentType } from '../Types';
+import { createContentItem } from '../Types';
 
 /**
  * Regression coverage for the three content types that shipped broken:
@@ -38,13 +38,6 @@ describe('card-stack', () => {
     expect((wrapper.emitted('update:modelValue')?.at(-1)?.[0] as unknown[]).length).toBe(1);
   });
 
-  it('display renders an empty stack without throwing', () => {
-    const wrapper = mount(CardStackDisplay, {
-      props: { element: { type: 'card-stack', json_content: [], options: getContentType('card-stack').defaultOptions!() } },
-    });
-    expect(wrapper.exists()).toBe(true);
-  });
-
   it('display renders populated cards and cycles the active index', async () => {
     const element = {
       type: 'card-stack',
@@ -56,8 +49,11 @@ describe('card-stack', () => {
     };
     const wrapper = mount(CardStackDisplay, { props: { element } });
     expect(wrapper.findAll('h3')).toHaveLength(2);
-    await wrapper.find('button').trigger('click'); // an indicator dot
-    expect(wrapper.exists()).toBe(true);
+    const indicators = wrapper.findAll('button');
+    expect(indicators[0]!.classes()).toContain('bg-brand-fill');
+    await indicators[1]!.trigger('click');
+    expect(indicators[0]!.classes()).not.toContain('bg-brand-fill');
+    expect(indicators[1]!.classes()).toContain('bg-brand-fill');
   });
 
   it('renders an icon badge above the title when a card has one, and centers the text when it does not', () => {
@@ -127,7 +123,7 @@ describe('carousel-slide-deck', () => {
     expect(wrapper.text()).toContain('no_decorations');
   });
 
-  it('display renders a slide description from Tiptap JSON without throwing', () => {
+  it('renders the slide description from Tiptap JSON', () => {
     const element = {
       type: 'carousel-slide-deck',
       json_content: [
@@ -146,9 +142,9 @@ describe('carousel-slide-deck', () => {
     };
     const wrapper = mount(CarouselSlideDeckDisplay, {
       props: { element },
-      global: { stubs: { Carousel: true, CarouselContent: true, CarouselItem: true, CarouselNext: true, CarouselPrevious: true } },
+      global: { stubs: { Carousel: { template: '<div><slot /></div>' }, CarouselContent: { template: '<div><slot /></div>' }, CarouselItem: { template: '<div><slot /></div>' }, CarouselNext: true, CarouselPrevious: true } },
     });
-    expect(wrapper.exists()).toBe(true);
+    expect(wrapper.text()).toContain('Hi');
   });
 
   it('display reads FormData-mangled "0" strings as off (legacy rows saved via forceFormData)', () => {

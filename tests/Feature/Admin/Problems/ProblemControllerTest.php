@@ -410,7 +410,7 @@ describe('deleting', function (): void {
         expect($this->problem->fresh()->trashed())->toBeFalse();
     });
 
-    test('no seeded role deletes permanently', function (): void {
+    test('the student representative coordinator cannot permanently delete a problem', function (): void {
         $this->problem->delete();
 
         asUser($this->coordinator)->delete(route('problems.forceDelete', $this->problem))->assertForbidden();

@@ -152,9 +152,9 @@ Svarbių tipų dokumentai rodomi aukščiau tarp vienodai aktualių rezultatų.
 
 Nustatymų valdytojas gali pasirinkti dokumentus ir frazes skiltyje
 [Dokumentų nustatymai](/sistema/nustatymai#dokumentai). Jie rodomi atskiroje skiltyje
-**Rekomenduojami dokumentai** ir nekartojami bendrame sąraše. Pasirinkti filtrai taikomi ir
-rekomendacijoms. Pradinė bendro sąrašo tvarka – **Naujausi pirmi**, pažymėta ir rikiavimo
-valdiklyje; rekomendacijos lieka virš jo. Įvedus paiešką sąrašas savaime rikiuojamas
+**Svarbiausi dokumentai** ir nekartojami bendrame sąraše. Pasirinkti filtrai taikomi ir
+jiems. Pradinė bendro sąrašo tvarka – **Naujausi pirmi**, pažymėta ir rikiavimo
+valdiklyje; svarbiausi dokumentai lieka virš jo. Įvedus paiešką sąrašas savaime rikiuojamas
 **Pagal aktualumą**. **Seniausi pirmi** rodo vien chronologinį sąrašą.
 
 ## Veiksmai {#veiksmai}

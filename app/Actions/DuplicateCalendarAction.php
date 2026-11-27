@@ -43,6 +43,8 @@ class DuplicateCalendarAction
                 }
             }
 
+            $newCalendar->unsetRelation('media');
+
             return $newCalendar;
         });
     }

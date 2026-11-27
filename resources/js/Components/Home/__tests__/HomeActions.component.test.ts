@@ -1,81 +1,150 @@
 import { usePage } from '@inertiajs/vue3';
+import { Bell, Bookmark, CalendarOff, CalendarPlus, LifeBuoy, Plus } from '@lucide/vue';
 import { mount } from '@vue/test-utils';
-import type { Component } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { CommandAction } from '@/Components/CommandPalette/useCommandActions';
+import type { AdminWorkspace } from '@/Composables/useAdminNavigation';
 import { createMockPage } from '@/tests/helpers/createMockPage';
-import { atstovavimas, pradzia, rezervacijos } from '@/Components/Layouts/Shell/__tests__/fixtures';
+import { atstovavimas, pradzia, rezervacijos, workspace } from '@/Components/Layouts/Shell/__tests__/fixtures';
+import { ModelEnum } from '@/Types/enums';
 
 import QuickAccess from '../QuickAccess.vue';
 import CreateShortcuts from '../CreateShortcuts.vue';
 
-const state = vi.hoisted(() => ({ actions: [] as CommandAction[] }));
+const openActionWindow = vi.hoisted(() => vi.fn());
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
-vi.mock('@/Components/CommandPalette/useCommandActions', () => ({
-  useCommandActions: () => ({ actions: { value: state.actions } }),
+vi.mock('@/Composables/useActionWindow', () => ({
+  useActionWindow: () => ({ open: openActionWindow }),
 }));
 vi.mock('@/Composables/useApi', () => ({
   useApiMutation: vi.fn(() => ({ execute: vi.fn().mockResolvedValue(undefined) })),
 }));
 
-const createAction = (id: string, workspaceKey: string): CommandAction => ({
-  id,
-  label: id,
-  keywords: [],
-  icon: 'span' as Component,
-  category: 'create',
-  workspaceKey,
-  action: vi.fn(),
+type CreateAction = AdminWorkspace['createActions'][number];
+
+const routeAction = (key: string, routeName: string, entityType: ModelEnum | null = null): CreateAction => ({
+  key,
+  label: `shell.actions.${key}.title`,
+  description: null,
+  entityType,
+  target: { kind: 'route', routeName },
 });
 
-beforeEach(() => {
-  state.actions = [];
+const screenAction = (key: string, screen: string, entityType: ModelEnum | null = ModelEnum.MEETING): CreateAction => ({
+  key,
+  label: `shell.actions.${key}.title`,
+  description: null,
+  entityType,
+  target: { kind: 'screen', screen },
+});
+
+const withWorkspaces = (workspaces: AdminWorkspace[]) => {
   vi.mocked(usePage).mockReturnValue(createMockPage({
     auth: { can: {} },
-    adminNavigation: { workspaces: [pradzia] },
+    adminNavigation: { workspaces },
   }) as ReturnType<typeof usePage>);
+};
+
+beforeEach(() => {
+  openActionWindow.mockClear();
+  withWorkspaces([pradzia]);
 });
 
 describe('home actions', () => {
-  it('lists the meeting answers first, then a problem, then one action per other workspace, as rows rather than filled buttons', async () => {
-    state.actions = [
-      createAction('create-new_meeting', 'atstovavimas'),
-      createAction('create-complete_meeting', 'atstovavimas'),
-      createAction('create-new_problem', 'atstovavimas'),
-      createAction('create-no_meeting', 'atstovavimas'),
-      createAction('create-new_reservation', 'rezervacijos'),
-      createAction('create-duty_update', 'organizacija'),
-    ];
+  it('merges the meeting answers into one split row, keeps proper entity icons instead of Plus, and shows support request as a fourth row', async () => {
+    withWorkspaces([
+      workspace('pradzia', pradzia.sections, [
+        routeAction('new_support_request', 'mySupportRequests.create', null),
+      ]),
+      workspace('atstovavimas', atstovavimas.sections, [
+        screenAction('new_meeting', 'meeting.institution', ModelEnum.MEETING),
+        screenAction('complete_meeting', 'meeting.pick', ModelEnum.MEETING),
+        routeAction('new_problem', 'problems.create', ModelEnum.PROBLEM),
+        screenAction('no_meeting', 'checkin.institution', ModelEnum.MEETING),
+      ]),
+      workspace('rezervacijos', rezervacijos.sections, [
+        routeAction('new_reservation', 'reservations.create', ModelEnum.RESERVATION),
+      ]),
+      workspace('organizacija', [], [
+        routeAction('duty_update', 'duties.updateUsersWizard', ModelEnum.DUTY),
+      ]),
+    ]);
 
     const wrapper = mount(CreateShortcuts);
-    const buttons = wrapper.findAll('button');
+    const listItems = wrapper.findAll('[data-slot="collection-row-list"] > li');
+    const shortcuts = wrapper.findAll('[data-shortcut]');
 
     expect(wrapper.find('h2').text()).toBe('home.create_title');
-    expect(buttons.map(button => button.text())).toEqual([
-      'create-new_meeting', 'create-no_meeting', 'create-new_problem', 'create-new_reservation',
+    expect(listItems).toHaveLength(4);
+    expect(listItems[0]!.find('[data-shortcut-group="meeting-activity"]').exists()).toBe(true);
+    expect(listItems[0]!.findAll('button').map(button => [button.attributes('data-shortcut'), button.text(), button.attributes('data-leading')])).toEqual([
+      ['create-new_meeting', 'home.shortcuts.new_meeting', 'true'],
+      ['create-no_meeting', 'home.shortcuts.no_meeting', undefined],
     ]);
-    expect(wrapper.find('[data-slot="collection-row-list"]').exists()).toBe(true);
-    expect(buttons.some(button => button.classes().includes('bg-brand-fill'))).toBe(false);
+    expect(shortcuts.map(item => item.text())).toEqual([
+      'home.shortcuts.new_meeting',
+      'home.shortcuts.no_meeting',
+      'home.shortcuts.new_problem',
+      'home.shortcuts.new_reservation',
+      'home.shortcuts.new_support_request',
+    ]);
+    expect(wrapper.find('[data-shortcut="create-new_meeting"]').findComponent(CalendarPlus).exists()).toBe(true);
+    expect(wrapper.find('[data-shortcut="create-no_meeting"]').findComponent(CalendarOff).exists()).toBe(true);
+    expect(wrapper.find('[data-shortcut="create-new_problem"]').findComponent(Bell).exists()).toBe(true);
+    expect(wrapper.find('[data-shortcut="create-new_reservation"]').findComponent(Bookmark).exists()).toBe(true);
+    expect(wrapper.find('[data-shortcut="create-new_support_request"]').findComponent(LifeBuoy).exists()).toBe(true);
+    expect(wrapper.find('[data-slot="collection-row-list"]').findComponent(Plus).exists()).toBe(false);
+    expect(shortcuts.some(item => item.classes().includes('bg-brand-fill'))).toBe(false);
 
-    await buttons[1]!.trigger('click');
-    expect(state.actions[3]!.action).toHaveBeenCalledOnce();
+    await wrapper.get('[data-shortcut="create-new_meeting"]').trigger('click');
+    await wrapper.get('[data-shortcut="create-no_meeting"]').trigger('click');
+    expect(openActionWindow).toHaveBeenNthCalledWith(1, { flow: 'meeting.create' });
+    expect(openActionWindow).toHaveBeenNthCalledWith(2, { flow: 'check-in' });
+    expect(wrapper.get('[data-shortcut="create-new_support_request"]').attributes('href')).toBe('/mocked-route/mySupportRequests.create');
+  });
+
+  it('keeps a single meeting row when only one meeting action is permitted', () => {
+    withWorkspaces([
+      workspace('atstovavimas', atstovavimas.sections, [
+        screenAction('new_meeting', 'meeting.institution', ModelEnum.MEETING),
+        routeAction('new_problem', 'problems.create', ModelEnum.PROBLEM),
+      ]),
+    ]);
+
+    const wrapper = mount(CreateShortcuts);
+
+    expect(wrapper.find('[data-shortcut-group="meeting-activity"]').exists()).toBe(false);
+    expect(wrapper.findAll('[data-shortcut]').map(row => row.attributes('data-shortcut'))).toEqual([
+      'create-new_meeting', 'create-new_problem',
+    ]);
   });
 
   it('puts an unfinished reservation first, in place of a new one, and links it to the reservation form', () => {
-    state.actions = [
-      createAction('create-new_meeting', 'atstovavimas'),
-      createAction('create-new_problem', 'atstovavimas'),
-      createAction('create-new_reservation', 'rezervacijos'),
-    ];
+    withWorkspaces([
+      workspace('pradzia', pradzia.sections, [
+        routeAction('new_support_request', 'mySupportRequests.create', null),
+      ]),
+      workspace('atstovavimas', atstovavimas.sections, [
+        screenAction('new_meeting', 'meeting.institution', ModelEnum.MEETING),
+        screenAction('no_meeting', 'checkin.institution', ModelEnum.MEETING),
+        routeAction('new_problem', 'problems.create', ModelEnum.PROBLEM),
+      ]),
+      workspace('rezervacijos', rezervacijos.sections, [
+        routeAction('new_reservation', 'reservations.create', ModelEnum.RESERVATION),
+      ]),
+    ]);
 
     const wrapper = mount(CreateShortcuts, {
       props: { reservationDraft: { name: 'Mokymai', count: 2, start_time: null, end_time: null } },
     });
+    const listItems = wrapper.findAll('[data-slot="collection-row-list"] > li');
     const rows = wrapper.findAll('[data-shortcut]');
 
-    expect(rows.map(row => row.attributes('data-shortcut'))).toEqual(['finish-reservation', 'create-new_meeting', 'create-new_problem']);
+    expect(listItems).toHaveLength(4);
+    expect(rows.map(row => row.attributes('data-shortcut'))).toEqual([
+      'finish-reservation', 'create-new_meeting', 'create-no_meeting', 'create-new_problem', 'create-new_support_request',
+    ]);
     expect(rows[0]!.text()).toContain('reservations.cart.finish');
     expect(rows[0]!.text()).toContain('Mokymai');
     expect(rows[0]!.attributes('data-leading')).toBe('true');
@@ -83,15 +152,21 @@ describe('home actions', () => {
   });
 
   it('fills the shortcuts with one action per workspace when the user records no meetings', () => {
-    state.actions = [
-      createAction('create-new_reservation', 'rezervacijos'),
-      createAction('create-duty_update', 'organizacija'),
-      createAction('create-duty_periods', 'organizacija'),
-      createAction('create-new_problem', 'atstovavimas'),
-    ];
+    withWorkspaces([
+      workspace('rezervacijos', rezervacijos.sections, [
+        routeAction('new_reservation', 'reservations.create', ModelEnum.RESERVATION),
+      ]),
+      workspace('organizacija', [], [
+        routeAction('duty_update', 'duties.updateUsersWizard', ModelEnum.DUTY),
+        routeAction('duty_periods', 'dutiables.timeline', ModelEnum.DUTIABLE),
+      ]),
+      workspace('atstovavimas', atstovavimas.sections, [
+        routeAction('new_problem', 'problems.create', ModelEnum.PROBLEM),
+      ]),
+    ]);
 
-    expect(mount(CreateShortcuts).findAll('button').map(button => button.text())).toEqual([
-      'create-new_problem', 'create-new_reservation', 'create-duty_update', 'create-duty_periods',
+    expect(mount(CreateShortcuts).findAll('[data-shortcut]').map(item => item.text())).toEqual([
+      'home.shortcuts.new_problem', 'home.shortcuts.new_reservation', 'shell.actions.duty_update.title', 'shell.actions.duty_periods.title',
     ]);
   });
 

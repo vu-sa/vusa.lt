@@ -1,9 +1,13 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
-
 import { toast } from 'vue-sonner';
 
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
 import { useApiMutation } from '../useApi';
+
+const { stubGlobal, restoreGlobals } = scopedGlobals();
+afterEach(restoreGlobals);
 
 vi.mock('vue-sonner', () => ({
   toast: {
@@ -13,7 +17,9 @@ vi.mock('vue-sonner', () => ({
   },
 }));
 const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+beforeEach(() => {
+  stubGlobal('fetch', mockFetch);
+});
 
 describe('useApiMutation', () => {
   beforeEach(() => {

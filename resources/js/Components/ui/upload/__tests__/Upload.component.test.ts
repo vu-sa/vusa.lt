@@ -1,14 +1,18 @@
-import { describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { enableAutoUnmount, mount } from '@vue/test-utils';
 
 import Upload from '@/Components/ui/upload/Upload.vue';
+import { scopedGlobals } from '@/tests/helpers/scopedGlobals';
+
+const { stubProperty, restoreGlobals } = scopedGlobals();
+
+enableAutoUnmount(afterEach);
+afterEach(restoreGlobals);
 
 describe('Upload.vue', () => {
   it('replaces an existing single image after selecting a new file', async () => {
-    vi.stubGlobal('URL', {
-      createObjectURL: vi.fn(() => 'blob:new-image'),
-      revokeObjectURL: vi.fn(),
-    });
+    stubProperty(URL, 'createObjectURL', vi.fn(() => 'blob:new-image'));
+    stubProperty(URL, 'revokeObjectURL', vi.fn());
 
     const wrapper = mount(Upload, { props: { max: 1, deferred: true } });
     wrapper.vm.setFiles([{

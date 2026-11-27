@@ -5,7 +5,7 @@
         variant="ghost"
         voice="plain"
         data-slot="account-menu-trigger"
-        class="u-touch h-8 gap-2 border-l border-border pl-3 pr-2.5 transition-colors hover:bg-secondary focus-visible:bg-secondary"
+        class="u-touch h-8 gap-2 pl-3 pr-2.5 transition-colors hover:bg-secondary focus-visible:bg-secondary"
         :class="{ 'bg-secondary': isOpen }"
         :aria-label="$t('shell.chrome.account')"
       >
@@ -102,12 +102,6 @@
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
-              <Link :href="route('mySupportRequests.index')" prefetch>
-                <MessagesSquare class="size-4 shrink-0" />
-                <span>{{ $t('shell.account.my_requests') }}</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 cursor-pointer text-sm font-medium">
               <a :href="changelogHref" target="_blank" rel="noopener noreferrer">
                 <Sparkles class="size-4 shrink-0" />
                 <span class="flex-1">{{ $t('shell.account.whats_new') }}</span>
@@ -197,7 +191,6 @@ import {
   Languages,
   LogOut,
   Map,
-  MessagesSquare,
   Moon,
   Palette,
   Radio,

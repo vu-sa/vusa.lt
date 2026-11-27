@@ -19,18 +19,16 @@ it('shows an article in its structure graph, with other nodes leading to their a
     $page->assertVisible('[data-slot=article-structure] .vue-flow__node[data-id=node-senatas]')
         ->assertPresent('.vue-flow__node[data-id=node-taryba] [data-testid=structure-node-linked]')
         ->assertSee('Paspausk elementą – liks matomi tik su juo susiję.')
-        ->assertNoJavaScriptErrors()
-        ->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-article');
+        ->assertNoJavaScriptErrors();
     $page->click('.vue-flow__node[data-id=node-taryba] button')
         ->assertAttribute('[data-testid=structure-node-article]', 'href', route('knowledgeItems.show', $council))
         ->assertPresent('.vue-flow__node.is-faded[data-id=node-studentai]')
-        ->assertNotPresent('.vue-flow__node.is-faded[data-id=node-taryba]')
-        ->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-node-open');
+        ->assertNotPresent('.vue-flow__node.is-faded[data-id=node-taryba]');
     // The details follow the pointer; the click only keeps the focus fade.
     $page->hover('#article-structure')->wait(0.5)
         ->assertNotPresent('[data-testid=structure-node-article]')
         ->assertPresent('.vue-flow__node.is-faded[data-id=node-studentai]');
-    $page->resize(390, 844)->assertNoJavaScriptErrors()->screenshotElement('[data-slot=article-structure]', filename: 'wiki-structure-phone');
+    $page->resize(390, 844)->assertNoJavaScriptErrors();
 });
 
 it('lets an editor pick a graph and a node, previewing the node highlighted', function (): void {
@@ -45,6 +43,5 @@ it('lets an editor pick a graph and a node, previewing the node highlighted', fu
         ->click('[data-testid=structure-add]')
         ->assertVisible('[data-testid=structure-place-1]')
         ->assertVisible('[data-testid=structure-place-0] .vue-flow__node[data-id=node-parlamentas]')
-        ->assertNoJavaScriptErrors()
-        ->screenshotElement('[data-slot=structure-field]', filename: 'wiki-structure-form');
+        ->assertNoJavaScriptErrors();
 });

@@ -23,7 +23,7 @@ tests:
 
 # Paskyra ir prieiga
 
-Viršutinėje juostoje paspaudus savo nuotrauką arba vardą, atveriamas paskyros meniu.
+Paskyros meniu atversi paspaudęs savo nuotrauką arba vardą viršutinėje juostoje.
 Jame pasiekiami punktai **Paskyra**, **Pranešimų nustatymai**,
 **Kalba**, **Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
 juose rodomi tavo duomenys.
@@ -89,9 +89,9 @@ Jei skilties trūksta, verta patikrinti pareigų datas bei roles ir kreiptis į 
 - **Kalba**: kalbą galima perjungti tiesiogiai paskyros meniu.
 - **Išvaizda**: galima perjungti temą arba atverti prieinamumo valdiklius
   (plačiau – [Platforma](/pagrindai/platforma#spalvos-zenklai-ir-formos)).
-- **Pagalba**: čia galima atverti gidą, **Parodyk, kaip veikia** turą, **Mano užklausos** arba **Pranešti problemą**.
+- **Pagalba**: čia galima atverti gidą, **Parodyk, kaip veikia** turą arba **Pranešti apie vusa.lt problemą**.
   Problemos pranešimui pridedamas dabartinis puslapio adresas ir naršyklės kontekstas.
-  Užklausų matomumas bei sprendimo eiga aprašyti [Pagalbos užklausose](/sistema/pagalbos-uzklausos).
+  Savo pagalbos užklausas rasi srities **Mano** skiltyje **Pagalbos užklausos**, o jų matomumas bei sprendimo eiga aprašyti [Pagalbos užklausose](/sistema/pagalbos-uzklausos).
 
 ### Prieinamumo nustatymai {#prieinamumas}
 
