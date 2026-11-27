@@ -15,7 +15,9 @@ const state = vi.hoisted(() => ({ initialFilters: {} as Record<string, unknown>,
 vi.mock('@/Composables/useCollectionSource', () => ({
   useTypesenseCollectionSource: () => {
     const filters = ref({ ...state.initialFilters });
-    state.setFilter.mockImplementation((field: string, value: unknown) => { filters.value[field] = value; });
+    state.setFilter.mockImplementation((field: string, value: unknown) => {
+      filters.value[field] = value;
+    });
 
     return { filters, items: ref([]), setFilter: state.setFilter };
   },
@@ -32,7 +34,8 @@ vi.mock('@/Composables/useRowAbilities', () => ({
 const CollectionPage = {
   props: ['quickFilters', 'rowActions', 'columns'],
   emits: ['quickFilter'],
-  template: '<div />',
+  setup: () => ({ resource: { id: 'r1', name_lt: 'Projektorius', is_reservable: true, capacity: 3 } }),
+  template: '<div><slot name="card" :item="resource" :actions="rowActions(resource)" /></div>',
 };
 
 const render = (managedTenantIds: number[]) => mount(IndexResource, {
@@ -80,6 +83,21 @@ describe('resource managed quick filter', () => {
     expect(wrapper.findComponent(CollectionPage).props('quickFilters')[0].active).toBe(true);
     wrapper.unmount();
   });
+  it.each([false, true])('renders a single detail link with draft active: %s', (hasDraft) => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { can: { create: { reservation: true } } },
+      reservationCart: hasDraft ? { items: [] } : null,
+    }));
+
+    const wrapper = render([]);
+    const card = wrapper.get('[data-slot="resource-collection-card"]');
+
+    expect(card.findAll('a')).toHaveLength(1);
+    expect(card.get('a[data-card-link]').attributes('href')).toContain('/resources.show');
+    expect(card.findAll('[data-testid="add-to-reservation"]')).toHaveLength(hasDraft ? 1 : 0);
+    wrapper.unmount();
+  });
+
   it('keeps opening primary and offers hidden timestamp columns', () => {
     const wrapper = render([]);
     const collection = wrapper.findComponent(CollectionPage);

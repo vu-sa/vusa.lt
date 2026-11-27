@@ -75,6 +75,8 @@ Pilną rezervaciją mato tik tie, kas turi teisę ją peržiūrėti (žr.
 [Rezervacijos → Teisės](/rezervacijos/rezervacijos#teises)).
 :::
 
+Išteklių kortelę atversi paspaudęs jos pavadinimą. Pradėjus rezervaciją, skolinamų išteklių kortelėse rodomas ir krepšelio veiksmas.
+
 ### Greitoji peržiūra sąraše {#greitoji-perziura}
 
 Išteklių sąraše galima persijungti į peržiūros rodinį (`preview`), kuriame dešiniajame šoniniame

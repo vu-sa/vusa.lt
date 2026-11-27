@@ -85,12 +85,12 @@
                   :class="isFullyBooked(item) ? 'font-medium text-status-attention' : 'text-muted-foreground'"
                   data-slot="resource-availability"
                 >{{ availabilityLabel(item) }}</span>
-                <div v-if="canReserve" class="relative z-10">
+                <div v-if="canReserve && hasDraft" class="relative z-10">
                   <AddToReservationButton :resource-id="String(item.id)" />
                 </div>
               </template>
             </div>
-            <CollectionRowActions :actions="recordActions" class="relative z-10 mt-3" @select="key => collectionActions.select(key)" />
+            <CollectionRowActions :actions="recordActions.filter(action => action.role !== 'open')" class="relative z-10 mt-3" @select="key => collectionActions.select(key)" />
           </div>
         </article>
       </template>
@@ -301,7 +301,7 @@ const columns = computed<CollectionColumn[]>(() => [
 
 // --- Availability: for the cart's period, or right now until one is picked ---------------------
 
-const { period, hasPeriod, openSheet } = useReservationCart();
+const { period, hasDraft, hasPeriod, openSheet } = useReservationCart();
 
 // Captured once: a "now" that ticked would invalidate the availability cache on every render.
 const openedAt = Date.now();
